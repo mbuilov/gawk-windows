@@ -3481,7 +3481,7 @@ Stampare la lunghezza della riga in input pi@`u lunga:
 @example
 @group
 awk '@{ if (length($0) > max) max = length($0) @}
-END @{ print max @}' data
+     END @{ print max @}' data
 @end group
 @end example
 
@@ -3706,7 +3706,7 @@ stante o una regola isolata, come:
 
 @example
 awk '/12/  @{ print $0 @}
-/21/  @{ print $0 @}' mail-list inventory-shipped
+     /21/  @{ print $0 @}' mail-list inventory-shipped
 @end example
 
 @cindex @command{gawk} @subentry ritorno a capo
@@ -5191,7 +5191,7 @@ Iniziamo con due @dfn{script} @command{awk} (banali), che chiameremo
 
 @example
 BEGIN @{
-print "Questo @`e lo script test1."
+    print "Questo @`e lo script test1."
 @}
 @end example
 
@@ -5201,7 +5201,7 @@ e questo @`e @file{test2}:
 @example
 @@include "test1"
 BEGIN @{
-print "Questo @`e lo script test2."
+    print "Questo @`e lo script test2."
 @}
 @end example
 
@@ -5233,7 +5233,7 @@ I file da includere possono essere nidificati; p.es., dato un terzo
 @group
 @@include "test2"
 BEGIN @{
-print "Questo @`e lo script test3."
+    print "Questo @`e lo script test3."
 @}
 @end group
 @end example
@@ -5446,7 +5446,7 @@ oppure:
 
 @example
 awk '@{ sum += $1 @}
-END @{ print sum @}' data
+     END @{ print sum @}' data
 @end example
 
 @noindent
@@ -7059,7 +7059,7 @@ Per esempio:
 
 @example
 awk 'BEGIN @{ RS = "u" @}
-@{ print $0 @}' mail-list
+     @{ print $0 @}' mail-list
 @end example
 
 @noindent
@@ -7583,9 +7583,9 @@ Per esempio:
 
 @example
 if ($(NF+1) != "")
-print "non @`e possibile"
+    print "non @`e possibile"
 else
-print "@`e tutto normale"
+    print "@`e tutto normale"
 @end example
 
 @noindent
@@ -8264,7 +8264,7 @@ Unix @command{w}.  @`E utile per spiegare l'uso di @code{FIELDWIDTHS}:
 
 @example
 @group
-10:06pm  up 21 days, 14:04,  23 users
+ 10:06pm  up 21 days, 14:04,  23 users
 User     tty       login@  idle   JCPU   PCPU  what
 hzuo     ttyV0     8:58pm            9      5  vi p24.tex
 hzang    ttyV3     6:37pm    50                -csh
@@ -8285,18 +8285,18 @@ calcolato:
 @example
 BEGIN  @{ FIELDWIDTHS = "9 6 10 6 7 7 35" @}
 NR > 2 @{
-inat = $4
-sub(/^ +/, "", inat)   # togli spazi prima del valore
-if (inat == "")
-inat = 0
-if (inat ~ /:/) @{      # hh:mm
-split(inat, t, ":")
-inat = t[1] * 60 + t[2]
-@}
-if (inat ~ /days/)
-inat *= 24 * 60 * 60
+    inat = $4
+    sub(/^ +/, "", inat)   # togli spazi prima del valore
+    if (inat == "")
+        inat = 0
+    if (inat ~ /:/) @{      # hh:mm
+        split(inat, t, ":")
+        inat = t[1] * 60 + t[2]
+    @}
+    if (inat ~ /days/)
+        inat *= 24 * 60 * 60
 
-print $1, $2, inat
+    print $1, $2, inat
 @}
 @end example
 
@@ -8431,11 +8431,11 @@ o @code{"FIELDWIDTHS"} se si usa la separazione in campi a larghezza fissa:
 
 @example
 if (PROCINFO["FS"] == "FS")
-@var{separazione in campi normale}@dots{}
+    @var{separazione in campi normale}@dots{}
 else if  (PROCINFO["FS"] == "FIELDWIDTHS")
-@var{separazione in campi a larghezza fissa}@dots{}
+    @var{separazione in campi a larghezza fissa}@dots{}
 else
-@var{separazione dei campi in base al contenuto}@dots{} @ii{(si veda
+    @var{separazione dei campi in base al contenuto}@dots{} @ii{(si veda
 @ifnotinfo
 la @value{SECTION} successiva)}
 @end ifnotinfo
@@ -8523,16 +8523,16 @@ e divide i dati:
 @c file eg/misc/simple-csv.awk
 @group
 BEGIN @{
-FPAT = "([^,]+)|(\"[^\"]+\")"
+    FPAT = "([^,]+)|(\"[^\"]+\")"
 @}
 @end group
 
 @group
 @{
-print "NF = ", NF
-for (i = 1; i <= NF; i++) @{
-printf("$%d = <%s>\n", i, $i)
-@}
+    print "NF = ", NF
+    for (i = 1; i <= NF; i++) @{
+        printf("$%d = <%s>\n", i, $i)
+    @}
 @}
 @end group
 @c endfile
@@ -8768,10 +8768,10 @@ Un semplice programma per elaborare questo file @`e il seguente:
 BEGIN @{ RS = "" ; FS = "\n" @}
 
 @{
-print "Il nome @`e:", $1
-print "L'indirizzo @`e:", $2
-print "Citt@`a e Stato sono:", $3
-print ""
+      print "Il nome @`e:", $1
+      print "L'indirizzo @`e:", $2
+      print "Citt@`a e Stato sono:", $3
+      print ""
 @}
 @end example
 
@@ -9066,11 +9066,11 @@ corrente:
 
 @example
 @{
-if ($1 == 10) @{
- getline < "secondary.input"
- print
-@} else
- print
+    if ($1 == 10) @{
+         getline < "secondary.input"
+         print
+    @} else
+         print
 @}
 @end example
 
@@ -9111,12 +9111,12 @@ Tale record @`e sostituito dal contenuto del file
 
 @example
 @{
-if (NF == 2 && $1 == "@@include") @{
-  while ((getline line < $2) > 0)
-       print line
-  close($2)
-@} else
-  print
+     if (NF == 2 && $1 == "@@include") @{
+          while ((getline line < $2) > 0)
+               print line
+          close($2)
+     @} else
+          print
 @}
 @end example
 
@@ -9165,13 +9165,13 @@ costituito da un comando di shell.
 @example
 @group
 @{
-if ($1 == "@@execute") @{
-  tmp = substr($0, 10)        # Rimuove "@@execute"
-  while ((tmp | getline) > 0)
-       print
-  close(tmp)
-@} else
-  print
+     if ($1 == "@@execute") @{
+          tmp = substr($0, 10)        # Rimuove "@@execute"
+          while ((tmp | getline) > 0)
+               print
+          close(tmp)
+     @} else
+          print
 @}
 @end group
 @end example
@@ -9261,9 +9261,9 @@ stampa:
 
 @example
 BEGIN @{
-"date" | getline current_time
-close("date")
-print "Report printed on " current_time
+     "date" | getline current_time
+     close("date")
+     print "Report printed on " current_time
 @}
 @end example
 
@@ -9429,9 +9429,9 @@ From: Duncan Moore <duncan.moore@@gmx.com>
 
 @example
 BEGIN @{
-system("echo 1 > f")
-while ((getline a[++c] < "f") > 0) @{ @}
-print c
+    system("echo 1 > f")
+    while ((getline a[++c] < "f") > 0) @{ @}
+    print c
 @}
 @end example
 
@@ -9506,9 +9506,9 @@ non riceve alcuna risposta dal server dopo un certo periodo di tempo:
 Service = "/inet/tcp/0/localhost/daytime"
 PROCINFO[Service, "READ_TIMEOUT"] = 100
 if ((Service |& getline) > 0)
-print $0
+    print $0
 else if (ERRNO != "")
-print ERRNO
+    print ERRNO
 @end group
 @end example
 
@@ -9519,7 +9519,7 @@ non pi@`u di cinque secondi:
 @example
 PROCINFO["/dev/stdin", "READ_TIMEOUT"] = 5000
 while ((getline < "/dev/stdin") > 0)
-print $0
+    print $0
 @end example
 
 @command{gawk} termina l'operazione di lettura se l'input non
@@ -9557,8 +9557,8 @@ per l'input diventa illimitata.
 @example
 PROCINFO[Service, "READ_TIMEOUT"] = 1000
 while ((Service |& getline) > 0) @{
-print $0
-PROCINFO[Service, "READ_TIMEOUT"] -= 100
+    print $0
+    PROCINFO[Service, "READ_TIMEOUT"] -= 100
 @}
 @end example
 
@@ -9932,8 +9932,8 @@ stampate una volta sola:
 
 @example
 awk 'BEGIN @{  print "Mese  Contenitori"
-      print "----- -----------" @}
-   @{  print $1, $2 @}' inventory-shipped
+              print "------ -----  --- --" @}
+           @{  print $1, $2 @}' inventory-shipped
 @end example
 
 @noindent
@@ -9956,8 +9956,8 @@ campi:
 @example
 @group
 awk 'BEGIN @{  print "Mese  Contenitori"
-      print "----- -----------" @}
-   @{ print $1, "     ", $2 @}' inventory-shipped
+              print "------ -----  --- --" @}
+           @{ print $1, "     ", $2 @}' inventory-shipped
 @end group
 @end example
 
@@ -10626,8 +10626,8 @@ programma @command{awk}:
 
 @example
 awk 'BEGIN @{ print "Nome      Numero"
-     print "----      ------" @}
-   @{ printf "%-10s %s\n", $1, $2 @}' mail-list
+             print " --- -     ------ " @}
+           @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 L'esempio precedente usa sia l'istruzione @code{print} che l'istruzione
@@ -10636,8 +10636,8 @@ risultati usando solo istruzioni @code{printf}:
 
 @example
 awk 'BEGIN @{ printf "%-10s %s\n", "Nome", "Numero"
-     printf "%-10s %s\n", "----", "------" @}
-   @{ printf "%-10s %s\n", $1, $2 @}' mail-list
+             printf "%-10s %s\n", " --- -", " ---  --- " @}
+           @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 @noindent
@@ -10650,9 +10650,9 @@ evidenziare memorizzandola in una variabile, cos@`{@dotless{i}}:
 
 @example
 awk 'BEGIN @{ format = "%-10s %s\n"
-     printf format, "Nome", "Numero"
-     printf format, "----", "------" @}
-   @{ printf format, $1, $2 @}' mail-list
+             printf format, "Nome", "Numero"
+             printf format, " --- -", " ---  --- " @}
+           @{ printf format, $1, $2 @}' mail-list
 @end example
 
 
@@ -10769,8 +10769,8 @@ alone for now and let's hope no-one notices.
 @example
 @group
 awk '@{ print $1 > "nomi.non.ordinati"
-comando = "sort -r > nomi.ordinati"
-print $1 | comando @}' mail-list
+       comando = "sort -r > nomi.ordinati"
+       print $1 | comando @}' mail-list
 @end group
 @end example
 
@@ -11258,12 +11258,12 @@ consideri qualcosa del tipo:
 
 @example
 @{
-@dots{}
-comando = ("grep " $1 " /qualche/file | un_mio_programma -q " $3)
-while ((comando | getline) > 0) @{
-@var{elabora output di} comando
-@}
-# qui serve close(comando)
+    @dots{}
+    comando = ("grep " $1 " /qualche/file | un_mio_programma -q " $3)
+    while ((comando | getline) > 0) @{
+        @var{elabora output di} comando
+    @}
+    # qui serve close(comando)
 @}
 @end example
 
@@ -16216,7 +16216,7 @@ dall'implementazione @command{awk} in esecuzione.
 stringhe (@pxref{Conversione}) quando li
 si stampa con l'istruzione
 @code{print}.  Funziona passandola
- come primo argomento alla funzione @code{sprintf()}
+come primo argomento alla funzione @code{sprintf()}
 (@pxref{Funzioni per stringhe}).
 Il suo valore di default @`e @code{"%.6g"}.  Le prime versioni di @command{awk}
 usavano @code{OFMT} per specificare il formato da usare per convertire
@@ -32194,7 +32194,7 @@ vogliono.
 
 @item Punto d'osservazione
 @cindex @dfn{watchpoint} (debugger)
-@cindex punto d'osservazione @subetry(@code{watchpoint})
+@cindex punto d'osservazione @subentry(@code{watchpoint})
 @cindex debugger @subentry @code{watchpoint}
 @cindex debugger @subentry punto d'osservazione
 Un punto d'osservazione @`e simile a un punto d'interruzione.  La differenza @`e
@@ -43143,7 +43143,7 @@ di ottimizzazione o la richiesta di generare informazioni per il @dfn{debug}).
 In alternativa, si possono specificare dei valori a piacere per
 molte delle variabili di @command{make} sulla riga di comando,
 come @code{CC} e @code{CFLAGS}, quando
- si chiama il programma
+si chiama il programma
 @command{configure}:
 
 @example
