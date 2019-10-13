@@ -1243,6 +1243,12 @@ EXTRA_DIST = \
 	typedregex3.ok \
 	typedregex4.awk \
 	typedregex4.ok \
+	typedregex5.awk \
+	typedregex5.in \
+	typedregex5.ok \
+	typedregex6.awk \
+	typedregex6.in \
+	typedregex6.ok \
 	typeof1.awk \
 	typeof1.ok \
 	typeof2.awk \
@@ -1384,6 +1390,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
+	typedregex5 typedregex6 \
 	typeof1 typeof2 typeof3 typeof4 typeof5 \
 	watchpoint1
 

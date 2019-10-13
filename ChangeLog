@@ -1,3 +1,12 @@
+2019-10-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix handling of assigning @/.../ to FS and RS. Thanks
+	to Stephane Chazelas <stephane.chazelas@gmail.com>
+	for the report.
+
+	* field.c (set_FS): Check for REGEX in the flags.
+	* io.c (set_RS): Ditto.
+
 2019-10-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub, install-sh: Updated from GNULIB.

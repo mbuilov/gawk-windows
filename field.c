@@ -1311,7 +1311,7 @@ choose_fs_function:
 			warned = true;
 			lintwarn(_("null string for `FS' is a gawk extension"));
 		}
-	} else if (fs->stlen > 1) {
+	} else if (fs->stlen > 1 || (fs->flags & REGEX) != 0) {
 		if (do_lint_old)
 			lintwarn(_("old awk does not support regexps as value of `FS'"));
 		set_parser(re_parse_field);
