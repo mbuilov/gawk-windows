@@ -5694,8 +5694,7 @@ in a way that cannot be interpreted as an interval expression
 (such as @code{/q@{a@}/}), then they stand for themselves.
 
 As mentioned, interval expressions were not traditionally available
-in @command{awk}. In March of 2019, Brian Kernighan's
-@command{awk} (finally) acquired them.
+in @command{awk}. In March of 2019, BWK @command{awk} (finally) acquired them.
 
 Nonetheless, because they were not available for
 so many decades, @command{gawk} continues to not supply them
@@ -6683,6 +6682,11 @@ compatibility mode
 (@pxref{Options}).
 In compatibility mode, only the first character of the value of
 @code{RS} determines the end of the record.
+
+@cindex Brian Kernighan's @command{awk}
+@command{mawk} has allowed @code{RS} to be a regexp for decades.
+As of October, 2019, BWK @command{awk} also supports it.  Neither
+version supplies @code{RT}, however.
 
 @sidebar @code{RS = "\0"} Is Not Portable
 @cindex portability @subentry data files as single record
@@ -38808,7 +38812,7 @@ the three most widely used freely available versions of @command{awk}
 @item @code{**} and @code{**=} operators @tab X @tab @tab X @tab
 @item @code{func} keyword @tab X @tab @tab X @tab
 @item @code{BINMODE} variable @tab @tab X @tab X @tab
-@item @code{RS} as regexp @tab @tab X @tab X @tab
+@item @code{RS} as regexp @tab X @tab X @tab X @tab
 @item Time-related functions @tab @tab X @tab X @tab
 @end multitable
 
