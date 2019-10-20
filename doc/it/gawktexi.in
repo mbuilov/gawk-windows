@@ -7299,6 +7299,11 @@ modalit@`a compatibile
 In modalit@`a compatibile, solo il primo carattere del valore di
 @code{RS} determina la fine del record.
 
+@cindex Brian Kernighan @subentry @command{awk} di
+@command{mawk} ha permesso che @code{RS} fosse un'espressione regolare
+da decenni. A partire dall'ottobre 2019, anche BWK @command{awk} lo permette.
+Nessuna delle due versioni, tuttavia, fornisce @code{RT}.
+
 @sidebar @code{RS = "\0"} non @`e portabile
 @cindex portabilit@`a @subentry file di dati come un unico record
 Ci sono casi in cui capita di dover trattare un intero @value{DF} come
@@ -42226,7 +42231,7 @@ le tre versioni liberamente disponibili pi@`u usate di @command{awk}
 @item Operatori @code{**} e @code{**=} @tab X @tab @tab X @tab
 @item Parola chiave @code{func} @tab X @tab @tab X @tab
 @item Variabile @code{BINMODE} @tab @tab X @tab X @tab
-@item @code{RS} come @dfn{regexp} @tab @tab X @tab X @tab
+@item @code{RS} come @dfn{regexp} @tab X @tab X @tab X @tab
 @item Funzioni gestione data/ora @tab @tab X @tab X @tab
 @end multitable
 
