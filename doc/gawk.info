@@ -27873,6 +27873,11 @@ always 'u'.
      the file type is always 'u'.  You can use the 'filefuncs' extension
      to call 'stat()' in order to get correct type information.
 
+   By default, if a directory cannot be opened (due to permission
+problems, for example), 'gawk' will exit.  As with regular files, this
+situation can be handled using a 'BEGINFILE' rule that checks 'ERRNO'
+and prints an error or otherwise handles the problem.
+
    Here is an example:
 
      @load "readdir"
@@ -37602,90 +37607,90 @@ Node: Extension Sample Inplace1123514
 Node: Extension Sample Ord1127139
 Node: Extension Sample Readdir1127975
 Ref: table-readdir-file-types1128864
-Node: Extension Sample Revout1129669
-Node: Extension Sample Rev2way1130258
-Node: Extension Sample Read write array1130998
-Node: Extension Sample Readfile1132940
-Node: Extension Sample Time1134035
-Node: Extension Sample API Tests1135383
-Node: gawkextlib1135875
-Node: Extension summary1138793
-Node: Extension Exercises1142495
-Node: Language History1143737
-Node: V7/SVR3.11145393
-Node: SVR41147545
-Node: POSIX1148979
-Node: BTL1150359
-Node: POSIX/GNU1151088
-Node: Feature History1156866
-Node: Common Extensions1173059
-Node: Ranges and Locales1174342
-Ref: Ranges and Locales-Footnote-11178958
-Ref: Ranges and Locales-Footnote-21178985
-Ref: Ranges and Locales-Footnote-31179220
-Node: Contributors1179441
-Node: History summary1185394
-Node: Installation1186774
-Node: Gawk Distribution1187718
-Node: Getting1188202
-Node: Extracting1189165
-Node: Distribution contents1190803
-Node: Unix Installation1197283
-Node: Quick Installation1197965
-Node: Shell Startup Files1200379
-Node: Additional Configuration Options1201468
-Node: Configuration Philosophy1203783
-Node: Non-Unix Installation1206152
-Node: PC Installation1206612
-Node: PC Binary Installation1207450
-Node: PC Compiling1207885
-Node: PC Using1209002
-Node: Cygwin1212555
-Node: MSYS1213779
-Node: VMS Installation1214280
-Node: VMS Compilation1215071
-Ref: VMS Compilation-Footnote-11216300
-Node: VMS Dynamic Extensions1216358
-Node: VMS Installation Details1218043
-Node: VMS Running1220296
-Node: VMS GNV1224575
-Node: VMS Old Gawk1225310
-Node: Bugs1225781
-Node: Bug address1226444
-Node: Usenet1229426
-Node: Maintainers1230430
-Node: Other Versions1231691
-Node: Installation summary1238779
-Node: Notes1239981
-Node: Compatibility Mode1240775
-Node: Additions1241557
-Node: Accessing The Source1242482
-Node: Adding Code1243919
-Node: New Ports1250138
-Node: Derived Files1254513
-Ref: Derived Files-Footnote-11260173
-Ref: Derived Files-Footnote-21260208
-Ref: Derived Files-Footnote-31260806
-Node: Future Extensions1260920
-Node: Implementation Limitations1261578
-Node: Extension Design1262761
-Node: Old Extension Problems1263905
-Ref: Old Extension Problems-Footnote-11265423
-Node: Extension New Mechanism Goals1265480
-Ref: Extension New Mechanism Goals-Footnote-11268844
-Node: Extension Other Design Decisions1269033
-Node: Extension Future Growth1271146
-Node: Notes summary1271982
-Node: Basic Concepts1273140
-Node: Basic High Level1273821
-Ref: figure-general-flow1274103
-Ref: figure-process-flow1274788
-Ref: Basic High Level-Footnote-11278089
-Node: Basic Data Typing1278274
-Node: Glossary1281602
-Node: Copying1313440
-Node: GNU Free Documentation License1350983
-Node: Index1376103
+Node: Extension Sample Revout1129931
+Node: Extension Sample Rev2way1130520
+Node: Extension Sample Read write array1131260
+Node: Extension Sample Readfile1133202
+Node: Extension Sample Time1134297
+Node: Extension Sample API Tests1135645
+Node: gawkextlib1136137
+Node: Extension summary1139055
+Node: Extension Exercises1142757
+Node: Language History1143999
+Node: V7/SVR3.11145655
+Node: SVR41147807
+Node: POSIX1149241
+Node: BTL1150621
+Node: POSIX/GNU1151350
+Node: Feature History1157128
+Node: Common Extensions1173321
+Node: Ranges and Locales1174604
+Ref: Ranges and Locales-Footnote-11179220
+Ref: Ranges and Locales-Footnote-21179247
+Ref: Ranges and Locales-Footnote-31179482
+Node: Contributors1179703
+Node: History summary1185656
+Node: Installation1187036
+Node: Gawk Distribution1187980
+Node: Getting1188464
+Node: Extracting1189427
+Node: Distribution contents1191065
+Node: Unix Installation1197545
+Node: Quick Installation1198227
+Node: Shell Startup Files1200641
+Node: Additional Configuration Options1201730
+Node: Configuration Philosophy1204045
+Node: Non-Unix Installation1206414
+Node: PC Installation1206874
+Node: PC Binary Installation1207712
+Node: PC Compiling1208147
+Node: PC Using1209264
+Node: Cygwin1212817
+Node: MSYS1214041
+Node: VMS Installation1214542
+Node: VMS Compilation1215333
+Ref: VMS Compilation-Footnote-11216562
+Node: VMS Dynamic Extensions1216620
+Node: VMS Installation Details1218305
+Node: VMS Running1220558
+Node: VMS GNV1224837
+Node: VMS Old Gawk1225572
+Node: Bugs1226043
+Node: Bug address1226706
+Node: Usenet1229688
+Node: Maintainers1230692
+Node: Other Versions1231953
+Node: Installation summary1239041
+Node: Notes1240243
+Node: Compatibility Mode1241037
+Node: Additions1241819
+Node: Accessing The Source1242744
+Node: Adding Code1244181
+Node: New Ports1250400
+Node: Derived Files1254775
+Ref: Derived Files-Footnote-11260435
+Ref: Derived Files-Footnote-21260470
+Ref: Derived Files-Footnote-31261068
+Node: Future Extensions1261182
+Node: Implementation Limitations1261840
+Node: Extension Design1263023
+Node: Old Extension Problems1264167
+Ref: Old Extension Problems-Footnote-11265685
+Node: Extension New Mechanism Goals1265742
+Ref: Extension New Mechanism Goals-Footnote-11269106
+Node: Extension Other Design Decisions1269295
+Node: Extension Future Growth1271408
+Node: Notes summary1272244
+Node: Basic Concepts1273402
+Node: Basic High Level1274083
+Ref: figure-general-flow1274365
+Ref: figure-process-flow1275050
+Ref: Basic High Level-Footnote-11278351
+Node: Basic Data Typing1278536
+Node: Glossary1281864
+Node: Copying1313702
+Node: GNU Free Documentation License1351245
+Node: Index1376365
 
 End Tag Table
 

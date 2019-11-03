@@ -36938,6 +36938,11 @@ type is always @samp{u}.  You can use the @code{filefuncs} extension to call
 @code{stat()} in order to get correct type information.
 @end quotation
 
+By default, if a directory cannot be opened (due to permission problems,
+for example), @command{gawk} will exit.  As with regular files, this
+situation can be handled using a @code{BEGINFILE} rule that checks
+@code{ERRNO} and prints an error or otherwise handles the problem.
+
 Here is an example:
 
 @example

@@ -1,4 +1,4 @@
-.TH READDIR 3am "Mar 17 2019" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH READDIR 3am "Oct 30 2019" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 readdir \- directory input parser for gawk
 .SH SYNOPSIS
@@ -42,6 +42,16 @@ to calling
 in order to provide the information.
 Thus the third field should never be
 .BR u .
+.PP
+By default, if a directory cannot be opened (due to permission problems,
+for example),
+.I gawk
+will exit.
+As with regular files, this situation can be handled using a
+.B BEGINFILE
+rule that checks
+.B ERRNO
+and prints an error or otherwise handles the problem.
 .\" .SH BUGS
 .SH EXAMPLE
 .ft CW
