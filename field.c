@@ -916,17 +916,6 @@ get_field(long requested, Func_ptr *assign)
 		 */
 		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
-		else if (parse_field == fpat_parse_field) {
-			/* FPAT parsing is weird, isolate the special cases */
-			char *rec_start = fields_arr[0]->stptr;
-			char *rec_end = fields_arr[0]->stptr + fields_arr[0]->stlen;
-
-			if (    parse_extent > rec_end
-			    || (parse_extent > rec_start && parse_extent < rec_end && requested == UNLIMITED-1))
-				NF = parse_high_water;
-			else if (parse_extent == rec_start) /* could be no match for FPAT */
-				NF = 0;
-		}
 		if (requested == UNLIMITED - 1)	/* UNLIMITED-1 means set NF */
 			requested = parse_high_water;
 	}
@@ -1566,7 +1555,7 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  *         field_found = match(substr(string, parse_start), pattern)
  *         
  *         # check for an invalid null field and retry one character away
- *         if (nf > 0 && field_found && RSTART==1 && RLENGTH==0) {
+ *         if (nf > 0 && field_found && RSTART == 1 && RLENGTH == 0) {
  *             parse_start++
  *             field_found = match(substr(string, parse_start), pattern)
  *         }
