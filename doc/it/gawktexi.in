@@ -40175,6 +40175,13 @@ il tipo di file @`e sempre @samp{u}.  Si pu@`o usare l'estensione
 corretta sul tipo di file.
 @end quotation
 
+Per default, se non @`e possibile aprire una directory (p.es. per problemi
+di autorizzazione), @command{gawk} termina l'esecuzione.
+Come @`e il caso per i file normali, questa situazione pu@`o
+essere gestita usando una regola @code{BEGINFILE} che controlli il
+contenuto della variabile @code{ERRNO} e stampi un messaggio di
+errore oppure gestisca il problema in qualche altro modo.
+
 Ecco un esempio:
 
 @example
