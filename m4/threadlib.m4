@@ -68,7 +68,7 @@ changequote(,)dnl
          dnl bugs that lead to endless loops or crashes. See
          dnl <http://cygwin.com/ml/cygwin/2009-08/msg00283.html>.
          osf*) gl_use_threads=no ;;
-         cygwin*)
+         cygwin* | msys*)
                case `uname -r` in
                  1.[0-5].*) gl_use_threads=no ;;
                  *)         gl_use_threads=yes ;;

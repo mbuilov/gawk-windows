@@ -2398,7 +2398,7 @@ mixed1::
 mbprintf5::
 	@echo $@ $(ZOS_FAIL)
 	@-case `uname` in \
-	CYGWIN* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
+	CYGWIN* | MSYS* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
 	[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
@@ -2688,7 +2688,7 @@ fts:
 	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
 	echo If it does, try rerunning on an xfs filesystem. ;; \
-	CYGWIN*) \
+	CYGWIN* | MSYS*) \
 	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
 	echo If it does, try rerunning on an ntfs filesystem. ;; \
 	esac
