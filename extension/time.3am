@@ -1,4 +1,4 @@
-.TH TIME 3am "Feb 02 2018" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH TIME 3am "Nov 21 2019" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 time \- time functions for gawk
 .SH SYNOPSIS
@@ -9,6 +9,17 @@ time = gettimeofday()
 .br
 ret = sleep(amount)
 .ft R
+.SH CAUTION
+This extension is deprecated in favor of the
+.B timex
+extension in the
+.I gawkextlib
+project.  In the next major release of
+.IR gawk ,
+loading it will issue a warning.
+It will be removed from the
+.I gawk
+distribution in the major release after the next one.
 .SH DESCRIPTION
 The
 .I time

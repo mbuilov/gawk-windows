@@ -28015,7 +28015,16 @@ File: gawk.info,  Node: Extension Sample Time,  Next: Extension Sample API Tests
 17.7.11 Extension Time Functions
 --------------------------------
 
-The 'time' extension adds two functions, named 'gettimeofday()' and
+     CAUTION: As 'gawk' version 5.1.0, this extension is considered to
+     be obsolete.  It is replaced by the 'timex' extension in
+     'gawkextlib' (*note gawkextlib::).
+
+     For version 5.1, no warning will be issued if this extension is
+     used.  For the next major release, a warning will be issued.  In
+     the release after that this extension will be removed from the
+     distribution.
+
+   The 'time' extension adds two functions, named 'gettimeofday()' and
 'sleep()', as follows:
 
 '@load "time"'
@@ -35540,7 +35549,7 @@ Index
 * gettext library, locale categories:    Explaining gettext.  (line  81)
 * gettext() function (C library):        Explaining gettext.  (line  63)
 * gettimeofday() extension function:     Extension Sample Time.
-                                                              (line  12)
+                                                              (line  21)
 * git utility:                           gawkextlib.          (line  31)
 * git utility <1>:                       Other Versions.      (line  18)
 * git utility <2>:                       Accessing The Source.
@@ -36692,7 +36701,7 @@ Index
 * Skywalker, Luke:                       Undocumented.        (line   6)
 * sleep utility:                         Alarm Program.       (line 109)
 * sleep() extension function:            Extension Sample Time.
-                                                              (line  22)
+                                                              (line  31)
 * Solaris, POSIX-compliant awk:          Other Versions.      (line  96)
 * sort array:                            String Functions.    (line  42)
 * sort array indices:                    String Functions.    (line  42)
@@ -37612,85 +37621,85 @@ Node: Extension Sample Rev2way1130520
 Node: Extension Sample Read write array1131260
 Node: Extension Sample Readfile1133202
 Node: Extension Sample Time1134297
-Node: Extension Sample API Tests1135645
-Node: gawkextlib1136137
-Node: Extension summary1139055
-Node: Extension Exercises1142757
-Node: Language History1143999
-Node: V7/SVR3.11145655
-Node: SVR41147807
-Node: POSIX1149241
-Node: BTL1150621
-Node: POSIX/GNU1151350
-Node: Feature History1157128
-Node: Common Extensions1173321
-Node: Ranges and Locales1174604
-Ref: Ranges and Locales-Footnote-11179220
-Ref: Ranges and Locales-Footnote-21179247
-Ref: Ranges and Locales-Footnote-31179482
-Node: Contributors1179703
-Node: History summary1185656
-Node: Installation1187036
-Node: Gawk Distribution1187980
-Node: Getting1188464
-Node: Extracting1189427
-Node: Distribution contents1191065
-Node: Unix Installation1197545
-Node: Quick Installation1198227
-Node: Shell Startup Files1200641
-Node: Additional Configuration Options1201730
-Node: Configuration Philosophy1204045
-Node: Non-Unix Installation1206414
-Node: PC Installation1206874
-Node: PC Binary Installation1207712
-Node: PC Compiling1208147
-Node: PC Using1209264
-Node: Cygwin1212817
-Node: MSYS1214041
-Node: VMS Installation1214542
-Node: VMS Compilation1215333
-Ref: VMS Compilation-Footnote-11216562
-Node: VMS Dynamic Extensions1216620
-Node: VMS Installation Details1218305
-Node: VMS Running1220558
-Node: VMS GNV1224837
-Node: VMS Old Gawk1225572
-Node: Bugs1226043
-Node: Bug address1226706
-Node: Usenet1229688
-Node: Maintainers1230692
-Node: Other Versions1231953
-Node: Installation summary1239041
-Node: Notes1240243
-Node: Compatibility Mode1241037
-Node: Additions1241819
-Node: Accessing The Source1242744
-Node: Adding Code1244181
-Node: New Ports1250400
-Node: Derived Files1254775
-Ref: Derived Files-Footnote-11260435
-Ref: Derived Files-Footnote-21260470
-Ref: Derived Files-Footnote-31261068
-Node: Future Extensions1261182
-Node: Implementation Limitations1261840
-Node: Extension Design1263023
-Node: Old Extension Problems1264167
-Ref: Old Extension Problems-Footnote-11265685
-Node: Extension New Mechanism Goals1265742
-Ref: Extension New Mechanism Goals-Footnote-11269106
-Node: Extension Other Design Decisions1269295
-Node: Extension Future Growth1271408
-Node: Notes summary1272244
-Node: Basic Concepts1273402
-Node: Basic High Level1274083
-Ref: figure-general-flow1274365
-Ref: figure-process-flow1275050
-Ref: Basic High Level-Footnote-11278351
-Node: Basic Data Typing1278536
-Node: Glossary1281864
-Node: Copying1313702
-Node: GNU Free Documentation License1351245
-Node: Index1376365
+Node: Extension Sample API Tests1136049
+Node: gawkextlib1136541
+Node: Extension summary1139459
+Node: Extension Exercises1143161
+Node: Language History1144403
+Node: V7/SVR3.11146059
+Node: SVR41148211
+Node: POSIX1149645
+Node: BTL1151025
+Node: POSIX/GNU1151754
+Node: Feature History1157532
+Node: Common Extensions1173725
+Node: Ranges and Locales1175008
+Ref: Ranges and Locales-Footnote-11179624
+Ref: Ranges and Locales-Footnote-21179651
+Ref: Ranges and Locales-Footnote-31179886
+Node: Contributors1180107
+Node: History summary1186060
+Node: Installation1187440
+Node: Gawk Distribution1188384
+Node: Getting1188868
+Node: Extracting1189831
+Node: Distribution contents1191469
+Node: Unix Installation1197949
+Node: Quick Installation1198631
+Node: Shell Startup Files1201045
+Node: Additional Configuration Options1202134
+Node: Configuration Philosophy1204449
+Node: Non-Unix Installation1206818
+Node: PC Installation1207278
+Node: PC Binary Installation1208116
+Node: PC Compiling1208551
+Node: PC Using1209668
+Node: Cygwin1213221
+Node: MSYS1214445
+Node: VMS Installation1214946
+Node: VMS Compilation1215737
+Ref: VMS Compilation-Footnote-11216966
+Node: VMS Dynamic Extensions1217024
+Node: VMS Installation Details1218709
+Node: VMS Running1220962
+Node: VMS GNV1225241
+Node: VMS Old Gawk1225976
+Node: Bugs1226447
+Node: Bug address1227110
+Node: Usenet1230092
+Node: Maintainers1231096
+Node: Other Versions1232357
+Node: Installation summary1239445
+Node: Notes1240647
+Node: Compatibility Mode1241441
+Node: Additions1242223
+Node: Accessing The Source1243148
+Node: Adding Code1244585
+Node: New Ports1250804
+Node: Derived Files1255179
+Ref: Derived Files-Footnote-11260839
+Ref: Derived Files-Footnote-21260874
+Ref: Derived Files-Footnote-31261472
+Node: Future Extensions1261586
+Node: Implementation Limitations1262244
+Node: Extension Design1263427
+Node: Old Extension Problems1264571
+Ref: Old Extension Problems-Footnote-11266089
+Node: Extension New Mechanism Goals1266146
+Ref: Extension New Mechanism Goals-Footnote-11269510
+Node: Extension Other Design Decisions1269699
+Node: Extension Future Growth1271812
+Node: Notes summary1272648
+Node: Basic Concepts1273806
+Node: Basic High Level1274487
+Ref: figure-general-flow1274769
+Ref: figure-process-flow1275454
+Ref: Basic High Level-Footnote-11278755
+Node: Basic Data Typing1278940
+Node: Glossary1282268
+Node: Copying1314106
+Node: GNU Free Documentation License1351649
+Node: Index1376769
 
 End Tag Table
 

@@ -37091,6 +37091,16 @@ if (contents == "" && ERRNO != "") @{
 @node Extension Sample Time
 @subsection Extension Time Functions
 
+@quotation CAUTION
+As @command{gawk} @value{PVERSION} 5.1.0, this extension is considered to be obsolete.
+It is replaced by the @code{timex} extension in @code{gawkextlib}
+(@pxref{gawkextlib}).
+
+For @value{PVERSION} 5.1, no warning will be issued if this extension is used.
+For the next major release, a warning will be issued. In the release after that
+this extension will be removed from the distribution.
+@end quotation
+
 The @code{time} extension adds two functions, named @code{gettimeofday()}
 and @code{sleep()}, as follows:
 
