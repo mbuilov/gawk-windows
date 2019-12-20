@@ -288,7 +288,9 @@ set_record(const char *buf, int cnt, const awk_fieldwidth_info_t *fw)
 		memset(databuf, '\0', databuf_size);
 	}
 	/* copy the data */
-	memcpy(databuf, buf, cnt);
+	if (cnt != 0) {
+		memcpy(databuf, buf, cnt);
+	}
 
 	/*
 	 * Add terminating '\0' so that C library routines
