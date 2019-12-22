@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-07-23 06:12+0300\n"
+"POT-Creation-Date: 2019-12-22 21:25+0200\n"
 "PO-Revision-Date: 2019-03-19 17:46+0100\n"
 "Last-Translator: Tianze Wang <zwpwjwtz@126.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -41,8 +41,8 @@ msgstr "试图把标量参数“%s”当数组使用"
 msgid "attempt to use scalar `%s' as an array"
 msgstr "试图把标量“%s”当数组使用"
 
-#: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: array.c:400 array.c:567 builtin.c:88 builtin.c:1687 builtin.c:1733
+#: builtin.c:1746 builtin.c:2241 builtin.c:2268 eval.c:1151 eval.c:1155
 #: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -529,63 +529,63 @@ msgstr ""
 "函数“%s”被调用时名字与“(”间有空格，\n"
 "或被用作变量或数组"
 
-#: awkgram.y:5456
+#: awkgram.y:5450
 msgid "division by zero attempted"
 msgstr "试图除0"
 
-#: awkgram.y:5465
+#: awkgram.y:5459
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "在“%%”中试图除 0"
 
-#: awkgram.y:5804
+#: awkgram.y:5798
 msgid ""
 "cannot assign a value to the result of a field post-increment expression"
 msgstr "无法将值赋给字段后增表达式"
 
-#: awkgram.y:5807
+#: awkgram.y:5801
 #, c-format
 msgid "invalid target of assignment (opcode %s)"
 msgstr "赋值的目标无效（操作码 %s）"
 
-#: awkgram.y:6699
+#: awkgram.y:6693
 #, c-format
 msgid "identifier %s: qualified names not allowed in traditional / POSIX mode"
 msgstr "标识符 %s：传统 / POSIX 模式下不允许使用合规名称（qualified name）"
 
-#: awkgram.y:6704
+#: awkgram.y:6698
 #, c-format
 msgid "identifier %s: namespace separator is two colons, not one"
 msgstr "标识符 %s：命名空间的分隔符应为双冒号（::）"
 
-#: awkgram.y:6710
+#: awkgram.y:6704
 #, c-format
 msgid "qualified identifier `%s' is badly formed"
 msgstr "合规标识符“%s”格式错误"
 
-#: awkgram.y:6717
+#: awkgram.y:6711
 #, c-format
 msgid ""
 "identifier `%s': namespace separator can only appear once in a qualified name"
 msgstr "标识符“%s”：合规名称中的命名空间分隔符最多只能出现一次"
 
-#: awkgram.y:6766 awkgram.y:6817
+#: awkgram.y:6760 awkgram.y:6811
 #, c-format
 msgid "using reserved identifier `%s' as a namespace is not allowed"
 msgstr "不允许将反向标识符“%s”作为命名空间"
 
-#: awkgram.y:6773 awkgram.y:6783
+#: awkgram.y:6767 awkgram.y:6777
 #, c-format
 msgid ""
 "using reserved identifier `%s' as second component of a qualified name is "
 "not allowed"
 msgstr "不允许将反向标识符“%s”作为合规名称的第二个组成部分"
 
-#: awkgram.y:6801
+#: awkgram.y:6795
 msgid "@namespace is a gawk extension"
 msgstr "@namespace 是 gawk 保留字"
 
-#: awkgram.y:6808
+#: awkgram.y:6802
 #, c-format
 msgid "namespace name `%s' must meet identifier naming rules"
 msgstr "命名空间“%s”必须符合标识符的命名规则"
@@ -780,307 +780,307 @@ msgstr "[s]printf：指定格式不含控制字符"
 msgid "too many arguments supplied for format string"
 msgstr "相对格式来说参数个数过多"
 
-#: builtin.c:1705
+#: builtin.c:1706
 msgid "sprintf: no arguments"
 msgstr "sprintf：没有参数"
 
-#: builtin.c:1728 builtin.c:1739
+#: builtin.c:1729 builtin.c:1740
 msgid "printf: no arguments"
 msgstr "printf：没有参数"
 
-#: builtin.c:1754
+#: builtin.c:1755
 msgid "printf: attempt to write to closed write end of two-way pipe"
 msgstr "printf：试图向写入端已被关闭的双向管道中写入数据"
 
-#: builtin.c:1795
+#: builtin.c:1796
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt：收到非数字参数"
 
-#: builtin.c:1799
+#: builtin.c:1800
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt：收到负数参数 %g"
 
-#: builtin.c:1830
+#: builtin.c:1831
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr：长度 %g 小于 1"
 
-#: builtin.c:1832
+#: builtin.c:1833
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr：长度 %g 小于 0"
 
-#: builtin.c:1846
+#: builtin.c:1847
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr：非整数的长度 %g 会被截断"
 
-#: builtin.c:1851
+#: builtin.c:1852
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr "substr：长度 %g 作为字符串索引过大，截断至 %g"
 
-#: builtin.c:1863
+#: builtin.c:1864
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr：开始坐标 %g 无效，使用 1"
 
-#: builtin.c:1868
+#: builtin.c:1869
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr：非整数的开始索引 %g 会被截断"
 
-#: builtin.c:1891
+#: builtin.c:1892
 msgid "substr: source string is zero length"
 msgstr "substr：源字符串长度为0"
 
-#: builtin.c:1905
+#: builtin.c:1906
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr：开始坐标 %g 超出字符串尾部"
 
-#: builtin.c:1913
+#: builtin.c:1914
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
 msgstr "substr：在开始坐标 %2$g 下长度 %1$g 超出第一个参数的长度 (%3$lu)"
 
-#: builtin.c:1986
+#: builtin.c:1987
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime：PROCINFO[\"strftime\"] 中的格式值含有数值类型"
 
-#: builtin.c:2006
+#: builtin.c:2007
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime：第二个参数不是数字"
 
-#: builtin.c:2016
+#: builtin.c:2017
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime：第二个参数小于0，或对于 time_t 来说太大"
 
-#: builtin.c:2023
+#: builtin.c:2024
 msgid "strftime: second argument out of range for time_t"
 msgstr "strftime：第二个参数对于 time_t 来说太大"
 
-#: builtin.c:2032
+#: builtin.c:2033
 msgid "strftime: received non-string first argument"
 msgstr "strftime：第一个参数不是字符串"
 
-#: builtin.c:2039
+#: builtin.c:2040
 msgid "strftime: received empty format string"
 msgstr "strftime：收到空格式字符串"
 
-#: builtin.c:2122
+#: builtin.c:2123
 msgid "mktime: received non-string argument"
 msgstr "mktime：收到非字符串参数"
 
-#: builtin.c:2139
+#: builtin.c:2140
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime：至少有一个值超出默认范围"
 
-#: builtin.c:2175
+#: builtin.c:2176
 msgid "'system' function not allowed in sandbox mode"
 msgstr "沙箱模式中不允许使用\"system\"函数"
 
-#: builtin.c:2180
+#: builtin.c:2181
 msgid "system: received non-string argument"
 msgstr "system：收到非字符串参数"
 
-#: builtin.c:2249 builtin.c:2322
+#: builtin.c:2250 builtin.c:2323
 msgid "print: attempt to write to closed write end of two-way pipe"
 msgstr "print：试图向写入端已被关闭的双向管道中写入数据"
 
-#: builtin.c:2345
+#: builtin.c:2346
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "引用未初始化的字段“$%d”"
 
-#: builtin.c:2430
+#: builtin.c:2431
 msgid "tolower: received non-string argument"
 msgstr "tolower：收到非字符串参数"
 
-#: builtin.c:2461
+#: builtin.c:2462
 msgid "toupper: received non-string argument"
 msgstr "toupper：收到非字符串参数"
 
-#: builtin.c:2494 mpfr.c:674
+#: builtin.c:2495 mpfr.c:674
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2：第一个参数不是数字"
 
-#: builtin.c:2496 mpfr.c:676
+#: builtin.c:2497 mpfr.c:676
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2：第二个参数不是数字"
 
-#: builtin.c:2515
+#: builtin.c:2516
 msgid "sin: received non-numeric argument"
 msgstr "sin：收到非数字参数"
 
-#: builtin.c:2531
+#: builtin.c:2532
 msgid "cos: received non-numeric argument"
 msgstr "cos：收到非数字参数"
 
-#: builtin.c:2645 mpfr.c:1169
+#: builtin.c:2646 mpfr.c:1169
 msgid "srand: received non-numeric argument"
 msgstr "srand：收到非数字参数"
 
-#: builtin.c:2676
+#: builtin.c:2677
 msgid "match: third argument is not an array"
 msgstr "match：第三个参数不是数组"
 
-#: builtin.c:2919
+#: builtin.c:2920
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub：第三个参数“%.*s”被当作 1"
 
-#: builtin.c:3241
+#: builtin.c:3242
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s：间接调用时只能传递两个参数"
 
-#: builtin.c:3341
+#: builtin.c:3342
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "间接调用 %s 需要传递至少两个参数"
 
-#: builtin.c:3396
+#: builtin.c:3397
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift：第一个参数不是数字"
 
-#: builtin.c:3398
+#: builtin.c:3399
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift：第二个参数不是数字"
 
-#: builtin.c:3404
+#: builtin.c:3405
 #, c-format
 msgid "lshift(%f, %f): negative values are not allowed"
 msgstr "lshift(%f, %f)：不允许传入负值"
 
-#: builtin.c:3408
+#: builtin.c:3409
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f)：小数部分会被截断"
 
-#: builtin.c:3410
+#: builtin.c:3411
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f)：过大的移位会得到奇怪的结果"
 
-#: builtin.c:3435
+#: builtin.c:3436
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift：第一个参数不是数字"
 
-#: builtin.c:3437
+#: builtin.c:3438
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift：第二个参数不是数字"
 
-#: builtin.c:3443
+#: builtin.c:3444
 #, c-format
 msgid "rshift(%f, %f): negative values are not allowed"
 msgstr "rshift(%f, %f)：不允许传入负值"
 
-#: builtin.c:3447
+#: builtin.c:3448
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f)：小数部分会被截断"
 
-#: builtin.c:3449
+#: builtin.c:3450
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f)：过大的移位会得到奇怪的结果"
 
-#: builtin.c:3473 mpfr.c:982
+#: builtin.c:3474 mpfr.c:982
 msgid "and: called with less than two arguments"
 msgstr "and：调用时传递的参数不足2个"
 
-#: builtin.c:3478
+#: builtin.c:3479
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and：参数 %d 不是数值"
 
-#: builtin.c:3482
+#: builtin.c:3483
 #, c-format
 msgid "and: argument %d negative value %g is not allowed"
 msgstr "and：参数 %d 不允许为负值 %g"
 
-#: builtin.c:3504 mpfr.c:1014
+#: builtin.c:3505 mpfr.c:1014
 msgid "or: called with less than two arguments"
 msgstr "or：调用时传递的参数不足2个"
 
-#: builtin.c:3509
+#: builtin.c:3510
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or：参数 %d 不是数值"
 
-#: builtin.c:3513
+#: builtin.c:3514
 #, c-format
 msgid "or: argument %d negative value %g is not allowed"
 msgstr "or：数 %d 不允许为负值 %g"
 
-#: builtin.c:3534 mpfr.c:1045
+#: builtin.c:3535 mpfr.c:1045
 msgid "xor: called with less than two arguments"
 msgstr "xor：调用时传递的参数不足2个"
 
-#: builtin.c:3540
+#: builtin.c:3541
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor：参数 %d 不是数值"
 
-#: builtin.c:3544
+#: builtin.c:3545
 #, c-format
 msgid "xor: argument %d negative value %g is not allowed"
 msgstr "xor：数 %d 不允许为负值 %g"
 
-#: builtin.c:3566 mpfr.c:804
+#: builtin.c:3567 mpfr.c:804
 msgid "compl: received non-numeric argument"
 msgstr "compl：收到非数字参数"
 
-#: builtin.c:3571
+#: builtin.c:3572
 #, c-format
 msgid "compl(%f): negative value is not allowed"
 msgstr "compl(%f)：不允许使用负值"
 
-#: builtin.c:3574
+#: builtin.c:3575
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f)：小数部分会被截断"
 
-#: builtin.c:3758
+#: builtin.c:3759
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext：“%s”不是一个有效的区域目录"
 
-#: builtin.c:3982 mpfr.c:1203
+#: builtin.c:3983 mpfr.c:1203
 msgid "intdiv: third argument is not an array"
 msgstr "intdiv：第三个参数不是数组"
 
-#: builtin.c:3990 mpfr.c:1211
+#: builtin.c:3991 mpfr.c:1211
 msgid "intdiv: received non-numeric first argument"
 msgstr "intdiv：第一个参数不是数字"
 
-#: builtin.c:3992 mpfr.c:1213
+#: builtin.c:3993 mpfr.c:1213
 msgid "intdiv: received non-numeric second argument"
 msgstr "intdiv：第二个参数不是数字"
 
-#: builtin.c:4001 mpfr.c:1252
+#: builtin.c:4002 mpfr.c:1252
 msgid "intdiv: division by zero attempted"
 msgstr "intdiv：试图除0"
 
-#: builtin.c:4040
+#: builtin.c:4041
 msgid "typeof: second argument is not an array"
 msgstr "typeof：第二个参数不是数组"
 
-#: builtin.c:4076
+#: builtin.c:4113
 #, c-format
 msgid ""
 "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr "typeof 函数发现一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
-#: builtin.c:4095
+#: builtin.c:4132
 #, c-format
 msgid "typeof: invalid argument type `%s'"
 msgstr "typeof：参数类型“%s”无效"
 
-#: builtin.c:4099
+#: builtin.c:4136
 #, c-format
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof：参数类型“%s”未知"
@@ -2410,92 +2410,92 @@ msgstr "sleep：不被此平台支持"
 msgid "input record too large"
 msgstr "输入的记录太长"
 
-#: field.c:398
+#: field.c:400
 msgid "NF set to negative value"
 msgstr "NF 被设置为负值"
 
-#: field.c:403
+#: field.c:405
 msgid "decrementing NF is not portable to many awk versions"
 msgstr "降序 NF 无法被大多数 awk 所兼容"
 
-#: field.c:847
+#: field.c:849
 msgid "accessing fields from an END rule may not be portable"
 msgstr "其他 awk 可能不支持使用 END "
 
-#: field.c:976 field.c:983
+#: field.c:967 field.c:974
 msgid "split: fourth argument is a gawk extension"
 msgstr "split：第四个参数是 gawk 扩展"
 
-#: field.c:980
+#: field.c:971
 msgid "split: fourth argument is not an array"
 msgstr "split：第四个参数不是数组"
 
-#: field.c:990
+#: field.c:981
 msgid "split: second argument is not an array"
 msgstr "split：第二个参数不是数组"
 
-#: field.c:994
+#: field.c:985
 msgid "split: cannot use the same array for second and fourth args"
 msgstr "split：无法将同一个数组用于第二和第四个参数"
 
-#: field.c:999
+#: field.c:990
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr "split：无法将第二个参数的子数组用于第四个参数"
 
-#: field.c:1002
+#: field.c:993
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr "split：无法将第四个参数的子数组用于第二个参数"
 
-#: field.c:1036
+#: field.c:1027
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split：第三个参数为空字符串：其他 awk 可能不支持这一特性"
 
-#: field.c:1073
+#: field.c:1064
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit：第四个参数不是数组"
 
-#: field.c:1078
+#: field.c:1069
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit：第二个参数不是数组"
 
-#: field.c:1087
+#: field.c:1078
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit：第三个参数必须不为空"
 
-#: field.c:1091
+#: field.c:1082
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr "patsplit：无法将同一个数组用于第二和第四个参数"
 
-#: field.c:1096
+#: field.c:1087
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr "patsplit：无法将第二个参数的子数组用于第四个参数"
 
-#: field.c:1099
+#: field.c:1090
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr "patsplit：无法将第四个参数的子数组用于第二个参数"
 
-#: field.c:1149
+#: field.c:1140
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "“FIELDWIDTHS”是 gawk 扩展"
 
-#: field.c:1218
+#: field.c:1209
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr "FIELDWIDTHS中的“*”必须位于所有通配符的末尾"
 
-#: field.c:1239
+#: field.c:1230
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "第 %d 字段中的 FIELDWIDTHS 值无效（位于“%s”附近）"
 
-#: field.c:1312
+#: field.c:1303
 msgid "null string for `FS' is a gawk extension"
 msgstr "给“FS”传递了空字符串，应为 gawk 扩展"
 
-#: field.c:1316
+#: field.c:1307
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "老 awk 不支持把“FS”设置为正则表达式"
 
-#: field.c:1443
+#: field.c:1434
 msgid "`FPAT' is a gawk extension"
 msgstr "“FPAT”是 gawk 扩展"
 
@@ -3423,7 +3423,7 @@ msgstr ""
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# gawk 配置, 创建 %s\n"
 
-#: profile.c:1962
+#: profile.c:1965
 #, c-format
 msgid ""
 "\n"
@@ -3432,7 +3432,7 @@ msgstr ""
 "\n"
 "\t# 函数列表，字典序\n"
 
-#: profile.c:2023
+#: profile.c:2026
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str：未知重定向类型 %d"
@@ -3457,44 +3457,44 @@ msgstr "正则表达式中的转义序列“\\%c”将被当作纯文本“%c”
 msgid "regexp escape sequence `\\%c' is not a known regexp operator"
 msgstr "正则表达式中的转义序列“\\%c”不是有效的操作符"
 
-#: re.c:652
+#: re.c:663
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "正则表达式成分“%.*s”可能应为“[%.*s]”"
 
-#: support/dfa.c:1017
+#: support/dfa.c:938
 msgid "unbalanced ["
 msgstr "[ 不配对"
 
-#: support/dfa.c:1138
+#: support/dfa.c:1059
 msgid "invalid character class"
 msgstr "无效的字符类型名"
 
-#: support/dfa.c:1264
+#: support/dfa.c:1185
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "字符类型的语法为 [[:space:]]，而不是 [:space:]"
 
-#: support/dfa.c:1331
+#: support/dfa.c:1252
 msgid "unfinished \\ escape"
 msgstr "不完整的 \\ 转义"
 
-#: support/dfa.c:1492
+#: support/dfa.c:1413
 msgid "invalid content of \\{\\}"
 msgstr "\\{\\} 中内容无效"
 
-#: support/dfa.c:1495
+#: support/dfa.c:1416
 msgid "regular expression too big"
 msgstr "正则表达式过大"
 
-#: support/dfa.c:1910
+#: support/dfa.c:1887
 msgid "unbalanced ("
 msgstr "( 不配对"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2004
 msgid "no syntax specified"
 msgstr "未指定语法"
 
-#: support/dfa.c:2039
+#: support/dfa.c:2015
 msgid "unbalanced )"
 msgstr ") 不配对"
 
