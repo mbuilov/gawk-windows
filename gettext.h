@@ -1,25 +1,26 @@
 /* Convenience header for conditional use of GNU <libintl.h>.
-   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2016 Free Software
+   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2018 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Lesser General Public License as published by
-   the Free Software Foundation; either version 2.1 of the License, or
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU Lesser General Public License for more details.
+   GNU General Public License for more details.
 
-   You should have received a copy of the GNU Lesser General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBGETTEXT_H
 #define _LIBGETTEXT_H 1
 
-/* NLS can be disabled through the configure --disable-nls option.  */
-#if ENABLE_NLS
+/* NLS can be disabled through the configure --disable-nls option
+   or through "#define ENABLE NLS 0" before including this file.  */
+#if defined ENABLE_NLS && ENABLE_NLS
 
 /* ADR: Need this so gcc -g without -O works. */
 #ifdef HAVE_LOCALE_H
@@ -71,9 +72,8 @@
    for invalid uses of the value returned from these functions.
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
-/* ADR: BOGUS. Remove const. 19 Feb 2002 */
 # undef gettext
-# define gettext(Msgid) ((char *) (Msgid))
+# define gettext(Msgid) ((const char *) (Msgid))
 # undef dgettext
 # define dgettext(Domainname, Msgid) ((void) (Domainname), gettext (Msgid))
 # undef dcgettext
@@ -193,7 +193,8 @@ npgettext_aux (const char *domain,
 #include <string.h>
 
 #if (((__GNUC__ >= 3 || __GNUG__ >= 2) && !defined __STRICT_ANSI__) \
-     /* || __STDC_VERSION__ >= 199901L */ )
+     /* || (__STDC_VERSION__ == 199901L && !defined __HP_cc)
+        || (__STDC_VERSION__ >= 201112L && !defined __STDC_NO_VLA__) */ )
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 1
 #else
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 0
