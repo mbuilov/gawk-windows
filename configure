@@ -11057,10 +11057,16 @@ ac_config_headers="$ac_config_headers config.h:configh.in"
 
 
 
+if test "x$EXEEXT" = x.exe; then :
+  GAWKLIBEXT=dll
+else
+
 case $acl_shlibext in
 dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
 *) GAWKLIBEXT=$acl_shlibext ;;
 esac
+
+fi
 
 
 ac_config_files="$ac_config_files Makefile support/Makefile awklib/Makefile doc/Makefile extras/Makefile po/Makefile.in test/Makefile"

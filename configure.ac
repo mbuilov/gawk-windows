@@ -458,10 +458,12 @@ AH_BOTTOM([#include "custom.h"])
 dnl Crude but small hack to make plug-ins work on Mac OS X
 dnl We should really use the libtool value for shrext_cmds, but that
 dnl is not available here, since we do not use libtool at the top level.
+AS_VAR_IF([EXEEXT],[.exe],[GAWKLIBEXT=dll],[
 case $acl_shlibext in
 dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
 *) GAWKLIBEXT=$acl_shlibext ;;
 esac
+])
 AC_SUBST(GAWKLIBEXT)
 
 AC_CONFIG_FILES(Makefile
