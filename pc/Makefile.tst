@@ -195,9 +195,9 @@ GAWK_EXT_TESTS = \
 	dbugeval dbugeval2 dbugeval3 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dfacheck1 dumpvars \
 	errno exit \
-	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
-	funlen functab1 functab2 functab3 fwtest fwtest2 fwtest3 fwtest4 \
-	fwtest5 fwtest6 fwtest7 fwtest8 \
+	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpat7 fpatnull \
+	fsfwfs funlen functab1 functab2 functab3 \
+	fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 fwtest7 fwtest8 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
@@ -217,6 +217,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
+	typedregex5 typedregex6 \
 	typeof1 typeof2 typeof3 typeof4 typeof5 \
 	watchpoint1
 
@@ -256,7 +257,7 @@ NEED_LINT_OLD = lintold
 # List of tests that must be run with -M
 NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
 	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
-	mpfrstrtonum mpgforcenum mpfruplus
+	mpfrstrtonum mpgforcenum mpfruplus mpfranswer42
 
 
 # List of tests that need --non-decimal-data
@@ -768,7 +769,7 @@ mixed1::
 mbprintf5::
 	@echo $@ $(ZOS_FAIL)
 	@-case `uname` in \
-	CYGWIN* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
+	CYGWIN* | MSYS* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
 	[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
@@ -864,6 +865,11 @@ mpfrsort:
 mpfruplus:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/uplus.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfranswer42:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/mpfranswer42.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrmemok1:
@@ -1058,7 +1064,7 @@ fts:
 	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
 	echo If it does, try rerunning on an xfs filesystem. ;; \
-	CYGWIN*) \
+	CYGWIN* | MSYS*) \
 	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
 	echo If it does, try rerunning on an ntfs filesystem. ;; \
 	esac
@@ -2643,6 +2649,11 @@ fpat6:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+fpat7:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 fpatnull:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -3201,6 +3212,16 @@ typedregex2:
 typedregex3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex5:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex6:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 typeof1:
