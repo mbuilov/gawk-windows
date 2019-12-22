@@ -1,0 +1,57 @@
+IMPLEMENTATION NOTES
+====================
+
+Multibyte Strings
+-----------------
+
+Gawk stores strings as (char *, size_t) pair, not as C strings, in order
+to follow the GNU "no arbitrary limits" design principle. There are also
+some flag bits associated with awk values, such as whether the type
+is string or number, and if the numeric and/or string values are current.
+
+Wide character support consists of an additional (wchar_t *, size_t)
+pair and a flag bit indicating that the wide character string value
+is current.
+
+The primary representation is the char* string, which holds the
+multibyte encoding of the string (UTF-8 or whatever is used in the
+current locale). This is used for input and output.
+
+The wide character representation is created and managed on an
+as-needed basis.  That is, when we need to know about characters
+and not bytes: length(), substr(), index(), match() and printf("%c")
+format.  (Did I forget any?)
+
+Fortunately, the GNU regex routines know how to match directly
+on the multibyte representation, although I've often wished
+for a version of those APIs that would take the wide character
+strings directly.
+
+Getting info out of match() is a bit of a pain. The regex routines
+return match start and length in terms of byte offsets.  Gawk builds
+a secondary index that turns these offsets into offsets within
+the multibyte string, so that proper values can be returned.
+
+For printf %c, the wide character representation has to be
+turned back into multibyte encoded characters and then printed.
+
+Assignment of a string value clears the wide-string-current bit
+and the memory for the wchar_t* string is released.
+
+GOTCHAS
+*******
+
+There is a significant GOTCHA with GLIBC.  The "constant" MB_CUR_MAX
+indicates how many bytes are the maximum needed to multibyte-encode
+a character in the current locale.  And it's easy to use it in code.
+
+The problem is that this constant is actually a macro defined to call
+a function to return the correct value.  This makes sense, since with
+setlocale() you can change the current locale of the running program.
+
+But, for programs like gawk that don't change their locale mid-run,
+using MB_CUR_MAX inside a heavily-called loop is a disaster (e.g., the
+loop that parses input data to find the end of the record).
+
+Thus gawk has it's own `gawk_mb_cur_max' variable that it initializes upon
+start-up, and doesn't touch afterwards. That variable is used everywhere.
