@@ -286,6 +286,12 @@ Some comments on the layout for TeX.
 @finalout
 @end iftex
 
+@c Enabled '-quotes in PDF files so that cut/paste works in
+@c more places.
+
+@codequoteundirected on
+@codequotebacktick on
+
 @copying
 @docbook
 <para>
@@ -40345,6 +40351,18 @@ if (contents == "" && ERRNO != "") @{
 
 @node Esempio di estensione Time
 @subsection Funzioni dell'estensione time
+
+@quotation ATTENZIONE
+A partire da @command{gawk} @value{PVERSION} 5.1.0, quest'estensione @`e
+da considerarsi obsoleta.  @`E sostituita dall'estensione
+@code{timex} in @code{gawkextlib} (@pxref{gawkextlib}).
+
+Nella @value{PVERSION} 5.1, non viene emesso alcun messaggio di avviso
+se si usa quest'estensione.
+A partire dalla prossima versione principale, verr@`a emesso un messaggio
+di avviso.  Nella versione successiva a quella, quest'estensione sar@`a
+rimossa dalla distribuzione.
+@end quotation
 
 L'estensione @code{time} aggiunge due funzioni, di nome
 @code{gettimeofday()} e @code{sleep()}, come segue:
