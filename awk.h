@@ -63,7 +63,7 @@
 #endif /* LOCALEDIR */
 #endif
 
-#if !defined(__SUNPRO_C)
+#if !defined(__SUNPRO_C) && !defined(_MSC_VER)
 #if !defined(__STDC__) || __STDC__ < 1
 #error "gawk no longer supports non-C89 environments (no __STDC__ or __STDC__ < 1)"
 #endif
@@ -140,7 +140,7 @@ typedef int off_t;
 #include <strings.h>
 #endif	/* HAVE_STRINGS_H */
 
-#if HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif	/* HAVE_UNISTD_H */
 
@@ -157,11 +157,11 @@ typedef int off_t;
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
 
-#if HAVE_MEMCPY_ULONG
+#ifdef HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
 #define memcpy memcpy_ulong
 #endif
-#if HAVE_MEMSET_ULONG
+#ifdef HAVE_MEMSET_ULONG
 extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define memset memset_ulong
 #endif
@@ -170,15 +170,15 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define fwrite	fwrite_unlocked
 #endif /* HAVE_FWRITE_UNLOCKED */
 
-#if defined(__DJGPP__) || defined(__EMX__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
 #include "nonposix.h"
-#endif /* defined(__DJGPP__) || defined(__EMX__) || defined(__MINGW32__) */
+#endif /* defined(__DJGPP__) || defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER) */
 
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
-/* same thing for warning */
-#define warning (*(set_loc(__FILE__, __LINE__),r_warning))
+/* same thing for awkwarn */
+#define awkwarn (*(set_loc(__FILE__, __LINE__),r_warning))
 
 #ifdef HAVE_MPFR
 #include <gmp.h>
@@ -220,7 +220,7 @@ extern double gawk_strtod();
 #define strtod gawk_strtod
 #endif
 
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#if !defined(__GNUC__) ||  __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(arg)
 #endif
 
@@ -237,6 +237,24 @@ extern double gawk_strtod();
 #define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
 #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #endif /* ATTRIBUTE_PRINTF */
+
+#ifdef _MSC_VER
+#define PRAGMA_WARNING_PUSH __pragma(warning(push))
+#define PRAGMA_WARNING_POP  __pragma(warning(pop))
+/* 4774 - 'sprintf' : format string expected in argument 2 is not a string literal */
+#define PRAGMA_WARNING_DISABLE_FORMAT_WARNING __pragma(warning(disable:4774))
+/* 4127 - conditional expression is constant */
+#define PRAGMA_WARNING_DISABLE_COND_IS_CONST __pragma(warning(disable:4127))
+#else /* !_MSC_VER */
+#define PRAGMA_WARNING_PUSH
+#define PRAGMA_WARNING_POP
+#define PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+#define PRAGMA_WARNING_DISABLE_COND_IS_CONST
+#endif /* !_MSC_VER */
+
+#ifndef _MSC_VER
+#define COMPILE_UNREACHABLE_CODE
+#endif
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 
@@ -1014,7 +1032,7 @@ typedef struct srcfile {
 	int fd;
 	int maxlen;	/* size of the longest line */
 
-	void (*fini_func)();	/* dynamic extension of type SRC_EXTLIB */
+	void (*fini_func)(void);	/* dynamic extension of type SRC_EXTLIB */
 
 	char *lexptr;
 	char *lexend;
@@ -1337,7 +1355,7 @@ extern void r_freeblock(void *, int id);
 
 #else /* MEMDEBUG */
 
-#define getblock(p, id, ty)  (void) ((p = (ty) nextfree[id].freep) ? \
+#define getblock(p, id, ty)  (void) (((p = (ty) nextfree[id].freep), p) ? \
 			(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
 			: (p = (ty) more_blocks(id)))
 #define freeblock(p, id)	 (void) (((struct block_item *) p)->freep = nextfree[id].freep, \
@@ -1590,6 +1608,12 @@ extern void os_restore_mode(int fd);
 extern size_t optimal_bufsize(int fd, struct stat *sbuf);
 extern int ispath(const char *file);
 extern int isdirpunct(int c);
+#ifdef _MSC_VER
+extern char **convert_wargv(int argc, wchar_t **wargv);
+extern void gawk_free_argv(void);
+#else
+#define gawk_free_argv() ((void)0)
+#endif
 
 /* io.c */
 extern void init_sockets(void);
@@ -1629,7 +1653,7 @@ extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
 extern int is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
-extern void update_global_values();
+extern void update_global_values(void);
 extern long getenv_long(const char *name);
 extern void after_beginfile(IOBUF **curfile);
 extern void set_current_namespace(const char *new_namespace);
@@ -1668,15 +1692,15 @@ extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);
-extern void final_exit(int status) ATTRIBUTE_NORETURN;
-extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
-extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-extern void r_warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+ATTRIBUTE_NORETURN extern void final_exit(int status);
+ATTRIBUTE_PRINTF(3, 0) extern void err(bool isfatal, const char *s, const char *emsg, va_list argp);
+ATTRIBUTE_PRINTF_1 extern void msg (const char *mesg, ...);
+ATTRIBUTE_PRINTF_1 extern void error (const char *mesg, ...);
+ATTRIBUTE_PRINTF_1 extern void r_warning (const char *mesg, ...);
 extern void set_loc (const char *file, int line);
-extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
-extern void (*lintfunc)(const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+ATTRIBUTE_PRINTF_1 extern void r_fatal (const char *mesg, ...);
+#if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))
+ATTRIBUTE_PRINTF_1 extern void (*lintfunc)(const char *mesg, ...);
 #else
 extern void (*lintfunc)(const char *mesg, ...);
 #endif
@@ -1709,7 +1733,7 @@ extern void r_free_wstr(NODE *n);
 #define free_wstr(n)	do { if ((n)->flags & WSTRCUR) r_free_wstr(n); } while(0)
 extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
-extern void init_btowc_cache();
+extern void init_btowc_cache(void);
 #define is_valid_character(b)	(btowc_cache[(b)&0xFF] != WEOF)
 extern bool out_of_range(NODE *n);
 extern char *format_nan_inf(NODE *n, char format);
@@ -1726,8 +1750,8 @@ extern int get_numbase(const char *str, size_t len, bool use_locale);
 extern bool using_utf8(void);
 
 /* symbol.c */
-extern void load_symbols();
-extern void init_symbol_table();
+extern void load_symbols(void);
+extern void init_symbol_table(void);
 extern NODE *symbol_table;
 extern NODE *func_table;
 extern NODE *install_symbol(const char *name, NODETYPE type);
@@ -1745,10 +1769,10 @@ extern INSTRUCTION *bcalloc(OPCODE op, int size, int srcline);
 extern void bcfree(INSTRUCTION *);
 extern AWK_CONTEXT *new_context(void);
 extern void push_context(AWK_CONTEXT *ctxt);
-extern void pop_context();
-extern int in_main_context();
+extern void pop_context(void);
+extern int in_main_context(void);
 extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
-extern NODE **variable_list();
+extern NODE **variable_list(void);
 extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 extern bool check_param_names(void);
@@ -1818,7 +1842,7 @@ POP_ARRAY(bool check_for_untyped)
 /* POP_PARAM --- get the top parameter, array or scalar */
 
 static inline NODE *
-POP_PARAM()
+POP_PARAM(void)
 {
 	NODE *t = POP();
 
@@ -1828,7 +1852,7 @@ POP_PARAM()
 /* POP_SCALAR --- pop the scalar at the top of the stack */
 
 static inline NODE *
-POP_SCALAR()
+POP_SCALAR(void)
 {
 	NODE *t = POP();
 
@@ -1841,7 +1865,7 @@ POP_SCALAR()
 /* TOP_SCALAR --- get the scalar at the top of the stack */
 
 static inline NODE *
-TOP_SCALAR()
+TOP_SCALAR(void)
 {
 	NODE *t = TOP();
 
@@ -2084,10 +2108,10 @@ str_terminate_f(NODE *n, char *savep)
 #else
 #define ignore_sigpipe()
 #define set_sigpipe_to_default()
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 /* 0xC0000008 is EXCEPTION_INVALID_HANDLE, somewhat appropriate for EPIPE */
 #define die_via_sigpipe() exit(0xC0000008)
-#else  /* !__MINGW32__ */
+#else  /* !__MINGW32__ && !_MSC_VER */
 #define die_via_sigpipe() exit(EXIT_FATAL)
-#endif	/* !__MINGW32__ */
+#endif	/* !__MINGW32__ && !_MSC_VER */
 #endif
