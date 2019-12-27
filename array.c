@@ -76,7 +76,7 @@ register_array_func(const array_funcs_t *afunc)
 /* array_init --- register all builtin array types */
 
 void
-array_init()
+array_init(void)
 {
 	(void) register_array_func(& str_array_func);	/* the default */
 	if (! do_mpfr) {
@@ -89,7 +89,7 @@ array_init()
 /* make_array --- create an array node */
 
 NODE *
-make_array()
+make_array(void)
 {
 	NODE *array;
 	getnode(array);
@@ -151,16 +151,18 @@ null_lookup(NODE *symbol, NODE *subs)
 /* null_afunc --- default function for array interface */
 
 NODE **
-null_afunc(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
+null_afunc(NODE *symbol, NODE *subs)
 {
+	(void)symbol, (void)subs;
 	return NULL;
 }
 
 /* null_dump --- dump function for an empty array */
 
 static NODE **
-null_dump(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+null_dump(NODE *symbol, NODE *subs)
 {
+	(void)subs;
 	fprintf(output_fp, "array `%s' is empty\n", array_vname(symbol));
 	return NULL;
 }
@@ -297,6 +299,8 @@ array_vname(const NODE *symbol)
 	 */
 
 	s += sprintf(s, "%s (", symbol->vname);
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
 	for (;;) {
 		symbol = symbol->prev_array;
 		if (symbol->type != Node_array_ref)
@@ -305,6 +309,7 @@ array_vname(const NODE *symbol)
 		s += sprintf(s, ", ");
 	}
 	s += sprintf(s, from, aname);
+PRAGMA_WARNING_POP
 	strcpy(s, ")");
 
 	return message;
@@ -363,7 +368,7 @@ force_array(NODE *symbol, bool canfatal)
 /* set_SUBSEP --- update SUBSEP related variables when SUBSEP assigned to */
 
 void
-set_SUBSEP()
+set_SUBSEP(void)
 {
 	SUBSEP_node->var_value = force_string(SUBSEP_node->var_value);
 	SUBSEP = SUBSEP_node->var_value->stptr;
@@ -1270,7 +1275,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	NODE **list;
 	NODE akind;
 	unsigned long num_elems, j;
-	int elem_size, qi;
+	unsigned elem_size, qi;
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
 	extern int currule;
