@@ -30,6 +30,10 @@
 
 #include "awk.h"
 
+#ifdef _MSC_VER
+#include <io.h> /* for close */
+#endif
+
 #if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
 #define signed /**/
 #endif
@@ -645,7 +649,7 @@ statement
 	  {
 		INSTRUCTION *dflt, *curr = NULL, *cexp, *cstmt;
 		INSTRUCTION *ip, *nextc, *tbreak;
-		const char **case_values = NULL;
+		char **case_values = NULL;
 		int maxcount = 128;
 		int case_count = 0;
 		int i;
@@ -680,10 +684,10 @@ statement
 					}
 
 					if (case_values == NULL)
-						emalloc(case_values, const char **, sizeof(char *) * maxcount, "statement");
+						emalloc(case_values, char **, sizeof(char *) * maxcount, "statement");
 					else if (case_count >= maxcount) {
 						maxcount += 128;
-						erealloc(case_values, const char **, sizeof(char*) * maxcount, "statement");
+						erealloc(case_values, char **, sizeof(char*) * maxcount, "statement");
 					}
 					case_values[case_count++] = caseval;
 				} else {
@@ -2433,7 +2437,7 @@ add_sign_to_num(NODE *n, char sign)
 /* print_included_from --- print `Included from ..' file names and locations */
 
 static void
-print_included_from()
+print_included_from(void)
 {
 	int saveline, line;
 	SRCFILE *s;
@@ -2530,7 +2534,7 @@ yyerror(const char *m, ...)
 	char *bp, *cp;
 	char *scan;
 	char *buf;
-	int count;
+	size_t count;
 	static char end_of_file_line[] = "(END OF FILE)";
 	static char syntax_error[] = "syntax error";
 	static size_t syn_err_len = sizeof(syntax_error) - 1;
@@ -2601,7 +2605,7 @@ yyerror(const char *m, ...)
 /* mk_program --- create a single list of instructions */
 
 static INSTRUCTION *
-mk_program()
+mk_program(void)
 {
 	INSTRUCTION *cp, *tmp;
 
@@ -3002,7 +3006,7 @@ load_library(INSTRUCTION *file, void **srcfile_p)
 /* next_sourcefile --- read program from the next source in srcfiles */
 
 static void
-next_sourcefile()
+next_sourcefile(void)
 {
 	static int (*closefunc)(int fd) = NULL;
 
@@ -3068,12 +3072,12 @@ next_sourcefile()
 /* get_src_buf --- read the next buffer of source program */
 
 static char *
-get_src_buf()
+get_src_buf(void)
 {
-	int n;
+	ssize_t n;
 	char *scan;
 	bool newfile;
-	int savelen;
+	size_t savelen;
 	struct stat sbuf;
 
 	/*
@@ -3081,7 +3085,7 @@ get_src_buf()
 	 * avoids problems with some ancient systems where
 	 * the types of arguments to read() aren't up to date.
 	 */
-	static ssize_t (*readfunc)() = 0;
+	static ssize_t (*readfunc)(void) = 0;
 
 	if (readfunc == NULL) {
 		char *cp = getenv("AWKREADFUNC");
@@ -3092,9 +3096,9 @@ get_src_buf()
 			 * cast is to remove warnings on systems with
 			 * different return types for read.
 			 */
-			readfunc = ( ssize_t(*)() ) read;
+			readfunc = ( ssize_t(*)(void) ) read;
 		else
-			readfunc = read_one_line;
+			readfunc = ( ssize_t(*)(void) ) read_one_line;
 	}
 
 	newfile = false;
@@ -3127,7 +3131,7 @@ get_src_buf()
 			 * ends with a newline and that the entire current
 			 * line is available for error messages.
 			 */
-			int offset;
+			size_t offset;
 			char *buf;
 
 			offset = lexptr - lexeme;
@@ -3153,7 +3157,7 @@ get_src_buf()
 
 	if (sourcefile->fd <= INVALID_HANDLE) {
 		int fd;
-		int l;
+		size_t l;
 
 		source = sourcefile->src;
 		if (source == NULL)
@@ -3195,17 +3199,18 @@ get_src_buf()
 		/*
 		 * Here, we retain the current source line in the beginning of the buffer.
 		 */
-		int offset;
+		size_t offset;
 		for (scan = lexeme; scan > lexptr_begin; scan--)
 			if (*scan == '\n') {
 				scan++;
 				break;
 			}
 
-		savelen = lexptr - scan;
 		offset = lexptr - lexeme;
 
-		if (savelen > 0) {
+		if (lexptr > scan) {
+			savelen = lexptr - scan;
+
 			/*
 			 * Need to make sure we have room left for reading new text;
 			 * grow the buffer (by doubling, an arbitrary choice), if the retained line
@@ -3231,7 +3236,7 @@ get_src_buf()
 		}
 	}
 
-	n = (*readfunc)(sourcefile->fd, lexptr, sourcefile->bufsize - savelen);
+	n = (*(ssize_t(*)(int, void *, size_t))readfunc)(sourcefile->fd, lexptr, sourcefile->bufsize - savelen);
 	if (n == -1) {
 		error(_("can't read sourcefile `%s' (%s)"),
 				source, strerror(errno));
@@ -3259,10 +3264,10 @@ get_src_buf()
 /* tokexpand --- grow the token buffer */
 
 static char *
-tokexpand()
+tokexpand(void)
 {
 	static int toksize;
-	int tokoffset;
+	size_t tokoffset;
 
 	if (tokstart != NULL) {
 		tokoffset = tok - tokstart;
@@ -3341,7 +3346,7 @@ again:
 		if (cur_char_ring[cur_ring_idx] == 0) {
 			/* No, we need to check the next character on the buffer.  */
 			int idx, work_ring_idx = cur_ring_idx;
-			mbstate_t tmp_state;
+			mbstate_t tmp_state = {0}; /* Pacify compiler.  */
 			size_t mbclen;
 
 			for (idx = 0; lexptr + idx < lexend; idx++) {
@@ -3356,10 +3361,10 @@ again:
 					break;
 				} else if (mbclen == (size_t)-2) {
 					/* It is not a complete multibyte character.  */
-					cur_char_ring[work_ring_idx] = idx + 1;
+					cur_char_ring[work_ring_idx] = (char) (idx + 1);
 				} else {
 					/* mbclen > 1 */
-					cur_char_ring[work_ring_idx] = mbclen;
+					cur_char_ring[work_ring_idx] = (char) mbclen;
 					break;
 				}
 				work_ring_idx = (work_ring_idx == RING_BUFFER_SIZE - 1)?
@@ -3433,22 +3438,22 @@ get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 		while ((c = nextc(false)) != '\n' && c != END_FILE) {
 			/* ignore \r characters */
 			if (c != '\r')
-				tokadd(c);
+				tokadd((char)c);
 		}
 		if (flag == EOL_COMMENT) {
 			/* comment at end of line.  */
 			if (c == '\n')
-				tokadd(c);
+				tokadd((char)c);
 			break;
 		}
 		if (c == '\n') {
-			tokadd(c);
+			tokadd((char)c);
 			sourceline++;
 			do {
 				c = nextc(false);
 				if (c == '\n') {
 					sourceline++;
-					tokadd(c);
+					tokadd((char)c);
 				}
 			} while (isspace(c) && c != END_FILE);
 			if (c == END_FILE)
@@ -3458,7 +3463,7 @@ get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 				sourceline--;
 				break;
 			} else
-				tokadd(c);
+				tokadd((char)c);
 		} else
 			break;
 	}
@@ -3524,7 +3529,7 @@ allow_newline(INSTRUCTION **new_comment)
  */
 
 static int
-newline_eof()
+newline_eof(void)
 {
 	/* NB: a newline at end does not start a source line. */
 	if (lasttok != NEWLINE) {
@@ -3602,8 +3607,8 @@ yylex(void)
 collect_regexp:
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
-		int b_index = -1;
-		int cur_index = 0;
+		size_t b_index = (size_t)-1;
+		size_t cur_index = 0;
 
 		/*
 		 * Here is what's ok with brackets:
@@ -3645,7 +3650,7 @@ collect_regexp:
 				else {
 					in_brack--;
 					if (in_brack == 0)
-						b_index = -1;
+						b_index = (size_t)-1;
 				}
 				break;
 			case '\\':
@@ -3661,7 +3666,7 @@ collect_regexp:
 					continue;
 				} else {
 					tokadd('\\');
-					tokadd(c);
+					tokadd((char)c);
 					continue;
 				}
 				break;
@@ -3702,7 +3707,7 @@ end_regexp:
 				yyerror(_("unterminated regexp at end of file"));
 				goto end_regexp;	/* kludge */
 			}
-			tokadd(c);
+			tokadd((char)c);
 		}
 	}
 retry:
@@ -4062,7 +4067,7 @@ retry:
 				yyerror(_("unterminated string"));
 				return lasttok = LEX_EOF;
 			}
-			tokadd(c);
+			tokadd((char)c);
 		}
 		yylval = GET_INSTRUCTION(Op_token);
 		if (want_source) {
@@ -4116,7 +4121,7 @@ retry:
 		for (;;) {
 			bool gotnumber = false;
 
-			tokadd(c);
+			tokadd((char)c);
 			switch (c) {
 			case 'x':
 			case 'X':
@@ -4155,8 +4160,8 @@ retry:
 					int c2 = nextc(true);
 
 					if (isdigit(c2)) {
-						tokadd(c);
-						tokadd(c2);
+						tokadd((char)c);
+						tokadd((char)c2);
 					} else {
 						pushback();	/* non-digit after + or - */
 						pushback();	/* + or - */
@@ -4317,15 +4322,15 @@ retry:
 	/* it's some type of name-type-thing.  Find its length. */
 	tok = tokstart;
 	while (c != END_FILE && is_identchar(c)) {
-		tokadd(c);
+		tokadd((char)c);
 		c = nextc(true);
 
 		if (! do_traditional && c == ':') {
 			int peek = nextc(true);
 
 			if (peek == ':') {	// saw identifier::
-				tokadd(c);
-				tokadd(c);
+				tokadd((char)c);
+				tokadd((char)c);
 				c = nextc(true);
 			} else
 				pushback();
@@ -4778,7 +4783,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		NODE *str = subn->nexti->lasti->memory;
 
 		if ((str->flags & INTLSTR) != 0)
-			warning(_("use of dcgettext(_\"...\") is incorrect: remove leading underscore"));
+			awkwarn(_("use of dcgettext(_\"...\") is incorrect: remove leading underscore"));
 			/* don't dump it, the lexer already did */
 		else
 			dumpintlstr(str->stptr, str->stlen);
@@ -4793,7 +4798,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		NODE *str2 = subn->nexti->lasti->nexti->lasti->memory;
 
 		if (((str1->flags | str2->flags) & INTLSTR) != 0)
-			warning(_("use of dcngettext(_\"...\") is incorrect: remove leading underscore"));
+			awkwarn(_("use of dcngettext(_\"...\") is incorrect: remove leading underscore"));
 		else
 			dumpintlstr2(str1->stptr, str1->stlen, str2->stptr, str2->stlen);
 	} else if (r->builtin == do_asort || r->builtin == do_asorti) {
@@ -4859,12 +4864,12 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	source = pc->source_file;
 	sourceline = pc->source_line;
 	/*
-	 * Use warning() and not lintwarn() so that can warn
+	 * Use awkwarn() and not lintwarn() so that can warn
 	 * about all shadowed parameters.
 	 */
 	for (i = 0; i < pcount; i++) {
 		if (lookup(fp[i].param) != NULL) {
-			warning(
+			awkwarn(
 	_("function `%s': parameter `%s' shadows global variable"),
 					fname, fp[i].param);
 			ret = true;
@@ -4914,8 +4919,8 @@ dump_vars(const char *fname)
 	else if (strcmp(fname, "-") == 0)
 		fp = stdout;
 	else if ((fp = fopen(fname, "w")) == NULL) {
-		warning(_("could not open `%s' for writing (%s)"), fname, strerror(errno));
-		warning(_("sending variable list to standard error"));
+		awkwarn(_("could not open `%s' for writing (%s)"), fname, strerror(errno));
+		awkwarn(_("sending variable list to standard error"));
 		fp = stderr;
 	}
 
@@ -4923,13 +4928,13 @@ dump_vars(const char *fname)
 	print_vars(vars, fprintf, fp);
 	efree(vars);
 	if (fp != stdout && fp != stderr && fclose(fp) != 0)
-		warning(_("%s: close failed (%s)"), fname, strerror(errno));
+		awkwarn(_("%s: close failed (%s)"), fname, strerror(errno));
 }
 
 /* dump_funcs --- print all functions */
 
 void
-dump_funcs()
+dump_funcs(void)
 {
 	NODE **funcs;
 	funcs = function_list(true);
@@ -4941,7 +4946,7 @@ dump_funcs()
 /* shadow_funcs --- check all functions for parameters that shadow globals */
 
 void
-shadow_funcs()
+shadow_funcs(void)
 {
 	static int calls = 0;
 	bool shadow = false;
@@ -5131,7 +5136,7 @@ static void
 func_use(const char *name, enum defref how)
 {
 	struct fdesc *fp;
-	int len;
+	size_t len;
 	int ind;
 
 	len = strlen(name);
@@ -5170,7 +5175,7 @@ track_ext_func(const char *name)
 /* check_funcs --- verify functions that are called but not defined */
 
 static void
-check_funcs()
+check_funcs(void)
 {
 	struct fdesc *fp, *next;
 	int i;
@@ -5366,8 +5371,9 @@ make_assignable(INSTRUCTION *ip)
 /* stopme --- for debugging */
 
 NODE *
-stopme(int nargs ATTRIBUTE_UNUSED)
+stopme(int nargs)
 {
+	(void)nargs;
 	return make_number(0.0);
 }
 
@@ -5728,14 +5734,14 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 				(void) list_prepend(action, instruction(Op_exec_count));
 			(rp + 1)->firsti = action->nexti;
 			(rp + 1)->lasti = tp;
-			(rp + 2)->first_line = firstline;
+			(rp + 2)->first_line = (short) firstline;
 			(rp + 2)->last_line = lastline;
-			rp->source_line = firstline;
+			rp->source_line = (short) firstline;
 			ip = list_prepend(list_append(action, tp), rp);
 		} else {
 			(void) list_append(pattern, instruction(Op_jmp_false));
 			pattern->lasti->target_jmp = tp;
-			(rp + 2)->first_line = find_line(pattern, FIRST_LINE);
+			(rp + 2)->first_line = (short) find_line(pattern, FIRST_LINE);
 			rp->source_line = (rp + 2)->first_line;
 			if (action == NULL) {
 				(rp + 2)->last_line = find_line(pattern, LAST_LINE);
@@ -6402,6 +6408,8 @@ read_one_line(int fd, void *buffer, size_t count)
 {
 	char buf[BUFSIZ];
 
+	(void)count;
+
 	/* Minor potential memory leak here. Too bad. */
 	if (fp == NULL) {
 		fp = fdopen(fd, "r");
@@ -6670,6 +6678,8 @@ make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbr
 		ip = list_prepend(ip, lbrace);
 	}
 
+	(void)rbrace;
+
 	return ip;
 }
 
@@ -6735,15 +6745,15 @@ check_qualified_special(char *token)
 	 * 4. Else return -1 (gawk extensions allowed, we check standard awk in step 2).
 	 */
 
-	const struct token *tok;
 	int i;
 	if (cp == NULL) {	// namespace not awk, but a simple identifier
+		const struct token *t;
 		i = check_special(token);
 		if (i < 0)
 			return i;
 
-		tok = & tokentab[i];
-		if ((tok->flags & GAWKX) != 0 && tok->class == LEX_BUILTIN)
+		t = & tokentab[i];
+		if ((t->flags & GAWKX) != 0 && t->class == LEX_BUILTIN)
 			return -1;
 		else
 			return i;
