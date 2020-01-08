@@ -288,6 +288,11 @@ uninitialized_scalar:
 				}
 				if (r->type == Node_var)
 					r = r->var_value;
+				else if (r->type == Node_var_new) {
+					// variable may exist but have never been set.
+					r->var_value = dupnode(Nnull_string);
+					r = r->var_value;
+				}
 			}
 
 			if (r->type == Node_val)

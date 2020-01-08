@@ -14,6 +14,12 @@
 	* interpret.h (Op_assign_concat): Handle newly created node
 	better.
 
+	Unrelated:
+
+	* interpret.h (Op_subscript): When retrieving from SYMTAB, check
+	for Node_var_new; variables can exist but have not been assigned
+	a value.
+
 2019-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess: Updated from GNULIB.
