@@ -5718,6 +5718,9 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		unref(s);
 	}
 
+	free(f->vname);
+	freenode(f);
+
 	free_srcfile(the_source);
 
 	return false;

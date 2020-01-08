@@ -741,7 +741,10 @@ mod:
 
 			if (t1 != *lhs) {
 				unref(*lhs);
-				*lhs = dupnode(t1);
+				if (t1->valref == 1)
+					*lhs = t1;
+				else
+					*lhs = dupnode(t1);
 			}
 
 			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {

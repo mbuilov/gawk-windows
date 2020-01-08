@@ -94,16 +94,13 @@ init_fields()
 {
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
 
-	getnode(fields_arr[0]);
-	*fields_arr[0] = *Nnull_string;
+	fields_arr[0] = make_string("", 0);
 	fields_arr[0]->flags |= NULL_FIELD;
 
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
 
-	getnode(Null_field);
-	*Null_field = *Nnull_string;
-	Null_field->valref = 1;
+	Null_field = make_string("", 0);
 	Null_field->flags = (STRCUR|STRING|NULL_FIELD); /* do not set MALLOC */
 
 	field0_valid = true;

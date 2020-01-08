@@ -1,3 +1,19 @@
+2020-01-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a number of subtle memory leaks. Thanks to the
+	combination of MEMDEBUG and valgrind for finding them.
+
+	* builtin.c (do_print): Unref tmp if force_string_ofmt
+	returned something different.
+	(call_sub, call_match, call_split_func): Free any
+	created regexp.
+	* debug.c (do_eval): Free the node holding the @eval function
+	when done with it.
+	* field.c (init_fields): Create fields_arr[0] and Nnull_field
+	in a rational fashion.
+	* interpret.h (Op_assign_concat): Handle newly created node
+	better.
+
 2019-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess: Updated from GNULIB.

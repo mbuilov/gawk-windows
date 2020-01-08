@@ -198,10 +198,10 @@ BEGIN {
 # regexp functions
 
 	fun = "match"
-	b1 = match("o+", "fooob")
+	b1 = match("fooob", "o+")
 	rstart = RSTART
 	rlength = RLENGTH
-	i1 = @fun("o+", "fooob")
+	i1 = @fun("fooob", "o+")
 	print_result("regexp", fun, b1, i1)
 	if (rstart != RSTART) {
 		printf("match: failure: biRSTART (%d) != iRSTART (%d)\n",
