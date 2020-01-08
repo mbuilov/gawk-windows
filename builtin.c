@@ -4159,6 +4159,7 @@ do_typeof(int nargs)
 		}
 		break;
 	case Node_var_new:
+	case Node_array_ref:
 		res = "untyped";
 		deref = false;
 		break;
