@@ -27,13 +27,15 @@
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
-extern char **command_completion(const char *text, int start, int end);
+extern char **command_completion(const char *text, size_t start, size_t end);
 extern void initialize_pager(FILE *fp); /* debug.c */
 extern NODE *get_function(void);
 #else
-#define initialize_pager(x)		/* nothing */
-#define add_history(x)		/* nothing */
+#define initialize_pager(x)	((void)0)	/* nothing */
+#define add_history(x)	((void)0)	/* nothing */
 #endif
+#define initialize_pager(x)	((void)0)	/* nothing */
+#define add_history(x)	((void)0)	/* nothing */
 
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
@@ -141,16 +143,16 @@ typedef struct cmd_argument {
 #define a_string  value.sval	/* type = D_string, D_array, D_subscript or D_variable */
 #define a_node    value.nodeval /* type = D_node, D_field or D_func */
 
-	int a_count;		/* subscript count for D_subscript and D_array */
+	unsigned a_count;		/* subscript count for D_subscript and D_array */
 } CMDARG;
 
-typedef int (*Func_cmd)(CMDARG *, int);
+typedef int (*Func_cmd)(CMDARG *, enum argtype);
 
 struct cmdtoken {
 	const char *name;
 	char *abbrvn;	/* abbreviation */
 	enum argtype type;
-	int class;
+	int cls;
 	Func_cmd cf_ptr;
 	const char *help_txt;
 };
@@ -171,45 +173,45 @@ extern char *read_commands_string(const char *prompt);
 extern int in_cmd_src(const char *);
 extern int get_eof_status(void);
 extern void push_cmd_src(int fd, bool istty, char * (*readfunc)(const char *),
-		int (*closefunc)(int), int cmd, int eofstatus);
+		int (*closefunc)(int), enum argtype cmd, int eofstatus);
 extern int pop_cmd_src(void);
-extern int has_break_or_watch_point(int *pnum, bool any);
-extern int do_list(CMDARG *arg, int cmd);
-extern int do_info(CMDARG *arg, int cmd);
-extern int do_print_var(CMDARG *arg, int cmd);
-extern int do_backtrace(CMDARG *arg, int cmd);
-extern int do_breakpoint(CMDARG *arg, int cmd);
-extern int do_tmp_breakpoint(CMDARG *arg, int cmd);
-extern int do_delete_breakpoint(CMDARG *arg, int cmd);
-extern int do_enable_breakpoint(CMDARG *arg, int cmd);
-extern int do_disable_breakpoint(CMDARG *arg, int cmd) ;
-extern int do_ignore_breakpoint(CMDARG *arg, int cmd) ;
-extern int do_run(CMDARG *arg, int cmd);
-extern int do_quit(CMDARG *arg, int cmd);
-extern int do_continue(CMDARG *arg, int cmd);
-extern int do_step(CMDARG *arg, int cmd) ;
-extern int do_stepi(CMDARG *arg, int cmd) ;
-extern int do_next(CMDARG *arg, int cmd);
-extern int do_nexti(CMDARG *arg, int cmd);
-extern int do_clear(CMDARG *arg, int cmd);
-extern int do_finish(CMDARG *arg, int cmd) ;
-extern int do_help(CMDARG *arg, int cmd) ;
-extern int do_up(CMDARG *arg, int cmd);
-extern int do_down(CMDARG *arg, int cmd);
-extern int do_frame(CMDARG *arg, int cmd);
-extern int do_until(CMDARG *arg, int cmd);
-extern int do_set_var(CMDARG *arg, int cmd);
-extern int do_return(CMDARG *arg, int cmd);
-extern int do_display(CMDARG *arg, int cmd);
-extern int do_undisplay(CMDARG *arg, int cmd);
-extern int do_watch(CMDARG *arg, int cmd);
-extern int do_unwatch(CMDARG *arg, int cmd);
-extern int do_dump_instructions(CMDARG *arg, int cmd);
-extern int do_trace_instruction(CMDARG *arg, int cmd);
-extern int do_option(CMDARG *arg, int cmd);
-extern int do_commands(CMDARG *arg, int cmd);
-extern int do_print_f(CMDARG *arg, int cmd);
-extern int do_source(CMDARG *arg, int cmd);
-extern int do_save(CMDARG *arg, int cmd);
-extern int do_eval(CMDARG *arg, int cmd);
-extern int do_condition(CMDARG *arg, int cmd);
+extern int has_break_or_watch_point(unsigned *pnum, bool any);
+extern int do_list(CMDARG *arg, enum argtype cmd);
+extern int do_info(CMDARG *arg, enum argtype cmd);
+extern int do_print_var(CMDARG *arg, enum argtype cmd);
+extern int do_backtrace(CMDARG *arg, enum argtype cmd);
+extern int do_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_tmp_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_delete_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_enable_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_disable_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_ignore_breakpoint(CMDARG *arg, enum argtype cmd);
+extern int do_run(CMDARG *arg, enum argtype cmd);
+extern int do_quit(CMDARG *arg, enum argtype cmd);
+extern int do_continue(CMDARG *arg, enum argtype cmd);
+extern int do_step(CMDARG *arg, enum argtype cmd);
+extern int do_stepi(CMDARG *arg, enum argtype cmd);
+extern int do_next(CMDARG *arg, enum argtype cmd);
+extern int do_nexti(CMDARG *arg, enum argtype cmd);
+extern int do_clear(CMDARG *arg, enum argtype cmd);
+extern int do_finish(CMDARG *arg, enum argtype cmd);
+extern int do_help(CMDARG *arg, enum argtype cmd);
+extern int do_up(CMDARG *arg, enum argtype cmd);
+extern int do_down(CMDARG *arg, enum argtype cmd);
+extern int do_frame(CMDARG *arg, enum argtype cmd);
+extern int do_until(CMDARG *arg, enum argtype cmd);
+extern int do_set_var(CMDARG *arg, enum argtype cmd);
+extern int do_return(CMDARG *arg, enum argtype cmd);
+extern int do_display(CMDARG *arg, enum argtype cmd);
+extern int do_undisplay(CMDARG *arg, enum argtype cmd);
+extern int do_watch(CMDARG *arg, enum argtype cmd);
+extern int do_unwatch(CMDARG *arg, enum argtype cmd);
+extern int do_dump_instructions(CMDARG *arg, enum argtype cmd);
+extern int do_trace_instruction(CMDARG *arg, enum argtype cmd);
+extern int do_option(CMDARG *arg, enum argtype cmd);
+extern int do_commands(CMDARG *arg, enum argtype cmd);
+extern int do_print_f(CMDARG *arg, enum argtype cmd);
+extern int do_source(CMDARG *arg, enum argtype cmd);
+extern int do_save(CMDARG *arg, enum argtype cmd);
+extern int do_eval(CMDARG *arg, enum argtype cmd);
+extern int do_condition(CMDARG *arg, enum argtype cmd);

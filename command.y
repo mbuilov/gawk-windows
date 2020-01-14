@@ -44,28 +44,28 @@ static bool want_nodeval = false;
 static int cmd_idx = -1;		/* index of current command in cmd table */
 static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */
-static long dbg_errcount = 0;
+static unsigned long dbg_errcount = 0;
 static char *lexptr_begin = NULL;
 static bool in_commands = false;
-static int num_dim;
+static unsigned num_dim;
 
 static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";
 static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
-static NODE *concat_args(CMDARG *a, int count);
+static NODE *concat_args(CMDARG *a, unsigned count);
 
 #ifdef HAVE_LIBREADLINE
-static char *next_word(char *p, int len, char **endp);
+static const char *next_word(const char *p, size_t len, const char **endp);
 static void history_expand_line(char **line);
 static char *command_generator(const char *text, int state);
 static char *srcfile_generator(const char *text, int state);
 static char *argument_generator(const char *text, int state);
 static char *variable_generator(const char *text, int state);
 extern char *option_generator(const char *text, int state);
-static int this_cmd = D_illegal;
+static enum argtype this_cmd = D_illegal;
 #else
-#define history_expand_line(p)	/* nothing */
+#define history_expand_line(p)	((void)0)	/* nothing */
 static int rl_inhibit_completion;	/* dummy variable */
 #endif
 
@@ -132,7 +132,7 @@ line
 			Func_cmd cmdfunc;
 			bool terminate = false;
 			CMDARG *args;
-			int ctype = 0;
+			enum argtype ctype;
 
 			ctype = cmdtab[cmd_idx].type;
 
@@ -286,7 +286,7 @@ command
 	| control_cmd opt_plus_integer
 	| frame_cmd opt_integer
 	  {
-		if (cmdtab[cmd_idx].class == D_FRAME
+		if (cmdtab[cmd_idx].cls == D_FRAME
 				&& $2 != NULL && $2->a_int < 0)
 			yyerror(_("invalid frame number: %d"), $2->a_int);
 	  }
@@ -330,24 +330,24 @@ command
 	| D_COMMANDS commands_arg
 	  {
 		int type = 0;
-		int num;
+		unsigned num = 0; /* Silence compiler.  */
 
 		if ($2 != NULL)
-			num = $2->a_int;
+			num = (unsigned) $2->a_int;
 
 		if (dbg_errcount != 0)
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
-		else if ($2 == NULL &&  ! (type = has_break_or_watch_point(&num, true)))
+		else if ($2 == NULL && 0 == (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
-		else if ($2 != NULL && ! (type = has_break_or_watch_point(&num, false)))
+		else if ($2 != NULL && 0 == (type = has_break_or_watch_point(&num, false)))
 			yyerror(_("invalid breakpoint/watchpoint number"));
 		if (type) {
 			in_commands = true;
 			if (input_from_tty) {
 				dbg_prompt = commands_prompt;
-				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
+				fprintf(out_fp, _("Type commands for when %s %u is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
 				fprintf(out_fp, _("End with the command \"end\"\n"));
 			}
@@ -383,7 +383,7 @@ command
 	| D_CONDITION plus_integer { want_nodeval = true; } condition_exp
 	  {
 		int type;
-		int num = $2->a_int;
+		unsigned num = (unsigned) $2->a_int;
 		type = has_break_or_watch_point(&num, false);
 		if (! type)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
@@ -631,7 +631,7 @@ subscript
 	  {
 		CMDARG *a;
 		NODE *subs;
-		int count = 0;
+		unsigned count = 0;
 
 		for (a = $2; a != NULL; a = a->next)
 			count++;
@@ -756,7 +756,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 {
 	CMDARG *a, *arg;
 	char *s;
-	int len, slen, ssize;
+	size_t len, slen, ssize;
 
 #define EVALSIZE	512
 
@@ -769,7 +769,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 		emalloc(s, char *, (len + 1) * sizeof(char), "append_statement");
 		arg = mk_cmdarg(D_string);
 		arg->a_string = s;
-		arg->a_count = len;	/* kludge */
+		arg->a_count = (unsigned) len;	/* kludge */
 
 		slen = sizeof("function @eval(") - 1;
 		memcpy(s, start_EVAL, slen);
@@ -795,7 +795,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 		ssize = slen + len + EVALSIZE;
 		erealloc(s, char *, (ssize + 1) * sizeof(char), "append_statement");
 		stmt_list->a_string = s;
-		stmt_list->a_count = ssize;
+		stmt_list->a_count = (unsigned) ssize;
 	}
 	memcpy(s + slen, stmt, len);
 	slen += len;
@@ -1096,7 +1096,7 @@ again:
 				add_history(h->line);
 #endif
 			cmd_idx = repeat_idx;
-			return cmdtab[cmd_idx].class;	/* repeat last command */
+			return cmdtab[cmd_idx].cls;	/* repeat last command */
 		}
 		repeat_idx = -1;
 	}
@@ -1128,7 +1128,7 @@ again:
 			c = *++lexptr;
 		}
 
-		toklen = lexptr - tokstart;
+		toklen = (size_t) (lexptr - tokstart);
 
 		if (in_eval) {
 			if (toklen == 3
@@ -1153,10 +1153,10 @@ again:
 				 */
 				CMDARG *arg;
 				arg = mk_cmdarg(D_string);
-				arg->a_string = estrdup(lexptr_begin, lexend - lexptr_begin);
+				arg->a_string = estrdup(lexptr_begin, (size_t) (lexend - lexptr_begin));
 				append_cmdarg(arg);
 			}
-			return cmdtab[cmd_idx].class;
+			return cmdtab[cmd_idx].cls;
 		} else {
 			yyerror(_("unknown command - \"%.*s\", try help"), toklen, tokstart);
 			return '\n';
@@ -1176,7 +1176,7 @@ again:
 		int flags = ALREADY_MALLOCED;
 		bool esc_seen = false;
 
-		toklen = lexend - lexptr;
+		toklen = (size_t) (lexend - lexptr);
 		emalloc(str, char *, toklen + 1, "yylex");
 		p = str;
 
@@ -1195,7 +1195,7 @@ err:
 			}
 			if (lexptr == lexend)
 				goto err;
-			*p++ = c;
+			*p++ = (char) c;
 		}
 		lexptr++;
 		*p = '\0';
@@ -1209,7 +1209,7 @@ err:
 			if (esc_seen)
 				flags |= SCAN;
 			yylval = mk_cmdarg(D_node);
-			yylval->a_node = make_str_node(str, p - str, flags);
+			yylval->a_node = make_str_node(str, (size_t) (p - str), flags);
 			append_cmdarg(yylval);
 			return D_NODE;
 		}
@@ -1243,7 +1243,7 @@ err:
 
 		/* Must be string */
 		yylval = mk_cmdarg(D_string);
-		yylval->a_string = estrdup(tokstart, lexptr - tokstart);
+		yylval->a_string = estrdup(tokstart, (size_t) (lexptr - tokstart));
 		append_cmdarg(yylval);
 		return D_STRING;
 	}
@@ -1296,7 +1296,7 @@ err:
 
 	while (is_identchar(c))
 		c = *++lexptr;
-	toklen = lexptr - tokstart;
+	toklen = (size_t) (lexptr - tokstart);
 
 	/* awk variable */
 	yylval = mk_cmdarg(D_variable);
@@ -1345,12 +1345,12 @@ find_argument(CMDARG *arg)
 {
 	/* non-number argument */
 	int idx;
-	char *name, *p;
+	const char *name, *p;
 	size_t len;
 	assert(cmd_idx >= 0);
 	name = arg->a_string;
 	len = strlen(name);
-	for (idx = 0; (p = (char *) argtab[idx].name) != NULL; idx++) {
+	for (idx = 0; (p = argtab[idx].name) != NULL; idx++) {
 		if (cmdtab[cmd_idx].type == argtab[idx].cmd
 				&& *p == *name
 				&& strlen(p) == len
@@ -1364,13 +1364,13 @@ find_argument(CMDARG *arg)
 /* concat_args --- concatenate argument strings into a single string NODE */
 
 static NODE *
-concat_args(CMDARG *arg, int count)
+concat_args(CMDARG *arg, unsigned count)
 {
 	NODE *n;
 	NODE **tmp;
 	char *str, *subsep, *p;
-	long len, subseplen;
-	int i;
+	size_t len, subseplen;
+	unsigned i;
 
 	if (count == 1) {
 		n = force_string(arg->a_node);
@@ -1380,7 +1380,7 @@ concat_args(CMDARG *arg, int count)
 	emalloc(tmp, NODE **, count * sizeof(NODE *), "concat_args");
 	subseplen = SUBSEP_node->var_value->stlen;
 	subsep = SUBSEP_node->var_value->stptr;
-	len = -subseplen;
+	len = (size_t)0 - subseplen;
 
 	for (i = 0; i < count; i++) {
 		n = force_string(arg->a_node);
@@ -1417,8 +1417,8 @@ concat_args(CMDARG *arg, int count)
 static int
 find_command(const char *token, size_t toklen)
 {
-	char *name, *abrv;
-	int i, k;
+	const char *name, *abrv;
+	size_t i, k;
 	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
@@ -1435,12 +1435,12 @@ find_command(const char *token, size_t toklen)
 
 	k = sizeof(cmdtab)/sizeof(cmdtab[0]) - 1;
 	for (i = 0; i < k; i++) {
-		name = (char *) cmdtab[i].name;
+		name = cmdtab[i].name;
 		if (try_exact && *token == *name
 				&& toklen == strlen(name)
 				&& strncmp(name, token, toklen) == 0
 		)
-			return i;
+			return (int) i;
 
 		if (*name > *token || i == (k - 1))
 			try_exact = false;
@@ -1449,9 +1449,9 @@ find_command(const char *token, size_t toklen)
 			abrv = cmdtab[i].abbrvn;
 			if (abrv[0] == token[0]) {
 				if (toklen == 1 && ! abrv[1])
-					abrv_match = i;
+					abrv_match = (int) i;
 				else if (toklen == 2 && abrv[1] == token[1])
-					abrv_match = i;
+					abrv_match = (int) i;
 			}
 		}
 		if (! try_exact && abrv_match >= 0)
@@ -1464,7 +1464,7 @@ find_command(const char *token, size_t toklen)
 				if ((i == k - 1 || strncmp(cmdtab[i + 1].name, token, toklen) != 0)
 					&& (i == 0 || strncmp(cmdtab[i - 1].name, token, toklen) != 0)
 				)
-					partial_match = i;
+					partial_match = (int) i;
 			}
 		}
 	}
@@ -1474,9 +1474,11 @@ find_command(const char *token, size_t toklen)
 /* do_help -- help command */
 
 int
-do_help(CMDARG *arg, int cmd)
+do_help(CMDARG *arg, enum argtype cmd)
 {
 	int i;
+	(void) cmd;
+
 	if (arg == NULL) {
 		initialize_pager(out_fp);
 		if (setjmp(pager_quit_tag) == 0) {
@@ -1486,7 +1488,7 @@ do_help(CMDARG *arg, int cmd)
 			}
 		}
 	} else if (arg->type == D_string) {
-		char *name;
+		const char *name;
 		name = arg->a_string;
 		i = find_command(name, strlen(name));
 		if (i >= 0) {
@@ -1507,13 +1509,13 @@ do_help(CMDARG *arg, int cmd)
  *               (word seperation characters are space and tab).
  */
 
-static char *
-next_word(char *p, int len, char **endp)
+static const char *
+next_word(const char *p, size_t len, const char **endp)
 {
-	char *q;
-	int i;
+	const char *q;
+	size_t i;
 
-	if (p == NULL || len <= 0)
+	if (p == NULL || len == 0)
 		return NULL;
 	for (i = 0; i < len; i++, p++)
 		if (*p != ' ' && *p != '\t')
@@ -1540,11 +1542,13 @@ next_word(char *p, int len, char **endp)
 
 
 char **
-command_completion(const char *text, int start, int end)
+command_completion(const char *text, size_t start, size_t end)
 {
-	char *cmdtok, *e;
+	const char *cmdtok, *e;
 	int idx;
-	int len;
+	size_t len;
+
+	(void) end;
 
 	rl_attempted_completion_over = true;	/* no default filename completion please */
 
@@ -1552,9 +1556,9 @@ command_completion(const char *text, int start, int end)
 	len = start;
 	if ((cmdtok = next_word(rl_line_buffer, len, &e)) == NULL)	/* no first word yet */
 		return  rl_completion_matches(text, command_generator);
-	len -= (e - rl_line_buffer);
+	len -= (size_t) (e - rl_line_buffer);
 
-	idx = find_command(cmdtok, e - cmdtok);
+	idx = find_command(cmdtok, (size_t) (e - cmdtok));
 	if (idx < 0)
 		return NULL;
 	this_cmd = cmdtab[idx].type;
@@ -1596,14 +1600,14 @@ static char *
 command_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx = 0;
-	char *name;
+	static unsigned idx = 0;
+	const char *name;
 
 	if (! state) {	/* first time */
 		textlen = strlen(text);
 		idx = 0;
 	}
-	while ((name = (char *) cmdtab[idx].name) != NULL) {
+	while ((name = cmdtab[idx].name) != NULL) {
 		idx++;
 		if (strncmp(name, text, textlen) == 0)
 			return estrdup(name, strlen(name));
@@ -1618,7 +1622,7 @@ srcfile_generator(const char *text, int state)
 {
 	static size_t textlen;
 	static SRCFILE *s;
-	char *name;
+	const char *name;
 	extern SRCFILE *srcfiles;
 
 	if (! state) {	/* first time */
@@ -1644,7 +1648,7 @@ static char *
 argument_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx;
+	static unsigned idx;
 	const char *name;
 
 	if (! state) {	/* first time */
@@ -1674,7 +1678,7 @@ static char *
 variable_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx = 0;
+	static unsigned idx = 0;
 	static NODE *func = NULL;
 	static NODE **vars = NULL;
 	const char *name;
@@ -1696,7 +1700,7 @@ variable_generator(const char *text, int state)
 			idx = 0;
 			break;
 		}
-		name = func->fparms[idx++].param;
+		name = func->fparms[idx++].vname;
 		if (strncmp(name, text, textlen) == 0)
 			return estrdup(name, strlen(name));
 	}
@@ -1731,4 +1735,4 @@ history_expand_line(char **line)
 	}
 }
 
-#endif
+#endif /* HAVE_LIBREADLINE */

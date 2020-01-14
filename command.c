@@ -63,14 +63,7 @@
 #define YYPULL 1
 
 
-/* Substitute the variable and function names.  */
-#define yyparse         zzparse
-#define yylex           zzlex
-#define yyerror         zzerror
-#define yydebug         zzdebug
-#define yynerrs         zznerrs
-#define yylval          zzlval
-#define yychar          zzchar
+
 
 /* First part of user prologue.  */
 #line 28 "command.y"
@@ -93,28 +86,28 @@ static bool want_nodeval = false;
 static int cmd_idx = -1;		/* index of current command in cmd table */
 static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */
-static long dbg_errcount = 0;
+static unsigned long dbg_errcount = 0;
 static char *lexptr_begin = NULL;
 static bool in_commands = false;
-static int num_dim;
+static unsigned num_dim;
 
 static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";
 static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
-static NODE *concat_args(CMDARG *a, int count);
+static NODE *concat_args(CMDARG *a, unsigned count);
 
 #ifdef HAVE_LIBREADLINE
-static char *next_word(char *p, int len, char **endp);
+static const char *next_word(const char *p, size_t len, const char **endp);
 static void history_expand_line(char **line);
 static char *command_generator(const char *text, int state);
 static char *srcfile_generator(const char *text, int state);
 static char *argument_generator(const char *text, int state);
 static char *variable_generator(const char *text, int state);
 extern char *option_generator(const char *text, int state);
-static int this_cmd = D_illegal;
+static enum argtype this_cmd = D_illegal;
 #else
-#define history_expand_line(p)	/* nothing */
+#define history_expand_line(p)	((void)0)	/* nothing */
 static int rl_inhibit_completion;	/* dummy variable */
 #endif
 
@@ -140,7 +133,7 @@ static void append_cmdarg(CMDARG *arg);
 static int find_argument(CMDARG *arg);
 #define YYSTYPE CMDARG *
 
-#line 144 "command.c"
+#line 137 "command.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -177,7 +170,7 @@ static int find_argument(CMDARG *arg);
 # define YYDEBUG 0
 #endif
 #if YYDEBUG
-extern int zzdebug;
+extern int yydebug;
 #endif
 
 /* Token type.  */
@@ -233,53 +226,6 @@ extern int zzdebug;
     D_STATEMENT = 303
   };
 #endif
-/* Tokens.  */
-#define D_BACKTRACE 258
-#define D_BREAK 259
-#define D_CLEAR 260
-#define D_CONTINUE 261
-#define D_DELETE 262
-#define D_DISABLE 263
-#define D_DOWN 264
-#define D_ENABLE 265
-#define D_FINISH 266
-#define D_FRAME 267
-#define D_HELP 268
-#define D_IGNORE 269
-#define D_INFO 270
-#define D_LIST 271
-#define D_NEXT 272
-#define D_NEXTI 273
-#define D_PRINT 274
-#define D_PRINTF 275
-#define D_QUIT 276
-#define D_RETURN 277
-#define D_RUN 278
-#define D_SET 279
-#define D_STEP 280
-#define D_STEPI 281
-#define D_TBREAK 282
-#define D_UP 283
-#define D_UNTIL 284
-#define D_DISPLAY 285
-#define D_UNDISPLAY 286
-#define D_WATCH 287
-#define D_UNWATCH 288
-#define D_DUMP 289
-#define D_TRACE 290
-#define D_INT 291
-#define D_STRING 292
-#define D_NODE 293
-#define D_VARIABLE 294
-#define D_OPTION 295
-#define D_COMMANDS 296
-#define D_END 297
-#define D_SILENT 298
-#define D_SOURCE 299
-#define D_SAVE 300
-#define D_EVAL 301
-#define D_CONDITION 302
-#define D_STATEMENT 303
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -289,9 +235,9 @@ typedef int YYSTYPE;
 #endif
 
 
-extern YYSTYPE zzlval;
+extern YYSTYPE yylval;
 
-int zzparse (void);
+int yyparse (void);
 
 
 
@@ -1638,7 +1584,7 @@ yyreduce:
 			arg_list = NULL;
 		}
 	  }
-#line 1642 "command.c"
+#line 1588 "command.c"
     break;
 
   case 5:
@@ -1648,7 +1594,7 @@ yyreduce:
 			Func_cmd cmdfunc;
 			bool terminate = false;
 			CMDARG *args;
-			int ctype = 0;
+			enum argtype ctype;
 
 			ctype = cmdtab[cmd_idx].type;
 
@@ -1692,7 +1638,7 @@ yyreduce:
 				YYACCEPT;
 		}
 	  }
-#line 1696 "command.c"
+#line 1642 "command.c"
     break;
 
   case 6:
@@ -1700,13 +1646,13 @@ yyreduce:
           {
 		yyerrok;
 	  }
-#line 1704 "command.c"
+#line 1650 "command.c"
     break;
 
   case 22:
 #line 214 "command.y"
           { want_nodeval = true; }
-#line 1710 "command.c"
+#line 1656 "command.c"
     break;
 
   case 23:
@@ -1726,7 +1672,7 @@ yyreduce:
 			in_eval = true;
 		}
 	  }
-#line 1730 "command.c"
+#line 1676 "command.c"
     break;
 
   case 24:
@@ -1738,13 +1684,13 @@ yyreduce:
 		free_cmdarg(arg_list);
 		arg_list = NULL;
 	  }
-#line 1742 "command.c"
+#line 1688 "command.c"
     break;
 
   case 25:
 #line 245 "command.y"
                                      { yyval = append_statement(yyvsp[-1], lexptr_begin); }
-#line 1748 "command.c"
+#line 1694 "command.c"
     break;
 
   case 26:
@@ -1752,7 +1698,7 @@ yyreduce:
           {
 		yyval = yyvsp[-1];
 	  }
-#line 1756 "command.c"
+#line 1702 "command.c"
     break;
 
   case 27:
@@ -1772,7 +1718,7 @@ yyreduce:
 		cmd_idx = find_command("eval", 4);
 		in_eval = false;
 	  }
-#line 1776 "command.c"
+#line 1722 "command.c"
     break;
 
   case 28:
@@ -1787,17 +1733,17 @@ yyreduce:
 		free_cmdarg(arg_list);
 		arg_list = arg;
 	  }
-#line 1791 "command.c"
+#line 1737 "command.c"
     break;
 
   case 34:
 #line 288 "command.y"
           {
-		if (cmdtab[cmd_idx].class == D_FRAME
+		if (cmdtab[cmd_idx].cls == D_FRAME
 				&& yyvsp[0] != NULL && yyvsp[0]->a_int < 0)
 			yyerror(_("invalid frame number: %d"), yyvsp[0]->a_int);
 	  }
-#line 1801 "command.c"
+#line 1747 "command.c"
     break;
 
   case 35:
@@ -1813,43 +1759,43 @@ yyreduce:
 			yyvsp[0]->a_argument = argtab[idx].value;
 		}
 	  }
-#line 1817 "command.c"
+#line 1763 "command.c"
     break;
 
   case 38:
 #line 307 "command.y"
                   { want_nodeval = true; }
-#line 1823 "command.c"
+#line 1769 "command.c"
     break;
 
   case 40:
 #line 308 "command.y"
                    { want_nodeval = true; }
-#line 1829 "command.c"
+#line 1775 "command.c"
     break;
 
   case 46:
 #line 313 "command.y"
                 { want_nodeval = true; }
-#line 1835 "command.c"
+#line 1781 "command.c"
     break;
 
   case 49:
 #line 315 "command.y"
                    { want_nodeval = true; }
-#line 1841 "command.c"
+#line 1787 "command.c"
     break;
 
   case 51:
 #line 316 "command.y"
                     { want_nodeval = true; }
-#line 1847 "command.c"
+#line 1793 "command.c"
     break;
 
   case 53:
 #line 317 "command.y"
                   { want_nodeval = true; }
-#line 1853 "command.c"
+#line 1799 "command.c"
     break;
 
   case 57:
@@ -1858,7 +1804,7 @@ yyreduce:
 		if (in_cmd_src(yyvsp[0]->a_string))
 			yyerror(_("source \"%s\": already sourced."), yyvsp[0]->a_string);
 	  }
-#line 1862 "command.c"
+#line 1808 "command.c"
     break;
 
   case 58:
@@ -1867,37 +1813,37 @@ yyreduce:
 		if (! input_from_tty)
 			yyerror(_("save \"%s\": command not permitted."), yyvsp[0]->a_string);
 	  }
-#line 1871 "command.c"
+#line 1817 "command.c"
     break;
 
   case 59:
 #line 331 "command.y"
           {
 		int type = 0;
-		int num;
+		unsigned num = 0; /* Silence compiler.  */
 
 		if (yyvsp[0] != NULL)
-			num = yyvsp[0]->a_int;
+			num = (unsigned) yyvsp[0]->a_int;
 
 		if (dbg_errcount != 0)
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
-		else if (yyvsp[0] == NULL &&  ! (type = has_break_or_watch_point(&num, true)))
+		else if (yyvsp[0] == NULL && 0 == (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
-		else if (yyvsp[0] != NULL && ! (type = has_break_or_watch_point(&num, false)))
+		else if (yyvsp[0] != NULL && 0 == (type = has_break_or_watch_point(&num, false)))
 			yyerror(_("invalid breakpoint/watchpoint number"));
 		if (type) {
 			in_commands = true;
 			if (input_from_tty) {
 				dbg_prompt = commands_prompt;
-				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
+				fprintf(out_fp, _("Type commands for when %s %u is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
 				fprintf(out_fp, _("End with the command \"end\"\n"));
 			}
 		}
 	  }
-#line 1901 "command.c"
+#line 1847 "command.c"
     break;
 
   case 60:
@@ -1911,7 +1857,7 @@ yyreduce:
 			in_commands = false;
 		}
 	  }
-#line 1915 "command.c"
+#line 1861 "command.c"
     break;
 
   case 61:
@@ -1920,7 +1866,7 @@ yyreduce:
 		if (! in_commands)
 			yyerror(_("`silent' valid only in command `commands'"));
 	  }
-#line 1924 "command.c"
+#line 1870 "command.c"
     break;
 
   case 62:
@@ -1936,25 +1882,25 @@ yyreduce:
 			yyvsp[0]->a_argument = argtab[idx].value;
 		}
 	  }
-#line 1940 "command.c"
+#line 1886 "command.c"
     break;
 
   case 63:
 #line 383 "command.y"
                                    { want_nodeval = true; }
-#line 1946 "command.c"
+#line 1892 "command.c"
     break;
 
   case 64:
 #line 384 "command.y"
           {
 		int type;
-		int num = yyvsp[-2]->a_int;
+		unsigned num = (unsigned) yyvsp[-2]->a_int;
 		type = has_break_or_watch_point(&num, false);
 		if (! type)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
 	  }
-#line 1958 "command.c"
+#line 1904 "command.c"
     break;
 
   case 65:
@@ -1969,7 +1915,7 @@ yyreduce:
 			arg_list = arg;
 		}
 	  }
-#line 1973 "command.c"
+#line 1919 "command.c"
     break;
 
   case 66:
@@ -1983,37 +1929,37 @@ yyreduce:
 		}
 		yyval = yyvsp[0];
 	  }
-#line 1987 "command.c"
+#line 1933 "command.c"
     break;
 
   case 68:
 #line 420 "command.y"
           {	yyval = NULL; }
-#line 1993 "command.c"
+#line 1939 "command.c"
     break;
 
   case 69:
 #line 425 "command.y"
           { yyval = NULL; }
-#line 1999 "command.c"
+#line 1945 "command.c"
     break;
 
   case 74:
 #line 434 "command.y"
           { yyval = NULL; }
-#line 2005 "command.c"
+#line 1951 "command.c"
     break;
 
   case 75:
 #line 439 "command.y"
           { yyval = NULL; }
-#line 2011 "command.c"
+#line 1957 "command.c"
     break;
 
   case 77:
 #line 442 "command.y"
           { yyval = NULL; }
-#line 2017 "command.c"
+#line 1963 "command.c"
     break;
 
   case 78:
@@ -2024,13 +1970,13 @@ yyreduce:
 		if ((n->flags & STRING) == 0)
 			yyerror(_("argument not a string"));
 	  }
-#line 2028 "command.c"
+#line 1974 "command.c"
     break;
 
   case 79:
 #line 457 "command.y"
           { yyval = NULL; }
-#line 2034 "command.c"
+#line 1980 "command.c"
     break;
 
   case 80:
@@ -2039,7 +1985,7 @@ yyreduce:
 		if (find_option(yyvsp[0]->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), yyvsp[0]->a_string);
  	  }
-#line 2043 "command.c"
+#line 1989 "command.c"
     break;
 
   case 81:
@@ -2048,7 +1994,7 @@ yyreduce:
 		if (find_option(yyvsp[-2]->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), yyvsp[-2]->a_string);
  	  }
-#line 2052 "command.c"
+#line 1998 "command.c"
     break;
 
   case 82:
@@ -2065,49 +2011,49 @@ yyreduce:
 			yyvsp[0]->a_node = n;
 		}
 	  }
-#line 2069 "command.c"
+#line 2015 "command.c"
     break;
 
   case 83:
 #line 488 "command.y"
           { yyval = NULL; }
-#line 2075 "command.c"
+#line 2021 "command.c"
     break;
 
   case 88:
 #line 497 "command.y"
           { yyval = NULL; }
-#line 2081 "command.c"
+#line 2027 "command.c"
     break;
 
   case 89:
 #line 498 "command.y"
                        { want_nodeval = true; }
-#line 2087 "command.c"
+#line 2033 "command.c"
     break;
 
   case 92:
 #line 500 "command.y"
                                     { want_nodeval = true; }
-#line 2093 "command.c"
+#line 2039 "command.c"
     break;
 
   case 95:
 #line 506 "command.y"
           { yyval = NULL; }
-#line 2099 "command.c"
+#line 2045 "command.c"
     break;
 
   case 97:
 #line 512 "command.y"
           { yyval = NULL; }
-#line 2105 "command.c"
+#line 2051 "command.c"
     break;
 
   case 99:
 #line 518 "command.y"
           { yyval = NULL; }
-#line 2111 "command.c"
+#line 2057 "command.c"
     break;
 
   case 104:
@@ -2123,7 +2069,7 @@ yyreduce:
 			yyvsp[-1]->a_argument = argtab[idx].value;
 		}
 	  }
-#line 2127 "command.c"
+#line 2073 "command.c"
     break;
 
   case 106:
@@ -2132,7 +2078,7 @@ yyreduce:
 		yyvsp[0]->type = D_array;	/* dump all items */
 		yyvsp[0]->a_count = 0;
 	  }
-#line 2136 "command.c"
+#line 2082 "command.c"
     break;
 
   case 107:
@@ -2141,19 +2087,19 @@ yyreduce:
 		yyvsp[-1]->type = D_array;
 		yyvsp[-1]->a_count = num_dim;
 	  }
-#line 2145 "command.c"
+#line 2091 "command.c"
     break;
 
   case 117:
 #line 577 "command.y"
           { yyval = NULL; }
-#line 2151 "command.c"
+#line 2097 "command.c"
     break;
 
   case 118:
 #line 579 "command.y"
           { yyval = NULL; }
-#line 2157 "command.c"
+#line 2103 "command.c"
     break;
 
   case 119:
@@ -2164,7 +2110,7 @@ yyreduce:
 		a->a_int = -1;
 		append_cmdarg(a);
 	  }
-#line 2168 "command.c"
+#line 2114 "command.c"
     break;
 
   case 126:
@@ -2177,25 +2123,25 @@ yyreduce:
 			yyvsp[-2]->type = D_range;
 		yyval = yyvsp[-2];
 	  }
-#line 2181 "command.c"
+#line 2127 "command.c"
     break;
 
   case 127:
 #line 609 "command.y"
           { yyval = NULL; }
-#line 2187 "command.c"
+#line 2133 "command.c"
     break;
 
   case 134:
 #line 623 "command.y"
           { yyval = yyvsp[0]; }
-#line 2193 "command.c"
+#line 2139 "command.c"
     break;
 
   case 135:
 #line 625 "command.y"
           { yyval = yyvsp[-2]; }
-#line 2199 "command.c"
+#line 2145 "command.c"
     break;
 
   case 137:
@@ -2203,7 +2149,7 @@ yyreduce:
           {
 		CMDARG *a;
 		NODE *subs;
-		int count = 0;
+		unsigned count = 0;
 
 		for (a = yyvsp[-1]; a != NULL; a = a->next)
 			count++;
@@ -2214,19 +2160,19 @@ yyreduce:
 		yyvsp[-1]->a_node = subs;
 		yyval = yyvsp[-1];
 	  }
-#line 2218 "command.c"
+#line 2164 "command.c"
     break;
 
   case 139:
 #line 650 "command.y"
           { yyval = yyvsp[0]; num_dim = 1; }
-#line 2224 "command.c"
+#line 2170 "command.c"
     break;
 
   case 140:
 #line 652 "command.y"
           {	yyval = yyvsp[-1]; num_dim++; }
-#line 2230 "command.c"
+#line 2176 "command.c"
     break;
 
   case 142:
@@ -2239,7 +2185,7 @@ yyreduce:
 			yyvsp[0]->type = D_field;
 		yyval = yyvsp[0];
 	  }
-#line 2243 "command.c"
+#line 2189 "command.c"
     break;
 
   case 143:
@@ -2250,13 +2196,13 @@ yyreduce:
 		yyvsp[-1]->a_count = num_dim;
 		yyval = yyvsp[-1];
 	  }
-#line 2254 "command.c"
+#line 2200 "command.c"
     break;
 
   case 144:
 #line 677 "command.y"
           { yyval = yyvsp[0]; }
-#line 2260 "command.c"
+#line 2206 "command.c"
     break;
 
   case 145:
@@ -2267,7 +2213,7 @@ yyreduce:
 			yyerror(_("non-numeric value found, numeric expected"));
 		yyval = yyvsp[0];
 	  }
-#line 2271 "command.c"
+#line 2217 "command.c"
     break;
 
   case 146:
@@ -2280,31 +2226,31 @@ yyreduce:
 			negate_num(n);
 		yyval = yyvsp[0];
 	  }
-#line 2284 "command.c"
+#line 2230 "command.c"
     break;
 
   case 147:
 #line 698 "command.y"
           { yyval = NULL; }
-#line 2290 "command.c"
+#line 2236 "command.c"
     break;
 
   case 148:
 #line 700 "command.y"
           { yyval = yyvsp[0]; }
-#line 2296 "command.c"
+#line 2242 "command.c"
     break;
 
   case 149:
 #line 705 "command.y"
           { yyval = NULL; }
-#line 2302 "command.c"
+#line 2248 "command.c"
     break;
 
   case 150:
 #line 707 "command.y"
           { yyval = yyvsp[0]; }
-#line 2308 "command.c"
+#line 2254 "command.c"
     break;
 
   case 151:
@@ -2314,7 +2260,7 @@ yyreduce:
 			yyerror(_("non-zero integer value"));
 		yyval = yyvsp[0];
 	  }
-#line 2318 "command.c"
+#line 2264 "command.c"
     break;
 
   case 152:
@@ -2324,19 +2270,19 @@ yyreduce:
 			yyerror(_("non-zero integer value"));
 		yyval = yyvsp[0];
 	  }
-#line 2328 "command.c"
+#line 2274 "command.c"
     break;
 
   case 153:
 #line 727 "command.y"
           { yyval = yyvsp[0]; }
-#line 2334 "command.c"
+#line 2280 "command.c"
     break;
 
   case 154:
 #line 729 "command.y"
           { yyval = yyvsp[0]; }
-#line 2340 "command.c"
+#line 2286 "command.c"
     break;
 
   case 155:
@@ -2345,7 +2291,7 @@ yyreduce:
 		yyvsp[0]->a_int = - yyvsp[0]->a_int;
 		yyval = yyvsp[0];
 	  }
-#line 2349 "command.c"
+#line 2295 "command.c"
     break;
 
   case 156:
@@ -2358,11 +2304,11 @@ yyreduce:
 			lexptr_begin = NULL;
 		}
 	  }
-#line 2362 "command.c"
+#line 2308 "command.c"
     break;
 
 
-#line 2366 "command.c"
+#line 2312 "command.c"
 
       default: break;
     }
@@ -2605,7 +2551,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 {
 	CMDARG *a, *arg;
 	char *s;
-	int len, slen, ssize;
+	size_t len, slen, ssize;
 
 #define EVALSIZE	512
 
@@ -2618,7 +2564,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 		emalloc(s, char *, (len + 1) * sizeof(char), "append_statement");
 		arg = mk_cmdarg(D_string);
 		arg->a_string = s;
-		arg->a_count = len;	/* kludge */
+		arg->a_count = (unsigned) len;	/* kludge */
 
 		slen = sizeof("function @eval(") - 1;
 		memcpy(s, start_EVAL, slen);
@@ -2644,7 +2590,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 		ssize = slen + len + EVALSIZE;
 		erealloc(s, char *, (ssize + 1) * sizeof(char), "append_statement");
 		stmt_list->a_string = s;
-		stmt_list->a_count = ssize;
+		stmt_list->a_count = (unsigned) ssize;
 	}
 	memcpy(s + slen, stmt, len);
 	slen += len;
@@ -2945,7 +2891,7 @@ again:
 				add_history(h->line);
 #endif
 			cmd_idx = repeat_idx;
-			return cmdtab[cmd_idx].class;	/* repeat last command */
+			return cmdtab[cmd_idx].cls;	/* repeat last command */
 		}
 		repeat_idx = -1;
 	}
@@ -2977,7 +2923,7 @@ again:
 			c = *++lexptr;
 		}
 
-		toklen = lexptr - tokstart;
+		toklen = (size_t) (lexptr - tokstart);
 
 		if (in_eval) {
 			if (toklen == 3
@@ -3002,10 +2948,10 @@ again:
 				 */
 				CMDARG *arg;
 				arg = mk_cmdarg(D_string);
-				arg->a_string = estrdup(lexptr_begin, lexend - lexptr_begin);
+				arg->a_string = estrdup(lexptr_begin, (size_t) (lexend - lexptr_begin));
 				append_cmdarg(arg);
 			}
-			return cmdtab[cmd_idx].class;
+			return cmdtab[cmd_idx].cls;
 		} else {
 			yyerror(_("unknown command - \"%.*s\", try help"), toklen, tokstart);
 			return '\n';
@@ -3025,7 +2971,7 @@ again:
 		int flags = ALREADY_MALLOCED;
 		bool esc_seen = false;
 
-		toklen = lexend - lexptr;
+		toklen = (size_t) (lexend - lexptr);
 		emalloc(str, char *, toklen + 1, "yylex");
 		p = str;
 
@@ -3044,7 +2990,7 @@ err:
 			}
 			if (lexptr == lexend)
 				goto err;
-			*p++ = c;
+			*p++ = (char) c;
 		}
 		lexptr++;
 		*p = '\0';
@@ -3058,7 +3004,7 @@ err:
 			if (esc_seen)
 				flags |= SCAN;
 			yylval = mk_cmdarg(D_node);
-			yylval->a_node = make_str_node(str, p - str, flags);
+			yylval->a_node = make_str_node(str, (size_t) (p - str), flags);
 			append_cmdarg(yylval);
 			return D_NODE;
 		}
@@ -3092,7 +3038,7 @@ err:
 
 		/* Must be string */
 		yylval = mk_cmdarg(D_string);
-		yylval->a_string = estrdup(tokstart, lexptr - tokstart);
+		yylval->a_string = estrdup(tokstart, (size_t) (lexptr - tokstart));
 		append_cmdarg(yylval);
 		return D_STRING;
 	}
@@ -3145,7 +3091,7 @@ err:
 
 	while (is_identchar(c))
 		c = *++lexptr;
-	toklen = lexptr - tokstart;
+	toklen = (size_t) (lexptr - tokstart);
 
 	/* awk variable */
 	yylval = mk_cmdarg(D_variable);
@@ -3194,12 +3140,12 @@ find_argument(CMDARG *arg)
 {
 	/* non-number argument */
 	int idx;
-	char *name, *p;
+	const char *name, *p;
 	size_t len;
 	assert(cmd_idx >= 0);
 	name = arg->a_string;
 	len = strlen(name);
-	for (idx = 0; (p = (char *) argtab[idx].name) != NULL; idx++) {
+	for (idx = 0; (p = argtab[idx].name) != NULL; idx++) {
 		if (cmdtab[cmd_idx].type == argtab[idx].cmd
 				&& *p == *name
 				&& strlen(p) == len
@@ -3213,13 +3159,13 @@ find_argument(CMDARG *arg)
 /* concat_args --- concatenate argument strings into a single string NODE */
 
 static NODE *
-concat_args(CMDARG *arg, int count)
+concat_args(CMDARG *arg, unsigned count)
 {
 	NODE *n;
 	NODE **tmp;
 	char *str, *subsep, *p;
-	long len, subseplen;
-	int i;
+	size_t len, subseplen;
+	unsigned i;
 
 	if (count == 1) {
 		n = force_string(arg->a_node);
@@ -3229,7 +3175,7 @@ concat_args(CMDARG *arg, int count)
 	emalloc(tmp, NODE **, count * sizeof(NODE *), "concat_args");
 	subseplen = SUBSEP_node->var_value->stlen;
 	subsep = SUBSEP_node->var_value->stptr;
-	len = -subseplen;
+	len = 0 - subseplen;
 
 	for (i = 0; i < count; i++) {
 		n = force_string(arg->a_node);
@@ -3266,8 +3212,8 @@ concat_args(CMDARG *arg, int count)
 static int
 find_command(const char *token, size_t toklen)
 {
-	char *name, *abrv;
-	int i, k;
+	const char *name, *abrv;
+	unsigned i, k;
 	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
@@ -3284,12 +3230,12 @@ find_command(const char *token, size_t toklen)
 
 	k = sizeof(cmdtab)/sizeof(cmdtab[0]) - 1;
 	for (i = 0; i < k; i++) {
-		name = (char *) cmdtab[i].name;
+		name = cmdtab[i].name;
 		if (try_exact && *token == *name
 				&& toklen == strlen(name)
 				&& strncmp(name, token, toklen) == 0
 		)
-			return i;
+			return (int) i;
 
 		if (*name > *token || i == (k - 1))
 			try_exact = false;
@@ -3298,9 +3244,9 @@ find_command(const char *token, size_t toklen)
 			abrv = cmdtab[i].abbrvn;
 			if (abrv[0] == token[0]) {
 				if (toklen == 1 && ! abrv[1])
-					abrv_match = i;
+					abrv_match = (int) i;
 				else if (toklen == 2 && abrv[1] == token[1])
-					abrv_match = i;
+					abrv_match = (int) i;
 			}
 		}
 		if (! try_exact && abrv_match >= 0)
@@ -3313,7 +3259,7 @@ find_command(const char *token, size_t toklen)
 				if ((i == k - 1 || strncmp(cmdtab[i + 1].name, token, toklen) != 0)
 					&& (i == 0 || strncmp(cmdtab[i - 1].name, token, toklen) != 0)
 				)
-					partial_match = i;
+					partial_match = (int) i;
 			}
 		}
 	}
@@ -3323,9 +3269,11 @@ find_command(const char *token, size_t toklen)
 /* do_help -- help command */
 
 int
-do_help(CMDARG *arg, int cmd)
+do_help(CMDARG *arg, enum argtype cmd)
 {
 	int i;
+	(void) cmd;
+
 	if (arg == NULL) {
 		initialize_pager(out_fp);
 		if (setjmp(pager_quit_tag) == 0) {
@@ -3335,7 +3283,7 @@ do_help(CMDARG *arg, int cmd)
 			}
 		}
 	} else if (arg->type == D_string) {
-		char *name;
+		const char *name;
 		name = arg->a_string;
 		i = find_command(name, strlen(name));
 		if (i >= 0) {
@@ -3356,13 +3304,13 @@ do_help(CMDARG *arg, int cmd)
  *               (word seperation characters are space and tab).
  */
 
-static char *
-next_word(char *p, int len, char **endp)
+static const char *
+next_word(const char *p, size_t len, const char **endp)
 {
-	char *q;
-	int i;
+	const char *q;
+	size_t i;
 
-	if (p == NULL || len <= 0)
+	if (p == NULL || len == 0)
 		return NULL;
 	for (i = 0; i < len; i++, p++)
 		if (*p != ' ' && *p != '\t')
@@ -3389,11 +3337,13 @@ next_word(char *p, int len, char **endp)
 
 
 char **
-command_completion(const char *text, int start, int end)
+command_completion(const char *text, size_t start, size_t end)
 {
-	char *cmdtok, *e;
+	const char *cmdtok, *e;
 	int idx;
-	int len;
+	size_t len;
+
+	(void) end;
 
 	rl_attempted_completion_over = true;	/* no default filename completion please */
 
@@ -3401,9 +3351,9 @@ command_completion(const char *text, int start, int end)
 	len = start;
 	if ((cmdtok = next_word(rl_line_buffer, len, &e)) == NULL)	/* no first word yet */
 		return  rl_completion_matches(text, command_generator);
-	len -= (e - rl_line_buffer);
+	len -= (size_t) (e - rl_line_buffer);
 
-	idx = find_command(cmdtok, e - cmdtok);
+	idx = find_command(cmdtok, (size_t) (e - cmdtok));
 	if (idx < 0)
 		return NULL;
 	this_cmd = cmdtab[idx].type;
@@ -3445,14 +3395,14 @@ static char *
 command_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx = 0;
-	char *name;
+	static unsigned idx = 0;
+	const char *name;
 
 	if (! state) {	/* first time */
 		textlen = strlen(text);
 		idx = 0;
 	}
-	while ((name = (char *) cmdtab[idx].name) != NULL) {
+	while ((name = cmdtab[idx].name) != NULL) {
 		idx++;
 		if (strncmp(name, text, textlen) == 0)
 			return estrdup(name, strlen(name));
@@ -3467,7 +3417,7 @@ srcfile_generator(const char *text, int state)
 {
 	static size_t textlen;
 	static SRCFILE *s;
-	char *name;
+	const char *name;
 	extern SRCFILE *srcfiles;
 
 	if (! state) {	/* first time */
@@ -3493,7 +3443,7 @@ static char *
 argument_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx;
+	static unsigned idx;
 	const char *name;
 
 	if (! state) {	/* first time */
@@ -3523,7 +3473,7 @@ static char *
 variable_generator(const char *text, int state)
 {
 	static size_t textlen;
-	static int idx = 0;
+	static unsigned idx = 0;
 	static NODE *func = NULL;
 	static NODE **vars = NULL;
 	const char *name;
@@ -3545,7 +3495,7 @@ variable_generator(const char *text, int state)
 			idx = 0;
 			break;
 		}
-		name = func->fparms[idx++].param;
+		name = func->fparms[idx++].vname;
 		if (strncmp(name, text, textlen) == 0)
 			return estrdup(name, strlen(name));
 	}
@@ -3580,4 +3530,4 @@ history_expand_line(char **line)
 	}
 }
 
-#endif
+#endif /* HAVE_LIBREADLINE */
