@@ -30,18 +30,14 @@
 
 #include "awk.h"
 
-#ifdef _MSC_VER
-#include <io.h> /* for close */
-#endif
-
 #if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
 #define signed /**/
 #endif
 
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
-static void error_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
-static void lintwarn_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
-static void warning_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+static void error_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+static void lintwarn_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+static void warning_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static char *get_src_buf(void);
 static int yylex(void);
 int	yyparse(void);
@@ -107,7 +103,8 @@ enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
 
-static ssize_t read_one_line(int fd, void *buffer, size_t count);
+static int read_whole(int fd, void *buffer, unsigned count);
+static int read_one_line(int fd, void *buffer, unsigned count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
 static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
@@ -143,8 +140,8 @@ static char *lexeme;		/* beginning of lexeme for debugging */
 static bool lexeof;		/* seen EOF for current source? */
 static char *thisline = NULL;
 static int in_braces = 0;	/* count braces for firstline, lastline in an 'action' */
-static int lastline = 0;
-static int firstline = 0;
+static unsigned lastline = 0;
+static unsigned firstline = 0;
 static SRCFILE *sourcefile = NULL;	/* current program source */
 static int lasttok = 0;
 static bool eof_warned = false;	/* GLOBAL: want warning for each file */
@@ -161,7 +158,7 @@ static char *tokend;
 int errcount = 0;
 
 extern char *source;
-extern int sourceline;
+extern unsigned sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
 extern int max_args;
@@ -171,7 +168,7 @@ const char awk_namespace[] = "awk";
 const char *current_namespace = awk_namespace;
 bool namespace_changed = false;
 
-static INSTRUCTION *rule_block[sizeof(ruletab)];
+static INSTRUCTION *rule_block[sizeof(ruletab)/sizeof(ruletab[0])];
 
 static INSTRUCTION *ip_rec;
 static INSTRUCTION *ip_newfile;
@@ -392,7 +389,7 @@ pattern
 		add_lint($3, LINT_assign_in_cond);
 
 		tp = instruction(Op_no_op);
-		list_prepend($1, bcalloc(Op_line_range, !!do_pretty_print + 1, 0));
+		list_prepend($1, bcalloc(Op_line_range, !!do_pretty_print + 1u, 0));
 		$1->nexti->triggered = false;
 		$1->nexti->target_jmp = $3->nexti;
 
@@ -649,7 +646,7 @@ statement
 	  {
 		INSTRUCTION *dflt, *curr = NULL, *cexp, *cstmt;
 		INSTRUCTION *ip, *nextc, *tbreak;
-		char **case_values = NULL;
+		const char **case_values = NULL;
 		int maxcount = 128;
 		int case_count = 0;
 		int i;
@@ -684,10 +681,10 @@ statement
 					}
 
 					if (case_values == NULL)
-						emalloc(case_values, char **, sizeof(char *) * maxcount, "statement");
+						emalloc(case_values, const char **, sizeof(char *) * maxcount, "statement");
 					else if (case_count >= maxcount) {
 						maxcount += 128;
-						erealloc(case_values, char **, sizeof(char*) * maxcount, "statement");
+						erealloc(case_values, const char **, sizeof(char*) * maxcount, "statement");
 					}
 					case_values[case_count++] = caseval;
 				} else {
@@ -717,7 +714,7 @@ statement
 		}
 
 		if (case_values != NULL)
-			efree(case_values);
+			efree((void*) case_values);
 
 		ip = $3;
 		if (do_pretty_print) {
@@ -2214,9 +2211,9 @@ comma
 %%
 
 struct token {
-	const char *operator;	/* text to match */
+	const char *oper;	/* text to match */
 	OPCODE value;			/*  type */
-	int class;				/* lexical class */
+	int cls;				/* lexical class */
 	unsigned flags;			/* # of args. allowed and compatability */
 #	define	ARGS	0xFF	/* 0, 1, 2, 3 args allowed (any combination */
 #	define	A(n)	(1<<(n))
@@ -2243,7 +2240,7 @@ tokcompare(const void *l, const void *r)
 	lhs = (struct token *) l;
 	rhs = (struct token *) r;
 
-	return strcmp(lhs->operator, rhs->operator);
+	return strcmp(lhs->oper, rhs->oper);
 }
 #endif
 
@@ -2348,7 +2345,7 @@ static mbstate_t cur_mbstate;
 #define RING_BUFFER_SIZE (MAX_CHAR_IN_RING_BUFFER * MB_LEN_MAX)
 static char cur_char_ring[RING_BUFFER_SIZE];
 /* Index for ring buffers.  */
-static int cur_ring_idx;
+static unsigned cur_ring_idx;
 /* This macro means that last nextc() return a singlebyte character
    or 1st byte of a multibyte character.  */
 #define nextc_is_1stbyte (cur_char_ring[cur_ring_idx] == 1)
@@ -2366,10 +2363,10 @@ getfname(NODE *(*fptr)(int), bool prepend_awk)
 	for (i = 0; i < j; i++) {
 		if (tokentab[i].ptr == fptr || tokentab[i].ptr2 == fptr) {
 			if (prepend_awk && (tokentab[i].flags & GAWKX) != 0) {
-				sprintf(buf, "awk::%s", tokentab[i].operator);
+				sprintf(buf, "awk::%s", tokentab[i].oper);
 				return buf;
 			}
-			return tokentab[i].operator;
+			return tokentab[i].oper;
 		}
 	}
 
@@ -2439,7 +2436,7 @@ add_sign_to_num(NODE *n, char sign)
 static void
 print_included_from(void)
 {
-	int saveline, line;
+	unsigned saveline, line;
 	SRCFILE *s;
 
 	/* suppress current file name, line # from `.. included from ..' msgs */
@@ -2455,7 +2452,7 @@ print_included_from(void)
 		/* if last token is NEWLINE, line number is off by 1. */
 		if (s->lasttok == NEWLINE)
 			line--;
-		msg("%s %s:%d%c",
+		msg("%s %s:%u%c",
 			s->prev == sourcefile ? "In file included from"
 					  : "                 from",
 			(s->stype == SRC_INC ||
@@ -2470,10 +2467,10 @@ print_included_from(void)
 /* warning_ln --- print a warning message with location */
 
 static void
-warning_ln(int line, const char *mesg, ...)
+warning_ln(unsigned line, const char *mesg, ...)
 {
 	va_list args;
-	int saveline;
+	unsigned saveline;
 
 	saveline = sourceline;
 	sourceline = line;
@@ -2487,10 +2484,10 @@ warning_ln(int line, const char *mesg, ...)
 /* lintwarn_ln --- print a lint warning and location */
 
 static void
-lintwarn_ln(int line, const char *mesg, ...)
+lintwarn_ln(unsigned line, const char *mesg, ...)
 {
 	va_list args;
-	int saveline;
+	unsigned saveline;
 
 	saveline = sourceline;
 	sourceline = line;
@@ -2509,10 +2506,10 @@ lintwarn_ln(int line, const char *mesg, ...)
 /* error_ln --- print an error message and location */
 
 static void
-error_ln(int line, const char *m, ...)
+error_ln(unsigned line, const char *m, ...)
 {
 	va_list args;
-	int saveline;
+	unsigned saveline;
 
 	saveline = sourceline;
 	sourceline = line;
@@ -2774,7 +2771,7 @@ parse_program(INSTRUCTION **pcode, bool from_eval)
 	lexeof = false;
 	lexptr = NULL;
 	lasttok = 0;
-	memset(rule_block, 0, sizeof(ruletab) * sizeof(INSTRUCTION *));
+	memset(rule_block, 0, sizeof(rule_block));
 	errcount = 0;
 	tok = tokstart != NULL ? tokstart : tokexpand();
 
@@ -2868,7 +2865,7 @@ add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_incl
 					fatal(_("can't include `%s' and use it as a program file"), src);
 
 				if (do_lint) {
-					int line = sourceline;
+					unsigned line = sourceline;
 					/* Kludge: the line number may be off for `@include file'.
 					 * Since, this function is also used for '-f file' in main.c,
 					 * sourceline > 1 check ensures that the call is at
@@ -2943,7 +2940,7 @@ include_source(INSTRUCTION *file, void **srcfile_p)
 	sourcefile->lexptr_begin = lexptr_begin;
 	sourcefile->lexeme = lexeme;
 	sourcefile->lasttok = lasttok;
-	sourcefile->namespace = current_namespace;
+	sourcefile->namespc = current_namespace;
 
 	/* included file becomes the current source */
 	sourcefile = s;
@@ -3050,7 +3047,7 @@ next_sourcefile(void)
 			break;
 	}
 
-	if (sourcefile->lexptr_begin != NULL) {
+	if (sourcefile != NULL && sourcefile->lexptr_begin != NULL) {
 		/* resume reading from already opened file (postponed to process '@include') */
 		lexptr = sourcefile->lexptr;
 		lexend = sourcefile->lexend;
@@ -3059,7 +3056,7 @@ next_sourcefile(void)
 		lexeme = sourcefile->lexeme;
 		sourceline = sourcefile->srclines;
 		source = sourcefile->src;
-		set_current_namespace(sourcefile->namespace);
+		set_current_namespace(sourcefile->namespc);
 	} else {
 		lexptr = NULL;
 		sourceline = 0;
@@ -3074,31 +3071,22 @@ next_sourcefile(void)
 static char *
 get_src_buf(void)
 {
-	ssize_t n;
+	int n;
 	char *scan;
 	bool newfile;
 	size_t savelen;
 	struct stat sbuf;
 
-	/*
-	 * No argument prototype on readfunc on purpose,
-	 * avoids problems with some ancient systems where
-	 * the types of arguments to read() aren't up to date.
-	 */
-	static ssize_t (*readfunc)(void) = 0;
+	static int (*readfunc)(int fd, void *buffer, unsigned count) = 0;
 
 	if (readfunc == NULL) {
 		char *cp = getenv("AWKREADFUNC");
 
 		/* If necessary, one day, test value for different functions.  */
 		if (cp == NULL)
-			/*
-			 * cast is to remove warnings on systems with
-			 * different return types for read.
-			 */
-			readfunc = ( ssize_t(*)(void) ) read;
+			readfunc = read_whole;
 		else
-			readfunc = ( ssize_t(*)(void) ) read_one_line;
+			readfunc = read_one_line;
 	}
 
 	newfile = false;
@@ -3134,13 +3122,13 @@ get_src_buf(void)
 			size_t offset;
 			char *buf;
 
-			offset = lexptr - lexeme;
+			offset = (size_t) (lexptr - lexeme);
 			for (scan = lexeme; scan > lexptr_begin; scan--)
 				if (*scan == '\n') {
 					scan++;
 					break;
 				}
-			savelen = lexptr - scan;
+			savelen = (size_t) (lexptr - scan);
 			emalloc(buf, char *, savelen + 1, "get_src_buf");
 			memcpy(buf, scan, savelen);
 			thisline = buf;
@@ -3206,10 +3194,10 @@ get_src_buf(void)
 				break;
 			}
 
-		offset = lexptr - lexeme;
+		savelen = (size_t) (lexptr - scan);
+		offset = (size_t) (lexptr - lexeme);
 
-		if (lexptr > scan) {
-			savelen = lexptr - scan;
+		if (savelen > 0) {
 
 			/*
 			 * Need to make sure we have room left for reading new text;
@@ -3236,7 +3224,7 @@ get_src_buf(void)
 		}
 	}
 
-	n = (*(ssize_t(*)(int, void *, size_t))readfunc)(sourcefile->fd, lexptr, sourcefile->bufsize - savelen);
+	n = (*readfunc)(sourcefile->fd, lexptr, (unsigned) (sourcefile->bufsize - savelen));
 	if (n == -1) {
 		error(_("can't read sourcefile `%s' (%s)"),
 				source, strerror(errno));
@@ -3270,7 +3258,7 @@ tokexpand(void)
 	size_t tokoffset;
 
 	if (tokstart != NULL) {
-		tokoffset = tok - tokstart;
+		tokoffset = (size_t) (tok - tokstart);
 		toksize *= 2;
 		erealloc(tokstart, char *, toksize, "tokexpand");
 		tok = tokstart + tokoffset;
@@ -3345,7 +3333,7 @@ again:
 		/* Did we already check the current character?  */
 		if (cur_char_ring[cur_ring_idx] == 0) {
 			/* No, we need to check the next character on the buffer.  */
-			int idx, work_ring_idx = cur_ring_idx;
+			unsigned idx, work_ring_idx = cur_ring_idx;
 			mbstate_t tmp_state = {0}; /* Pacify compiler.  */
 			size_t mbclen;
 
@@ -3426,7 +3414,7 @@ static int
 get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 {
 	int c;
-	int sl;
+	unsigned sl;
 	char *p1;
 	char *p2;
 
@@ -3479,7 +3467,7 @@ get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 
 	(*comment_instruction) = bcalloc(Op_comment, 1, sl);
 	(*comment_instruction)->source_file = source;
-	(*comment_instruction)->memory = make_str_node(tokstart, tok - tokstart, 0);
+	(*comment_instruction)->memory = make_str_node(tokstart, (size_t) (tok - tokstart), 0);
 	(*comment_instruction)->memory->comment_type = flag;
 
 	return c;
@@ -3632,13 +3620,13 @@ collect_regexp:
 		for (;;) {
 			c = nextc(false);
 
-			cur_index = tok - tokstart;
+			cur_index = (size_t) (tok - tokstart);
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
 				if (nextc(false) == ':' || in_brack == 0) {
 					in_brack++;
 					if (in_brack == 1)
-						b_index = tok - tokstart;
+						b_index = (size_t) (tok - tokstart);
 				}
 				pushback();
 				break;
@@ -3675,7 +3663,7 @@ collect_regexp:
 					break;
 end_regexp:
 				yylval = GET_INSTRUCTION(Op_token);
-				yylval->lextok = estrdup(tokstart, tok - tokstart);
+				yylval->lextok = estrdup(tokstart, (size_t) (tok - tokstart));
 				if (do_lint) {
 					int peek = nextc(true);
 
@@ -4071,13 +4059,13 @@ retry:
 		}
 		yylval = GET_INSTRUCTION(Op_token);
 		if (want_source) {
-			yylval->lextok = estrdup(tokstart, tok - tokstart);
+			yylval->lextok = estrdup(tokstart, (size_t) (tok - tokstart));
 			return lasttok = FILENAME;
 		}
 
 		yylval->opcode = Op_push_i;
 		yylval->memory = make_str_node(tokstart,
-					tok - tokstart, esc_seen ? SCAN : 0);
+					(size_t) (tok - tokstart), esc_seen ? SCAN : 0);
 		if (intlstr) {
 			yylval->memory->flags |= INTLSTR;
 			intlstr = false;
@@ -4345,9 +4333,9 @@ retry:
 	/* See if it is a special token. */
 	if ((mid = check_qualified_special(tokstart)) >= 0) {
 		static int warntab[sizeof(tokentab) / sizeof(tokentab[0])];
-		int class = tokentab[mid].class;
+		int cls = tokentab[mid].cls;
 
-		switch (class) {
+		switch (cls) {
 		case LEX_EVAL:
 		case LEX_INCLUDE:
 		case LEX_LOAD:
@@ -4388,12 +4376,12 @@ retry:
 		if (do_lint) {
 			if (do_lint_extensions && (tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {
 				lintwarn(_("`%s' is a gawk extension"),
-					tokentab[mid].operator);
+					tokentab[mid].oper);
 				warntab[mid] |= GAWKX;
 			}
 			if ((tokentab[mid].flags & NOT_POSIX) != 0 && (warntab[mid] & NOT_POSIX) == 0) {
 				lintwarn(_("POSIX does not allow `%s'"),
-					tokentab[mid].operator);
+					tokentab[mid].oper);
 				warntab[mid] |= NOT_POSIX;
 			}
 		}
@@ -4401,7 +4389,7 @@ retry:
 				 && (warntab[mid] & NOT_OLD) == 0
 		) {
 			lintwarn(_("`%s' is not supported in old awk"),
-					tokentab[mid].operator);
+					tokentab[mid].oper);
 			warntab[mid] |= NOT_OLD;
 		}
 
@@ -4410,7 +4398,7 @@ retry:
 		if ((tokentab[mid].flags & CONTINUE) != 0)
 			continue_allowed++;
 
-		switch (class) {
+		switch (cls) {
 		case LEX_NAMESPACE:
 		case LEX_INCLUDE:
 		case LEX_LOAD:
@@ -4421,7 +4409,7 @@ retry:
 				goto out;
 			emalloc(tokkey, char *, tok - tokstart + 1, "yylex");
 			tokkey[0] = '@';
-			memcpy(tokkey + 1, tokstart, tok - tokstart);
+			memcpy(tokkey + 1, tokstart, (size_t) (tok - tokstart));
 			yylval = GET_INSTRUCTION(Op_token);
 			yylval->lextok = tokkey;
 			break;
@@ -4439,7 +4427,7 @@ retry:
 		case LEX_DO:
 		case LEX_SWITCH:
 			if (! do_pretty_print)
-				return lasttok = class;
+				return lasttok = cls;
 			/* fall through */
 		case LEX_CASE:
 			yylval = bcalloc(tokentab[mid].value, 2, sourceline);
@@ -4469,17 +4457,17 @@ retry:
 		default:
 make_instruction:
 			yylval = GET_INSTRUCTION(tokentab[mid].value);
-			if (class == LEX_BUILTIN || class == LEX_LENGTH)
+			if (cls == LEX_BUILTIN || cls == LEX_LENGTH)
 				yylval->builtin_idx = mid;
 			break;
 		}
-		return lasttok = class;
+		return lasttok = cls;
 	}
 out:
 	if (want_param_names == FUNC_HEADER)
-		tokkey = estrdup(tokstart, tok - tokstart - 1);
+		tokkey = estrdup(tokstart, (size_t) (tok - tokstart) - 1);
 	else
-		tokkey = qualify_name(tokstart, tok - tokstart - 1);
+		tokkey = qualify_name(tokstart, (size_t) (tok - tokstart) - 1);
 
 	if (*lexptr == '(') {
 		yylval = bcalloc(Op_token, 2, sourceline);
@@ -4552,7 +4540,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	INSTRUCTION *ip;
 	NODE *n;
 	int nexp = 0;
-	int args_allowed;
+	unsigned args_allowed;
 	int idx = r->builtin_idx;
 
 	if (subn != NULL) {
@@ -4568,24 +4556,24 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	args_allowed = tokentab[idx].flags & ARGS;
 	if (args_allowed && (args_allowed & A(nexp)) == 0) {
 		yyerror(_("%d is invalid as number of arguments for %s"),
-				nexp, tokentab[idx].operator);
+				nexp, tokentab[idx].oper);
 		return NULL;
 	}
 
 	/* special processing for sub, gsub and gensub */
 
 	if (tokentab[idx].value == Op_sub_builtin) {
-		const char *operator = tokentab[idx].operator;
+		const char *oper = tokentab[idx].oper;
 
 		r->sub_flags = 0;
 
 		arg = subn->nexti;		/* first arg list */
 		(void) mk_rexp(arg);
 
-		if (strcmp(operator, "gensub") != 0) {
+		if (strcmp(oper, "gensub") != 0) {
 			/* sub and gsub */
 
-			if (strcmp(operator, "gsub") == 0)
+			if (strcmp(oper, "gsub") == 0)
 				r->sub_flags |= GSUB;
 
 			arg = arg->lasti->nexti;	/* 2nd arg list */
@@ -4603,12 +4591,12 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			if (ip->opcode == Op_push_i) {
 				if (do_lint)
 					lintwarn(_("%s: string literal as last arg of substitute has no effect"),
-						operator);
+						oper);
 				r->sub_flags |=	LITERAL;
 			} else {
 				if (make_assignable(ip) == NULL)
 					yyerror(_("%s third parameter is not a changeable object"),
-						operator);
+						oper);
 				else
 					ip->do_reference = true;
 			}
@@ -4868,10 +4856,10 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	 * about all shadowed parameters.
 	 */
 	for (i = 0; i < pcount; i++) {
-		if (lookup(fp[i].param) != NULL) {
+		if (lookup(fp[i].vname) != NULL) {
 			awkwarn(
 	_("function `%s': parameter `%s' shadows global variable"),
-					fname, fp[i].param);
+					fname, fp[i].vname);
 			ret = true;
 		}
 	}
@@ -5137,7 +5125,7 @@ func_use(const char *name, enum defref how)
 {
 	struct fdesc *fp;
 	size_t len;
-	int ind;
+	unsigned long ind;
 
 	len = strlen(name);
 	ind = hash(name, len, HASHSIZE, NULL);
@@ -5237,7 +5225,7 @@ param_sanity(INSTRUCTION *arglist)
 /* variable --- make sure NAME is in the symbol table */
 
 NODE *
-variable(int location, char *name, NODETYPE type)
+variable(unsigned location, char *name, NODETYPE type)
 {
 	NODE *r;
 
@@ -5263,7 +5251,7 @@ make_regnode(int type, NODE *exp)
 	assert(type == Node_regex || type == Node_dynregex);
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
-	n->type = type;
+	n->type = (NODETYPE) type;
 	n->re_cnt = 1;
 
 	if (type == Node_regex) {
@@ -5390,7 +5378,7 @@ dumpintlstr(const char *str, size_t len)
 		/* ala the gettext sources, remove leading `./'s */
 		for (cp = source; cp[0] == '.' && cp[1] == '/'; cp += 2)
 			continue;
-		printf("#: %s:%d\n", cp, sourceline);
+		printf("#: %s:%u\n", cp, sourceline);
 	}
 
 	printf("msgid ");
@@ -5413,7 +5401,7 @@ dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 		/* ala the gettext sources, remove leading `./'s */
 		for (cp = source; cp[0] == '.' && cp[1] == '/'; cp += 2)
 			continue;
-		printf("#: %s:%d\n", cp, sourceline);
+		printf("#: %s:%u\n", cp, sourceline);
 	}
 
 	printf("msgid ");
@@ -5658,11 +5646,11 @@ enum defline { FIRST_LINE, LAST_LINE };
 
 /* find_line -- find the first(last) line in a list of (pattern) instructions */
 
-static int
+static unsigned
 find_line(INSTRUCTION *pattern, enum defline what)
 {
 	INSTRUCTION *ip;
-	int lineno = 0;
+	unsigned lineno = 0;
 
 	for (ip = pattern->nexti; ip; ip = ip->nexti) {
 		if (what == LAST_LINE) {
@@ -5734,14 +5722,14 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 				(void) list_prepend(action, instruction(Op_exec_count));
 			(rp + 1)->firsti = action->nexti;
 			(rp + 1)->lasti = tp;
-			(rp + 2)->first_line = (short) firstline;
+			(rp + 2)->first_line = (unsigned short) firstline;
 			(rp + 2)->last_line = lastline;
-			rp->source_line = (short) firstline;
+			rp->source_line = (unsigned short) firstline;
 			ip = list_prepend(list_append(action, tp), rp);
 		} else {
 			(void) list_append(pattern, instruction(Op_jmp_false));
 			pattern->lasti->target_jmp = tp;
-			(rp + 2)->first_line = (short) find_line(pattern, FIRST_LINE);
+			(rp + 2)->first_line = (unsigned short) find_line(pattern, FIRST_LINE);
 			rp->source_line = (rp + 2)->first_line;
 			if (action == NULL) {
 				(rp + 2)->last_line = find_line(pattern, LAST_LINE);
@@ -6016,7 +6004,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 	 */
 
 	if (redir == NULL) {
-		int sline = op->source_line;
+		unsigned sline = op->source_line;
 		bcfree(op);
 		op = bcalloc(Op_K_getline, 2, sline);
 		(op + 1)->target_endfile = ip_endfile;
@@ -6164,7 +6152,7 @@ add_lint(INSTRUCTION *list, LINTTYPE linttype)
 
 	case LINT_no_effect:
 		if (list->lasti->opcode == Op_pop && list->nexti != list->lasti) {
-			int line = 0;
+			unsigned line = 0;
 
 			// Get down to the last instruction (FIXME: why?)
 			for (ip = list->nexti; ip->nexti != list->lasti; ip = ip->nexti) {
@@ -6376,9 +6364,9 @@ check_special(const char *name)
 	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
 	while (low <= high) {
 		mid = (low + high) / 2;
-		i = *name - tokentab[mid].operator[0];
+		i = *name - tokentab[mid].oper[0];
 		if (i == 0)
-			i = strcmp(name, tokentab[mid].operator);
+			i = strcmp(name, tokentab[mid].oper);
 
 		if (i < 0)		/* token < mid */
 			high = mid - 1;
@@ -6401,10 +6389,18 @@ check_special(const char *name)
 
 static FILE *fp = NULL;
 
+/* read_whole --- return whole input test at a time. */
+
+static int
+read_whole(int fd, void *buffer, unsigned count)
+{
+	return (int) read(fd, buffer, count);
+}
+
 /* read_one_line --- return one input line at a time. mainly for debugging. */
 
-static ssize_t
-read_one_line(int fd, void *buffer, size_t count)
+static int
+read_one_line(int fd, void *buffer, unsigned count)
 {
 	char buf[BUFSIZ];
 
@@ -6419,11 +6415,11 @@ read_one_line(int fd, void *buffer, size_t count)
 		}
 	}
 
-	if (fgets(buf, sizeof buf, fp) == NULL)
+	if (fgets(buf, sizeof(buf), fp) == NULL)
 		return 0;
 
 	memcpy(buffer, buf, strlen(buf));
-	return strlen(buf);
+	return (int) strlen(buf);
 }
 
 /* one_line_close --- close the open file being read with read_one_line() */
@@ -6455,7 +6451,7 @@ lookup_builtin(const char *name)
 	if (mid == -1)
 		return NULL;
 
-	switch (tokentab[mid].class) {
+	switch (tokentab[mid].cls) {
 	case LEX_BUILTIN:
 	case LEX_LENGTH:
 		break;
@@ -6492,10 +6488,10 @@ install_builtins(void)
 
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
 	for (i = 0; i < j; i++) {
-		if (   (tokentab[i].class == LEX_BUILTIN
-		        || tokentab[i].class == LEX_LENGTH)
+		if (   (tokentab[i].cls == LEX_BUILTIN
+		        || tokentab[i].cls == LEX_LENGTH)
 		    && (tokentab[i].flags & flags_that_must_be_clear) == 0) {
-			(void) install_symbol(tokentab[i].operator, Node_builtin_func);
+			(void) install_symbol(tokentab[i].oper, Node_builtin_func);
 		}
 	}
 }
@@ -6753,7 +6749,7 @@ check_qualified_special(char *token)
 			return i;
 
 		t = & tokentab[i];
-		if ((t->flags & GAWKX) != 0 && t->class == LEX_BUILTIN)
+		if ((t->flags & GAWKX) != 0 && t->cls == LEX_BUILTIN)
 			return -1;
 		else
 			return i;
@@ -6781,7 +6777,7 @@ check_qualified_special(char *token)
 	if (strcmp(ns, "awk") == 0) {
 		i = check_special(subname);
 		if (i >= 0) {
-			if ((tokentab[i].flags & GAWKX) != 0 && tokentab[i].class == LEX_BUILTIN)
+			if ((tokentab[i].flags & GAWKX) != 0 && tokentab[i].cls == LEX_BUILTIN)
 				;	// gawk additional builtin function, is ok
 			else
 				error_ln(sourceline, _("using reserved identifier `%s' as second component of a qualified name is not allowed"), subname);
