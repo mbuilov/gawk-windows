@@ -29,7 +29,7 @@
 #define INT32_BIT 32
 
 extern FILE *output_fp;
-extern void indent(int indent_level);
+extern void indent(unsigned indent_level);
 extern NODE **is_integer(NODE *symbol, NODE *subs);
 
 /*
@@ -37,8 +37,8 @@ extern NODE **is_integer(NODE *symbol, NODE *subs);
  * THRESHOLD    ---  Maximum capacity waste; THRESHOLD >= 2^(NHAT + 1).
  */
 
-static int NHAT = 10;
-static long THRESHOLD;
+static unsigned NHAT = 10;
+static unsigned long THRESHOLD;
 
 /*
  * What is the optimium NHAT ? timing results suggest that 10 is a good choice,
@@ -91,37 +91,37 @@ const array_funcs_t argv_array_func = {
 	argv_store,
 };
 
-static inline int cint_hash(long k);
-static inline NODE **cint_find(NODE *symbol, long k, int h1);
+static inline unsigned cint_hash(unsigned long k);
+static inline NODE **cint_find(NODE *symbol, unsigned long k, unsigned h1);
 
 static inline NODE *make_node(NODETYPE type);
 
-static NODE **tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base);
-static NODE **tree_exists(NODE *tree, long k);
+static NODE **tree_lookup(NODE *symbol, NODE *tree, unsigned long k, unsigned m, unsigned long base);
+static NODE **tree_exists(NODE *tree, unsigned long k);
 static void tree_clear(NODE *tree);
-static int tree_remove(NODE *symbol, NODE *tree, long k);
+static int tree_remove(NODE *symbol, NODE *tree, unsigned long k);
 static void tree_copy(NODE *newsymb, NODE *tree, NODE *newtree);
-static long tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind);
-static inline NODE **tree_find(NODE *tree, long k, int i);
+static unsigned long tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind);
+static inline NODE **tree_find(NODE *tree, unsigned long k, unsigned i);
 static void tree_info(NODE *tree, NODE *ndump, const char *aname);
 static size_t tree_kilobytes(NODE *tree);
 #ifdef ARRAYDEBUG
-static void tree_print(NODE *tree, size_t bi, int indent_level);
+static void tree_print(NODE *tree, unsigned bi, unsigned indent_level);
 #endif
 
-static inline NODE **leaf_lookup(NODE *symbol, NODE *array, long k, long size, long base);
-static inline NODE **leaf_exists(NODE *array, long k);
+static inline NODE **leaf_lookup(NODE *symbol, NODE *array, unsigned long k, unsigned long size, unsigned long base);
+static inline NODE **leaf_exists(NODE *array, unsigned long k);
 static void leaf_clear(NODE *array);
-static int leaf_remove(NODE *symbol, NODE *array, long k);
+static int leaf_remove(NODE *symbol, NODE *array, unsigned long k);
 static void leaf_copy(NODE *newsymb, NODE *array, NODE *newarray);
-static long leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind);
+static unsigned long leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind);
 static void leaf_info(NODE *array, NODE *ndump, const char *aname);
 #ifdef ARRAYDEBUG
-static void leaf_print(NODE *array, size_t bi, int indent_level);
+static void leaf_print(NODE *array, unsigned bi, unsigned indent_level);
 #endif
 
 /* powers of 2 table upto 2^30 */
-static const long power_two_table[] = {
+static const unsigned long power_two_table[] = {
 	1, 2, 4, 8, 16, 32, 64,
 	128, 256, 512, 1024, 2048, 4096,
 	8192, 16384, 32768, 65536, 131072, 262144,
@@ -165,21 +165,23 @@ static const long power_two_table[] = {
 /* cint_array_init ---  array initialization routine */
 
 static NODE **
-cint_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
+cint_array_init(NODE *symbol, NODE *subs)
 {
 	if (symbol == NULL) {
 		long newval;
-		size_t nelems = (sizeof(power_two_table) / sizeof(power_two_table[0]));
+		const unsigned nelems = (sizeof(power_two_table) / sizeof(power_two_table[0]));
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("NHAT")) > 1 && newval < INT32_BIT)
-			NHAT = newval;
+			NHAT = (unsigned) newval;
 		/* don't allow overflow off the end of the table */
-		if (NHAT >= nelems)
+		if (NHAT > nelems - 2)
 			NHAT = nelems - 2;
 		THRESHOLD = power_two_table[NHAT + 1];
 	} else
 		null_array(symbol);
+
+	(void) subs;
 
 	return & success_node;
 }
@@ -202,14 +204,15 @@ static NODE **
 cint_lookup(NODE *symbol, NODE *subs)
 {
 	NODE **lhs;
-	long k;
-	int h1 = -1, m, li;
+	unsigned long k = 0;
+	unsigned h1, m, li;
 	NODE *tn, *xn;
-	long cint_size, capacity;
+	unsigned long cint_size;
+	size_t capacity;
 
-	k = -1;
+	h1 = 0;
 	if (ISUINT(symbol, subs)) {
-		k = subs->numbr;	/* k >= 0 */
+		k = (unsigned long) subs->numbr;	/* k >= 0 */
 		h1 = cint_hash(k);	/* h1 >= NHAT */
 		if ((lhs = cint_find(symbol, k, h1)) != NULL)
 			return lhs;
@@ -220,7 +223,7 @@ cint_lookup(NODE *symbol, NODE *subs)
 
 	/* It's not there, install it */
 
-	if (k < 0)
+	if (h1 == 0)
 		goto xinstall;
 
 	m = h1 - 1;	/* m >= (NHAT- 1) */
@@ -237,7 +240,7 @@ cint_lookup(NODE *symbol, NODE *subs)
 
 	cint_size = (xn == NULL) ? symbol->table_size
 				: (symbol->table_size - xn->table_size);
-	assert(cint_size >= 0);
+	assert(xn == NULL || symbol->table_size >= xn->table_size);
 	if ((capacity - cint_size) > THRESHOLD)
 		goto xinstall;
 
@@ -291,7 +294,7 @@ cint_exists(NODE *symbol, NODE *subs)
 	NODE *xn;
 
 	if (ISUINT(symbol, subs)) {
-		long k = subs->numbr;
+		unsigned long k = (unsigned long) subs->numbr;
 		NODE **lhs;
 		if ((lhs = cint_find(symbol, k, cint_hash(k))) != NULL)
 			return lhs;
@@ -305,10 +308,11 @@ cint_exists(NODE *symbol, NODE *subs)
 /* cint_clear --- flush all the values in symbol[] */
 
 static NODE **
-cint_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+cint_clear(NODE *symbol, NODE *subs)
 {
-	size_t i;
+	unsigned i;
 	NODE *tn;
+	(void) subs;
 
 	assert(symbol->nodes != NULL);
 
@@ -338,8 +342,8 @@ cint_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 static NODE **
 cint_remove(NODE *symbol, NODE *subs)
 {
-	long k;
-	int h1;
+	unsigned long k;
+	unsigned h1;
 	NODE *tn, *xn = symbol->xarray;
 
 	if (symbol->table_size == 0)
@@ -350,7 +354,7 @@ cint_remove(NODE *symbol, NODE *subs)
 
 	assert(symbol->nodes != NULL);
 
-	k = subs->numbr;
+	k = (unsigned long) subs->numbr;
 	h1 = cint_hash(k);
 	tn = symbol->nodes[h1];
 	if (tn == NULL || ! tree_remove(symbol, tn, k))
@@ -398,20 +402,20 @@ xremove:
 static NODE **
 cint_copy(NODE *symbol, NODE *newsymb)
 {
-	NODE **old, **new;
-	size_t i;
+	NODE **old_n, **new_n;
+	unsigned i;
 
 	assert(symbol->nodes != NULL);
 
 	/* allocate new table */
-	ezalloc(new, NODE **, INT32_BIT * sizeof(NODE *), "cint_copy");
+	ezalloc(new_n, NODE **, INT32_BIT * sizeof(NODE *), "cint_copy");
 
-	old = symbol->nodes;
+	old_n = symbol->nodes;
 	for (i = NHAT; i < INT32_BIT; i++) {
-		if (old[i] == NULL)
+		if (old_n[i] == NULL)
 			continue;
-		new[i] = make_node(Node_array_tree);
-		tree_copy(newsymb, old[i], new[i]);
+		new_n[i] = make_node(Node_array_tree);
+		tree_copy(newsymb, old_n[i], new_n[i]);
 	}
 
 	if (symbol->xarray != NULL) {
@@ -424,7 +428,7 @@ cint_copy(NODE *symbol, NODE *newsymb)
 	} else
 		newsymb->xarray = NULL;
 
-	newsymb->nodes = new;
+	newsymb->nodes = new_n;
 	newsymb->table_size = symbol->table_size;
 	newsymb->array_capacity = symbol->array_capacity;
 	newsymb->flags = symbol->flags;
@@ -441,8 +445,8 @@ cint_list(NODE *symbol, NODE *t)
 	NODE **list = NULL;
 	NODE *tn, *xn;
 	unsigned long k = 0, num_elems, list_size;
-	size_t j, ja, jd;
-	int elem_size = 1;
+	unsigned j, ja, jd;
+	unsigned elem_size = 1;
 	assoc_kind_t assoc_kind;
 
 	num_elems = symbol->table_size;
@@ -460,7 +464,7 @@ cint_list(NODE *symbol, NODE *t)
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
 		assert(list != NULL);
-		assoc_kind &= ~(AASC|ADESC);
+		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
 		t->flags = (unsigned int) assoc_kind;
 		if (num_elems == 1 || num_elems == xn->table_size)
 			return list;
@@ -471,7 +475,7 @@ cint_list(NODE *symbol, NODE *t)
 
 	if ((assoc_kind & AINUM) == 0) {
 		/* not sorting by "index num" */
-		assoc_kind &= ~(AASC|ADESC);
+		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
 		t->flags = (unsigned int) assoc_kind;
 	}
 
@@ -489,6 +493,8 @@ cint_list(NODE *symbol, NODE *t)
 	return list;
 }
 
+extern AWKNUM int_kilobytes(NODE *symbol);
+extern AWKNUM str_kilobytes(NODE *symbol);
 
 /* cint_dump --- dump array info */
 
@@ -496,12 +502,10 @@ static NODE **
 cint_dump(NODE *symbol, NODE *ndump)
 {
 	NODE *tn, *xn = NULL;
-	int indent_level;
-	size_t i;
-	long cint_size = 0, xsize = 0;
+	unsigned indent_level;
+	unsigned i;
+	unsigned long cint_size, xsize = 0;
 	AWKNUM kb = 0;
-	extern AWKNUM int_kilobytes(NODE *symbol);
-	extern AWKNUM str_kilobytes(NODE *symbol);
 
 	indent_level = ndump->alevel;
 
@@ -523,14 +527,14 @@ cint_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "NHAT: %d\n", NHAT);
+	fprintf(output_fp, "NHAT: %u\n", NHAT);
 	indent(indent_level);
-	fprintf(output_fp, "THRESHOLD: %ld\n", THRESHOLD);
+	fprintf(output_fp, "THRESHOLD: %lu\n", THRESHOLD);
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %ld (total), %ld (cint), %ld (int + str)\n",
+	fprintf(output_fp, "table_size: %lu (total), %lu (cint), %lu (int + str)\n",
 				symbol->table_size, cint_size, xsize);
 	indent(indent_level);
-	fprintf(output_fp, "array_capacity: %lu\n", (unsigned long) symbol->array_capacity);
+	fprintf(output_fp, "array_capacity: %llu\n", (unsigned long long)0 + symbol->array_capacity);
 	indent(indent_level);
 	fprintf(output_fp, "Load Factor: %.2g\n", (AWKNUM) cint_size / symbol->array_capacity);
 
@@ -583,15 +587,14 @@ cint_dump(NODE *symbol, NODE *ndump)
 
 /* cint_hash --- locate the HAT for a given number 'k' */
 
-static inline int
-cint_hash(long k)
+static inline unsigned
+cint_hash(unsigned long k)
 {
 	uint32_t num, r, shift;
 
-	assert(k >= 0);
 	if (k == 0)
 		return NHAT;
-	num = k;
+	num = (uint32_t) k;
 
 	/* Find the Floor(log base 2 of 32-bit integer) */
 
@@ -625,10 +628,10 @@ cint_hash(long k)
 	 *
 	 */
 
-	r = (num > 0xFFFF) << 4; num >>= r;
-	shift = (num > 0xFF) << 3; num >>= shift; r |= shift;
-	shift = (num > 0x0F) << 2; num >>= shift; r |= shift;
-	shift = (num > 0x03) << 1; num >>= shift; r |= shift;
+	r = (uint32_t) (num > 0xFFFF) << 4; num >>= r;
+	shift = (uint32_t) (num > 0xFF) << 3; num >>= shift; r |= shift;
+	shift = (uint32_t) (num > 0x0F) << 2; num >>= shift; r |= shift;
+	shift = (uint32_t) (num > 0x03) << 1; num >>= shift; r |= shift;
 	r |= (num >> 1);
 
 	/* We use a single HAT for 0 <= num < 2^NHAT */
@@ -642,7 +645,7 @@ cint_hash(long k)
 /* cint_find --- locate the integer subscript */
 
 static inline NODE **
-cint_find(NODE *symbol, long k, int h1)
+cint_find(NODE *symbol, unsigned long k, unsigned h1)
 {
 	NODE *tn;
 
@@ -660,10 +663,9 @@ static void
 cint_print(NODE *symbol)
 {
 	NODE *tn;
-	size_t i;
+	unsigned i;
 
-	fprintf(output_fp, "I[%4lu:%-4lu]\n", (unsigned long) INT32_BIT,
-				(unsigned long) symbol->table_size);
+	fprintf(output_fp, "I[%4d:%-4lu]\n", INT32_BIT, symbol->table_size);
 	for (i = NHAT; i < INT32_BIT; i++) {
 		tn = symbol->nodes[i];
 		if (tn == NULL)
@@ -738,13 +740,13 @@ make_node(NODETYPE type)
 /* tree_lookup --- Find an integer subscript in a HAT; Install it if it isn't there */
 
 static NODE **
-tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base)
+tree_lookup(NODE *symbol, NODE *tree, unsigned long k, unsigned m, unsigned long base)
 {
 	NODE **lhs;
 	NODE *tn;
-	int i, n;
-	size_t size;
-	long num = k;
+	unsigned i, n;
+	unsigned long size;
+	unsigned long num = k;
 
 	/*
 	 * HAT size (size of Top & Leaf array) = 2^n
@@ -755,7 +757,7 @@ tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base)
 	n = (m + 1) / 2;
 
 	if (tree->table_size == 0) {
-		size_t actual_size;
+		unsigned long actual_size;
 		NODE **table;
 
 		assert(tree->nodes == NULL);
@@ -775,9 +777,9 @@ tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base)
 	} else
 		size = tree->array_size;
 
+	assert(num >= tree->array_base);
 	num -= tree->array_base;
 	i = num / size;	/* top-level array index */
-	assert(i >= 0);
 
 	if ((lhs = tree_find(tree, k, i)) != NULL)
 		return lhs;
@@ -802,13 +804,13 @@ tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base)
 /* tree_exists --- test whether integer subscript `k' exists or not */
 
 static NODE **
-tree_exists(NODE *tree, long k)
+tree_exists(NODE *tree, unsigned long k)
 {
-	int i;
+	unsigned i;
 	NODE *tn;
 
+	assert(k >= tree->array_base);
 	i = (k - tree->array_base) / tree->array_size;
-	assert(i >= 0);
 	tn = tree->nodes[i];
 	if (tn == NULL)
 		return NULL;
@@ -823,7 +825,7 @@ static void
 tree_clear(NODE *tree)
 {
 	NODE *tn;
-	size_t	j, hsize;
+	unsigned long j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
@@ -849,13 +851,13 @@ tree_clear(NODE *tree)
 /* tree_remove --- If the integer subscript is in the HAT, remove it */
 
 static int
-tree_remove(NODE *symbol, NODE *tree, long k)
+tree_remove(NODE *symbol, NODE *tree, unsigned long k)
 {
-	int i;
+	unsigned i;
 	NODE *tn;
 
+	assert(k >= tree->array_base);
 	i = (k - tree->array_base) / tree->array_size;
-	assert(i >= 0);
 	tn = tree->nodes[i];
 	if (tn == NULL)
 		return false;
@@ -885,7 +887,7 @@ tree_remove(NODE *symbol, NODE *tree, long k)
 /* tree_find --- locate an interger subscript in the HAT */
 
 static inline NODE **
-tree_find(NODE *tree, long k, int i)
+tree_find(NODE *tree, unsigned long k, unsigned i)
 {
 	NODE *tn;
 
@@ -902,12 +904,12 @@ tree_find(NODE *tree, long k, int i)
 
 /* tree_list --- return a list of items in the HAT */
 
-static long
+static unsigned long
 tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 {
 	NODE *tn;
-	size_t j, cj, hsize;
-	long k = 0;
+	unsigned long j, cj, hsize;
+	unsigned long k = 0;
 
 	assert(list != NULL);
 
@@ -936,30 +938,30 @@ tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 static void
 tree_copy(NODE *newsymb, NODE *tree, NODE *newtree)
 {
-	NODE **old, **new;
-	size_t j, hsize;
+	NODE **old_n, **new_n;
+	unsigned long j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
 
-	ezalloc(new, NODE **, hsize * sizeof(NODE *), "tree_copy");
-	newtree->nodes = new;
+	ezalloc(new_n, NODE **, hsize * sizeof(NODE *), "tree_copy");
+	newtree->nodes = new_n;
 	newtree->array_base = tree->array_base;
 	newtree->array_size = tree->array_size;
 	newtree->table_size = tree->table_size;
 	newtree->flags = tree->flags;
 
-	old = tree->nodes;
+	old_n = tree->nodes;
 	for (j = 0; j < hsize; j++) {
-		if (old[j] == NULL)
+		if (old_n[j] == NULL)
 			continue;
-		if (old[j]->type == Node_array_tree) {
-			new[j] = make_node(Node_array_tree);
-			tree_copy(newsymb, old[j], new[j]);
+		if (old_n[j]->type == Node_array_tree) {
+			new_n[j] = make_node(Node_array_tree);
+			tree_copy(newsymb, old_n[j], new_n[j]);
 		} else {
-			new[j] = make_node(Node_array_leaf);
-			leaf_copy(newsymb, old[j], new[j]);
+			new_n[j] = make_node(Node_array_leaf);
+			leaf_copy(newsymb, old_n[j], new_n[j]);
 		}
 	}
 }
@@ -971,7 +973,7 @@ static void
 tree_info(NODE *tree, NODE *ndump, const char *aname)
 {
 	NODE *tn;
-	size_t j, hsize;
+	unsigned long j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
@@ -995,7 +997,7 @@ static size_t
 tree_kilobytes(NODE *tree)
 {
 	NODE *tn;
-	size_t j, hsize;
+	unsigned long j, hsize;
 	size_t sz = 0;
 
 	hsize = tree->array_size;
@@ -1018,20 +1020,20 @@ tree_kilobytes(NODE *tree)
 /* tree_print --- print the HAT structures */
 
 static void
-tree_print(NODE *tree, size_t bi, int indent_level)
+tree_print(NODE *tree, unsigned bi, unsigned indent_level)
 {
 	NODE *tn;
-	size_t j, hsize;
+	unsigned long j, hsize;
 
 	indent(indent_level);
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
-	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n",
-			(unsigned long) bi,
+	fprintf(output_fp, "%4u:%s[%4lu:%-4lu]\n",
+			bi,
 			(tree->flags & HALFHAT) != 0 ? "HH" : "H",
-			(unsigned long) hsize, (unsigned long) tree->table_size);
+			hsize, tree->table_size);
 
 	for (j = 0; j < hsize; j++) {
 		tn = tree->nodes[j];
@@ -1053,7 +1055,7 @@ tree_print(NODE *tree, size_t bi, int indent_level)
  */
 
 static inline NODE **
-leaf_lookup(NODE *symbol, NODE *array, long k, long size, long base)
+leaf_lookup(NODE *symbol, NODE *array, unsigned long k, unsigned long size, unsigned long base)
 {
 	NODE **lhs;
 
@@ -1077,7 +1079,7 @@ leaf_lookup(NODE *symbol, NODE *array, long k, long size, long base)
 /* leaf_exists --- check if the array contains an integer subscript */
 
 static inline NODE **
-leaf_exists(NODE *array, long k)
+leaf_exists(NODE *array, unsigned long k)
 {
 	NODE **lhs;
 	lhs = array->nodes + (k - array->array_base);
@@ -1090,7 +1092,7 @@ leaf_exists(NODE *array, long k)
 static void
 leaf_clear(NODE *array)
 {
-	long i, size = array->array_size;
+	unsigned long i, size = array->array_size;
 	NODE *r;
 
 	for (i = 0; i < size; i++) {
@@ -1113,7 +1115,7 @@ leaf_clear(NODE *array)
 /* leaf_remove --- remove an integer subscript from the array */
 
 static int
-leaf_remove(NODE *symbol, NODE *array, long k)
+leaf_remove(NODE *symbol, NODE *array, unsigned long k)
 {
 	NODE **lhs;
 
@@ -1136,29 +1138,29 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 static void
 leaf_copy(NODE *newsymb, NODE *array, NODE *newarray)
 {
-	NODE **old, **new;
-	long size, i;
+	NODE **old_n, **new_n;
+	unsigned long size, i;
 
 	size = array->array_size;
-	ezalloc(new, NODE **, size * sizeof(NODE *), "leaf_copy");
-	newarray->nodes = new;
+	ezalloc(new_n, NODE **, size * sizeof(NODE *), "leaf_copy");
+	newarray->nodes = new_n;
 	newarray->array_size = size;
 	newarray->array_base = array->array_base;
 	newarray->flags = array->flags;
 	newarray->table_size = array->table_size;
 
-	old = array->nodes;
+	old_n = array->nodes;
 	for (i = 0; i < size; i++) {
-		if (old[i] == NULL)
+		if (old_n[i] == NULL)
 			continue;
-		if (old[i]->type == Node_val)
-			new[i] = dupnode(old[i]);
+		if (old_n[i]->type == Node_val)
+			new_n[i] = dupnode(old_n[i]);
 		else {
 			NODE *r;
 			r = make_array();
-			r->vname = estrdup(old[i]->vname, strlen(old[i]->vname));
+			r->vname = estrdup(old_n[i]->vname, strlen(old_n[i]->vname));
 			r->parent_array = newsymb;
-			new[i] = assoc_copy(old[i], r);
+			new_n[i] = assoc_copy(old_n[i], r);
 		}
 	}
 }
@@ -1166,12 +1168,12 @@ leaf_copy(NODE *newsymb, NODE *array, NODE *newarray)
 
 /* leaf_list --- return a list of items */
 
-static long
+static unsigned long
 leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 {
 	NODE *r, *subs;
-	long num, i, ci, k = 0;
-	long size = array->array_size;
+	unsigned long num, i, ci, k = 0;
+	unsigned long size = array->array_size;
 	static char buf[100];
 
 	for (i = 0; i < size; i++) {
@@ -1183,7 +1185,7 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 		/* index */
 		num = array->array_base + ci;
 		if ((assoc_kind & AISTR) != 0) {
-			sprintf(buf, "%ld", num);
+			sprintf(buf, "%lu", num);
 			subs = make_string(buf, strlen(buf));
 			subs->numbr = num;
 			subs->flags |= (NUMCUR|NUMINT);
@@ -1217,7 +1219,7 @@ static void
 leaf_info(NODE *array, NODE *ndump, const char *aname)
 {
 	NODE *subs, *val;
-	size_t i, size;
+	unsigned long i, size;
 
 	size = array->array_size;
 
@@ -1227,7 +1229,7 @@ leaf_info(NODE *array, NODE *ndump, const char *aname)
 		val = array->nodes[i];
 		if (val == NULL)
 			continue;
-		subs->numbr = array->array_base + i;
+		subs->numbr = (double) (array->array_base + i);
 		assoc_info(subs, val, ndump, aname);
 	}
 	unref(subs);
@@ -1239,13 +1241,13 @@ leaf_info(NODE *array, NODE *ndump, const char *aname)
 
 
 static void
-leaf_print(NODE *array, size_t bi, int indent_level)
+leaf_print(NODE *array, unsigned bi, unsigned indent_level)
 {
 	indent(indent_level);
-	fprintf(output_fp, "%4lu:L[%4lu:%-4lu]\n",
-			(unsigned long) bi,
-			(unsigned long) array->array_size,
-			(unsigned long) array->table_size);
+	fprintf(output_fp, "%4u:L[%4lu:%-4lu]\n",
+			bi,
+			array->array_size,
+			array->table_size);
 }
 #endif
 
@@ -1286,8 +1288,8 @@ argv_store(NODE *symbol, NODE *subs)
 
 		// further checks
 		if (! badvar) {
-			char *cp = strchr(arg, ':');
-			if (cp && (cp[1] != ':' || strchr(cp + 2, ':') != NULL))
+			char *const cp1 = strchr(arg, ':');
+			if (cp1 && (cp1[1] != ':' || strchr(cp1 + 2, ':') != NULL))
 				badvar = true;
 		}
 		*cp = '=';	// restore the '='
