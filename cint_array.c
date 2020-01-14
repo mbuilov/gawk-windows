@@ -175,7 +175,7 @@ cint_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 		if ((newval = getenv_long("NHAT")) > 1 && newval < INT32_BIT)
 			NHAT = newval;
 		/* don't allow overflow off the end of the table */
-		if (NHAT >= nelems)
+		if (NHAT > nelems - 2)
 			NHAT = nelems - 2;
 		THRESHOLD = power_two_table[NHAT + 1];
 	} else
