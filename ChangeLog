@@ -1,3 +1,9 @@
+2020-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_top): New macro.
+	(pprint): Be smarter for print[f] with redirection that was
+	parenthesized, to not print `printf(("hello\n")) > "..."'.
+
 2020-01-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix a number of subtle memory leaks. Thanks to the
@@ -18,7 +24,7 @@
 
 	* interpret.h (Op_subscript): When retrieving from SYMTAB, check
 	for Node_var_new; variables can exist but have not been assigned
-	a value.
+	a value. Thanks to Denis Shirokov <cosmogen@gmail.com> for the report.
 
 	Unrelated:
 

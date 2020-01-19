@@ -1680,14 +1680,14 @@ function _con(t, ts, a, b, c, d, i, r, A, B)
 			if ((i = length(t = _tabtospc(A[1], ts, _conlastrln))) < _constatstrln) {
 				t = t _getchrln(" ", _constatstrln - i)
 			}
-			print((t B[1])) > _SYS_STDCON
+			print(t B[1]) > _SYS_STDCON
 			for (i = 2; i < c; i++) {
-				print((_tabtospc(A[i], ts) B[i])) > _SYS_STDCON
+				print(_tabtospc(A[i], ts) B[i]) > _SYS_STDCON
 			}
-			print((_conlastr = _tabtospc(A[c], ts))) > _SYS_STDCON
+			print(_conlastr = _tabtospc(A[c], ts)) > _SYS_STDCON
 			fflush(_SYS_STDCON)
 		} else {
-			print((t = _tabtospc(t, ts, _conlastrln))) > _SYS_STDCON
+			print(t = _tabtospc(t, ts, _conlastrln)) > _SYS_STDCON
 			fflush(_SYS_STDCON)
 			_conlastr = _conlastr t
 		}
@@ -1696,7 +1696,7 @@ function _con(t, ts, a, b, c, d, i, r, A, B)
 		}
 		_conlastrln = length(_conlastr)
 		if (_constatstr) {
-			print(((t = _constatgtstr(_constatstr, _CON_WIDTH - 1 - _conlastrln)) _CHR["CR"] _conlastr)) > _SYS_STDCON
+			print((t = _constatgtstr(_constatstr, _CON_WIDTH - 1 - _conlastrln)) _CHR["CR"] _conlastr) > _SYS_STDCON
 			fflush(_SYS_STDCON)
 			_constatstrln = length(t)
 		}
@@ -1763,7 +1763,7 @@ function _constat(t, ts, ln, a)
 	a = BINMODE
 	BINMODE = "rw"
 	ORS = ""
-	print((t _CHR["CR"] _conlastr)) > _SYS_STDCON
+	print(t _CHR["CR"] _conlastr) > _SYS_STDCON
 	fflush(_SYS_STDCON)
 	ORS = ln
 	BINMODE = a

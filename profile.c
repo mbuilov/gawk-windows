@@ -196,6 +196,10 @@ pp_pop()
 	return n;
 }
 
+/* pp_top --- look at what's on the top of the stack */
+
+#define pp_top()	pp_stack
+
 /* pp_free --- release a pretty printed node */
 
 static void
@@ -665,9 +669,20 @@ cleanup:
 			if (pc->opcode == Op_K_print_rec)
 				// instead of `print $0', just `print'
 				tmp = strdup("");
-			else if (pc->redir_type != 0)
-				tmp = pp_list(pc->expr_count, "()", ", ");
-			else {
+			else if (pc->redir_type != 0) {
+				// Avoid turning printf("hello\n") into printf(("hello\n"))
+				NODE *n = pp_top();
+
+				if (pc->expr_count == 1
+				    && n->pp_str[0] == '(' 
+				    && n->pp_str[n->pp_len - 1] == ')') {
+					n = pp_pop();
+
+					tmp = strdup(n->pp_str);
+					pp_free(n);
+				} else
+					tmp = pp_list(pc->expr_count, "()", ", ");
+			} else {
 				tmp = pp_list(pc->expr_count, "  ", ", ");
 				tmp[strlen(tmp) - 1] = '\0';	/* remove trailing space */
 			}
