@@ -34,15 +34,32 @@
 #define signed /**/
 #endif
 
+typedef int token_t;
+
+/* bad token */
+#define BADTOK 0
+
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(m, _Printf_format_string_)
+#endif
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(m, _Printf_format_string_)
+#endif
 static void error_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
-static void lintwarn_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
-static void warning_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(mesg, _Printf_format_string_)
+#endif
+static void lintwarn_ln(unsigned line, const char *mesg, ...) ATTRIBUTE_PRINTF_2;
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(mesg, _Printf_format_string_)
+#endif
+static void warning_ln(unsigned line, const char *mesg, ...) ATTRIBUTE_PRINTF_2;
 static char *get_src_buf(void);
-static int yylex(void);
+static token_t yylex(void);
 int	yyparse(void);
 static INSTRUCTION *snode(INSTRUCTION *subn, INSTRUCTION *op);
-static char **check_params(char *fname, int pcount, INSTRUCTION *list);
+static char **check_params(char *fname, ulong_t pcount, INSTRUCTION *list);
 static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
 static NODE *mk_rexp(INSTRUCTION *exp);
 static void param_sanity(INSTRUCTION *arglist);
@@ -69,7 +86,7 @@ static INSTRUCTION *namespace_chain;
 
 #ifdef DEBUG_COMMENTS
 static void
-debug_print_comment_s(const char *name, INSTRUCTION *comment, int line)
+debug_print_comment_s(const char *name, INSTRUCTION *comment, unsigned line)
 {
 	if (comment != NULL)
 		fprintf(stderr, "%d: %s: <%.*s>\n", line, name,
@@ -95,7 +112,7 @@ static INSTRUCTION *mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 static INSTRUCTION *mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op);
 static INSTRUCTION *mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op);
 static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, int redirtype);
-static int count_expressions(INSTRUCTION **list, bool isarg);
+static ulong_t count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
@@ -103,8 +120,15 @@ enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
 
-static int read_whole(int fd, void *buffer, unsigned count);
-static int read_one_line(int fd, void *buffer, unsigned count);
+#ifdef _MSC_VER
+typedef int read_result_t;
+typedef unsigned read_buf_size_t;
+#else
+typedef ssize_t read_result_t;
+typedef size_t read_buf_size_t;
+#endif
+
+static read_result_t read_one_line(int fd, void *buffer, read_buf_size_t count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
 static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
@@ -119,7 +143,7 @@ static enum {
 	DONT_CHECK
 } want_param_names = DONT_CHECK;	/* ditto */
 static bool in_function;		/* parsing kludge */
-static int rule = 0;
+static enum defrule rule = UNKRULE;
 
 const char *const ruletab[] = {
 	"?",
@@ -132,7 +156,7 @@ const char *const ruletab[] = {
 
 static bool in_print = false;	/* lexical scanning kludge for print */
 static int in_parens = 0;	/* lexical scanning kludge for print */
-static int sub_counter = 0;	/* array dimension counter for use in delete */
+static ulong_t sub_counter = 0u;	/* array dimension counter for use in delete */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexend;		/* end of buffer */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
@@ -143,7 +167,7 @@ static int in_braces = 0;	/* count braces for firstline, lastline in an 'action'
 static unsigned lastline = 0;
 static unsigned firstline = 0;
 static SRCFILE *sourcefile = NULL;	/* current program source */
-static int lasttok = 0;
+static token_t lasttok = BADTOK;
 static bool eof_warned = false;	/* GLOBAL: want warning for each file */
 static int break_allowed;	/* kludge for break */
 static int continue_allowed;	/* kludge for continue */
@@ -155,13 +179,13 @@ static int continue_allowed;	/* kludge for continue */
 static char *tokstart = NULL;
 static char *tok = NULL;
 static char *tokend;
-int errcount = 0;
+unsigned errcount = 0;
 
 extern char *source;
 extern unsigned sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
-extern int max_args;
+extern ulong_t max_args;
 extern NODE **args_array;
 
 const char awk_namespace[] = "awk";
@@ -233,7 +257,7 @@ program
 	  { $$ = NULL; }
 	| program rule
 	  {
-		rule = 0;
+		rule = UNKRULE;
 		yyerrok;
 	  }
 	| program nls
@@ -252,7 +276,7 @@ program
 	  }
 	| program error
 	  {
-		rule = 0;
+		rule = UNKRULE;
 		/*
 		 * If errors, give up, don't produce an infinite
 		 * stream of syntax error messages.
@@ -647,9 +671,9 @@ statement
 		INSTRUCTION *dflt, *curr = NULL, *cexp, *cstmt;
 		INSTRUCTION *ip, *nextc, *tbreak;
 		const char **case_values = NULL;
-		int maxcount = 128;
-		int case_count = 0;
-		int i;
+		unsigned maxcount = 128;
+		unsigned case_count = 0;
+		unsigned i;
 
 		tbreak = instruction(Op_no_op);
 		cstmt = list_create(tbreak);
@@ -858,7 +882,7 @@ statement
 
 		if ($8 != NULL
 				&& $8->lasti->opcode == Op_K_delete
-				&& $8->lasti->expr_count == 1
+				&& $8->lasti->expr_count == 1u
 				&& $8->nexti->opcode == Op_push
 				&& ($8->nexti->memory->type != Node_var || !($8->nexti->memory->var_update))
 				&& strcmp($8->nexti->memory->vname, var_name) == 0
@@ -890,7 +914,7 @@ statement
 			) {
 				(void) make_assignable($8->nexti);
 				$8->lasti->opcode = Op_K_delete_loop;
-				$8->lasti->expr_count = 0;
+				$8->lasti->expr_count = 0u;
 				if ($1 != NULL)
 					bcfree($1);
 				efree(var_name);
@@ -1170,7 +1194,7 @@ simple_stmt
 				}
 			}
 
-			$1->expr_count = 0;
+			$1->expr_count = 0u;
 			$1->opcode = Op_K_print_rec;
 			if ($4 == NULL) {    /* no redircetion */
 				$1->redir_type = redirect_none;
@@ -1196,7 +1220,7 @@ simple_stmt
 regular_print:
 			if ($4 == NULL) {		/* no redirection */
 				if ($3 == NULL)	{	/* print/printf without arg */
-					$1->expr_count = 0;
+					$1->expr_count = 0u;
 					if ($1->opcode == Op_K_print)
 						$1->opcode = Op_K_print_rec;
 					$1->redir_type = redirect_none;
@@ -1214,7 +1238,7 @@ regular_print:
 				$4->nexti = ip->nexti;
 				bcfree(ip);
 				if ($3 == NULL) {
-					$1->expr_count = 0;
+					$1->expr_count = 0u;
 					if ($1->opcode == Op_K_print)
 						$1->opcode = Op_K_print_rec;
 					$$ = list_append($4, $1);
@@ -1227,7 +1251,7 @@ regular_print:
 		}
 	  }
 
-	| LEX_DELETE NAME { sub_counter = 0; } delete_subscript_list
+	| LEX_DELETE NAME { sub_counter = 0u; } delete_subscript_list
 	  {
 		char *arr = $2->lextok;
 
@@ -1253,7 +1277,7 @@ regular_print:
 			 * Also, since BWK awk supports it, we don't have to
 			 * check do_traditional either.
 			 */
-			$1->expr_count = 0;
+			$1->expr_count = 0u;
 			$$ = list_append(list_create($2), $1);
 		} else {
 			$1->expr_count = sub_counter;
@@ -1280,7 +1304,7 @@ regular_print:
 		}
 		$3->memory = variable($3->source_line, arr, Node_var_new);
 		$3->opcode = Op_push_array;
-		$1->expr_count = 0;
+		$1->expr_count = 0u;
 		$$ = list_append(list_create($3), $1);
 
 		if (! do_posix && ! do_traditional) {
@@ -1489,7 +1513,7 @@ opt_param_list
 param_list
 	: NAME
 	  {
-		$1->param_count = 0;
+		$1->param_count = 0u;
 		$$ = list_create($1);
 	  }
 	| param_list comma NAME
@@ -1666,7 +1690,7 @@ exp
 				_("old awk does not support the keyword `in' except after `for'"));
 		$3->nexti->opcode = Op_push_array;
 		$2->opcode = Op_in_array;
-		$2->expr_count = 1;
+		$2->expr_count = 1u;
 		$$ = list_append(list_merge($1, $3), $2);
 	  }
 	| exp a_relop exp %prec RELOP
@@ -1715,7 +1739,7 @@ common_exp
 	  { $$ = $1; }
 	| common_exp simp_exp %prec CONCAT_OP
 	  {
-		int count = 2;
+		ulong_t count = 2u;
 		bool is_simple_var = false;
 
 		if ($1->lasti->opcode == Op_concat) {
@@ -1821,7 +1845,7 @@ simp_exp
 		$4->opcode = Op_in_array;
 		if ($2 == NULL) {	/* error */
 			errcount++;
-			$4->expr_count = 0;
+			$4->expr_count = 0u;
 			$$ = list_merge($5, $4);
 		} else {
 			INSTRUCTION *t = $2;
@@ -2047,7 +2071,7 @@ direct_func_call
 		$1->opcode = Op_func_call;
 		$1->func_body = NULL;
 		if ($3 == NULL) {	/* no argument or error */
-			($1 + 1)->expr_count = 0;
+			($1 + 1)->expr_count = 0u;
 			$$ = list_create($1);
 		} else {
 			INSTRUCTION *t = $3;
@@ -2084,8 +2108,8 @@ delete_exp_list
 	: bracketed_exp_list
 	  {
 		INSTRUCTION *ip = $1->lasti;
-		int count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
-		if (count > 1) {
+		const ulong_t count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
+		if (count > 1u) {
 			/* change Op_subscript or Op_sub_array to Op_concat */
 			ip->opcode = Op_concat;
 			ip->concat_flag = CSUBSEP;
@@ -2107,7 +2131,7 @@ bracketed_exp_list
 			/* install Null string as subscript. */
 			t = list_create(instruction(Op_push_i));
 			t->nexti->memory = dupnode(Nnull_string);
-			$3->sub_count = 1;
+			$3->sub_count = 1u;
 		} else
 			$3->sub_count = count_expressions(&t, false);
 		$$ = list_append(t, $3);
@@ -2213,7 +2237,7 @@ comma
 struct token {
 	const char *oper;	/* text to match */
 	OPCODE value;			/*  type */
-	int cls;				/* lexical class */
+	token_t cls;				/* lexical class */
 	unsigned flags;			/* # of args. allowed and compatability */
 #	define	ARGS	0xFF	/* 0, 1, 2, 3 args allowed (any combination */
 #	define	A(n)	(1<<(n))
@@ -2355,7 +2379,7 @@ static unsigned cur_ring_idx;
 const char *
 getfname(NODE *(*fptr)(int), bool prepend_awk)
 {
-	int i, j;
+	unsigned i, j;
 	static char buf[100];
 
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
@@ -2466,6 +2490,9 @@ print_included_from(void)
 
 /* warning_ln --- print a warning message with location */
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(mesg, _Printf_format_string_)
+#endif
 static void
 warning_ln(unsigned line, const char *mesg, ...)
 {
@@ -2483,6 +2510,9 @@ warning_ln(unsigned line, const char *mesg, ...)
 
 /* lintwarn_ln --- print a lint warning and location */
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(mesg, _Printf_format_string_)
+#endif
 static void
 lintwarn_ln(unsigned line, const char *mesg, ...)
 {
@@ -2505,6 +2535,9 @@ lintwarn_ln(unsigned line, const char *mesg, ...)
 
 /* error_ln --- print an error message and location */
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(m, _Printf_format_string_)
+#endif
 static void
 error_ln(unsigned line, const char *m, ...)
 {
@@ -2523,6 +2556,9 @@ error_ln(unsigned line, const char *m, ...)
 
 /* yyerror --- print a syntax error message, show where */
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(m, _Printf_format_string_)
+#endif
 static void
 yyerror(const char *m, ...)
 {
@@ -2770,7 +2806,7 @@ parse_program(INSTRUCTION **pcode, bool from_eval)
 
 	lexeof = false;
 	lexptr = NULL;
-	lasttok = 0;
+	lasttok = BADTOK;
 	memset(rule_block, 0, sizeof(rule_block));
 	errcount = 0;
 	tok = tokstart != NULL ? tokstart : tokexpand();
@@ -2947,7 +2983,7 @@ include_source(INSTRUCTION *file, void **srcfile_p)
 	lexptr = NULL;
 	sourceline = 0;
 	source = NULL;
-	lasttok = 0;
+	lasttok = BADTOK;
 	lexeof = false;
 	eof_warned = false;
 	current_namespace = awk_namespace;
@@ -3061,7 +3097,7 @@ next_sourcefile(void)
 		lexptr = NULL;
 		sourceline = 0;
 		source = NULL;
-		lasttok = 0;
+		lasttok = BADTOK;
 		set_current_namespace(awk_namespace);
 	}
 }
@@ -3077,14 +3113,14 @@ get_src_buf(void)
 	size_t savelen;
 	struct stat sbuf;
 
-	static int (*readfunc)(int fd, void *buffer, unsigned count) = 0;
+	static read_result_t (*readfunc)(int fd, void *buffer, read_buf_size_t count) = 0;
 
 	if (readfunc == NULL) {
 		char *cp = getenv("AWKREADFUNC");
 
 		/* If necessary, one day, test value for different functions.  */
 		if (cp == NULL)
-			readfunc = read_whole;
+			readfunc = read;
 		else
 			readfunc = read_one_line;
 	}
@@ -3224,7 +3260,7 @@ get_src_buf(void)
 		}
 	}
 
-	n = (*readfunc)(sourcefile->fd, lexptr, (unsigned) (sourcefile->bufsize - savelen));
+	n = (*readfunc)(sourcefile->fd, lexptr, (read_buf_size_t) (sourcefile->bufsize - savelen));
 	if (n == -1) {
 		error(_("can't read sourcefile `%s' (%s)"),
 				source, strerror(errno));
@@ -3254,7 +3290,7 @@ get_src_buf(void)
 static char *
 tokexpand(void)
 {
-	static int toksize;
+	static size_t toksize;
 	size_t tokoffset;
 
 	if (tokstart != NULL) {
@@ -3537,7 +3573,7 @@ newline_eof(void)
 
 /* yylex --- Read the input and turn it into tokens. */
 
-static int
+static token_t
 #ifdef USE_EBCDIC
 yylex_ebcdic(void)
 #else
@@ -3549,14 +3585,14 @@ yylex(void)
 	bool seen_point = false;
 	bool esc_seen;		/* for literal strings */
 	int mid;
-	int base;
+	unsigned base;
 	static bool did_newline = false;
 	char *tokkey;
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
 	bool collecting_typed_regexp = false;
-	static int qm_col_count = 0;
+	static unsigned qm_col_count = 0;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3564,7 +3600,7 @@ yylex(void)
 
 	yylval = (INSTRUCTION *) NULL;
 	if (lasttok == SUBSCRIPT) {
-		lasttok = 0;
+		lasttok = BADTOK;
 		return SUBSCRIPT;
 	}
 
@@ -3671,7 +3707,7 @@ end_regexp:
 					if (peek == 'i' || peek == 's') {
 						if (source)
 							lintwarn(
-						_("%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"),
+						_("%s: %u: tawk regex modifier `/.../%c' doesn't work in gawk"),
 								source, sourceline, peek);
 						else
 							lintwarn(
@@ -3729,7 +3765,7 @@ retry:
 			 */
 			INSTRUCTION *new_comment;
 
-			if (lasttok == NEWLINE || lasttok == 0)
+			if (lasttok == NEWLINE || lasttok == BADTOK)
 				c = get_comment(BLOCK_COMMENT, & new_comment);
 			else
 				c = get_comment(EOL_COMMENT, & new_comment);
@@ -4332,8 +4368,8 @@ retry:
 
 	/* See if it is a special token. */
 	if ((mid = check_qualified_special(tokstart)) >= 0) {
-		static int warntab[sizeof(tokentab) / sizeof(tokentab[0])];
-		int cls = tokentab[mid].cls;
+		static unsigned warntab[sizeof(tokentab) / sizeof(tokentab[0])];
+		const token_t cls = tokentab[mid].cls;
 
 		switch (cls) {
 		case LEX_EVAL:
@@ -4458,7 +4494,7 @@ retry:
 make_instruction:
 			yylval = GET_INSTRUCTION(tokentab[mid].value);
 			if (cls == LEX_BUILTIN || cls == LEX_LENGTH)
-				yylval->builtin_idx = mid;
+				yylval->builtin_idx = (unsigned) mid;
 			break;
 		}
 		return lasttok = cls;
@@ -4501,7 +4537,7 @@ out:
    ASCII values on-the-fly so that the parse tables need not be regenerated
    for EBCDIC systems.  */
 #ifdef USE_EBCDIC
-static int
+static token_t
 yylex(void)
 {
 	static char etoa_xlate[256];
@@ -4539,9 +4575,9 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	INSTRUCTION *arg;
 	INSTRUCTION *ip;
 	NODE *n;
-	int nexp = 0;
+	unsigned nexp = 0;
 	unsigned args_allowed;
-	int idx = r->builtin_idx;
+	unsigned idx = r->builtin_idx;
 
 	if (subn != NULL) {
 		INSTRUCTION *tp;
@@ -4555,7 +4591,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	/* check against how many args. are allowed for this builtin */
 	args_allowed = tokentab[idx].flags & ARGS;
 	if (args_allowed && (args_allowed & A(nexp)) == 0) {
-		yyerror(_("%d is invalid as number of arguments for %s"),
+		yyerror(_("%u is invalid as number of arguments for %s"),
 				nexp, tokentab[idx].oper);
 		return NULL;
 	}
@@ -4654,7 +4690,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		    /* no args. Use $0 */
 
 			INSTRUCTION *list;
-			r->expr_count = 1;
+			r->expr_count = 1u;
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
@@ -4820,7 +4856,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		return list_append(subn, r);
 	}
 
-	r->expr_count = 0;
+	r->expr_count = 0u;
 	return list_create(r);
 }
 
@@ -4830,7 +4866,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 static int
 parms_shadow(INSTRUCTION *pc, bool *shadow)
 {
-	int pcount, i;
+	ulong_t pcount, i;
 	bool ret = false;
 	NODE *func, *fp;
 	char *fname;
@@ -4846,7 +4882,7 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 
 	pcount = func->param_cnt;
 
-	if (pcount == 0)		/* no args, no problem */
+	if (!pcount)		/* no args, no problem */
 		return 0;
 
 	source = pc->source_file;
@@ -4855,7 +4891,7 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	 * Use awkwarn() and not lintwarn() so that can warn
 	 * about all shadowed parameters.
 	 */
-	for (i = 0; i < pcount; i++) {
+	for (i = 0u; i < pcount; i++) {
 		if (lookup(fp[i].vname) != NULL) {
 			awkwarn(
 	_("function `%s': parameter `%s' shadows global variable"),
@@ -4936,7 +4972,7 @@ dump_funcs(void)
 void
 shadow_funcs(void)
 {
-	static int calls = 0;
+	static unsigned calls = 0;
 	bool shadow = false;
 	NODE **funcs;
 
@@ -5022,7 +5058,7 @@ static int
 install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 {
 	NODE *r, *f;
-	int pcount = 0;
+	ulong_t pcount = 0u;
 
 	r = lookup(fname);
 	if (r != NULL) {
@@ -5042,7 +5078,7 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 	f->param_cnt = pcount;
 	f->code_ptr = fi;
 	f->fparms = NULL;
-	if (pcount > 0) {
+	if (pcount) {
 		char **pnames;
 		pnames = check_params(fname, pcount, plist);	/* frees plist */
 		f->fparms = make_params(pnames, pcount);
@@ -5058,18 +5094,18 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
  */
 
 static char **
-check_params(char *fname, int pcount, INSTRUCTION *list)
+check_params(char *fname, ulong_t pcount, INSTRUCTION *list)
 {
 	INSTRUCTION *p, *np;
-	int i, j;
+	ulong_t i, j;
 	char *name;
 	char **pnames;
 
-	assert(pcount > 0);
+	assert(pcount);
 
 	emalloc(pnames, char **, pcount * sizeof(char *), "check_params");
 
-	for (i = 0, p = list->nexti; p != NULL; i++, p = np) {
+	for (i = 0u, p = list->nexti; p != NULL; i++, p = np) {
 		np = p->nexti;
 		name = p->lextok;
 		p->lextok = NULL;
@@ -5088,11 +5124,11 @@ check_params(char *fname, int pcount, INSTRUCTION *list)
 					fname, name);
 
 		/* check for duplicate parameters */
-		for (j = 0; j < i; j++) {
+		for (j = 0u; j < i; j++) {
 			if (strcmp(name, pnames[j]) == 0) {
 				error_ln(p->source_line,
-					_("function `%s': parameter #%d, `%s', duplicates parameter #%d"),
-					fname, i + 1, name, j + 1);
+					_("function `%s': parameter #%lu, `%s', duplicates parameter #%lu"),
+					fname, TO_ULONG(i + 1), name, TO_ULONG(j + 1));
 			}
 		}
 
@@ -5108,7 +5144,7 @@ check_params(char *fname, int pcount, INSTRUCTION *list)
 #ifdef HASHSIZE
 undef HASHSIZE
 #endif
-#define HASHSIZE 1021
+#define HASHSIZE 1021u
 
 static struct fdesc {
 	char *name;
@@ -5125,7 +5161,7 @@ func_use(const char *name, enum defref how)
 {
 	struct fdesc *fp;
 	size_t len;
-	unsigned long ind;
+	ulong_t ind;
 
 	len = strlen(name);
 	ind = hash(name, len, HASHSIZE, NULL);
@@ -5166,7 +5202,7 @@ static void
 check_funcs(void)
 {
 	struct fdesc *fp, *next;
-	int i;
+	unsigned i;
 
 	if (! in_main_context())
 		goto free_mem;
@@ -5208,7 +5244,7 @@ static void
 param_sanity(INSTRUCTION *arglist)
 {
 	INSTRUCTION *argl, *arg;
-	int i = 1;
+	unsigned i = 1;
 
 	if (arglist == NULL)
 		return;
@@ -5216,7 +5252,7 @@ param_sanity(INSTRUCTION *arglist)
 		arg = argl->lasti;
 		if (arg->opcode == Op_match_rec)
 			warning_ln(arg->source_line,
-				_("regexp constant for parameter #%d yields boolean value"), i);
+				_("regexp constant for parameter #%u yields boolean value"), i);
 		argl = arg->nexti;
 		i++;
 	}
@@ -5244,14 +5280,14 @@ variable(unsigned location, char *name, NODETYPE type)
 /* make_regnode --- make a regular expression node */
 
 NODE *
-make_regnode(int type, NODE *exp)
+make_regnode(NODETYPE type, NODE *exp)
 {
 	NODE *n;
 
 	assert(type == Node_regex || type == Node_dynregex);
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
-	n->type = (NODETYPE) type;
+	n->type = type;
 	n->re_cnt = 1;
 
 	if (type == Node_regex) {
@@ -5359,7 +5395,7 @@ make_assignable(INSTRUCTION *ip)
 /* stopme --- for debugging */
 
 NODE *
-stopme(int nargs)
+stopme(unsigned nargs)
 {
 	(void)nargs;
 	return make_number(0.0);
@@ -5898,7 +5934,7 @@ optimize_assignment(INSTRUCTION *exp)
 				exp->nexti = i3->nexti;
 				bcfree(i3);
 
-				if (--i2->expr_count == 1)	/* one less expression in Op_concat */
+				if (--i2->expr_count == 1u)	/* one less expression in Op_concat */
 					i2->opcode = Op_no_op;
 
 				i3 = i2->nexti;
@@ -5929,14 +5965,14 @@ optimize_assignment(INSTRUCTION *exp)
 		case Op_push_array:
 			if (i2->nexti->nexti->opcode == Op_subscript_lhs) {
 				i3 = i2->nexti->nexti;
-				if (i3->sub_count == 1
+				if (i3->sub_count == 1u
 						&& i3->nexti == i1
 						&& i1->opcode == Op_assign
 				) {
 					/* array[sub] = .. */
 					i3->opcode = Op_store_sub;
 					i3->memory = i2->memory;
-					i3->expr_count = 1;  /* sub_count shadows memory,
+					i3->expr_count = 1u;  /* sub_count shadows memory,
                                           * so use expr_count instead.
 				                          */
 					i3->nexti = NULL;
@@ -6227,15 +6263,15 @@ mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1)
  *                       for function arguments.
  */
 
-static int
+static ulong_t
 count_expressions(INSTRUCTION **list, bool isarg)
 {
 	INSTRUCTION *expr;
 	INSTRUCTION *r = NULL;
-	int count = 0;
+	ulong_t count = 0u;
 
 	if (*list == NULL)	/* error earlier */
-		return 0;
+		return 0u;
 
 	for (expr = (*list)->nexti; expr; ) {
 		INSTRUCTION *t1, *t2;
@@ -6243,14 +6279,14 @@ count_expressions(INSTRUCTION **list, bool isarg)
 		t2 = expr->lasti;
 		if (isarg && t1 == t2 && t1->opcode == Op_push)
 			t1->opcode = Op_push_param;
-		if (++count == 1)
+		if (++count == 1u)
 			r = expr;
 		else
 			(void) list_merge(r, expr);
 		expr = t2->nexti;
 	}
 
-	assert(count > 0);
+	assert(count);
 	if (! isarg && count > max_args)
 		max_args = count;
 	bcfree(*list);
@@ -6341,9 +6377,9 @@ list_merge(INSTRUCTION *l1, INSTRUCTION *l2)
 int
 check_special(const char *name)
 {
-	int low, high, mid;
+	unsigned low, lim, mid;
 	int i;
-	int non_standard_flags = 0;
+	unsigned non_standard_flags = 0;
 #ifdef USE_EBCDIC
 	static bool did_sort = false;
 
@@ -6361,21 +6397,21 @@ check_special(const char *name)
 		non_standard_flags |= NOT_POSIX;
 
 	low = 0;
-	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
-	while (low <= high) {
-		mid = (low + high) / 2;
+	lim = sizeof(tokentab) / sizeof(tokentab[0]);
+	while (low < lim) {
+		mid = (low + lim) / 2;
 		i = *name - tokentab[mid].oper[0];
 		if (i == 0)
 			i = strcmp(name, tokentab[mid].oper);
 
 		if (i < 0)		/* token < mid */
-			high = mid - 1;
+			lim = mid;
 		else if (i > 0)		/* token > mid */
 			low = mid + 1;
 		else {
 			if ((tokentab[mid].flags & non_standard_flags) != 0)
 				return -1;
-			return mid;
+			return (int) mid;
 		}
 	}
 	return -1;
@@ -6389,18 +6425,10 @@ check_special(const char *name)
 
 static FILE *fp = NULL;
 
-/* read_whole --- return whole input test at a time. */
-
-static int
-read_whole(int fd, void *buffer, unsigned count)
-{
-	return (int) read(fd, buffer, count);
-}
-
 /* read_one_line --- return one input line at a time. mainly for debugging. */
 
-static int
-read_one_line(int fd, void *buffer, unsigned count)
+static read_result_t
+read_one_line(int fd, void *buffer, read_buf_size_t count)
 {
 	char buf[BUFSIZ];
 
@@ -6419,7 +6447,7 @@ read_one_line(int fd, void *buffer, unsigned count)
 		return 0;
 
 	memcpy(buffer, buf, strlen(buf));
-	return (int) strlen(buf);
+	return (read_result_t) strlen(buf);
 }
 
 /* one_line_close --- close the open file being read with read_one_line() */
@@ -6476,8 +6504,8 @@ lookup_builtin(const char *name)
 void
 install_builtins(void)
 {
-	int i, j;
-	int flags_that_must_be_clear = DEBUG_USE;
+	unsigned i, j;
+	unsigned flags_that_must_be_clear = DEBUG_USE;
 
 	if (do_traditional)
 		flags_that_must_be_clear |= GAWKX;
@@ -6687,9 +6715,9 @@ make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbr
  */
 
 bool
-validate_qualified_name(char *token)
+validate_qualified_name(const char *token)
 {
-	char *cp, *cp2;
+	const char *cp, *cp2;
 
 	// no colon, by definition it's well formed
 	if ((cp = strchr(token, ':')) == NULL)
