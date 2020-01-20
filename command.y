@@ -329,7 +329,7 @@ command
 	  }
 	| D_COMMANDS commands_arg
 	  {
-		int type = 0;
+		enum argtype type = D_illegal;
 		unsigned num = 0; /* Silence compiler.  */
 
 		if ($2 != NULL)
@@ -382,7 +382,7 @@ command
 	  }
 	| D_CONDITION plus_integer { want_nodeval = true; } condition_exp
 	  {
-		int type;
+		enum argtype type;
 		unsigned num = (unsigned) $2->a_int;
 		type = has_break_or_watch_point(&num, false);
 		if (! type)
@@ -929,9 +929,9 @@ struct argtoken argtab[] = {
 /* get_command --- return command handler function */
 
 Func_cmd
-get_command(int ctype)
+get_command(enum argtype ctype)
 {
-	int i;
+	unsigned i;
 	for (i = 0; cmdtab[i].name != NULL; i++) {
 		if (cmdtab[i].type == ctype)
 			return cmdtab[i].cf_ptr;
@@ -942,9 +942,9 @@ get_command(int ctype)
 /* get_command_name --- return command name given it's type */
 
 const char *
-get_command_name(int ctype)
+get_command_name(enum argtype ctype)
 {
-	int i;
+	unsigned i;
 	for (i = 0; cmdtab[i].name != NULL; i++) {
 		if (cmdtab[i].type == ctype)
 			return cmdtab[i].name;

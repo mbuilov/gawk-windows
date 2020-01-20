@@ -1819,7 +1819,7 @@ yyreduce:
   case 59:
 #line 331 "command.y"
           {
-		int type = 0;
+		enum argtype type = D_illegal;
 		unsigned num = 0; /* Silence compiler.  */
 
 		if (yyvsp[0] != NULL)
@@ -1894,7 +1894,7 @@ yyreduce:
   case 64:
 #line 384 "command.y"
           {
-		int type;
+		enum argtype type;
 		unsigned num = (unsigned) yyvsp[-2]->a_int;
 		type = has_break_or_watch_point(&num, false);
 		if (! type)
@@ -2724,9 +2724,9 @@ struct argtoken argtab[] = {
 /* get_command --- return command handler function */
 
 Func_cmd
-get_command(int ctype)
+get_command(enum argtype ctype)
 {
-	int i;
+	unsigned i;
 	for (i = 0; cmdtab[i].name != NULL; i++) {
 		if (cmdtab[i].type == ctype)
 			return cmdtab[i].cf_ptr;
@@ -2737,9 +2737,9 @@ get_command(int ctype)
 /* get_command_name --- return command name given it's type */
 
 const char *
-get_command_name(int ctype)
+get_command_name(enum argtype ctype)
 {
-	int i;
+	unsigned i;
 	for (i = 0; cmdtab[i].name != NULL; i++) {
 		if (cmdtab[i].type == ctype)
 			return cmdtab[i].name;
@@ -3175,7 +3175,7 @@ concat_args(CMDARG *arg, unsigned count)
 	emalloc(tmp, NODE **, count * sizeof(NODE *), "concat_args");
 	subseplen = SUBSEP_node->var_value->stlen;
 	subsep = SUBSEP_node->var_value->stptr;
-	len = 0 - subseplen;
+	len = (size_t)0 - subseplen;
 
 	for (i = 0; i < count; i++) {
 		n = force_string(arg->a_node);
@@ -3213,7 +3213,7 @@ static int
 find_command(const char *token, size_t toklen)
 {
 	const char *name, *abrv;
-	unsigned i, k;
+	size_t i, k;
 	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
