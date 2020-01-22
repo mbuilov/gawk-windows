@@ -37,6 +37,9 @@ extern NODE *get_function(void);
 #define initialize_pager(x)	((void)0)	/* nothing */
 #define add_history(x)	((void)0)	/* nothing */
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(format, _Printf_format_string_)
+#endif
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
 extern int pager_quit_tag_valid;
@@ -51,7 +54,7 @@ extern char *eval_prompt;
 extern char *dgawk_prompt;
 
 enum argtype {
-	D_illegal,
+	D_illegal = 0,
 
 	/* commands */
 	D_backtrace,
@@ -133,13 +136,14 @@ typedef struct cmd_argument {
 	struct cmd_argument *next;
 	enum argtype type;
 	union {
-		long lval;
+		enum nametypeval aval;
+		long_t lval;
 		char *sval;
 		NODE *nodeval;
 	} value;
 
 #define a_int       value.lval	/* type = D_int or D_range */
-#define a_argument  value.lval	/* type = D_argument */
+#define a_argument  value.aval	/* type = D_argument */
 #define a_string  value.sval	/* type = D_string, D_array, D_subscript or D_variable */
 #define a_node    value.nodeval /* type = D_node, D_field or D_func */
 
@@ -148,25 +152,30 @@ typedef struct cmd_argument {
 
 typedef int (*Func_cmd)(CMDARG *, enum argtype);
 
+typedef int cmdtok_t;
+
 struct cmdtoken {
 	const char *name;
 	char *abbrvn;	/* abbreviation */
 	enum argtype type;
-	int cls;
+	cmdtok_t cls;
 	Func_cmd cf_ptr;
 	const char *help_txt;
 };
 
 /* command.c */
 extern void free_cmdarg(CMDARG *list);
-extern Func_cmd get_command(int ctype);
-extern const char *get_command_name(int ctype);
+extern Func_cmd get_command(enum argtype ctype);
+extern const char *get_command_name(enum argtype ctype);
 
 /* debug.c */
+#if defined(_MSC_VER) && defined(_PREFAST_)
+_At_(mesg, _Printf_format_string_)
+#endif
 extern void d_error(const char *mesg, ...);
 
 /* command.c */
-extern int find_option(char *name);
+extern int find_option(const char *name);
 extern void option_help(void);
 extern char *(*read_a_line)(const char *prompt);
 extern char *read_commands_string(const char *prompt);
@@ -175,7 +184,7 @@ extern int get_eof_status(void);
 extern void push_cmd_src(int fd, bool istty, char * (*readfunc)(const char *),
 		int (*closefunc)(int), enum argtype cmd, int eofstatus);
 extern int pop_cmd_src(void);
-extern int has_break_or_watch_point(unsigned *pnum, bool any);
+extern enum argtype has_break_or_watch_point(unsigned *pnum, bool any);
 extern int do_list(CMDARG *arg, enum argtype cmd);
 extern int do_info(CMDARG *arg, enum argtype cmd);
 extern int do_print_var(CMDARG *arg, enum argtype cmd);

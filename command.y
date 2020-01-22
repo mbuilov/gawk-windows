@@ -34,7 +34,7 @@
 int yydebug = 2;
 #endif
 
-static int yylex(void);
+static cmdtok_t yylex(void);
 static void yyerror(const char *mesg, ...);
 
 static int find_command(const char *token, size_t toklen);
@@ -339,11 +339,11 @@ command
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
-		else if ($2 == NULL && 0 == (type = has_break_or_watch_point(&num, true)))
+		else if ($2 == NULL && D_illegal == (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
-		else if ($2 != NULL && 0 == (type = has_break_or_watch_point(&num, false)))
+		else if ($2 != NULL && D_illegal == (type = has_break_or_watch_point(&num, false)))
 			yyerror(_("invalid breakpoint/watchpoint number"));
-		if (type) {
+		if (type != D_illegal) {
 			in_commands = true;
 			if (input_from_tty) {
 				dbg_prompt = commands_prompt;
@@ -385,7 +385,7 @@ command
 		enum argtype type;
 		unsigned num = (unsigned) $2->a_int;
 		type = has_break_or_watch_point(&num, false);
-		if (! type)
+		if (type == D_illegal)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
 	  }
 	| eval_cmd
@@ -1024,7 +1024,7 @@ yyerror(const char *mesg, ...)
 
 /* yylex --- read a command and turn it into tokens */
 
-static int
+static cmdtok_t
 #ifdef USE_EBCDIC
 yylex_ebcdic(void)
 #else
@@ -1309,12 +1309,12 @@ err:
    ASCII values on-the-fly so that the parse tables need not be regenerated
    for EBCDIC systems.  */
 #ifdef USE_EBCDIC
-static int
+static cmdtok_t
 yylex(void)
 {
 	static char etoa_xlate[256];
 	static int do_etoa_init = 1;
-	int tok;
+	cmdtok_t tok;
 
 	if (do_etoa_init)
 	{
