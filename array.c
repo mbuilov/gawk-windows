@@ -31,6 +31,13 @@ extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *success_node;
 
+/* If compiled by the C++ compiler, avoid the need to call
+  possibly undefined default constructor of NODE.  */
+typedef union {
+	int placeholder;
+	NODE n;
+} node_t;
+
 static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";
@@ -54,7 +61,7 @@ static const array_funcs_t null_array_func = {
 #define MAX_ATYPE 10
 
 static const array_funcs_t *array_types[MAX_ATYPE];
-static int num_array_types = 0;
+static unsigned num_array_types = 0;
 
 /* register_array_func --- add routines to handle arrays */
 
@@ -110,7 +117,7 @@ null_array(NODE *symbol)
 	symbol->type = Node_var_array;
 	symbol->array_funcs = & null_array_func;
 	symbol->buckets = NULL;
-	symbol->table_size = symbol->array_size = 0;
+	symbol->table_size = symbol->array_size = 0u;
 	symbol->array_capacity = 0;
 	symbol->flags = 0;
 
@@ -125,21 +132,21 @@ null_array(NODE *symbol)
 static NODE **
 null_lookup(NODE *symbol, NODE *subs)
 {
-	int i;
+	unsigned i;
 	const array_funcs_t *afunc = NULL;
 
-	assert(symbol->table_size == 0);
+	assert(!symbol->table_size);
 
 	/*
 	 * Check which array type wants to accept this sub; traverse
 	 * array type list in reverse order.
 	 */
-	for (i = num_array_types - 1; i >= 1; i--) {
-		afunc = array_types[i];
+	for (i = num_array_types; i > 1; i--) {
+		afunc = array_types[i - 1];
 		if (afunc->type_of(symbol, subs) != NULL)
 			break;
 	}
-	if (i == 0 || afunc == NULL)
+	if (i <= 1)
 		afunc = array_types[0];	/* default is str_array_func */
 	symbol->array_funcs = afunc;
 
@@ -244,7 +251,7 @@ array_vname(const NODE *symbol)
 	static size_t msglen = 0;
 	char *s;
 	size_t len;
-	int n;
+	unsigned n;
 	const NODE *save_symbol = symbol;
 	const char *from = _("from %s");
 	const char *aname;
@@ -379,7 +386,7 @@ set_SUBSEP(void)
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
-concat_exp(int nargs, bool do_subsep)
+concat_exp(unsigned nargs, bool do_subsep)
 {
 	/* do_subsep is false for Op_concat */
 	NODE *r;
@@ -387,9 +394,10 @@ concat_exp(int nargs, bool do_subsep)
 	char *s;
 	size_t len;
 	size_t subseplen = 0;
-	int i;
+	unsigned i;
 	extern NODE **args_array;
 
+	assert(nargs > 0);
 	if (nargs == 1)
 		return POP_STRING();
 
@@ -439,11 +447,11 @@ concat_exp(int nargs, bool do_subsep)
  */
 
 static void
-adjust_fcall_stack(NODE *symbol, int nsubs)
+adjust_fcall_stack(NODE *symbol, unsigned nsubs)
 {
 	NODE *func, *r, *n;
 	NODE **sp;
-	int pcount;
+	ulong_t pcount;
 
 	/*
 	 * Solve the nasty problem of disappearing subarray arguments:
@@ -470,7 +478,7 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 	pcount = func->param_cnt;
 	sp = frame_ptr->stack;
 
-	for (; pcount > 0; pcount--) {
+	for (; pcount; pcount--) {
 		r = *sp++;
 		if (r->type != Node_array_ref
 				|| r->orig_array->type != Node_var_array)
@@ -529,10 +537,10 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
  */
 
 void
-do_delete(NODE *symbol, int nsubs)
+do_delete(NODE *symbol, unsigned nsubs)
 {
 	NODE *val, *subs;
-	int i;
+	unsigned i;
 
 	assert(symbol->type == Node_var_array);
 	subs = val = NULL;	/* silence the compiler */
@@ -631,10 +639,10 @@ void
 do_delete_loop(NODE *symbol, NODE **lhs)
 {
 	NODE **list;
-	NODE akind;
+	node_t akind = {0};
 
-	akind.flags = AINDEX|ADELETE;	/* need a single index */
-	list = symbol->alist(symbol, & akind);
+	akind.n.flags = AINDEX|ADELETE;	/* need a single index */
+	list = symbol->alist(symbol, & akind.n);
 
 	if (assoc_empty(symbol))
 		return;
@@ -692,7 +700,7 @@ value_info(NODE *n)
 	fprintf(output_fp, ":%s", flags2str(n->flags));
 
 	if ((n->flags & MALLOC) != 0)
-		fprintf(output_fp, ":%ld", n->valref);
+		fprintf(output_fp, ":%lu", TO_ULONG(n->valref));
 	else
 		fprintf(output_fp, ":");
 
@@ -722,9 +730,9 @@ value_info(NODE *n)
 
 
 void
-indent(int indent_level)
+indent(unsigned indent_level)
 {
-	int i;
+	unsigned i;
 	for (i = 0; i < indent_level; i++)
 		fprintf(output_fp, "%s", indent_char);
 }
@@ -734,7 +742,7 @@ indent(int indent_level)
 void
 assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 {
-	int indent_level = ndump->alevel;
+	unsigned indent_level = ndump->alevel;
 
 	indent_level++;
 	indent(indent_level);
@@ -765,10 +773,10 @@ assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 /* do_adump --- dump an array: interface to assoc_dump */
 
 NODE *
-do_adump(int nargs)
+do_adump(unsigned nargs)
 {
 	NODE *symbol, *tmp;
-	static NODE ndump;
+	static node_t ndump = {0};
 	long depth = 0;
 
 	/*
@@ -786,10 +794,10 @@ do_adump(int nargs)
 	if (symbol->type != Node_var_array)
 		fatal(_("adump: first argument not an array"));
 
-	ndump.type = Node_dump_array;
-	ndump.adepth = depth;
-	ndump.alevel = 0;
-	assoc_dump(symbol, & ndump);
+	ndump.n.type = Node_dump_array;
+	ndump.n.adepth = depth;
+	ndump.n.alevel = 0;
+	assoc_dump(symbol, & ndump.n);
 	return make_number((AWKNUM) 0);
 }
 
@@ -797,12 +805,12 @@ do_adump(int nargs)
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
-asort_actual(int nargs, sort_context_t ctxt)
+asort_actual(unsigned nargs, sort_context_t ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
 	NODE **list = NULL, **ptr;
-	unsigned long num_elems, i;
+	ulong_t num_elems, i;
 	const char *sort_str;
 	char save;
 
@@ -859,7 +867,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 	DEREF(s);
 
 	num_elems = assoc_length(array);
-	if (num_elems == 0 || list == NULL) {
+	if (!num_elems || list == NULL) {
  		/* source array is empty */
  		if (dest != NULL && dest != array)
  			assoc_clear(dest);
@@ -887,15 +895,15 @@ asort_actual(int nargs, sort_context_t ctxt)
 	if (ctxt == ASORTI) {
 		/* We want the indices of the source array. */
 
-		for (i = 1, ptr = list; i <= num_elems; i++, ptr += 2) {
-			subs = make_number(i);
+		for (i = 1u, ptr = list; i <= num_elems; i++, ptr += 2) {
+			subs = make_number((AWKNUM) TO_ULONG(i));
 			assoc_set(result, subs, *ptr);
 		}
 	} else {
 		/* We want the values of the source array. */
 
-		for (i = 1, ptr = list; i <= num_elems; i++) {
-			subs = make_number(i);
+		for (i = 1u, ptr = list; i <= num_elems; i++) {
+			subs = make_number((AWKNUM) TO_ULONG(i));
 
 			/* free index node */
 			r = *ptr++;
@@ -929,19 +937,19 @@ asort_actual(int nargs, sort_context_t ctxt)
 	if (result != dest) {
 		/* dest == NULL or dest == array */
 		assoc_clear(array);
-		*array = *result;	/* copy result into array */
+		memcpy(array, result, sizeof(*result));	/* copy result into array */
 		freenode(result);
 	} /* else
 		result == dest
 		dest != NULL and dest != array */
 
-	return make_number((AWKNUM) num_elems);
+	return make_number((AWKNUM) TO_ULONG(num_elems));
 }
 
 /* do_asort --- sort array by value */
 
 NODE *
-do_asort(int nargs)
+do_asort(unsigned nargs)
 {
 	return asort_actual(nargs, ASORT);
 }
@@ -949,7 +957,7 @@ do_asort(int nargs)
 /* do_asorti --- sort array by index */
 
 NODE *
-do_asorti(int nargs)
+do_asorti(unsigned nargs)
 {
 	return asort_actual(nargs, ASORTI);
 }
@@ -964,7 +972,7 @@ do_asorti(int nargs)
 static int
 cmp_strings(const NODE *n1, const NODE *n2)
 {
-	char *s1, *s2;
+	const char *s1, *s2;
 	size_t len1, len2;
 	int ret;
 
@@ -988,8 +996,7 @@ cmp_strings(const NODE *n1, const NODE *n2)
 		const unsigned char *cp2 = (const unsigned char *) s2;
 
 		if (gawk_mb_cur_max > 1) {
-			ret = strncasecmpmbs((const unsigned char *) cp1,
-					     (const unsigned char *) cp2, lmin);
+			ret = strncasecmpmbs(cp1, cp2, lmin);
 		} else {
 			size_t count = lmin;
 
@@ -1254,17 +1261,17 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		qsort_compfunc comp_func;
 		assoc_kind_t kind;
 	} sort_funcs[] = {
-{ "@ind_str_asc",	sort_up_index_string,	AINDEX|AISTR|AASC },
-{ "@ind_num_asc",	sort_up_index_number,	AINDEX|AINUM|AASC },
-{ "@val_str_asc",	sort_up_value_string,	AVALUE|AVSTR|AASC },
-{ "@val_num_asc",	sort_up_value_number,	AVALUE|AVNUM|AASC },
-{ "@ind_str_desc",	sort_down_index_string,	AINDEX|AISTR|ADESC },
-{ "@ind_num_desc",	sort_down_index_number,	AINDEX|AINUM|ADESC },
-{ "@val_str_desc",	sort_down_value_string,	AVALUE|AVSTR|ADESC },
-{ "@val_num_desc",	sort_down_value_number,	AVALUE|AVNUM|ADESC },
-{ "@val_type_asc",	sort_up_value_type,	AVALUE|AASC },
-{ "@val_type_desc",	sort_down_value_type,	AVALUE|ADESC },
-{ "@unsorted",		0,			AINDEX },
+{ "@ind_str_asc",	sort_up_index_string,	(assoc_kind_t) (AINDEX|AISTR|AASC) },
+{ "@ind_num_asc",	sort_up_index_number,	(assoc_kind_t) (AINDEX|AINUM|AASC) },
+{ "@val_str_asc",	sort_up_value_string,	(assoc_kind_t) (AVALUE|AVSTR|AASC) },
+{ "@val_num_asc",	sort_up_value_number,	(assoc_kind_t) (AVALUE|AVNUM|AASC) },
+{ "@ind_str_desc",	sort_down_index_string,	(assoc_kind_t) (AINDEX|AISTR|ADESC) },
+{ "@ind_num_desc",	sort_down_index_number,	(assoc_kind_t) (AINDEX|AINUM|ADESC) },
+{ "@val_str_desc",	sort_down_value_string,	(assoc_kind_t) (AVALUE|AVSTR|ADESC) },
+{ "@val_num_desc",	sort_down_value_number,	(assoc_kind_t) (AVALUE|AVNUM|ADESC) },
+{ "@val_type_asc",	sort_up_value_type,	(assoc_kind_t) (AVALUE|AASC) },
+{ "@val_type_desc",	sort_down_value_type,	(assoc_kind_t) (AVALUE|ADESC) },
+{ "@unsorted",		0,			(assoc_kind_t) (AINDEX) },
 };
 
 	/*
@@ -1273,33 +1280,32 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	 */
 
 	NODE **list;
-	NODE akind;
-	unsigned long num_elems, j;
-	unsigned elem_size, qi;
+	node_t akind = {0};
+	unsigned elem_size, qi, fsz;
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
-	extern int currule;
-	int save_rule = 0;
+	extern enum defrule currule;
+	enum defrule save_rule = UNKRULE; /* To silence the compiler.  */
 	assoc_kind_t assoc_kind = ANONE;
 
 	elem_size = 1;
 
-	for (qi = 0, j = sizeof(sort_funcs)/sizeof(sort_funcs[0]); qi < j; qi++) {
+	for (qi = 0, fsz = sizeof(sort_funcs)/sizeof(sort_funcs[0]); qi < fsz; qi++) {
 		if (strcmp(sort_funcs[qi].name, sort_str) == 0)
 			break;
 	}
 
-	if (qi < j) {
+	if (qi < fsz) {
 		cmp_func = sort_funcs[qi].comp_func;
 		assoc_kind = sort_funcs[qi].kind;
 
 		if (symbol->array_funcs != & cint_array_func)
-			assoc_kind &= ~(AASC|ADESC);
+			assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
 
 		if (sort_ctxt != SORTED_IN || (assoc_kind & AVALUE) != 0) {
 			/* need index and value pair in the list */
 
-			assoc_kind |= (AINDEX|AVALUE);
+			assoc_kind = (assoc_kind_t) (assoc_kind | (AINDEX|AVALUE));
 			elem_size = 2;
 		}
 
@@ -1321,14 +1327,14 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		cmp_func = sort_user_func;
 
 		/* need index and value pair in the list */
-		assoc_kind |= (AVALUE|AINDEX);
+		assoc_kind = (assoc_kind_t) (assoc_kind | (AVALUE|AINDEX));
 		elem_size = 2;
 
 		/* make function call instructions */
 		code = bcalloc(Op_func_call, 2, 0);
 		code->func_body = f;
 		code->func_name = NULL;		/* not needed, func_body already assigned */
-		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
+		(code + 1)->expr_count = 4u;	/* function takes 4 arguments */
 		code->nexti = bcalloc(Op_stop, 1, 0);
 
 		/*
@@ -1338,25 +1344,27 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		 */
 
 		save_rule = currule;	/* save current rule */
-		currule = 0;
+		currule = UNKRULE;
 
 		PUSH_CODE(code);
 	}
 
-	akind.flags = (unsigned int) assoc_kind;	/* kludge */
-	list = symbol->alist(symbol, & akind);
-	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
+	akind.n.flags = (unsigned int) assoc_kind;	/* kludge */
+	list = symbol->alist(symbol, & akind.n);
+	assoc_kind = (assoc_kind_t) akind.n.flags;	/* symbol->alist can modify it */
 
 	/* check for empty list or unsorted, or list already sorted */
 	if (list != NULL && cmp_func != NULL && (assoc_kind & (AASC|ADESC)) == 0) {
+		ulong_t num_elems, j;
+
 		num_elems = assoc_length(symbol);
 
-		qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
+		qsort(list, TO_ULONG(num_elems), elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
 
 		if (sort_ctxt == SORTED_IN && (assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
 			/* relocate all index nodes to the first half of the list. */
-			for (j = 1; j < num_elems; j++)
-				list[j] = list[2 * j];
+			for (j = 1u; j < num_elems; j++)
+				list[j] = list[2u * j];
 
 			/* give back extra memory */
 
