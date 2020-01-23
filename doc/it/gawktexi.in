@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Settembre 2019
+@set UPDATE-MONTH Gennaio 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -309,7 +309,7 @@ Some comments on the layout for TeX.
 Tel.: +1-617-542-5942 Fax: +1-617-542-2652 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2019
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2020
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -331,7 +331,7 @@ Italian Linux Documentation Project (ILDP)
 Email: <emailildp@@pluto.it
 URL: <ulink url="http://www.pluto.it/ildp">http://www.pluto.it/ildp/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 2016&ndash;2019
+<literallayout class="normal">Copyright &copy; 2016&ndash;2020
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -339,7 +339,7 @@ All Rights Reserved.
 
 @ifnotdocbook
 @iftex
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2019 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2020 @*
 Free Software Foundation, Inc.
 @end iftex
 @end ifnotdocbook
@@ -5857,7 +5857,7 @@ vengono elaborate solo due cifre.
 @cindex @code{\} (barra inversa) @subentry @code{\/} (sequenza di protezione)
 @cindex barra inversa (@code{\}) @subentry @code{\/} (sequenza di protezione)
 @item \/
-Una barra (necessario solo per costanti @dfn{regexp}).
+Una barra (dovrebbe essere usato solo per costanti @dfn{regexp}).
 Questa sequenza si usa per inserire una costante @dfn{regexp}
 che contiene una barra
 (come @code{/.*:\/home\/[[:alnum:]]+:.*/}; la notazione @samp{[[:alnum:]]}
@@ -5876,7 +5876,7 @@ ad @command{awk} di andare avanti a scandire il resto della @dfn{regexp}.
 @cindex @code{\} (barra inversa) @subentry @code{\"} (sequenza di protezione)
 @cindex barra inversa (@code{\}) @subentry @code{\"} (sequenza di protezione)
 @item \"
-Un doppio apice (necessario solo per costanti stringa).
+Un doppio apice (dovrebbe essere usato solo per costanti stringa).
 Questa sequenza si usa per inserire in una costante stringa il carattere
 doppio apice
 (come @code{"Egli le disse \"ciao!\"."}).
@@ -28212,6 +28212,28 @@ print dati[righe[i]], righe[i]
 @noindent
 Questo si pu@`o fare perch@'e @code{dati[$0]} @`e incrementato ogni volta che una
 riga @`e stata trovata.
+
+@c rick@openfortress.nl, Tue, 24 Dec 2019 13:43:06 +0100
+Rick van Rein offre il seguente programma in una riga per fare lo stesso
+lavoro, ossia rimuovere le righe doppie da un testo che non sia stato
+precedentemente ordinato alfabeticamente:
+
+@example
+awk '@{ if (! visto[$0]++) print @}'
+@end example
+
+Questo programma pu@`o essere ulteriormente semplificato, con il rischio
+di diventare quasi indecifrabile:
+
+@example
+awk '! visto[$0]++'
+@end example
+
+@noindent
+Questa versione usa l'espressione come regola da soddisfare,
+ed esegue l'azione di default di @command{awk} (ossia stampa
+la riga), quando la regola @`e verificata [ossia se il record non
+@`e stato ancora "visto"].
 
 @node Programma extract
 @subsection Estrarre programmi da un file sorgente Texinfo
