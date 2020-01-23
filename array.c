@@ -31,13 +31,6 @@ extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *success_node;
 
-/* If compiled by the C++ compiler, avoid the need to call
-  possibly undefined default constructor of NODE.  */
-typedef union {
-	int placeholder;
-	NODE n;
-} node_t;
-
 static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";
