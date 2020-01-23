@@ -27,10 +27,10 @@
 #include "awk.h"
 
 extern FILE *output_fp;
-extern void indent(int indent_level);
+extern void indent(unsigned indent_level);
 extern NODE **is_integer(NODE *symbol, NODE *subs);
 
-static size_t INT_CHAIN_MAX = 2;
+static ulong_t INT_CHAIN_MAX = 2u;
 
 static NODE **int_array_init(NODE *symbol, NODE *subs);
 static NODE **int_lookup(NODE *symbol, NODE *subs);
@@ -41,9 +41,9 @@ static NODE **int_list(NODE *symbol, NODE *t);
 static NODE **int_copy(NODE *symbol, NODE *newsymb);
 static NODE **int_dump(NODE *symbol, NODE *ndump);
 
-static uint32_t int_hash(uint32_t k, uint32_t hsize);
-static inline NODE **int_find(NODE *symbol, long k, uint32_t hash1);
-static NODE **int_insert(NODE *symbol, long k, uint32_t hash1);
+static uint32_t int_hash(long_t k, ulong_t hsize);
+static inline NODE **int_find(NODE *symbol, long_t k, uint32_t hash1);
+static NODE **int_insert(NODE *symbol, long_t k, uint32_t hash1);
 static void grow_int_table(NODE *symbol);
 
 const array_funcs_t int_array_func = {
@@ -64,14 +64,16 @@ const array_funcs_t int_array_func = {
 /* int_array_init --- array initialization routine */
 
 static NODE **
-int_array_init(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+int_array_init(NODE *symbol, NODE *subs)
 {
+	(void) subs;
+
 	if (symbol == NULL) {	/* first time */
 		long newval;
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("INT_CHAIN_MAX")) > 0)
-			INT_CHAIN_MAX = newval;
+			INT_CHAIN_MAX = (unsigned long) newval;
 	} else
 		null_array(symbol);
 
@@ -117,6 +119,7 @@ is_integer(NODE *symbol, NODE *subs)
 	long l;
 #endif
 	AWKNUM d;
+	(void) symbol, (void) subs;
 
 	if ((subs->flags & NUMINT) != 0)
 		/* quick exit */
@@ -228,8 +231,8 @@ static NODE **
 int_lookup(NODE *symbol, NODE *subs)
 {
 	uint32_t hash1;
-	long k;
-	unsigned long size;
+	long_t k;
+	ulong_t size;
 	NODE **lhs;
 	NODE *xn;
 
@@ -253,11 +256,11 @@ int_lookup(NODE *symbol, NODE *subs)
 		return assoc_lookup(xn, subs);
 	}
 
-	k = subs->numbr;
+	k = (long) subs->numbr;
 	if (symbol->buckets == NULL)
 		grow_int_table(symbol);
 
- 	hash1 = int_hash(k, symbol->array_size);
+	hash1 = int_hash(k, symbol->array_size);
 	if ((lhs = int_find(symbol, k, hash1)) != NULL)
 		return lhs;
 
@@ -289,7 +292,7 @@ int_lookup(NODE *symbol, NODE *subs)
 static NODE **
 int_exists(NODE *symbol, NODE *subs)
 {
-	long k;
+	long_t k;
 	uint32_t hash1;
 
 	if (! is_integer(symbol, subs)) {
@@ -301,7 +304,7 @@ int_exists(NODE *symbol, NODE *subs)
 	if (symbol->buckets == NULL)
 		return NULL;
 
-	k = subs->numbr;
+	k = (long) subs->numbr;
 	hash1 = int_hash(k, symbol->array_size);
 	return int_find(symbol, k, hash1);
 }
@@ -309,12 +312,13 @@ int_exists(NODE *symbol, NODE *subs)
 /* int_clear --- flush all the values in symbol[] */
 
 static NODE **
-int_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+int_clear(NODE *symbol, NODE *subs)
 {
-	unsigned long i;
-	int j;
+	ulong_t i;
+	size_t j;
 	BUCKET *b, *next;
 	NODE *r;
+	(void) subs;
 
 	if (symbol->xarray != NULL) {
 		NODE *xn = symbol->xarray;
@@ -323,7 +327,7 @@ int_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 		symbol->xarray = NULL;
 	}
 
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = next) {
 			next = b->ainext;
 			for (j = 0; j < b->aicount; j++) {
@@ -353,26 +357,26 @@ int_remove(NODE *symbol, NODE *subs)
 {
 	uint32_t hash1;
 	BUCKET *b, *prev = NULL;
-	long k;
-	int i;
+	long_t k;
+	size_t i;
 	NODE *xn = symbol->xarray;
 
-	if (symbol->table_size == 0 || symbol->buckets == NULL)
+	if (!symbol->table_size || symbol->buckets == NULL)
 		return NULL;
 
 	if (! is_integer(symbol, subs)) {
 		if (xn == NULL || xn->aremove(xn, subs) == NULL)
 			return NULL;
-		if (xn->table_size == 0) {
+		if (!xn->table_size) {
 			freenode(xn);
 			symbol->xarray = NULL;
 		}
+		assert(symbol->table_size > 1u);
 		symbol->table_size--;
-		assert(symbol->table_size > 0);
 		return & success_node;
 	}
 
-	k = subs->numbr;
+	k = (long) subs->numbr;
 	hash1 = int_hash(k, symbol->array_size);
 
 	for (b = symbol->buckets[hash1]; b != NULL; prev = b, b = b->ainext) {
@@ -426,7 +430,7 @@ removed:
 		do nothing */
 
 	symbol->table_size--;
-	if (xn == NULL && symbol->table_size == 0) {
+	if (xn == NULL && !symbol->table_size) {
 		efree(symbol->buckets);
 		symbol->ainit(symbol, NULL);	/* re-initialize array 'symbol' */
 	} else if (xn != NULL && symbol->table_size == xn->table_size) {
@@ -434,7 +438,7 @@ removed:
 		xn->flags &= ~XARRAY;
 		xn->parent_array = symbol->parent_array;
 		efree(symbol->buckets);
-		*symbol = *xn;
+		memcpy(symbol, xn, sizeof(*xn));
 		freenode(xn);
 	}
 
@@ -447,10 +451,10 @@ removed:
 static NODE **
 int_copy(NODE *symbol, NODE *newsymb)
 {
-	BUCKET **old, **new, **pnew;
+	BUCKET **old_b, **new_b, **pnew;
 	BUCKET *chain, *newchain;
-	int j;
-	unsigned long i, cursize;
+	size_t j;
+	ulong_t i, cursize;
 
 	assert(symbol->buckets != NULL);
 
@@ -458,12 +462,12 @@ int_copy(NODE *symbol, NODE *newsymb)
 	cursize = symbol->array_size;
 
 	/* allocate new table */
-	ezalloc(new, BUCKET **, cursize * sizeof(BUCKET *), "int_copy");
+	ezalloc(new_b, BUCKET **, cursize * sizeof(BUCKET *), "int_copy");
 
-	old = symbol->buckets;
+	old_b = symbol->buckets;
 
-	for (i = 0; i < cursize; i++) {
-		for (chain = old[i], pnew = & new[i]; chain != NULL;
+	for (i = 0u; i < cursize; i++) {
+		for (chain = old_b[i], pnew = & new_b[i]; chain != NULL;
 				chain = chain->ainext
 		) {
 			getbucket(newchain);
@@ -507,7 +511,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 		newsymb->xarray = NULL;
 
 	newsymb->table_size = symbol->table_size;
-	newsymb->buckets = new;
+	newsymb->buckets = new_b;
 	newsymb->array_size = cursize;
 	newsymb->flags = symbol->flags;
 
@@ -521,21 +525,22 @@ static NODE**
 int_list(NODE *symbol, NODE *t)
 {
 	NODE **list = NULL;
-	unsigned long num_elems, list_size, i, k = 0;
+	ulong_t num_elems, i;
+	size_t list_size, k = 0;
 	BUCKET *b;
 	NODE *r, *subs, *xn;
-	int j, elem_size = 1;
+	size_t j, elem_size = 1;
 	long num;
 	static char buf[100];
 	assoc_kind_t assoc_kind;
 
-	if (symbol->table_size == 0)
+	if (!symbol->table_size)
 		return NULL;
 
 	assoc_kind = (assoc_kind_t) t->flags;
 	num_elems = symbol->table_size;
 	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
-		num_elems = 1;
+		num_elems = 1u;
 
 	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
@@ -545,7 +550,7 @@ int_list(NODE *symbol, NODE *t)
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
 		assert(list != NULL);
-		if (num_elems == 1 || num_elems == xn->table_size)
+		if (num_elems == 1u || num_elems == xn->table_size)
 			return list;
 		erealloc(list, NODE **, list_size * sizeof(NODE *), "int_list");
 		k = elem_size * xn->table_size;
@@ -554,7 +559,7 @@ int_list(NODE *symbol, NODE *t)
 
 	/* populate it */
 
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext) {
 			for (j = 0; j < b->aicount; j++) {
 				/* index */
@@ -591,17 +596,18 @@ int_list(NODE *symbol, NODE *t)
 }
 
 
+extern AWKNUM str_kilobytes(NODE *symbol);
+
 /* int_kilobytes --- calculate memory consumption of the assoc array */
 
 AWKNUM
 int_kilobytes(NODE *symbol)
 {
-	unsigned long i, bucket_cnt = 0;
+	ulong_t i, bucket_cnt = 0u;
 	BUCKET *b;
 	AWKNUM kb;
-	extern AWKNUM str_kilobytes(NODE *symbol);
 
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL; b = b->ainext)
 			bucket_cnt++;
 	}
@@ -622,13 +628,14 @@ int_dump(NODE *symbol, NODE *ndump)
 {
 #define HCNT	31
 
-	int indent_level;
+	unsigned indent_level;
 	BUCKET *b;
 	NODE *xn = NULL;
-	unsigned long str_size = 0, int_size = 0;
-	unsigned long i;
-	size_t j, bucket_cnt;
-	static size_t hash_dist[HCNT + 1];
+	ulong_t str_size = 0u, int_size = 0u;
+	ulong_t i;
+	unsigned j;
+	size_t bucket_cnt;
+	static unsigned long hash_dist[HCNT + 1];
 
 	indent_level = ndump->alevel;
 
@@ -651,12 +658,12 @@ int_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "INT_CHAIN_MAX: %lu\n", (unsigned long) INT_CHAIN_MAX);
+	fprintf(output_fp, "INT_CHAIN_MAX: %lu\n", TO_ULONG(INT_CHAIN_MAX));
 	indent(indent_level);
-	fprintf(output_fp, "array_size: %lu (int)\n", (unsigned long) symbol->array_size);
+	fprintf(output_fp, "array_size: %lu (int)\n", TO_ULONG(symbol->array_size));
 	indent(indent_level);
 	fprintf(output_fp, "table_size: %lu (total), %lu (int), %lu (str)\n",
-			(unsigned long) symbol->table_size, int_size, str_size);
+			TO_ULONG(symbol->table_size), TO_ULONG(int_size), TO_ULONG(str_size));
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain (int): %.2g\n",
 			((AWKNUM) int_size) / symbol->array_size);
@@ -666,8 +673,8 @@ int_dump(NODE *symbol, NODE *ndump)
 
 	/* hash value distribution */
 
-	memset(hash_dist, '\0', (HCNT + 1) * sizeof(size_t));
-	for (i = 0; i < symbol->array_size; i++) {
+	memset(hash_dist, 0, sizeof(hash_dist));
+	for (i = 0u; i < symbol->array_size; i++) {
 		bucket_cnt = 0;
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext)
 			bucket_cnt += b->aicount;
@@ -683,11 +690,11 @@ int_dump(NODE *symbol, NODE *ndump)
 		if (hash_dist[j] > 0) {
 			indent(indent_level);
 			if (j == HCNT)
-				fprintf(output_fp, "[>=%lu]:%lu\n",
-					(unsigned long) HCNT, (unsigned long) hash_dist[j]);
+				fprintf(output_fp, "[>=%d]:%lu\n",
+					HCNT, hash_dist[j]);
 			else
-				fprintf(output_fp, "[%lu]:%lu\n",
-					(unsigned long) j, (unsigned long) hash_dist[j]);
+				fprintf(output_fp, "[%u]:%lu\n",
+					j, hash_dist[j]);
 		}
 	}
 	indent_level--;
@@ -704,10 +711,10 @@ int_dump(NODE *symbol, NODE *ndump)
 		subs = make_number((AWKNUM) 0);
 		subs->flags |= (INTIND|NUMINT);
 
-		for (i = 0; i < symbol->array_size; i++) {
+		for (i = 0u; i < symbol->array_size; i++) {
 			for (b = symbol->buckets[i]; b != NULL; b = b->ainext) {
 				for (j = 0; j < b->aicount; j++) {
-					subs->numbr = b->ainum[j];
+					subs->numbr = TO_ULONG(b->ainum[j]);
 					assoc_info(subs, b->aivalue[j], ndump, aname);
 				}
 			}
@@ -729,8 +736,9 @@ int_dump(NODE *symbol, NODE *ndump)
 /* int_hash --- calculate the hash function of the integer subs */
 
 static uint32_t
-int_hash(uint32_t k, uint32_t hsize)
+int_hash(long_t k, ulong_t hsize)
 {
+	uint32_t h = (uint32_t) k;
 
 /*
  * Code snippet copied from:
@@ -740,25 +748,25 @@ int_hash(uint32_t k, uint32_t hsize)
 
 	/* This is the final mixing function used by Paul Hsieh in SuperFastHash. */
 
-	k ^= k << 3;
-	k += k >> 5;
-	k ^= k << 4;
-	k += k >> 17;
-	k ^= k << 25;
-	k += k >> 6;
+	h ^= h << 3;
+	h += h >> 5;
+	h ^= h << 4;
+	h += h >> 17;
+	h ^= h << 25;
+	h += h >> 6;
 
-	if (k >= hsize)
-		k %= hsize;
-	return k;
+	if (h >= hsize)
+		h %= hsize;
+	return h;
 }
 
 /* int_find --- locate symbol[subs] */
 
 static inline NODE **
-int_find(NODE *symbol, long k, uint32_t hash1)
+int_find(NODE *symbol, long_t k, uint32_t hash1)
 {
 	BUCKET *b;
-	int i;
+	size_t i;
 
 	assert(symbol->buckets != NULL);
 	for (b = symbol->buckets[hash1]; b != NULL; b = b->ainext) {
@@ -774,10 +782,10 @@ int_find(NODE *symbol, long k, uint32_t hash1)
 /* int_insert --- install subs in the assoc array */
 
 static NODE **
-int_insert(NODE *symbol, long k, uint32_t hash1)
+int_insert(NODE *symbol, long_t k, uint32_t hash1)
 {
 	BUCKET *b;
-	int i;
+	size_t i;
 
 	b = symbol->buckets[hash1];
 
@@ -803,10 +811,10 @@ int_insert(NODE *symbol, long k, uint32_t hash1)
 static void
 grow_int_table(NODE *symbol)
 {
-	BUCKET **old, **new;
+	BUCKET **old_b, **new_b;
 	BUCKET *chain, *next;
-	int i, j;
-	unsigned long oldsize, newsize, k;
+	size_t i, j;
+	ulong_t oldsize, newsize, k;
 
 	/*
 	 * This is an array of primes. We grow the table by an order of
@@ -841,22 +849,22 @@ grow_int_table(NODE *symbol)
 	}
 
 	/* allocate new table */
-	ezalloc(new, BUCKET **, newsize * sizeof(BUCKET *), "grow_int_table");
+	ezalloc(new_b, BUCKET **, newsize * sizeof(BUCKET *), "grow_int_table");
 
-	old = symbol->buckets;
-	symbol->buckets = new;
+	old_b = symbol->buckets;
+	symbol->buckets = new_b;
 	symbol->array_size = newsize;
 
 	/* brand new hash table */
-	if (old == NULL)
+	if (old_b == NULL)
 		return;		/* DO NOT initialize symbol->table_size */
 
 	/* old hash table there, move stuff to new, free old */
 	/* note that symbol->table_size does not change if an old array. */
 
-	for (k = 0; k < oldsize; k++) {
-		long num;
-		for (chain = old[k]; chain != NULL; chain = next) {
+	for (k = 0u; k < oldsize; k++) {
+		long_t num;
+		for (chain = old_b[k]; chain != NULL; chain = next) {
 			for (i = 0; i < chain->aicount; i++) {
 				num = chain->ainum[i];
 				*int_insert(symbol, num, int_hash(num, newsize)) = chain->aivalue[i];
@@ -865,5 +873,5 @@ grow_int_table(NODE *symbol)
 			freebucket(chain);
 		}
 	}
-	efree(old);
+	efree(old_b);
 }
