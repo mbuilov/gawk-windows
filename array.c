@@ -832,6 +832,14 @@ asort_actual(int nargs, sort_context_t ctxt)
 			_("asort: first argument not an array") :
 			_("asorti: first argument not an array"));
 	}
+	else if (array == symbol_table)
+		fatal(ctxt == ASORT ?
+			_("asort: first argument cannot be SYMTAB") :
+			_("asorti: first argument cannot be SYMTAB"));
+	else if (array == func_table)
+		fatal(ctxt == ASORT ?
+			_("asort: first argument cannot be FUNCTAB") :
+			_("asorti: first argument cannot be FUNCTAB"));
 
 	if (dest != NULL) {
 		for (r = dest->parent_array; r != NULL; r = r->parent_array) {
@@ -1145,19 +1153,46 @@ static int
 sort_up_value_type(const void *p1, const void *p2)
 {
 	NODE *n1, *n2;
+	int n1_pos, n2_pos, i;
+
+	static const NODETYPE element_types[] = {
+		Node_builtin_func,
+		Node_func,
+		Node_ext_func,
+		Node_var_new,
+		Node_var,
+		Node_var_array,
+		Node_val,
+		Node_illegal
+	};
 
 	/* we want to compare the element values */
 	n1 = *((NODE *const *) p1 + 1);
 	n2 = *((NODE *const *) p2 + 1);
 
-	/* 1. Arrays vs. scalar, scalar is less than array */
+	/* 1. Arrays vs. everything else, everything else is less than array */
 	if (n1->type == Node_var_array) {
 		/* return 0 if n2 is a sub-array too, else return 1 */
 		return (n2->type != Node_var_array);
 	}
 	if (n2->type == Node_var_array) {
-		return -1;		/* n1 (scalar) < n2 (sub-array) */
+		return -1;              /* n1 (non-array) < n2 (sub-array) */
 	}
+
+	/* 2. Non scalars */
+	n1_pos = n2_pos = -1;
+	for (i = 0; element_types[i] != Node_illegal; i++) {
+		if (n1->type == element_types[i])
+			n1_pos = i;
+
+		if (n2->type == element_types[i])
+			n2_pos = i;
+	}
+
+	assert(n1_pos != -1 && n2_pos != -1);
+
+	if (n1->type != Node_val || n2->type != Node_val)
+		return (n1_pos - n2_pos);
 
 	/* two scalars */
 	(void) fixtype(n1);

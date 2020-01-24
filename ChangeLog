@@ -1,3 +1,14 @@
+2020-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (sort_up_value_type): Handle other types of nodes,
+	in case someone applies PROCINFO["sorted_in"] to SYMTAB or
+	FUNCTAB. This threw an assertion error if assertions were
+	enabled.
+	(asort_actual): Disallow SYMTAB and FUNCTAB as first arguments.
+	* TODO: Note that we should should eventually allow SYMTAB/FUNCTAB
+	passed to asort/asaorti if a destination array is provided. (The
+	current code breaks right now.)
+
 2020-01-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_top): New macro.

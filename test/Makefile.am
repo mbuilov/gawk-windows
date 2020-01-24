@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2019 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2020 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -1226,6 +1226,8 @@ EXTRA_DIST = \
 	symtab10.awk \
 	symtab10.in \
 	symtab10.ok \
+	symtab11.awk \
+	symtab11.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -1402,8 +1404,8 @@ GAWK_EXT_TESTS = \
 	sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 \
 	stupid1 stupid2 stupid3 stupid4 \
-	switch2 symtab1 symtab2 \
-	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
+	switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7
+	symtab8 symtab9 symtab10 symtab11 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
 	typedregex5 typedregex6 \
 	typeof1 typeof2 typeof3 typeof4 typeof5 \
