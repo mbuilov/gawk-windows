@@ -438,7 +438,7 @@ removed:
 		xn->flags &= ~XARRAY;
 		xn->parent_array = symbol->parent_array;
 		efree(symbol->buckets);
-		memcpy(symbol, xn, sizeof(*xn));
+		*symbol = *xn;
 		freenode(xn);
 	}
 
