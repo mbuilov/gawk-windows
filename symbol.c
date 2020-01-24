@@ -31,8 +31,8 @@ extern INSTRUCTION *rule_list;
 
 #define HASHSIZE	1021
 
-static int func_count;	/* total number of functions */
-static int var_count;	/* total number of global variables and functions */
+static unsigned func_count;	/* total number of functions */
+static unsigned var_count;	/* total number of global variables and functions */
 
 static NODE *symbol_list;
 static void (*install_func)(NODE *) = NULL;
@@ -41,7 +41,7 @@ static NODE *install(const char *name, NODE *parm, NODETYPE type);
 static void free_bcpool(INSTRUCTION_POOL *pl);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
-static int ctxt_level;
+static unsigned ctxt_level;
 
 static NODE *global_table, *param_table;
 NODE *symbol_table, *func_table;
@@ -52,7 +52,7 @@ static bool installing_specials = false;
 /* init_symbol_table --- make sure the symbol tables are initialized */
 
 void
-init_symbol_table()
+init_symbol_table(void)
 {
 	getnode(global_table);
 	memset(global_table, '\0', sizeof(NODE));
@@ -93,7 +93,7 @@ lookup(const char *name)
 	NODE *n;
 	NODE *tmp;
 	NODE *tables[5];	/* manual init below, for z/OS */
-	int i;
+	unsigned i;
 
 	/* ``It's turtles, all the way down.'' */
 	tables[0] = param_table;	/* parameters shadow everything */
@@ -129,19 +129,19 @@ lookup(const char *name)
 /* make_params --- allocate function parameters for the symbol table */
 
 NODE *
-make_params(char **pnames, int pcount)
+make_params(char **pnames, ulong_t pcount)
 {
 	NODE *p, *parms;
-	int i;
+	ulong_t i;
 
-	if (pcount <= 0 || pnames == NULL)
+	if (!pcount || pnames == NULL)
 		return NULL;
 
 	ezalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
 
-	for (i = 0, p = parms; i < pcount; i++, p++) {
+	for (i = 0u, p = parms; i < pcount; i++, p++) {
 		p->type = Node_param_list;
-		p->param = pnames[i];	/* shadows pname and vname */
+		p->vname = pnames[i];	/* shadows pname and vname */
 		p->param_cnt = i;
 	}
 
@@ -153,7 +153,7 @@ make_params(char **pnames, int pcount)
 void
 install_params(NODE *func)
 {
-	int i, pcount;
+	ulong_t i, pcount;
 	NODE *parms;
 
 	if (func == NULL)
@@ -161,12 +161,12 @@ install_params(NODE *func)
 
 	assert(func->type == Node_func);
 
-	if (   (pcount = func->param_cnt) <= 0
-	    || (parms = func->fparms) == NULL)
+	pcount = func->param_cnt;
+	if (!pcount || (parms = func->fparms) == NULL)
 		return;
 
-	for (i = 0; i < pcount; i++)
-		(void) install(parms[i].param, parms + i, Node_param_list);
+	for (i = 0u; i < pcount; i++)
+		(void) install(parms[i].vname, parms + i, Node_param_list);
 }
 
 
@@ -178,22 +178,22 @@ void
 remove_params(NODE *func)
 {
 	NODE *parms, *p;
-	int i, pcount;
+	ulong_t i, pcount;
 
 	if (func == NULL)
 		return;
 
 	assert(func->type == Node_func);
 
-	if (   (pcount = func->param_cnt) <= 0
-	    || (parms = func->fparms) == NULL)
+	pcount = func->param_cnt;
+	if (!pcount || (parms = func->fparms) == NULL)
 		return;
 
-	for (i = pcount - 1; i >= 0; i--) {
+	for (i = pcount; i; i--) {
 		NODE *tmp;
 		NODE *tmp2;
 
-		p = parms + i;
+		p = parms + i - 1;
 		assert(p->type == Node_param_list);
 		tmp = make_string(p->vname, strlen(p->vname));
 		tmp2 = in_array(param_table, tmp);
@@ -241,15 +241,15 @@ destroy_symbol(NODE *r)
 
 	switch (r->type) {
 	case Node_func:
-		if (r->param_cnt > 0) {
+		if (r->param_cnt) {
 			NODE *n;
-			int i;
-			int pcount = r->param_cnt;
+			ulong_t i;
+			ulong_t pcount = r->param_cnt;
 
 			/* function parameters of type Node_param_list */
-			for (i = 0; i < pcount; i++) {
+			for (i = 0u; i < pcount; i++) {
 				n = r->fparms + i;
-				efree(n->param);
+				efree(n->vname);
 			}
 			efree(r->fparms);
 		}
@@ -377,12 +377,12 @@ typedef enum { FUNCTION = 1, VARIABLE } SYMBOL_TYPE;
 static NODE **
 get_symbols(SYMBOL_TYPE what, bool sort)
 {
-	int i;
+	ulong_t i;
 	NODE **table;
 	NODE **list;
 	NODE *r;
-	long count = 0;
-	long max;
+	ulong_t count;
+	ulong_t max;
 	NODE *the_table;
 
 	/*
@@ -394,12 +394,12 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 
 	if (what == FUNCTION) {
 		the_table = func_table;
-		max = the_table->table_size * 2;
+		max = the_table->table_size * 2u;
 
 		list = assoc_list(the_table, "@unsorted", ASORTI);
 		emalloc(table, NODE **, (func_count + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = count = 0; i < max; i += 2) {
+		for (i = count = 0u; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_ext_func || r->type == Node_builtin_func)
 				continue;
@@ -410,13 +410,13 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 		update_global_values();
 
 		the_table = symbol_table;
-		max = the_table->table_size * 2;
+		max = the_table->table_size * 2u;
 
 		list = assoc_list(the_table, "@unsorted", ASORTI);
 		/* add three: one for FUNCTAB, one for SYMTAB, and one for a final NULL */
 		emalloc(table, NODE **, (var_count + 1 + 1 + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = count = 0; i < max; i += 2) {
+		for (i = count = 0u; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_val)	/* non-variable in SYMTAB */
 				continue;
@@ -429,8 +429,8 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 
 	efree(list);
 
-	if (sort && count > 1)
-		qsort(table, count, sizeof(NODE *), comp_symbol);	/* Shazzam! */
+	if (sort && count > 1u)
+		qsort(table, TO_ULONG(count), sizeof(NODE *), comp_symbol);	/* Shazzam! */
 	table[count] = NULL; /* null terminate the list */
 	return table;
 }
@@ -439,7 +439,7 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 /* variable_list --- list of global variables */
 
 NODE **
-variable_list()
+variable_list(void)
 {
 	return get_symbols(VARIABLE, true);
 }
@@ -457,7 +457,7 @@ function_list(bool sort)
 void
 print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
 {
-	int i;
+	unsigned i;
 	NODE *r;
 
 	assert(table != NULL);
@@ -481,7 +481,7 @@ print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
 int
 foreach_func(NODE **table, int (*pfunc)(INSTRUCTION *, void *), void *data)
 {
-	int i;
+	unsigned i;
 	NODE *r;
 	int ret = 0;
 
@@ -497,7 +497,7 @@ foreach_func(NODE **table, int (*pfunc)(INSTRUCTION *, void *), void *data)
 /* release_all_vars --- free all variable memory */
 
 void
-release_all_vars()
+release_all_vars(void)
 {
 	assoc_clear(symbol_table);
 	assoc_clear(func_table);
@@ -544,13 +544,14 @@ release_symbols(NODE *symlist, int keep_globals)
 /* load_symbols --- fill in symbols' information */
 
 void
-load_symbols()
+load_symbols(void)
 {
 	NODE *r;
 	NODE *tmp;
 	NODE *sym_array;
 	NODE **aptr;
-	long i, j, max;
+	unsigned i;
+	ulong_t j, max;
 	NODE *user, *extension, *untyped, *scalar, *array, *built_in;
 	NODE **list;
 	NODE *tables[4];
@@ -586,10 +587,10 @@ load_symbols()
 
 	for (i = 0; tables[i] != NULL; i++) {
 		list = assoc_list(tables[i], "@unsorted", ASORTI);
-		max = tables[i]->table_size * 2;
-		if (max == 0)
+		max = tables[i]->table_size * 2u;
+		if (!max)
 			continue;
-		for (j = 0; j < max; j += 2) {
+		for (j = 0u; j < max; j += 2) {
 			r = list[j+1];
 			if (   r->type == Node_ext_func
 			    || r->type == Node_func
@@ -641,24 +642,23 @@ load_symbols()
 bool
 check_param_names(void)
 {
-	int i, j;
 	NODE **list;
 	NODE *f;
-	long max;
+	ulong_t j, i, max;
 	bool result = true;
-	NODE n;
+	node_t n = {0};
 
 	if (assoc_empty(func_table))
 		return result;
 
-	max = func_table->table_size * 2;
+	max = func_table->table_size * 2u;
 
 	memset(& n, 0, sizeof n);
-	n.type = Node_val;
-	n.flags = STRING|STRCUR;
-	n.stfmt = STFMT_UNUSED;
+	n.n.type = Node_val;
+	n.n.flags = STRING|STRCUR;
+	n.n.stfmt = STFMT_UNUSED;
 #ifdef HAVE_MPFR
-	n.strndmode = MPFR_round_mode;
+	n.n.strndmode = MPFR_round_mode;
 #endif
 
 	/*
@@ -673,24 +673,24 @@ check_param_names(void)
 
 	list = assoc_list(func_table, "@unsorted", ASORTI);
 
-	for (i = 0; i < max; i += 2) {
+	for (i = 0u; i < max; i += 2) {
 		f = list[i+1];
-		if (f->type == Node_builtin_func || f->param_cnt == 0)
+		if (f->type == Node_builtin_func || !f->param_cnt)
 			continue;
 
 		/* loop over each param in function i */
-		for (j = 0; j < f->param_cnt; j++) {
+		for (j = 0u; j < f->param_cnt; j++) {
 			/* compare to function names */
 
 			/* use a fake node to avoid malloc/free of make_string */
-			n.stptr = f->fparms[j].param;
-			n.stlen = strlen(f->fparms[j].param);
+			n.n.stptr = f->fparms[j].vname;
+			n.n.stlen = strlen(f->fparms[j].vname);
 
-			if (in_array(func_table, & n)) {
+			if (in_array(func_table, & n.n)) {
 				error(
 			_("function `%s': can't use function `%s' as a parameter name"),
 					list[i]->stptr,
-					f->fparms[j].param);
+					f->fparms[j].vname);
 				result = false;
 			}
 		}
@@ -729,7 +729,7 @@ bcfree(INSTRUCTION *cp)
 /* bcalloc --- allocate a new instruction */
 
 INSTRUCTION *
-bcalloc(OPCODE op, int size, int srcline)
+bcalloc(OPCODE op, unsigned size, unsigned srcline)
 {
 	INSTRUCTION *cp;
 	struct instruction_mem_pool *pool;
@@ -753,16 +753,16 @@ bcalloc(OPCODE op, int size, int srcline)
 	}
 
 	memset(cp, 0, size * sizeof(INSTRUCTION));
-	cp->pool_size = size;
+	cp->pool_size = (unsigned short) size;
 	cp->opcode = op;
-	cp->source_line = srcline;
+	cp->source_line = (unsigned short) srcline;
 	return cp;
 }
 
 /* new_context --- create a new execution context. */
 
 AWK_CONTEXT *
-new_context()
+new_context(void)
 {
 	AWK_CONTEXT *ctxt;
 
@@ -812,7 +812,7 @@ push_context(AWK_CONTEXT *ctxt)
 /* pop_context --- switch to previous execution context. */
 
 void
-pop_context()
+pop_context(void)
 {
 	AWK_CONTEXT *ctxt;
 
@@ -830,7 +830,7 @@ pop_context()
 /* in_main_context --- are we in the main context ? */
 
 int
-in_main_context()
+in_main_context(void)
 {
 	assert(ctxt_level > 0);
 	return (ctxt_level == 1);
@@ -920,7 +920,7 @@ free_bc_internal(INSTRUCTION *cp)
 /* free_bc_mempool --- free a single pool */
 
 static void
-free_bc_mempool(struct instruction_mem_pool *pool, int size)
+free_bc_mempool(struct instruction_mem_pool *pool, unsigned size)
 {
 	bool first = true;
 	struct instruction_block *block, *next;
@@ -945,7 +945,7 @@ free_bc_mempool(struct instruction_mem_pool *pool, int size)
 static void
 free_bcpool(INSTRUCTION_POOL *pl)
 {
-	int i;
+	unsigned i;
 
 	for (i = 0; i < MAX_INSTRUCTION_ALLOC; i++)
 		free_bc_mempool(& pl->pool[i], i + 1);
