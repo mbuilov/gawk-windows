@@ -701,7 +701,7 @@ value_info(NODE *n)
 		size_t len;
 
 		fprintf(output_fp, "][");
-		fprintf(output_fp, "stfmt=%d, ", n->stfmt);
+		fprintf(output_fp, "stfmt=%u, ", n->stfmt);
 		/*
 		 * If not STFMT_UNUSED, could be CONVFMT or OFMT if last
 		 * used in a print statement. If immutable, could be that it
@@ -930,7 +930,7 @@ asort_actual(unsigned nargs, sort_context_t ctxt)
 	if (result != dest) {
 		/* dest == NULL or dest == array */
 		assoc_clear(array);
-		memcpy(array, result, sizeof(*result));	/* copy result into array */
+		*array = *result;	/* copy result into array */
 		freenode(result);
 	} /* else
 		result == dest
