@@ -632,10 +632,10 @@ void
 do_delete_loop(NODE *symbol, NODE **lhs)
 {
 	NODE **list;
-	node_t akind = {0};
+	NODE akind;
 
-	akind.n.flags = AINDEX|ADELETE;	/* need a single index */
-	list = symbol->alist(symbol, & akind.n);
+	akind.flags = AINDEX|ADELETE;	/* need a single index */
+	list = symbol->alist(symbol, & akind);
 
 	if (assoc_empty(symbol))
 		return;
@@ -769,7 +769,7 @@ NODE *
 do_adump(unsigned nargs)
 {
 	NODE *symbol, *tmp;
-	static node_t ndump = {0};
+	static NODE ndump;
 	long depth = 0;
 
 	/*
@@ -787,10 +787,10 @@ do_adump(unsigned nargs)
 	if (symbol->type != Node_var_array)
 		fatal(_("adump: first argument not an array"));
 
-	ndump.n.type = Node_dump_array;
-	ndump.n.adepth = depth;
-	ndump.n.alevel = 0;
-	assoc_dump(symbol, & ndump.n);
+	ndump.type = Node_dump_array;
+	ndump.adepth = depth;
+	ndump.alevel = 0;
+	assoc_dump(symbol, & ndump);
 	return make_number((AWKNUM) 0);
 }
 
@@ -1273,7 +1273,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	 */
 
 	NODE **list;
-	node_t akind = {0};
+	NODE akind;
 	unsigned elem_size, qi, fsz;
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
@@ -1342,9 +1342,9 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		PUSH_CODE(code);
 	}
 
-	akind.n.flags = (unsigned int) assoc_kind;	/* kludge */
-	list = symbol->alist(symbol, & akind.n);
-	assoc_kind = (assoc_kind_t) akind.n.flags;	/* symbol->alist can modify it */
+	akind.flags = (unsigned int) assoc_kind;	/* kludge */
+	list = symbol->alist(symbol, & akind);
+	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
 	/* check for empty list or unsorted, or list already sorted */
 	if (list != NULL && cmp_func != NULL && (assoc_kind & (AASC|ADESC)) == 0) {
