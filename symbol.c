@@ -646,7 +646,7 @@ check_param_names(void)
 	NODE *f;
 	ulong_t j, i, max;
 	bool result = true;
-	node_t n = {0};
+	NODE n;
 
 	if (assoc_empty(func_table))
 		return result;
@@ -654,11 +654,11 @@ check_param_names(void)
 	max = func_table->table_size * 2u;
 
 	memset(& n, 0, sizeof n);
-	n.n.type = Node_val;
-	n.n.flags = STRING|STRCUR;
-	n.n.stfmt = STFMT_UNUSED;
+	n.type = Node_val;
+	n.flags = STRING|STRCUR;
+	n.stfmt = STFMT_UNUSED;
 #ifdef HAVE_MPFR
-	n.n.strndmode = MPFR_round_mode;
+	n.strndmode = MPFR_round_mode;
 #endif
 
 	/*
@@ -683,10 +683,10 @@ check_param_names(void)
 			/* compare to function names */
 
 			/* use a fake node to avoid malloc/free of make_string */
-			n.n.stptr = f->fparms[j].vname;
-			n.n.stlen = strlen(f->fparms[j].vname);
+			n.stptr = f->fparms[j].vname;
+			n.stlen = strlen(f->fparms[j].vname);
 
-			if (in_array(func_table, & n.n)) {
+			if (in_array(func_table, & n)) {
 				error(
 			_("function `%s': can't use function `%s' as a parameter name"),
 					list[i]->stptr,
