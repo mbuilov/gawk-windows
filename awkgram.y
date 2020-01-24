@@ -2249,8 +2249,8 @@ struct token {
 #	define	CONTINUE	0x1000	/* continue allowed inside */
 #	define	DEBUG_USE	0x2000	/* for use by developers */
 
-	NODE *(*ptr)(int);	/* function that implements this keyword */
-	NODE *(*ptr2)(int);	/* alternate arbitrary-precision function */
+	NODE *(*ptr)(unsigned nargs);	/* function that implements this keyword */
+	NODE *(*ptr2)(unsigned nargs);	/* alternate arbitrary-precision function */
 };
 
 #ifdef USE_EBCDIC
@@ -2377,7 +2377,7 @@ static unsigned cur_ring_idx;
 /* getfname --- return name of a builtin function (for pretty printing) */
 
 const char *
-getfname(NODE *(*fptr)(int), bool prepend_awk)
+getfname(NODE *(*fptr)(unsigned nargs), bool prepend_awk)
 {
 	unsigned i, j;
 	static char buf[100];
@@ -4542,7 +4542,7 @@ yylex(void)
 {
 	static char etoa_xlate[256];
 	static bool do_etoa_init = true;
-	int tok;
+	token_t tok;
 
 	if (do_etoa_init)
 	{
