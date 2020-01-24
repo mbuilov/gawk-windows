@@ -47,7 +47,7 @@ static mpfr_prec_t default_prec;
 static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *mpg_force_number(NODE *n);
 static NODE *mpg_make_number(double);
-static NODE *mpg_format_val(const char *format, int index, NODE *s);
+static NODE *mpg_format_val(const char *format, unsigned index, NODE *s);
 static int mpg_interpret(INSTRUCTION **cp);
 
 static mpfr_exp_t min_exp = MPFR_EMIN_DEFAULT;
@@ -352,7 +352,7 @@ mpg_force_number(NODE *n)
 /* mpg_format_val --- format a numeric value based on format */
 
 static NODE *
-mpg_format_val(const char *format, int index, NODE *s)
+mpg_format_val(const char *format, unsigned index, NODE *s)
 {
 	NODE *dummy[2], *r;
 	unsigned int oflags;
@@ -432,7 +432,7 @@ NODE *
 mpg_update_var(NODE *n)
 {
 	NODE *val = n->var_value;
-	long nr = 0;
+	field_num_t nr = 0;
 	mpz_ptr nq = 0;
 
 	if (n == NR_node) {
@@ -446,15 +446,15 @@ mpg_update_var(NODE *n)
 
 	if (mpz_sgn(nq) == 0) {
 		/* Efficiency hack similar to that for AWKNUM */
-		if (is_mpg_float(val) || mpz_get_si(val->mpg_i) != nr) {
+		if (is_mpg_float(val) || mpz_get_si(val->mpg_i) != (long) nr) {
 			unref(n->var_value);
 			val = n->var_value = mpg_integer();
-			mpz_set_si(val->mpg_i, nr);
+			mpz_set_si(val->mpg_i, (long) nr);
 		}
 	} else {
 		unref(n->var_value);
 		val = n->var_value = mpg_integer();
-		mpz_set_si(val->mpg_i, nr);
+		mpz_set_si(val->mpg_i, (long) nr);
 		mpz_addmul_ui(val->mpg_i, nq, LONG_MAX);	/* val->mpg_i += nq * LONG_MAX */
 	}
 	return val;
@@ -462,7 +462,7 @@ mpg_update_var(NODE *n)
 
 /* mpg_set_var --- set NR or FNR */
 
-long
+field_num_t
 mpg_set_var(NODE *n)
 {
 	long nr = 0;
@@ -484,7 +484,7 @@ mpg_set_var(NODE *n)
 		r = mpzval;
 	}
 	nr = mpz_fdiv_q_ui(nq, r, LONG_MAX);	/* nq (MNR or MFNR) is quotient */
-	return nr;	/* remainder (NR or FNR) */
+	return (field_num_t) nr;	/* remainder (NR or FNR) */
 }
 
 /* set_PREC --- update MPFR PRECISION related variables when PREC assigned to */
@@ -492,7 +492,7 @@ mpg_set_var(NODE *n)
 void
 set_PREC()
 {
-	long prec = 0;
+	mpfr_prec_t prec = 0;
 	NODE *val;
 	static const struct ieee_fmt {
 		const char *name;
@@ -520,7 +520,7 @@ set_PREC()
 	val = fixtype(PREC_node->var_value);
 
 	if ((val->flags & STRING) != 0) {
-		int i, j;
+		unsigned i, j;
 
 		/* emulate IEEE-754 binary format */
 
@@ -543,18 +543,20 @@ set_PREC()
 		}
 	}
 
-	if (prec <= 0) {
+	if (!prec) {
+		long p;
 		force_number(val);
-		prec = get_number_si(val);
-		if (prec < MPFR_PREC_MIN || prec > MPFR_PREC_MAX) {
+		p = get_number_si(val);
+		if (p < MPFR_PREC_MIN || p > MPFR_PREC_MAX) {
 			force_string(val);
 			warning(_("PREC value `%.*s' is invalid"), (int) val->stlen, val->stptr);
-			prec = 0;
-		} else
+		} else {
+			prec = (mpfr_prec_t) p;
 			do_ieee_fmt = false;
+		}
 	}
 
-	if (prec > 0)
+	if (prec)
 		mpfr_set_default_prec(default_prec = prec);
 }
 
@@ -660,7 +662,7 @@ format_ieee(mpfr_ptr x, int tval)
 /* do_mpfr_atan2 --- do the atan2 function */
 
 NODE *
-do_mpfr_atan2(int nargs)
+do_mpfr_atan2(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	mpfr_ptr p1, p2;
@@ -695,7 +697,7 @@ do_mpfr_atan2(int nargs)
 static inline NODE *
 do_mpfr_func(const char *name,
 		int (*mpfr_func)(),	/* putting argument types just gets the compiler confused */
-		int nargs)
+		unsigned nargs)
 {
 	NODE *t1, *res;
 	mpfr_ptr p1;
@@ -725,7 +727,7 @@ return result
 /* do_mpfr_sin --- do the sin function */
 
 NODE *
-do_mpfr_sin(int nargs)
+do_mpfr_sin(unsigned nargs)
 {
 	SPEC_MATH(sin);
 }
@@ -733,7 +735,7 @@ do_mpfr_sin(int nargs)
 /* do_mpfr_cos --- do the cos function */
 
 NODE *
-do_mpfr_cos(int nargs)
+do_mpfr_cos(unsigned nargs)
 {
 	SPEC_MATH(cos);
 }
@@ -741,7 +743,7 @@ do_mpfr_cos(int nargs)
 /* do_mpfr_exp --- exponential function */
 
 NODE *
-do_mpfr_exp(int nargs)
+do_mpfr_exp(unsigned nargs)
 {
 	SPEC_MATH(exp);
 }
@@ -749,7 +751,7 @@ do_mpfr_exp(int nargs)
 /* do_mpfr_log --- the log function */
 
 NODE *
-do_mpfr_log(int nargs)
+do_mpfr_log(unsigned nargs)
 {
 	SPEC_MATH(log);
 }
@@ -757,7 +759,7 @@ do_mpfr_log(int nargs)
 /* do_mpfr_sqrt --- do the sqrt function */
 
 NODE *
-do_mpfr_sqrt(int nargs)
+do_mpfr_sqrt(unsigned nargs)
 {
 	SPEC_MATH(sqrt);
 }
@@ -765,7 +767,7 @@ do_mpfr_sqrt(int nargs)
 /* do_mpfr_int --- convert double to int for awk */
 
 NODE *
-do_mpfr_int(int nargs)
+do_mpfr_int(unsigned nargs)
 {
 	NODE *tmp, *r;
 
@@ -794,7 +796,7 @@ do_mpfr_int(int nargs)
 /* do_mpfr_compl --- perform a ~ operation */
 
 NODE *
-do_mpfr_compl(int nargs)
+do_mpfr_compl(unsigned nargs)
 {
 	NODE *tmp, *r;
 	mpz_ptr zptr;
@@ -842,7 +844,7 @@ do_mpfr_compl(int nargs)
 /* get_intval --- get the (converted) integral operand of a binary function. */
 
 static mpz_ptr
-get_intval(NODE *t1, int argnum, const char *op)
+get_intval(NODE *t1, unsigned argnum, const char *op)
 {
 	mpz_ptr pz;
 
@@ -912,7 +914,7 @@ free_intval(NODE *t, mpz_ptr pz)
 /* do_mpfr_lshift --- perform a << operation */
 
 NODE *
-do_mpfr_lshift(int nargs)
+do_mpfr_lshift(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	unsigned long shift;
@@ -944,7 +946,7 @@ do_mpfr_lshift(int nargs)
 /* do_mpfr_rshift --- perform a >> operation */
 
 NODE *
-do_mpfr_rshift(int nargs)
+do_mpfr_rshift(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	unsigned long shift;
@@ -972,11 +974,11 @@ do_mpfr_rshift(int nargs)
 /* do_mpfr_and --- perform an & operation */
 
 NODE *
-do_mpfr_and(int nargs)
+do_mpfr_and(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	int i;
+	unsigned i;
 
 	if (nargs < 2)
 		fatal(_("and: called with less than two arguments"));
@@ -1004,11 +1006,11 @@ do_mpfr_and(int nargs)
 /* do_mpfr_or --- perform an | operation */
 
 NODE *
-do_mpfr_or(int nargs)
+do_mpfr_or(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	int i;
+	unsigned i;
 
 	if (nargs < 2)
 		fatal(_("or: called with less than two arguments"));
@@ -1035,11 +1037,11 @@ do_mpfr_or(int nargs)
 /* do_mpfr_xor --- perform an ^ operation */
 
 NODE *
-do_mpfr_xor(int nargs)
+do_mpfr_xor(unsigned nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	int i;
+	unsigned i;
 
 	if (nargs < 2)
 		fatal(_("xor: called with less than two arguments"));
@@ -1066,7 +1068,7 @@ do_mpfr_xor(int nargs)
 /* do_mpfr_strtonum --- the strtonum function */
 
 NODE *
-do_mpfr_strtonum(int nargs)
+do_mpfr_strtonum(unsigned nargs)
 {
 	NODE *tmp, *r;
 
@@ -1102,10 +1104,11 @@ static mpz_t seed;	/* current seed */
 /* do_mpfr_rand --- do the rand function */
 
 NODE *
-do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
+do_mpfr_rand(unsigned nargs)
 {
 	NODE *res;
 	int tval;
+	(void) nargs;
 
 	if (firstrand) {
 #if 0
@@ -1135,7 +1138,7 @@ do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
 /* do_mpfr_srand --- seed the random number generator */
 
 NODE *
-do_mpfr_srand(int nargs)
+do_mpfr_srand(unsigned nargs)
 {
 	NODE *res;
 
@@ -1191,7 +1194,7 @@ do_mpfr_srand(int nargs)
  */
 
 NODE *
-do_mpfr_intdiv(int nargs)
+do_mpfr_intdiv(unsigned nargs)
 {
 	NODE *numerator, *denominator, *result;
 	NODE *num, *denom;
@@ -1782,13 +1785,13 @@ mpfr_unset(NODE *n)
 #else
 
 void
-set_PREC()
+set_PREC(void)
 {
 	/* dummy function */
 }
 
 void
-set_ROUNDMODE()
+set_ROUNDMODE(void)
 {
 	/* dummy function */
 }
@@ -1797,5 +1800,6 @@ void
 mpfr_unset(NODE *n)
 {
 	/* dummy function */
+	(void) n;
 }
 #endif
