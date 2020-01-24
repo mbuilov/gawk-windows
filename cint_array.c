@@ -376,7 +376,7 @@ cint_remove(NODE *symbol, NODE *subs)
 		xn->flags &= ~XARRAY;
 		xn->parent_array = symbol->parent_array;
 		efree(symbol->nodes);
-		memcpy(symbol, xn, sizeof(*xn));
+		*symbol = *xn;
 		freenode(xn);
 	}
 
