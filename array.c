@@ -1153,7 +1153,6 @@ static int
 sort_up_value_type(const void *p1, const void *p2)
 {
 	NODE *n1, *n2;
-	int n1_pos, n2_pos, i;
 
 	static const NODETYPE element_types[] = {
 		Node_builtin_func,
@@ -1180,19 +1179,21 @@ sort_up_value_type(const void *p1, const void *p2)
 	}
 
 	/* 2. Non scalars */
-	n1_pos = n2_pos = -1;
-	for (i = 0; element_types[i] != Node_illegal; i++) {
-		if (n1->type == element_types[i])
-			n1_pos = i;
+	if (n1->type != Node_val || n2->type != Node_val) {
+		int n1_pos, n2_pos, i;
 
-		if (n2->type == element_types[i])
-			n2_pos = i;
-	}
+		n1_pos = n2_pos = -1;
+		for (i = 0; element_types[i] != Node_illegal; i++) {
+			if (n1->type == element_types[i])
+				n1_pos = i;
 
-	assert(n1_pos != -1 && n2_pos != -1);
+			if (n2->type == element_types[i])
+				n2_pos = i;
+		}
 
-	if (n1->type != Node_val || n2->type != Node_val)
+		assert(n1_pos != -1 && n2_pos != -1);
 		return (n1_pos - n2_pos);
+	}
 
 	/* two scalars */
 	(void) fixtype(n1);
