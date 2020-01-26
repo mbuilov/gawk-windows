@@ -1404,7 +1404,7 @@ GAWK_EXT_TESTS = \
 	sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 \
 	stupid1 stupid2 stupid3 stupid4 \
-	switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7
+	switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
 	symtab8 symtab9 symtab10 symtab11 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
 	typedregex5 typedregex6 \
