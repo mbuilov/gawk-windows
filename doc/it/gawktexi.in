@@ -16899,8 +16899,8 @@ $ @kbd{gawk -f risposta.awk}
 @quotation NOTA
 Per evitare seri paradossi temporali,
 @footnote{Per non parlare dei grossi problemi di implementazione.}
-n@'e @code{FUNCTAB} n@'e @code{SYMTAB}
-sono disponibili come elementi all'interno del vettore @code{SYMTAB}.
+n@'e @code{FUNCTAB} n@'e @code{SYMTAB} sono disponibili come
+elemento all'interno del vettore @code{SYMTAB}.
 @end quotation
 @end table
 
@@ -17889,6 +17889,14 @@ Tutti i valori numerici precedono tutti i valori di tipo stringa,
 che a loro volta vengono prima dei sottovettori.
 (I sottovettori non sono ancora stati descritti;
 @pxref{Vettori di vettori}.)
+
+Se si sceglie di utilizzare questa funzionalit@`a per esaminare
+tutti gli elementi di @code{FUNCTAB} (@pxref{Variabili auto-assegnate}),
+allora l'ordine in cui sono presentati gli elementi @`e: dapprima le
+funzioni predefinite (@pxref{Funzioni predefinite}), poi
+le funzioni definite dall'utente (@pxref{Funzioni definite dall'utente})
+e infine le funzioni caricate da un'estensione
+(@pxref{Estensioni dinamiche}).
 
 @item "@@val_str_asc"
 Ordinare secondo il valore degli elementi in ordine crescente (invece che in
@@ -19091,6 +19099,14 @@ a[1] = "mediano"
 a[2] = "primo"
 a[3] = "ultimo"
 @end example
+
+@quotation NOTA
+A motivo di limitazioni dovute all'implementazione, non si possono usare
+n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come argomenti di queste 
+funzioni, neppure se si specifica un secondo vettore da utilizzare
+per effettuare l'ordinamento.  Se si tenta di farlo, viene generato
+un errore fatale.  Questa limitazione potrebbe venire meno in futuro.
+@end quotation
 
 @item @code{gensub(@var{regexp}, @var{rimpiazzo}, @var{come}} [@code{, @var{obiettivo}}]@code{) #}
 @cindexgawkfunc{gensub}
