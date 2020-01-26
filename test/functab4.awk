@@ -9,11 +9,14 @@ BEGIN {
 	f = FUNCTAB["foo"]
 	@f()
 
-	ret1 = stat(".", data1)
-	print "ret1 =", ret1
+	# Do the two stats one after the other, and use ".." instead
+	# of "." to avoid race conditions seen using ".".
+	ret1 = stat("..", data1)
 
 	f = "stat"
-	ret2 = @f(".", data2)
+	ret2 = @f("..", data2)
+
+	print "ret1 =", ret1
 	print "ret2 =", ret2
 
 	problem = 0
