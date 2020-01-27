@@ -50,12 +50,22 @@
 #ifndef SIZE_MAX
 #define SIZE_MAX __INT32_MAX
 #endif
+#define ULONG_WIDTH 32
 #ifndef __VAX
 #ifndef ULLONG_MAX
 #define ULLONG_MAX __UINT64_MAX
 #endif
 #endif
 #endif
+typedef char int_least8_t;
+typedef unsigned char uint_least8_t;
+typedef short int_least16_t;
+typedef unsigned short uint_least16_t;
+#ifndef __VAX
+typedef long long int_fast64_t;
+typedef unsigned long long uint_fast64_t;
+#endif
+
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
 #ifdef __QNX__
