@@ -27,10 +27,10 @@
 #include "awk.h"
 
 extern FILE *output_fp;
-int sourceline = 0;
-char *source = NULL;
+unsigned sourceline = 0;
+const char *source = NULL;
 static const char *srcfile = NULL;
-static int srcline;
+static unsigned srcline;
 
 jmp_buf fatal_tag;
 int fatal_tag_valid = 0;
@@ -41,7 +41,7 @@ int fatal_tag_valid = 0;
 void
 err(bool isfatal, const char *s, const char *emsg, va_list argp)
 {
-	char *file;
+	const char *file;
 	const char *me;
 
 	static bool first = true;
@@ -55,7 +55,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 			NODE *n = lookup("LINENO");
 
 			if (n != NULL && n->type == Node_var)
-				lineno_val = get_number_d(n->var_value);
+				lineno_val = (long) get_number_d(n->var_value);
 		}
 	}
 
@@ -64,7 +64,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 	(void) fprintf(stderr, "%s: ", me);
 
 	if (srcfile != NULL && add_src_info) {
-		fprintf(stderr, "%s:%d:", srcfile, srcline);
+		fprintf(stderr, "%s:%u:", srcfile, srcline);
 		srcfile = NULL;
 	}
 
@@ -74,7 +74,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		else
 			(void) fprintf(stderr, _("cmd. line:"));
 
-		(void) fprintf(stderr, "%ld: ", sourceline + lineno_val);
+		(void) fprintf(stderr, "%ld: ", (long) (sourceline + lineno_val));
 	}
 
 #ifdef HAVE_MPFR
@@ -83,22 +83,22 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		val = mpg_update_var(FNR_node);
 		assert((val->flags & MPZN) != 0);
 		if (mpz_sgn(val->mpg_i) > 0) {
-			int len = FILENAME_node->var_value->stlen;
+			size_t len = FILENAME_node->var_value->stlen;
 			file = FILENAME_node->var_value->stptr;
 			(void) putc('(', stderr);
 			if (file)
-				(void) fprintf(stderr, "FILENAME=%.*s ", len, file);
+				(void) fprintf(stderr, "FILENAME=%.*s ", (int) len, file);
 			(void) mpfr_fprintf(stderr, "FNR=%Zd) ", val->mpg_i);
 		}
 	} else
 #endif
 	if (FNR > 0) {
-		int len = FILENAME_node->var_value->stlen;
+		size_t len = FILENAME_node->var_value->stlen;
 		file = FILENAME_node->var_value->stptr;
 		(void) putc('(', stderr);
 		if (file)
-			(void) fprintf(stderr, "FILENAME=%.*s ", len, file);
-		(void) fprintf(stderr, "FNR=%ld) ", FNR);
+			(void) fprintf(stderr, "FILENAME=%.*s ", (int) len, file);
+		(void) fprintf(stderr, "FNR=%llu) ", (unsigned long long)0 + FNR);
 	}
 
 	(void) fprintf(stderr, "%s", s);
@@ -111,8 +111,9 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		// GLIBC 2.27 doesn't necessarily flush on abort. Sigh.
 		fflush(NULL);
 		abort();
-#endif
+#else
 		gawk_exit(EXIT_FATAL);
+#endif
 	}
 }
 
@@ -150,7 +151,7 @@ error(const char *mesg, ...)
 /* set_loc --- set location where a fatal error happened */
 
 void
-set_loc(const char *file, int line)
+set_loc(const char *file, unsigned line)
 {
 	srcfile = file;
 	srcline = line;
@@ -193,6 +194,9 @@ final_exit(int status)
 
 	/* we could close_io() here */
 	close_extensions();
+
+	/* free dynamically allocated program args */
+	gawk_free_argv();
 
 	exit(status);
 }
