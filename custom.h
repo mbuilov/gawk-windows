@@ -46,17 +46,16 @@
 #undef isnan
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
-#endif
+#endif /* _GNU_SOURCE */
 #ifndef SIZE_MAX
 #define SIZE_MAX __INT32_MAX
-#endif
+#endif /* SIZE_MAX */
 #define ULONG_WIDTH 32
 #ifndef __VAX
 #ifndef ULLONG_MAX
 #define ULLONG_MAX __UINT64_MAX
-#endif
-#endif
-#endif
+#endif /* ULLONG_MAX */
+#endif /* __VAX */
 typedef char int_least8_t;
 typedef unsigned char uint_least8_t;
 typedef short int_least16_t;
@@ -64,7 +63,8 @@ typedef unsigned short uint_least16_t;
 #ifndef __VAX
 typedef long long int_fast64_t;
 typedef unsigned long long uint_fast64_t;
-#endif
+#endif /* __VAX */
+#endif /* __VMS */
 
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
