@@ -87,8 +87,6 @@ extern int errno;
 #include <wchar.h>
 #include <wctype.h>
 
-#include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */
-
 #ifdef STDC_HEADERS
 #include <float.h>
 #endif
