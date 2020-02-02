@@ -16514,20 +16514,29 @@ command-line arguments for 'awk':
          ...
      }
 
+   The GNU project's version of the original Unix utilities popularized
+the use of long command line options.  For example, '--help' in addition
+to '-h'.  Arguments to long options are either provided as separate
+command line arguments ('--source 'PROGRAM-TEXT'') or separated from the
+option with an '=' sign ('--source='PROGRAM-TEXT'').
+
    As a side point, 'gawk' actually uses the GNU 'getopt_long()'
 function to process both normal and GNU-style long options (*note
 Options::).
 
    The abstraction provided by 'getopt()' is very useful and is quite
 handy in 'awk' programs as well.  Following is an 'awk' version of
-'getopt()'.  This function highlights one of the greatest weaknesses in
-'awk', which is that it is very poor at manipulating single characters.
-Repeated calls to 'substr()' are necessary for accessing individual
-characters (*note String Functions::).(1)
+'getopt()' that accepts both short and long options.
+
+   This function highlights one of the greatest weaknesses in 'awk',
+which is that it is very poor at manipulating single characters.  The
+function needs repeated calls to 'substr()' in order to access
+individual characters (*note String Functions::).(1)
 
    The discussion that follows walks through the code a bit at a time:
 
      # getopt.awk --- Do C library getopt(3) function in awk
+     #                Also supports long options.
 
      # External variables:
      #    Optind -- index in ARGV of first nonoption argument
@@ -16538,7 +16547,7 @@ characters (*note String Functions::).(1)
      # Returns:
      #    -1     at end of options
      #    "?"    for unrecognized option
-     #    <c>    a character representing the current option
+     #    <s>    a string representing the current option
 
      # Private Data:
      #    _opti  -- index in multiflag option, e.g., -abc
@@ -16550,13 +16559,13 @@ documentation is essential for any program, and particularly for library
 functions.
 
    The 'getopt()' function first checks that it was indeed called with a
-string of options (the 'options' parameter).  If 'options' has a zero
-length, 'getopt()' immediately returns -1:
+string of options (the 'options' parameter).  If both 'options' and
+'longoptions' have a zero length, 'getopt()' immediately returns -1:
 
-     function getopt(argc, argv, options,    thisopt, i)
+     function getopt(argc, argv, options, longopts,    thisopt, i, j)
      {
-         if (length(options) == 0)    # no options given
-             return -1
+         if (length(options) == 0 && length(longopts) == 0)
+             return -1                # no options given
 
          if (argv[Optind] == "--") {  # all done
              Optind++
@@ -16569,30 +16578,34 @@ length, 'getopt()' immediately returns -1:
 
    The next thing to check for is the end of the options.  A '--' ends
 the command-line options, as does any command-line argument that does
-not begin with a '-'.  'Optind' is used to step through the array of
-command-line arguments; it retains its value across calls to 'getopt()',
-because it is a global variable.
+not begin with a '-' (unless it is an argument to a preceding option).
+'Optind' steps through the array of command-line arguments; it retains
+its value across calls to 'getopt()', because it is a global variable.
 
-   The regular expression that is used, '/^-[^:[:space:]/', checks for a
-'-' followed by anything that is not whitespace and not a colon.  If the
-current command-line argument does not match this pattern, it is not an
-option, and it ends option processing.  Continuing on:
+   The regular expression '/^-[^:[:space:]/' checks for a '-' followed
+by anything that is not whitespace and not a colon.  If the current
+command-line argument does not match this pattern, it is not an option,
+and it ends option processing.  Now, we check to see if we are
+processing a short (single letter) option, or a long option (indicated
+by two dashes, e.g., '--filename').  If it is a short option, we
+continue on:
 
-         if (_opti == 0)
-             _opti = 2
-         thisopt = substr(argv[Optind], _opti, 1)
-         Optopt = thisopt
-         i = index(options, thisopt)
-         if (i == 0) {
-             if (Opterr)
-                 printf("%c -- invalid option\n", thisopt) > "/dev/stderr"
-             if (_opti >= length(argv[Optind])) {
-                 Optind++
-                 _opti = 0
-             } else
-                 _opti++
-             return "?"
-         }
+         if (argv[Optind] !~ /^--/) {        # if this is a short option
+             if (_opti == 0)
+                 _opti = 2
+             thisopt = substr(argv[Optind], _opti, 1)
+             Optopt = thisopt
+             i = index(options, thisopt)
+             if (i == 0) {
+                 if (Opterr)
+                     printf("%c -- invalid option\n", thisopt) > "/dev/stderr"
+                 if (_opti >= length(argv[Optind])) {
+                     Optind++
+                     _opti = 0
+                 } else
+                     _opti++
+                 return "?"
+             }
 
    The '_opti' variable tracks the position in the current command-line
 argument ('argv[Optind]').  If multiple options are grouped together
@@ -16620,15 +16633,15 @@ incremented.
 The main program can examine 'Optopt' if it needs to know what the
 invalid option letter actually is.  Continuing on:
 
-         if (substr(options, i + 1, 1) == ":") {
-             # get option argument
-             if (length(substr(argv[Optind], _opti + 1)) > 0)
-                 Optarg = substr(argv[Optind], _opti + 1)
-             else
-                 Optarg = argv[++Optind]
-             _opti = 0
-         } else
-             Optarg = ""
+             if (substr(options, i + 1, 1) == ":") {
+                 # get option argument
+                 if (length(substr(argv[Optind], _opti + 1)) > 0)
+                     Optarg = substr(argv[Optind], _opti + 1)
+                 else
+                     Optarg = argv[++Optind]
+                 _opti = 0
+             } else
+                 Optarg = ""
 
    If the option requires an argument, the option letter is followed by
 a colon in the 'options' string.  If there are remaining characters in
@@ -16638,20 +16651,79 @@ argument is used ('-xFOO' versus '-x FOO').  In either case, '_opti' is
 reset to zero, because there are no more characters left to examine in
 the current command-line argument.  Continuing:
 
-         if (_opti == 0 || _opti >= length(argv[Optind])) {
+             if (_opti == 0 || _opti >= length(argv[Optind])) {
+                 Optind++
+                 _opti = 0
+             } else
+                 _opti++
+             return thisopt
+
+   Finally, for a short option, if '_opti' is either zero or greater
+than the length of the current command-line argument, it means this
+element in 'argv' is through being processed, so 'Optind' is incremented
+to point to the next element in 'argv'.  If neither condition is true,
+then only '_opti' is incremented, so that the next option letter can be
+processed on the next call to 'getopt()'.
+
+   On the other hand, if the earlier test found that this was a long
+option, we take a different branch:
+
+         } else {
+             j = index(argv[Optind], "=")
+             if (j > 0)
+                 thisopt = substr(argv[Optind], 3, j - 3)
+             else
+                 thisopt = substr(argv[Optind], 3)
+             Optopt = thisopt
+
+   First, we search this option for a possible embedded equal sign, as
+the specification of long options allows an argument to an option
+'--someopt:' to be specified as '--someopt=answer' as well as
+'--someopt answer'.
+
+             i = match(longopts, "(^|,)" thisopt "($|[,:])")
+             if (i == 0) {
+                 if (Opterr)
+                      printf("%s -- invalid option\n", thisopt) > "/dev/stderr"
+                 Optind++
+                 return "?"
+             }
+
+   Next, we try to find the current option in 'longopts'.  The regular
+expression givent to 'match()', '"(^|,)" thisopt "($|[,:])"', matches
+this option at the beginninng of 'longopts', or at the beginning of a
+subsequent long option (the previous long option would have been
+terminated by a comma), and, in any case, either at the end of the
+'longopts' string ('$'), or followed by a comma (separating this option
+from a subsequent option) or a colon (indicating this long option takes
+an argument ('[,:]').
+
+   Using this regular expression, we check to see if the current option
+might possibly be in 'longopts' (if 'longopts' is not specified, this
+test will also fail).  In case of an error, we possibly print an error
+message and then return '"?"'.  Continuing on:
+
+             if (substr(longopts, i+1+length(thisopt), 1) == ":") {
+                 if (j > 0)
+                     Optarg = substr(argv[Optind], j + 1)
+                 else
+                     Optarg = argv[++Optind]
+             } else
+                 Optarg = ""
+
+   We now check to see if this option takes an argument and, if so, we
+set 'Optarg' to the value of that argument (either a value after an
+equal sign specified on the command line, immediately adjoining the long
+option string, or as the next argument on the command line).
+
              Optind++
-             _opti = 0
-         } else
-             _opti++
-         return thisopt
+             return thisopt
+         }
      }
 
-   Finally, if '_opti' is either zero or greater than the length of the
-current command-line argument, it means this element in 'argv' is
-through being processed, so 'Optind' is incremented to point to the next
-element in 'argv'.  If neither condition is true, then only '_opti' is
-incremented, so that the next option letter can be processed on the next
-call to 'getopt()'.
+   We increase 'Optind' (which we already increased once if a required
+argument was separated from its option by an equal sign), and return the
+long option (minus its leading dashes).
 
    The 'BEGIN' rule initializes both 'Opterr' and 'Optind' to one.
 'Opterr' is set to one, because the default behavior is for 'getopt()'
@@ -16665,18 +16737,19 @@ which is in 'ARGV[0]':
 
          # test program
          if (_getopt_test) {
-             while ((_go_c = getopt(ARGC, ARGV, "ab:cd")) != -1)
-                 printf("c = <%c>, Optarg = <%s>\n",
-                                            _go_c, Optarg)
+             _myshortopts = "ab:cd"
+             _mylongopts = "longa,longb:,otherc,otherd"
+
+             while ((_go_c = getopt(ARGC, ARGV, _myshortopts, _mylongopts)) != -1)
+                 printf("c = <%s>, Optarg = <%s>\n", _go_c, Optarg)
              printf("non-option arguments:\n")
              for (; Optind < ARGC; Optind++)
-                 printf("\tARGV[%d] = <%s>\n",
-                                         Optind, ARGV[Optind])
+                 printf("\tARGV[%d] = <%s>\n", Optind, ARGV[Optind])
          }
      }
 
    The rest of the 'BEGIN' rule is a simple test program.  Here are the
-results of two sample runs of the test program:
+results of some sample runs of the test program:
 
      $ awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x
      -| c = <a>, Optarg = <>
@@ -16694,7 +16767,19 @@ results of two sample runs of the test program:
      -|         ARGV[4] = <xyz>
      -|         ARGV[5] = <abc>
 
-   In both runs, the first '--' terminates the arguments to 'awk', so
+     $ awk -f getopt.awk -v _getopt_test=1 -- -a \
+     > --longa -b xx --longb=foo=bar --otherd --otherc arg1 arg2
+     -| c = <a>, Optarg = <>
+     -| c = <longa>, Optarg = <>
+     -| c = <b>, Optarg = <xx>
+     -| c = <longb>, Optarg = <foo=bar>
+     -| c = <otherd>, Optarg = <>
+     -| c = <otherc>, Optarg = <>
+     -| non-option arguments:
+     -| 	ARGV[8] = <arg1>
+     -| 	ARGV[9] = <arg2>
+
+   In all the runs, the first '--' terminates the arguments to 'awk', so
 that it does not try to interpret the '-a', etc., as its own options.
 
      NOTE: After 'getopt()' is through, user-level code must clear out
@@ -35560,8 +35645,8 @@ Index
 * getlocaltime() user-defined function:  Getlocaltime Function.
                                                               (line  16)
 * getopt() function (C library):         Getopt Function.     (line  15)
-* getopt() user-defined function:        Getopt Function.     (line 108)
-* getopt() user-defined function <1>:    Getopt Function.     (line 134)
+* getopt() user-defined function:        Getopt Function.     (line 116)
+* getopt() user-defined function <1>:    Getopt Function.     (line 143)
 * getpwent() function (C library):       Passwd Functions.    (line  16)
 * getpwent() function (C library) <1>:   Passwd Functions.    (line 196)
 * getpwent() user-defined function:      Passwd Functions.    (line  16)
@@ -37007,8 +37092,8 @@ Index
 * user-defined, function, beginfile():   Filetrans Function.  (line  62)
 * user-defined, function, endfile():     Filetrans Function.  (line  62)
 * user-defined, function, rewind():      Rewind Function.     (line  15)
-* user-defined, function, getopt():      Getopt Function.     (line 108)
-* user-defined, function, getopt() <1>:  Getopt Function.     (line 134)
+* user-defined, function, getopt():      Getopt Function.     (line 116)
+* user-defined, function, getopt() <1>:  Getopt Function.     (line 143)
 * user-defined, function, getpwent():    Passwd Functions.    (line  16)
 * user-defined, function, _pw_init():    Passwd Functions.    (line 105)
 * user-defined, function, getpwnam():    Passwd Functions.    (line 180)
@@ -37446,285 +37531,285 @@ Ref: File Checking-Footnote-1680647
 Node: Empty Files680848
 Node: Ignoring Assigns682827
 Node: Getopt Function684377
-Ref: Getopt Function-Footnote-1695846
-Node: Passwd Functions696046
-Ref: Passwd Functions-Footnote-1704885
-Node: Group Functions704973
-Ref: Group Functions-Footnote-1712871
-Node: Walking Arrays713078
-Node: Library Functions Summary716086
-Node: Library Exercises717492
-Node: Sample Programs717957
-Node: Running Examples718727
-Node: Clones719455
-Node: Cut Program720679
-Node: Egrep Program730608
-Ref: Egrep Program-Footnote-1738120
-Node: Id Program738230
-Node: Split Program741910
-Ref: Split Program-Footnote-1745368
-Node: Tee Program745497
-Node: Uniq Program748287
-Node: Wc Program755908
-Ref: Wc Program-Footnote-1760163
-Node: Miscellaneous Programs760257
-Node: Dupword Program761470
-Node: Alarm Program763500
-Node: Translate Program768355
-Ref: Translate Program-Footnote-1772920
-Node: Labels Program773190
-Ref: Labels Program-Footnote-1776541
-Node: Word Sorting776625
-Node: History Sorting780697
-Node: Extract Program782922
-Node: Simple Sed790976
-Node: Igawk Program794050
-Ref: Igawk Program-Footnote-1808381
-Ref: Igawk Program-Footnote-2808583
-Ref: Igawk Program-Footnote-3808705
-Node: Anagram Program808820
-Node: Signature Program811882
-Node: Programs Summary813129
-Node: Programs Exercises814343
-Ref: Programs Exercises-Footnote-1818472
-Node: Advanced Features818563
-Node: Nondecimal Data820553
-Node: Array Sorting822144
-Node: Controlling Array Traversal822844
-Ref: Controlling Array Traversal-Footnote-1831212
-Node: Array Sorting Functions831330
-Ref: Array Sorting Functions-Footnote-1836421
-Node: Two-way I/O836617
-Ref: Two-way I/O-Footnote-1844338
-Ref: Two-way I/O-Footnote-2844525
-Node: TCP/IP Networking844607
-Node: Profiling847725
-Node: Advanced Features Summary856740
-Node: Internationalization858584
-Node: I18N and L10N860064
-Node: Explaining gettext860751
-Ref: Explaining gettext-Footnote-1866643
-Ref: Explaining gettext-Footnote-2866828
-Node: Programmer i18n866993
-Ref: Programmer i18n-Footnote-1871942
-Node: Translator i18n871991
-Node: String Extraction872785
-Ref: String Extraction-Footnote-1873917
-Node: Printf Ordering874003
-Ref: Printf Ordering-Footnote-1876789
-Node: I18N Portability876853
-Ref: I18N Portability-Footnote-1879309
-Node: I18N Example879372
-Ref: I18N Example-Footnote-1882647
-Ref: I18N Example-Footnote-2882720
-Node: Gawk I18N882829
-Node: I18N Summary883478
-Node: Debugger884819
-Node: Debugging885819
-Node: Debugging Concepts886260
-Node: Debugging Terms888069
-Node: Awk Debugging890644
-Ref: Awk Debugging-Footnote-1891589
-Node: Sample Debugging Session891721
-Node: Debugger Invocation892255
-Node: Finding The Bug893641
-Node: List of Debugger Commands900115
-Node: Breakpoint Control901448
-Node: Debugger Execution Control905142
-Node: Viewing And Changing Data908504
-Node: Execution Stack912045
-Node: Debugger Info913682
-Node: Miscellaneous Debugger Commands917753
-Node: Readline Support922815
-Node: Limitations923711
-Node: Debugging Summary926265
-Node: Namespaces927544
-Node: Global Namespace928655
-Node: Qualified Names930053
-Node: Default Namespace931052
-Node: Changing The Namespace931793
-Node: Naming Rules933407
-Node: Internal Name Management935255
-Node: Namespace Example936297
-Node: Namespace And Features938859
-Node: Namespace Summary940294
-Node: Arbitrary Precision Arithmetic941771
-Node: Computer Arithmetic943258
-Ref: table-numeric-ranges947024
-Ref: table-floating-point-ranges947517
-Ref: Computer Arithmetic-Footnote-1948175
-Node: Math Definitions948232
-Ref: table-ieee-formats951548
-Ref: Math Definitions-Footnote-1952151
-Node: MPFR features952256
-Node: FP Math Caution953974
-Ref: FP Math Caution-Footnote-1955046
-Node: Inexactness of computations955415
-Node: Inexact representation956375
-Node: Comparing FP Values957735
-Node: Errors accumulate958976
-Node: Getting Accuracy960409
-Node: Try To Round963119
-Node: Setting precision964018
-Ref: table-predefined-precision-strings964715
-Node: Setting the rounding mode966545
-Ref: table-gawk-rounding-modes966919
-Ref: Setting the rounding mode-Footnote-1970850
-Node: Arbitrary Precision Integers971029
-Ref: Arbitrary Precision Integers-Footnote-1974204
-Node: Checking for MPFR974353
-Node: POSIX Floating Point Problems975827
-Ref: POSIX Floating Point Problems-Footnote-1980112
-Node: Floating point summary980150
-Node: Dynamic Extensions982340
-Node: Extension Intro983893
-Node: Plugin License985159
-Node: Extension Mechanism Outline985956
-Ref: figure-load-extension986395
-Ref: figure-register-new-function987960
-Ref: figure-call-new-function989052
-Node: Extension API Description991114
-Node: Extension API Functions Introduction992756
-Ref: table-api-std-headers994592
-Node: General Data Types998457
-Ref: General Data Types-Footnote-11006818
-Node: Memory Allocation Functions1007117
-Ref: Memory Allocation Functions-Footnote-11011327
-Node: Constructor Functions1011426
-Node: Registration Functions1015012
-Node: Extension Functions1015697
-Node: Exit Callback Functions1021019
-Node: Extension Version String1022269
-Node: Input Parsers1022932
-Node: Output Wrappers1035653
-Node: Two-way processors1040165
-Node: Printing Messages1042430
-Ref: Printing Messages-Footnote-11043601
-Node: Updating ERRNO1043754
-Node: Requesting Values1044493
-Ref: table-value-types-returned1045230
-Node: Accessing Parameters1046166
-Node: Symbol Table Access1047401
-Node: Symbol table by name1047913
-Ref: Symbol table by name-Footnote-11050937
-Node: Symbol table by cookie1051065
-Ref: Symbol table by cookie-Footnote-11055250
-Node: Cached values1055314
-Ref: Cached values-Footnote-11058850
-Node: Array Manipulation1059003
-Ref: Array Manipulation-Footnote-11060094
-Node: Array Data Types1060131
-Ref: Array Data Types-Footnote-11062789
-Node: Array Functions1062881
-Node: Flattening Arrays1067379
-Node: Creating Arrays1074355
-Node: Redirection API1079122
-Node: Extension API Variables1081955
-Node: Extension Versioning1082666
-Ref: gawk-api-version1083095
-Node: Extension GMP/MPFR Versioning1084826
-Node: Extension API Informational Variables1086454
-Node: Extension API Boilerplate1087527
-Node: Changes from API V11091501
-Node: Finding Extensions1093073
-Node: Extension Example1093632
-Node: Internal File Description1094430
-Node: Internal File Ops1098510
-Ref: Internal File Ops-Footnote-11109860
-Node: Using Internal File Ops1110000
-Ref: Using Internal File Ops-Footnote-11112383
-Node: Extension Samples1112657
-Node: Extension Sample File Functions1114186
-Node: Extension Sample Fnmatch1121835
-Node: Extension Sample Fork1123322
-Node: Extension Sample Inplace1124540
-Node: Extension Sample Ord1128165
-Node: Extension Sample Readdir1129001
-Ref: table-readdir-file-types1129890
-Node: Extension Sample Revout1130957
-Node: Extension Sample Rev2way1131546
-Node: Extension Sample Read write array1132286
-Node: Extension Sample Readfile1134228
-Node: Extension Sample Time1135323
-Node: Extension Sample API Tests1137075
-Node: gawkextlib1137567
-Node: Extension summary1140485
-Node: Extension Exercises1144187
-Node: Language History1145429
-Node: V7/SVR3.11147085
-Node: SVR41149237
-Node: POSIX1150671
-Node: BTL1152051
-Node: POSIX/GNU1152780
-Node: Feature History1158558
-Node: Common Extensions1174751
-Node: Ranges and Locales1176034
-Ref: Ranges and Locales-Footnote-11180650
-Ref: Ranges and Locales-Footnote-21180677
-Ref: Ranges and Locales-Footnote-31180912
-Node: Contributors1181133
-Node: History summary1187086
-Node: Installation1188466
-Node: Gawk Distribution1189410
-Node: Getting1189894
-Node: Extracting1190857
-Node: Distribution contents1192495
-Node: Unix Installation1198975
-Node: Quick Installation1199657
-Node: Shell Startup Files1202071
-Node: Additional Configuration Options1203160
-Node: Configuration Philosophy1205475
-Node: Non-Unix Installation1207844
-Node: PC Installation1208304
-Node: PC Binary Installation1209142
-Node: PC Compiling1209577
-Node: PC Using1210694
-Node: Cygwin1214247
-Node: MSYS1215471
-Node: VMS Installation1215972
-Node: VMS Compilation1216763
-Ref: VMS Compilation-Footnote-11217992
-Node: VMS Dynamic Extensions1218050
-Node: VMS Installation Details1219735
-Node: VMS Running1221988
-Node: VMS GNV1226267
-Node: VMS Old Gawk1227002
-Node: Bugs1227473
-Node: Bug address1228136
-Node: Usenet1231118
-Node: Maintainers1232122
-Node: Other Versions1233383
-Node: Installation summary1240471
-Node: Notes1241673
-Node: Compatibility Mode1242467
-Node: Additions1243249
-Node: Accessing The Source1244174
-Node: Adding Code1245611
-Node: New Ports1251830
-Node: Derived Files1256205
-Ref: Derived Files-Footnote-11261865
-Ref: Derived Files-Footnote-21261900
-Ref: Derived Files-Footnote-31262498
-Node: Future Extensions1262612
-Node: Implementation Limitations1263270
-Node: Extension Design1264453
-Node: Old Extension Problems1265597
-Ref: Old Extension Problems-Footnote-11267115
-Node: Extension New Mechanism Goals1267172
-Ref: Extension New Mechanism Goals-Footnote-11270536
-Node: Extension Other Design Decisions1270725
-Node: Extension Future Growth1272838
-Node: Notes summary1273674
-Node: Basic Concepts1274832
-Node: Basic High Level1275513
-Ref: figure-general-flow1275795
-Ref: figure-process-flow1276480
-Ref: Basic High Level-Footnote-11279781
-Node: Basic Data Typing1279966
-Node: Glossary1283294
-Node: Copying1315132
-Node: GNU Free Documentation License1352675
-Node: Index1377795
+Ref: Getopt Function-Footnote-1699591
+Node: Passwd Functions699791
+Ref: Passwd Functions-Footnote-1708630
+Node: Group Functions708718
+Ref: Group Functions-Footnote-1716616
+Node: Walking Arrays716823
+Node: Library Functions Summary719831
+Node: Library Exercises721237
+Node: Sample Programs721702
+Node: Running Examples722472
+Node: Clones723200
+Node: Cut Program724424
+Node: Egrep Program734353
+Ref: Egrep Program-Footnote-1741865
+Node: Id Program741975
+Node: Split Program745655
+Ref: Split Program-Footnote-1749113
+Node: Tee Program749242
+Node: Uniq Program752032
+Node: Wc Program759653
+Ref: Wc Program-Footnote-1763908
+Node: Miscellaneous Programs764002
+Node: Dupword Program765215
+Node: Alarm Program767245
+Node: Translate Program772100
+Ref: Translate Program-Footnote-1776665
+Node: Labels Program776935
+Ref: Labels Program-Footnote-1780286
+Node: Word Sorting780370
+Node: History Sorting784442
+Node: Extract Program786667
+Node: Simple Sed794721
+Node: Igawk Program797795
+Ref: Igawk Program-Footnote-1812126
+Ref: Igawk Program-Footnote-2812328
+Ref: Igawk Program-Footnote-3812450
+Node: Anagram Program812565
+Node: Signature Program815627
+Node: Programs Summary816874
+Node: Programs Exercises818088
+Ref: Programs Exercises-Footnote-1822217
+Node: Advanced Features822308
+Node: Nondecimal Data824298
+Node: Array Sorting825889
+Node: Controlling Array Traversal826589
+Ref: Controlling Array Traversal-Footnote-1834957
+Node: Array Sorting Functions835075
+Ref: Array Sorting Functions-Footnote-1840166
+Node: Two-way I/O840362
+Ref: Two-way I/O-Footnote-1848083
+Ref: Two-way I/O-Footnote-2848270
+Node: TCP/IP Networking848352
+Node: Profiling851470
+Node: Advanced Features Summary860485
+Node: Internationalization862329
+Node: I18N and L10N863809
+Node: Explaining gettext864496
+Ref: Explaining gettext-Footnote-1870388
+Ref: Explaining gettext-Footnote-2870573
+Node: Programmer i18n870738
+Ref: Programmer i18n-Footnote-1875687
+Node: Translator i18n875736
+Node: String Extraction876530
+Ref: String Extraction-Footnote-1877662
+Node: Printf Ordering877748
+Ref: Printf Ordering-Footnote-1880534
+Node: I18N Portability880598
+Ref: I18N Portability-Footnote-1883054
+Node: I18N Example883117
+Ref: I18N Example-Footnote-1886392
+Ref: I18N Example-Footnote-2886465
+Node: Gawk I18N886574
+Node: I18N Summary887223
+Node: Debugger888564
+Node: Debugging889564
+Node: Debugging Concepts890005
+Node: Debugging Terms891814
+Node: Awk Debugging894389
+Ref: Awk Debugging-Footnote-1895334
+Node: Sample Debugging Session895466
+Node: Debugger Invocation896000
+Node: Finding The Bug897386
+Node: List of Debugger Commands903860
+Node: Breakpoint Control905193
+Node: Debugger Execution Control908887
+Node: Viewing And Changing Data912249
+Node: Execution Stack915790
+Node: Debugger Info917427
+Node: Miscellaneous Debugger Commands921498
+Node: Readline Support926560
+Node: Limitations927456
+Node: Debugging Summary930010
+Node: Namespaces931289
+Node: Global Namespace932400
+Node: Qualified Names933798
+Node: Default Namespace934797
+Node: Changing The Namespace935538
+Node: Naming Rules937152
+Node: Internal Name Management939000
+Node: Namespace Example940042
+Node: Namespace And Features942604
+Node: Namespace Summary944039
+Node: Arbitrary Precision Arithmetic945516
+Node: Computer Arithmetic947003
+Ref: table-numeric-ranges950769
+Ref: table-floating-point-ranges951262
+Ref: Computer Arithmetic-Footnote-1951920
+Node: Math Definitions951977
+Ref: table-ieee-formats955293
+Ref: Math Definitions-Footnote-1955896
+Node: MPFR features956001
+Node: FP Math Caution957719
+Ref: FP Math Caution-Footnote-1958791
+Node: Inexactness of computations959160
+Node: Inexact representation960120
+Node: Comparing FP Values961480
+Node: Errors accumulate962721
+Node: Getting Accuracy964154
+Node: Try To Round966864
+Node: Setting precision967763
+Ref: table-predefined-precision-strings968460
+Node: Setting the rounding mode970290
+Ref: table-gawk-rounding-modes970664
+Ref: Setting the rounding mode-Footnote-1974595
+Node: Arbitrary Precision Integers974774
+Ref: Arbitrary Precision Integers-Footnote-1977949
+Node: Checking for MPFR978098
+Node: POSIX Floating Point Problems979572
+Ref: POSIX Floating Point Problems-Footnote-1983857
+Node: Floating point summary983895
+Node: Dynamic Extensions986085
+Node: Extension Intro987638
+Node: Plugin License988904
+Node: Extension Mechanism Outline989701
+Ref: figure-load-extension990140
+Ref: figure-register-new-function991705
+Ref: figure-call-new-function992797
+Node: Extension API Description994859
+Node: Extension API Functions Introduction996501
+Ref: table-api-std-headers998337
+Node: General Data Types1002202
+Ref: General Data Types-Footnote-11010563
+Node: Memory Allocation Functions1010862
+Ref: Memory Allocation Functions-Footnote-11015072
+Node: Constructor Functions1015171
+Node: Registration Functions1018757
+Node: Extension Functions1019442
+Node: Exit Callback Functions1024764
+Node: Extension Version String1026014
+Node: Input Parsers1026677
+Node: Output Wrappers1039398
+Node: Two-way processors1043910
+Node: Printing Messages1046175
+Ref: Printing Messages-Footnote-11047346
+Node: Updating ERRNO1047499
+Node: Requesting Values1048238
+Ref: table-value-types-returned1048975
+Node: Accessing Parameters1049911
+Node: Symbol Table Access1051146
+Node: Symbol table by name1051658
+Ref: Symbol table by name-Footnote-11054682
+Node: Symbol table by cookie1054810
+Ref: Symbol table by cookie-Footnote-11058995
+Node: Cached values1059059
+Ref: Cached values-Footnote-11062595
+Node: Array Manipulation1062748
+Ref: Array Manipulation-Footnote-11063839
+Node: Array Data Types1063876
+Ref: Array Data Types-Footnote-11066534
+Node: Array Functions1066626
+Node: Flattening Arrays1071124
+Node: Creating Arrays1078100
+Node: Redirection API1082867
+Node: Extension API Variables1085700
+Node: Extension Versioning1086411
+Ref: gawk-api-version1086840
+Node: Extension GMP/MPFR Versioning1088571
+Node: Extension API Informational Variables1090199
+Node: Extension API Boilerplate1091272
+Node: Changes from API V11095246
+Node: Finding Extensions1096818
+Node: Extension Example1097377
+Node: Internal File Description1098175
+Node: Internal File Ops1102255
+Ref: Internal File Ops-Footnote-11113605
+Node: Using Internal File Ops1113745
+Ref: Using Internal File Ops-Footnote-11116128
+Node: Extension Samples1116402
+Node: Extension Sample File Functions1117931
+Node: Extension Sample Fnmatch1125580
+Node: Extension Sample Fork1127067
+Node: Extension Sample Inplace1128285
+Node: Extension Sample Ord1131910
+Node: Extension Sample Readdir1132746
+Ref: table-readdir-file-types1133635
+Node: Extension Sample Revout1134702
+Node: Extension Sample Rev2way1135291
+Node: Extension Sample Read write array1136031
+Node: Extension Sample Readfile1137973
+Node: Extension Sample Time1139068
+Node: Extension Sample API Tests1140820
+Node: gawkextlib1141312
+Node: Extension summary1144230
+Node: Extension Exercises1147932
+Node: Language History1149174
+Node: V7/SVR3.11150830
+Node: SVR41152982
+Node: POSIX1154416
+Node: BTL1155796
+Node: POSIX/GNU1156525
+Node: Feature History1162303
+Node: Common Extensions1178496
+Node: Ranges and Locales1179779
+Ref: Ranges and Locales-Footnote-11184395
+Ref: Ranges and Locales-Footnote-21184422
+Ref: Ranges and Locales-Footnote-31184657
+Node: Contributors1184878
+Node: History summary1190831
+Node: Installation1192211
+Node: Gawk Distribution1193155
+Node: Getting1193639
+Node: Extracting1194602
+Node: Distribution contents1196240
+Node: Unix Installation1202720
+Node: Quick Installation1203402
+Node: Shell Startup Files1205816
+Node: Additional Configuration Options1206905
+Node: Configuration Philosophy1209220
+Node: Non-Unix Installation1211589
+Node: PC Installation1212049
+Node: PC Binary Installation1212887
+Node: PC Compiling1213322
+Node: PC Using1214439
+Node: Cygwin1217992
+Node: MSYS1219216
+Node: VMS Installation1219717
+Node: VMS Compilation1220508
+Ref: VMS Compilation-Footnote-11221737
+Node: VMS Dynamic Extensions1221795
+Node: VMS Installation Details1223480
+Node: VMS Running1225733
+Node: VMS GNV1230012
+Node: VMS Old Gawk1230747
+Node: Bugs1231218
+Node: Bug address1231881
+Node: Usenet1234863
+Node: Maintainers1235867
+Node: Other Versions1237128
+Node: Installation summary1244216
+Node: Notes1245418
+Node: Compatibility Mode1246212
+Node: Additions1246994
+Node: Accessing The Source1247919
+Node: Adding Code1249356
+Node: New Ports1255575
+Node: Derived Files1259950
+Ref: Derived Files-Footnote-11265610
+Ref: Derived Files-Footnote-21265645
+Ref: Derived Files-Footnote-31266243
+Node: Future Extensions1266357
+Node: Implementation Limitations1267015
+Node: Extension Design1268198
+Node: Old Extension Problems1269342
+Ref: Old Extension Problems-Footnote-11270860
+Node: Extension New Mechanism Goals1270917
+Ref: Extension New Mechanism Goals-Footnote-11274281
+Node: Extension Other Design Decisions1274470
+Node: Extension Future Growth1276583
+Node: Notes summary1277419
+Node: Basic Concepts1278577
+Node: Basic High Level1279258
+Ref: figure-general-flow1279540
+Ref: figure-process-flow1280225
+Ref: Basic High Level-Footnote-11283526
+Node: Basic Data Typing1283711
+Node: Glossary1287039
+Node: Copying1318877
+Node: GNU Free Documentation License1356420
+Node: Index1381540
 
 End Tag Table
 
