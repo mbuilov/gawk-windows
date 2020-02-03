@@ -112,6 +112,14 @@ $	junit_count = 0
 $	temp_fdl = "sys$disk:[]stream_lf.fdl"
 $	arch_code = f$extract(0, 1, arch_name)
 $!
+$       if f$trnlnm("junit",,, "SUPERVISOR") .nes. ""
+$       then
+$           close junit
+$       endif
+$       if f$trnlnm("junit_hdr",,, "SUPERVISOR") .nes. ""
+$       then
+$           close junit_hdr
+$       endif
 $	junit_hdr_file = "sys$disk:[]test_output.xml"
 $	if f$search(junit_hdr_file) .nes. "" then delete 'junit_hdr_file';*
 $	junit_body_file = "sys$disk:[]test_body_tmp.xml"
@@ -131,6 +139,7 @@ $	    create 'junit_hdr_file'/fdl='temp_fdl'
 $	    create 'junit_body_file'/fdl='temp_fdl'
 $	endif
 $	open/append junit 'junit_body_file'
+$	if f$search(temp_fdl) .nes. "" then delete 'temp_fdl';*
 $	return
 $!
 $finish_junit_test:
@@ -1062,7 +1071,7 @@ $	endif
 $	cmp argarray.ok sys$disk:[]_argarray.tmp
 $	if $status
 $	then
-$	    rm _argarray.tmp;
+$	    rm _argarray.tmp;,sys$disk:[]argarray.input;
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
@@ -2070,13 +2079,20 @@ $	return
 $
 $reint:		echo "reint"
 $	test_class = "gawk_ext"
+$       set noOn
 $	gawk --re-interval -f reint.awk reint.in >_reint.tmp
+$       gawk_status = $status
+$       set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
+$	if .not. gawk_status
+$       then
+$	    call exit_code 'gawk_status' _'test'.tmp
+$       endif
 $	cmp reint.ok sys$disk:[]_reint.tmp
-$	if $status
+$	if gawk_status
 $	then
 $	    rm _reint.tmp;
 $	    gosub junit_report_pass
@@ -3378,13 +3394,20 @@ $
 $reint2:	echo "reint2"
 $	test_class = "gawk_ext"
 $	gosub define_gawklocale
+$       set noOn
 $	gawk --re-interval -f reint2.awk reint2.in >_reint2.tmp
+$	gawk_status = $status
+$	set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
+$	if .not. gawk_status
+$       then
+$	    call exit_code 'gawk_status' _'test'.tmp
+$       endif
 $	cmp reint2.ok sys$disk:[]_reint2.tmp
-$	if $status
+$	if gawk_status
 $	then
 $	    rm _reint2.tmp;
 $	    gosub junit_report_pass
@@ -3784,11 +3807,22 @@ $	echo "''test'"
 $	test_class = "gawk_ext"
 $       if f$search("_''test'.tmp1") .nes. "" then delete _'test'.tmp1;*
 $	define/user GAWK_NO_PP_RUN 1
+$       set noOn
 $	gawk --pretty-print=_'test'.tmp1 -f 'test'.awk > _NL:
+$       gawk_status = $status
+$       set On
+$	if f$search("sys$disk:[]_''test'.tmp1;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp1;2
+$	endif
 $	convert/fdl=nla0: _'test'.tmp1 sys$disk:[]_'test'.tmp
 $	convert/fdl=nla0: 'test'.ok _'test'.ok
+$	if .not. gawk_status
+$       then
+$	    call exit_code 'gawk_status' _'test'.tmp
+$       endif
 $	cmp sys$disk:[]_'test'.ok sys$disk:[]_'test'.tmp
-$	if $status
+$	if gawk_status
 $	then
 $	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
 $	    gosub junit_report_pass
@@ -3818,7 +3852,7 @@ $	convert/fdl=nla0: 'test'.ok _'test'.ok
 $	cmp _'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
-$	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
+$	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*,ap-'test'.out;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
