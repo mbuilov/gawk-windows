@@ -379,7 +379,7 @@ set_SUBSEP(void)
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
-concat_exp(unsigned nargs, bool do_subsep)
+concat_exp(nargs_t nargs, bool do_subsep)
 {
 	/* do_subsep is false for Op_concat */
 	NODE *r;
@@ -387,21 +387,21 @@ concat_exp(unsigned nargs, bool do_subsep)
 	char *s;
 	size_t len;
 	size_t subseplen = 0;
-	unsigned i;
+	ulong_t i;
 	extern NODE **args_array;
 
-	assert(nargs > 0);
-	if (nargs == 1)
+	assert(nargs);
+	if (nargs == 1u)
 		return POP_STRING();
 
 	if (do_subsep)
 		subseplen = SUBSEPlen;
 
 	len = 0;
-	for (i = 1; i <= nargs; i++) {
+	for (i = 1u; i <= nargs; i++) {
 		r = TOP();
 		if (r->type == Node_var_array) {
-			while (--i > 0)
+			while (--i)
 				DEREF(args_array[i]);	/* avoid memory leak */
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(r));
 		}
@@ -417,7 +417,7 @@ concat_exp(unsigned nargs, bool do_subsep)
 	memcpy(str, r->stptr, r->stlen);
 	s = str + r->stlen;
 	DEREF(r);
-	for (i = nargs - 1; i > 0; i--) {
+	for (i = nargs - 1; i; i--) {
 		if (subseplen == 1)
 			*s++ = *SUBSEP;
 		else if (subseplen > 0) {
@@ -440,7 +440,7 @@ concat_exp(unsigned nargs, bool do_subsep)
  */
 
 static void
-adjust_fcall_stack(NODE *symbol, unsigned nsubs)
+adjust_fcall_stack(NODE *symbol, ulong_t nsubs)
 {
 	NODE *func, *r, *n;
 	NODE **sp;
@@ -481,7 +481,7 @@ adjust_fcall_stack(NODE *symbol, unsigned nsubs)
 		/* Case 1 */
 		if (n == symbol
 			&& symbol->parent_array != NULL
-			&& nsubs > 0
+			&& nsubs
 		) {
 			/*
 			 * 'symbol' is a subarray, and 'r' is the same subarray:
@@ -530,10 +530,10 @@ adjust_fcall_stack(NODE *symbol, unsigned nsubs)
  */
 
 void
-do_delete(NODE *symbol, unsigned nsubs)
+do_delete(NODE *symbol, ulong_t nsubs)
 {
 	NODE *val, *subs;
-	unsigned i;
+	ulong_t i;
 
 	assert(symbol->type == Node_var_array);
 	subs = val = NULL;	/* silence the compiler */
@@ -554,19 +554,19 @@ do_delete(NODE *symbol, unsigned nsubs)
         (void) force_string(s);	/* may have side effects. */    \
         DEREF(s);                                               \
     }                                                           \
-} while (--n > 0)
+} while (--n)
 
-	if (nsubs == 0) {
+	if (!nsubs) {
 		/* delete array */
 
-		adjust_fcall_stack(symbol, 0);	/* fix function call stack; See above. */
+		adjust_fcall_stack(symbol, 0u);	/* fix function call stack; See above. */
 		assoc_clear(symbol);
 		return;
 	}
 
 	/* NB: subscripts are in reverse order on stack */
 
-	for (i = nsubs; i > 0; i--) {
+	for (i = nsubs; i; i--) {
 		subs = PEEK(i - 1);
 		if (subs->type != Node_val) {
 			free_subs(i);
@@ -585,7 +585,7 @@ do_delete(NODE *symbol, unsigned nsubs)
 			return;
 		}
 
-		if (i > 1) {
+		if (i > 1u) {
 			if (val->type != Node_var_array) {
 				/* e.g.: a[1] = 1; delete a[1][1] */
 
@@ -645,7 +645,7 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 	efree(list);
 
 	/* blast the array in one shot */
-	adjust_fcall_stack(symbol, 0);
+	adjust_fcall_stack(symbol, 0u);
 	assoc_clear(symbol);
 }
 
@@ -766,7 +766,7 @@ assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 /* do_adump --- dump an array: interface to assoc_dump */
 
 NODE *
-do_adump(unsigned nargs)
+do_adump(nargs_t nargs)
 {
 	NODE *symbol, *tmp;
 	static NODE ndump;
@@ -778,7 +778,7 @@ do_adump(unsigned nargs)
 	 *       > 0, descends into 'depth' sub-arrays, and prints index and value info.
 	 */
 
-	if (nargs == 2) {
+	if (nargs == 2u) {
 		tmp = POP_NUMBER();
 		depth = get_number_si(tmp);
 		DEREF(tmp);
@@ -798,7 +798,7 @@ do_adump(unsigned nargs)
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
-asort_actual(unsigned nargs, sort_context_t ctxt)
+asort_actual(nargs_t nargs, sort_context_t ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
@@ -807,7 +807,7 @@ asort_actual(unsigned nargs, sort_context_t ctxt)
 	const char *sort_str;
 	char save;
 
-	if (nargs == 3)  /* 3rd optional arg */
+	if (nargs == 3u)  /* 3rd optional arg */
 		s = POP_STRING();
 	else
 		s = dupnode(Nnull_string);	/* "" => default sorting */
@@ -823,7 +823,7 @@ asort_actual(unsigned nargs, sort_context_t ctxt)
 			sort_str = "@ind_str_asc";
 	}
 
-	if (nargs >= 2) {  /* 2nd optional arg */
+	if (nargs >= 2u) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
 			fatal(ctxt == ASORT ?
@@ -942,7 +942,7 @@ asort_actual(unsigned nargs, sort_context_t ctxt)
 /* do_asort --- sort array by value */
 
 NODE *
-do_asort(unsigned nargs)
+do_asort(nargs_t nargs)
 {
 	return asort_actual(nargs, ASORT);
 }
@@ -950,7 +950,7 @@ do_asort(unsigned nargs)
 /* do_asorti --- sort array by index */
 
 NODE *
-do_asorti(unsigned nargs)
+do_asorti(nargs_t nargs)
 {
 	return asort_actual(nargs, ASORTI);
 }
