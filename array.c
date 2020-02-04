@@ -1342,7 +1342,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		PUSH_CODE(code);
 	}
 
-	akind.flags = (unsigned int) assoc_kind;	/* kludge */
+	akind.flags = assoc_kind;	/* kludge */
 	list = symbol->alist(symbol, & akind);
 	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
