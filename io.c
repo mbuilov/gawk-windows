@@ -323,7 +323,6 @@ static bool inetfile(const char *str, size_t len, struct inet_socket_info *isn);
 static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
 static unsigned long get_read_timeout(IOBUF *iop);
 static ssize_t read_with_timeout(int fd, void *buf, size_t size);
-static ssize_t read_wrap(int fd, void *buf, size_t size);
 
 static bool read_can_timeout = false;
 static unsigned long read_timeout;
@@ -4438,7 +4437,7 @@ typedef long suseconds_t;
  * read_wrap --- wrapper around read() function.
  */
 
-static ssize_t
+ssize_t
 read_wrap(int fd, void *buf, size_t size)
 {
 #ifndef _MSC_VER
