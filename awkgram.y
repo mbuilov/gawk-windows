@@ -3099,7 +3099,7 @@ next_sourcefile(void)
 static char *
 get_src_buf(void)
 {
-	int n;
+	ssize_t n;
 	char *scan;
 	bool newfile;
 	size_t savelen;
