@@ -67,6 +67,14 @@ $ then
 $   create sys$disk:[]stdint.h
 $   open/append stdint_h sys$disk:[]stdint.h
 $   write stdint_h "/* Fake stdint.h for gnulib */"
+$   write stdint_h "#ifndef FAKE_STDINT"
+$   write stdint_h "#define FAKE_STDINT"
+$   write stdint_h "#include <fake_vms_path/limits.h>"
+$   write stdint_h "#define PTRDIFF_MAX (__INT32_MAX)"
+$   write stdint_h "#ifndef SIZE_MAX"
+$   write stdint_h "#define SIZE_MAX (__UINT32_MAX)"
+$   write stdint_h "#endif /* __VAX */"
+$   write stdint_h "#endif  /* FAKE_STDINT */"
 $   close stdint_h
 $ endif
 $!
