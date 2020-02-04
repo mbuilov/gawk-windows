@@ -957,7 +957,7 @@ set_element(field_num_t num, char *s, size_t len, NODE *n)
 /* do_split --- implement split(), semantics are same as for field splitting */
 
 NODE *
-do_split(unsigned nargs)
+do_split(nargs_t nargs)
 {
 	NODE *src, *arr, *sep, *fs, *tmp, *sep_arr = NULL;
 	char *s;
@@ -965,7 +965,7 @@ do_split(unsigned nargs)
 			 Regexp *, Setfunc, NODE *, NODE *, bool);
 	Regexp *rp = NULL;
 
-	if (nargs == 4) {
+	if (nargs == 4u) {
 		static bool warned = false;
 
 		if (do_traditional || do_posix) {
@@ -1057,13 +1057,13 @@ do_split(unsigned nargs)
  */
 
 NODE *
-do_patsplit(unsigned nargs)
+do_patsplit(nargs_t nargs)
 {
 	NODE *src, *arr, *sep, *fpat, *tmp, *sep_arr = NULL;
 	char *s;
 	Regexp *rp = NULL;
 
-	if (nargs == 4) {
+	if (nargs == 4u) {
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("patsplit: fourth argument is not an array"));
