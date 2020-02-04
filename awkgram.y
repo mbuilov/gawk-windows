@@ -111,7 +111,7 @@ static void fix_break_continue(INSTRUCTION *list, INSTRUCTION *b_target, INSTRUC
 static INSTRUCTION *mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op);
 static INSTRUCTION *mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op);
 static INSTRUCTION *mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op);
-static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, int redirtype);
+static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, enum redirval redirtype);
 static ulong_t count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
@@ -120,15 +120,7 @@ enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
 
-#ifdef _MSC_VER
-typedef int read_result_t;
-typedef unsigned read_buf_size_t;
-#else
-typedef ssize_t read_result_t;
-typedef size_t read_buf_size_t;
-#endif
-
-static read_result_t read_one_line(int fd, void *buffer, read_buf_size_t count);
+static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
 static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
@@ -181,7 +173,7 @@ static char *tok = NULL;
 static char *tokend;
 unsigned errcount = 0;
 
-extern char *source;
+extern const char *source;
 extern unsigned sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
@@ -495,11 +487,11 @@ func_name
 	: NAME
 	| FUNC_CALL
 	  {
-		const char *name = $1->lextok;
+		char *name = $1->lextok;
 		char *qname = qualify_name(name, strlen(name));
 
 		if (qname != name) {
-			efree((void *)name);
+			efree(name);
 			$1->lextok = qname;
 		}
 		$$ = $1;
@@ -2053,7 +2045,7 @@ direct_func_call
 		char *qname = qualify_name(name, strlen(name));
 
 		if (qname != name) {
-			efree((char *) name);
+			efree(name);
 			$1->func_name = qname;
 		}
 
@@ -2249,8 +2241,8 @@ struct token {
 #	define	CONTINUE	0x1000	/* continue allowed inside */
 #	define	DEBUG_USE	0x2000	/* for use by developers */
 
-	NODE *(*ptr)(unsigned nargs);	/* function that implements this keyword */
-	NODE *(*ptr2)(unsigned nargs);	/* alternate arbitrary-precision function */
+	NODE *(*ptr)(nargs_t nargs);	/* function that implements this keyword */
+	NODE *(*ptr2)(nargs_t nargs);	/* alternate arbitrary-precision function */
 };
 
 #ifdef USE_EBCDIC
@@ -2377,7 +2369,7 @@ static unsigned cur_ring_idx;
 /* getfname --- return name of a builtin function (for pretty printing) */
 
 const char *
-getfname(NODE *(*fptr)(unsigned nargs), bool prepend_awk)
+getfname(NODE *(*fptr)(nargs_t nargs), bool prepend_awk)
 {
 	unsigned i, j;
 	static char buf[100];
@@ -3113,14 +3105,14 @@ get_src_buf(void)
 	size_t savelen;
 	struct stat sbuf;
 
-	static read_result_t (*readfunc)(int fd, void *buffer, read_buf_size_t count) = 0;
+	static ssize_t (*readfunc)(int fd, void *buffer, size_t count) = 0;
 
 	if (readfunc == NULL) {
 		char *cp = getenv("AWKREADFUNC");
 
 		/* If necessary, one day, test value for different functions.  */
 		if (cp == NULL)
-			readfunc = read;
+			readfunc = read_wrap;
 		else
 			readfunc = read_one_line;
 	}
@@ -3188,7 +3180,7 @@ get_src_buf(void)
 			return NULL;
 		fd = srcopen(sourcefile);
 		if (fd <= INVALID_HANDLE) {
-			char *in;
+			const char *in;
 
 			/* suppress file name and line no. in error mesg */
 			in = source;
@@ -3260,7 +3252,7 @@ get_src_buf(void)
 		}
 	}
 
-	n = (*readfunc)(sourcefile->fd, lexptr, (read_buf_size_t) (sourcefile->bufsize - savelen));
+	n = (*readfunc)(sourcefile->fd, lexptr, sourcefile->bufsize - savelen);
 	if (n == -1) {
 		error(_("can't read sourcefile `%s' (%s)"),
 				source, strerror(errno));
@@ -4869,7 +4861,7 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	ulong_t pcount, i;
 	bool ret = false;
 	NODE *func, *fp;
-	char *fname;
+	const char *fname;
 
 	func = pc->func_body;
 	fname = func->vname;
@@ -5395,7 +5387,7 @@ make_assignable(INSTRUCTION *ip)
 /* stopme --- for debugging */
 
 NODE *
-stopme(unsigned nargs)
+stopme(nargs_t nargs)
 {
 	(void)nargs;
 	return make_number(0.0);
@@ -5406,7 +5398,7 @@ stopme(unsigned nargs)
 static void
 dumpintlstr(const char *str, size_t len)
 {
-	char *cp;
+	const char *cp;
 
 	/* See the GNU gettext distribution for details on the file format */
 
@@ -5429,7 +5421,7 @@ dumpintlstr(const char *str, size_t len)
 static void
 dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 {
-	char *cp;
+	const char *cp;
 
 	/* See the GNU gettext distribution for details on the file format */
 
@@ -6023,7 +6015,7 @@ optimize_assignment(INSTRUCTION *exp)
 /* mk_getline --- make instructions for getline */
 
 static INSTRUCTION *
-mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
+mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, enum redirval redirtype)
 {
 	INSTRUCTION *ip;
 	INSTRUCTION *tp;
@@ -6427,8 +6419,8 @@ static FILE *fp = NULL;
 
 /* read_one_line --- return one input line at a time. mainly for debugging. */
 
-static read_result_t
-read_one_line(int fd, void *buffer, read_buf_size_t count)
+static ssize_t
+read_one_line(int fd, void *buffer, size_t count)
 {
 	char buf[BUFSIZ];
 
@@ -6447,7 +6439,7 @@ read_one_line(int fd, void *buffer, read_buf_size_t count)
 		return 0;
 
 	memcpy(buffer, buf, strlen(buf));
-	return (read_result_t) strlen(buf);
+	return (ssize_t) strlen(buf);
 }
 
 /* one_line_close --- close the open file being read with read_one_line() */
