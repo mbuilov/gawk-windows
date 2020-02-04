@@ -29,23 +29,23 @@ extern double pow(double x, double y);
 extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
 NODE **fcall_list = NULL;
-long fcall_count = 0;
-int currule = 0;
+ulong_t fcall_count = 0u;
+enum defrule currule = UNKRULE;
 IOBUF *curfile = NULL;		/* current data file */
 bool exiting = false;
 
 int (*interpret)(INSTRUCTION *);
 #define MAX_EXEC_HOOKS	10
-static int num_exec_hook = 0;
+static unsigned num_exec_hook = 0;
 static Func_pre_exec pre_execute[MAX_EXEC_HOOKS];
 static Func_post_exec post_execute = NULL;
 
-extern void frame_popped();
+extern void frame_popped(void);
 
-int OFSlen;
-int ORSlen;
-int OFMTidx;
-int CONVFMTidx;
+unsigned OFSlen;
+unsigned ORSlen;
+unsigned OFMTidx;
+unsigned CONVFMTidx;
 
 static NODE *node_Boolean[2];
 
@@ -218,9 +218,9 @@ load_casetable(void)
 	/* use of isalpha is ok here (see is_alpha in awkgram.y) */
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
-			casetable[i] = toupper(i);
+			casetable[i] = (char) toupper(i);
 		else
-			casetable[i] = i;
+			casetable[i] = (char) i;
 	}
 #endif
 #endif
@@ -260,9 +260,9 @@ static const char *const nodetypes[] = {
  * KEEP IN SYNC WITH awk.h!!!!
  */
 
-static struct optypetab {
-	char *desc;
-	char *operator;
+static const struct optypetab {
+	const char *desc;
+	const char *oper;
 } optypes[] = {
 	{ "Op_illegal", NULL },
 	{ "Op_times", " * " },
@@ -396,7 +396,7 @@ nodetype2str(NODETYPE type)
 	static char buf[40];
 
 	if (type >= Node_illegal && type <= Node_final)
-		return nodetypes[(int) type];
+		return nodetypes[type];
 
 	sprintf(buf, _("unknown nodetype %d"), (int) type);
 	return buf;
@@ -408,7 +408,7 @@ const char *
 opcode2str(OPCODE op)
 {
 	if (op >= Op_illegal && op < Op_final)
-		return optypes[(int) op].desc;
+		return optypes[op].desc;
 	fatal(_("unknown opcode %d"), (int) op);
 	return NULL;
 }
@@ -419,11 +419,11 @@ const char *
 op2str(OPCODE op)
 {
 	if (op >= Op_illegal && op < Op_final) {
-		if (optypes[(int) op].operator != NULL)
-			return optypes[(int) op].operator;
+		if (optypes[op].oper != NULL)
+			return optypes[op].oper;
 		else
 			fatal(_("opcode %s not an operator or keyword"),
-					optypes[(int) op].desc);
+					optypes[op].desc);
 	} else
 		fatal(_("unknown opcode %d"), (int) op);
 	return NULL;
@@ -468,17 +468,16 @@ genflags2str(int flagval, const struct flagtab *tab)
 {
 	static char buffer[BUFSIZ];
 	char *sp;
-	int i, space_left, space_needed;
+	unsigned i, space_left;
 
 	sp = buffer;
 	space_left = BUFSIZ;
 	for (i = 0; tab[i].name != NULL; i++) {
 		if ((flagval & tab[i].val) != 0) {
-			/*
-			 * note the trick, we want 1 or 0 for whether we need
-			 * the '|' character.
-			 */
-			space_needed = (strlen(tab[i].name) + (sp != buffer));
+			size_t len, space_needed;
+
+			len = strlen(tab[i].name);
+			space_needed = len + (sp != buffer);
 			if (space_left <= space_needed)
 				fatal(_("buffer overflow in genflags2str"));
 
@@ -486,10 +485,8 @@ genflags2str(int flagval, const struct flagtab *tab)
 				*sp++ = '|';
 				space_left--;
 			}
-			strcpy(sp, tab[i].name);
-			/* note ordering! */
-			space_left -= strlen(sp);
-			sp += strlen(sp);
+			space_left -= (unsigned) len;
+			sp = (char*) memcpy(sp, tab[i].name, len) + len;
 		}
 	}
 
@@ -526,7 +523,7 @@ posix_compare(NODE *s1, NODE *s2)
 				l = s2->stlen;
 
 			b1[1] = b2[1] = '\0';
-			for (i = ret = 0, p1 = s1->stptr, p2 = s2->stptr;
+			for (i = 0, p1 = s1->stptr, p2 = s2->stptr;
 			     ret == 0 && i < l;
 			     p1++, p2++) {
 				b1[0] = *p1;
@@ -558,7 +555,7 @@ posix_compare(NODE *s1, NODE *s2)
 				l = s2->wstlen;
 
 			b1[1] = b2[1] = L'\0';
-			for (i = ret = 0, p1 = s1->wstptr, p2 = s2->wstptr;
+			for (i = 0, p1 = s1->wstptr, p2 = s2->wstptr;
 			     ret == 0 && i < l;
 			     p1++, p2++) {
 				b1[0] = *p1;
@@ -586,7 +583,7 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 {
 	int ret = 0;
 	size_t len1, len2;
-	int l, ldiff;
+	size_t l;
 
 	if (t1 == t2)
 		return 0;
@@ -601,20 +598,24 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 	(void) force_string(t2);
 	len1 = t1->stlen;
 	len2 = t2->stlen;
-	ldiff = len1 - len2;
-	if (len1 == 0 || len2 == 0)
-		return ldiff;
+
+	/* return (len1 - len2) */
+	if (len1 == 0)
+		return len2 ? -1 : 0;
+
+	if (len2 == 0)
+		return 1;
 
 	if (do_posix && ! use_strcmp)
 		return posix_compare(t1, t2);
 
-	l = (ldiff <= 0 ? len1 : len2);
+	l = len1 < len2 ? len1 : len2;
+
 	if (IGNORECASE) {
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
 		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
 		char save1 = t1->stptr[t1->stlen];
 		char save2 = t2->stptr[t2->stlen];
-
 
 		if (gawk_mb_cur_max > 1) {
 			t1->stptr[t1->stlen] = t2->stptr[t2->stlen] = '\0';
@@ -630,8 +631,10 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 	} else
 		ret = memcmp(t1->stptr, t2->stptr, l);
 
-	ret = ret == 0 ? ldiff : ret;
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	return len1 < len2 ? -1 : len1 == len2 ? 0 : 1;
 }
 
 /* push_frame --- push a frame NODE onto stack */
@@ -639,20 +642,20 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 static void
 push_frame(NODE *f)
 {
-	static long max_fcall;
+	static ulong_t max_fcall;
 
 	/* NB: frame numbering scheme as in GDB. frame_ptr => frame #0. */
 
 	fcall_count++;
 	if (fcall_list == NULL) {
-		max_fcall = 10;
+		max_fcall = 10u;
 		emalloc(fcall_list, NODE **, (max_fcall + 1) * sizeof(NODE *), "push_frame");
 	} else if (fcall_count == max_fcall) {
 		max_fcall *= 2;
 		erealloc(fcall_list, NODE **, (max_fcall + 1) * sizeof(NODE *), "push_frame");
 	}
 
-	if (fcall_count > 1)
+	if (fcall_count > 1u)
 		memmove(fcall_list + 2, fcall_list + 1, (fcall_count - 1) * sizeof(NODE *));
 	fcall_list[1] = f;
 }
@@ -661,12 +664,12 @@ push_frame(NODE *f)
 /* pop_frame --- pop off a frame NODE*/
 
 static void
-pop_frame()
+pop_frame(void)
 {
-	if (fcall_count > 1)
+	if (fcall_count > 1u)
 		memmove(fcall_list + 1, fcall_list + 2, (fcall_count - 1) * sizeof(NODE *));
+	assert(fcall_count);
 	fcall_count--;
-	assert(fcall_count >= 0);
 	if (do_debug)
 		frame_popped();
 }
@@ -678,31 +681,31 @@ void
 dump_fcall_stack(FILE *fp)
 {
 	NODE *f, *func;
-	long i = 0, k = 0;
+	ulong_t i, k = 0u;
 
-	if (fcall_count == 0)
+	if (!fcall_count)
 		return;
 	fprintf(fp, _("\n\t# Function Call Stack:\n\n"));
 
 	/* current frame */
 	func = frame_ptr->func_node;
-	fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
+	fprintf(fp, "\t# %3lu. %s\n", TO_ULONG(k++), func->vname);
 
 	/* outer frames except main */
-	for (i = 1; i < fcall_count; i++) {
+	for (i = 1u; i < fcall_count; i++) {
 		f = fcall_list[i];
 		func = f->func_node;
-		fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
+		fprintf(fp, "\t# %3lu. %s\n", TO_ULONG(k++), func->vname);
 	}
 
-	fprintf(fp, "\t# %3ld. -- main --\n", k);
+	fprintf(fp, "\t# %3lu. -- main --\n", TO_ULONG(k));
 }
 
 
 /* set_IGNORECASE --- update IGNORECASE as appropriate */
 
 void
-set_IGNORECASE()
+set_IGNORECASE(void)
 {
 	static bool warned = false;
 
@@ -721,7 +724,7 @@ set_IGNORECASE()
 /* set_BINMODE --- set translation mode (OS/2, DOS, others) */
 
 void
-set_BINMODE()
+set_BINMODE(void)
 {
 	static bool warned = false;
 	char *p;
@@ -796,7 +799,7 @@ set_BINMODE()
 /* set_OFS --- update OFS related variables when OFS assigned to */
 
 void
-set_OFS()
+set_OFS(void)
 {
 	static bool first = true;
 	size_t new_ofs_len;
@@ -819,6 +822,8 @@ set_OFS()
 	 */
 	OFS_node->var_value = force_string(OFS_node->var_value);
 	new_ofs_len = OFS_node->var_value->stlen;
+	if (new_ofs_len >= (unsigned)-1)
+		fatal(_("OFS too long"));
 
 	if (OFS == NULL)
 		emalloc(OFS, char *, new_ofs_len + 1, "set_OFS");
@@ -826,25 +831,27 @@ set_OFS()
 		erealloc(OFS, char *, new_ofs_len + 1, "set_OFS");
 
 	memcpy(OFS, OFS_node->var_value->stptr, OFS_node->var_value->stlen);
-	OFSlen = new_ofs_len;
+	OFSlen = (unsigned) new_ofs_len;
 	OFS[OFSlen] = '\0';
 }
 
 /* set_ORS --- update ORS related variables when ORS assigned to */
 
 void
-set_ORS()
+set_ORS(void)
 {
 	ORS_node->var_value = force_string(ORS_node->var_value);
 	ORS = ORS_node->var_value->stptr;
-	ORSlen = ORS_node->var_value->stlen;
+	if (ORS_node->var_value->stlen >= (unsigned)-1)
+		fatal(_("ORS too long"));
+	ORSlen = (unsigned) ORS_node->var_value->stlen;
 }
 
 /* fmt_ok --- is the conversion format a valid one? */
 
 NODE **fmt_list = NULL;
 static int fmt_ok(NODE *n);
-static int fmt_index(NODE *n);
+static unsigned fmt_index(NODE *n);
 
 static int
 fmt_ok(NODE *n)
@@ -886,12 +893,12 @@ fmt_ok(NODE *n)
 
 /* fmt_index --- track values of OFMT and CONVFMT to keep semantics correct */
 
-static int
+static unsigned
 fmt_index(NODE *n)
 {
-	int ix = 0;
-	static int fmt_num = 4;
-	static int fmt_hiwater = 0;
+	unsigned ix = 0;
+	static unsigned fmt_num = 4;
+	static unsigned fmt_hiwater = 0;
 	char save;
 
 	if (fmt_list == NULL)
@@ -927,7 +934,7 @@ fmt_index(NODE *n)
 /* set_OFMT --- track OFMT correctly */
 
 void
-set_OFMT()
+set_OFMT(void)
 {
 	OFMTidx = fmt_index(OFMT_node->var_value);
 	OFMT = fmt_list[OFMTidx]->stptr;
@@ -936,7 +943,7 @@ set_OFMT()
 /* set_CONVFMT --- track CONVFMT correctly */
 
 void
-set_CONVFMT()
+set_CONVFMT(void)
 {
 	CONVFMTidx = fmt_index(CONVFMT_node->var_value);
 	CONVFMT = fmt_list[CONVFMTidx]->stptr;
@@ -945,7 +952,7 @@ set_CONVFMT()
 /* set_LINT --- update LINT as appropriate */
 
 void
-set_LINT()
+set_LINT(void)
 {
 #ifndef NO_LINT
 	int old_lint = do_lint;
@@ -977,9 +984,9 @@ set_LINT()
 			do_flags |= DO_LINT_ALL;
 	}
 
-	/* explicitly use warning() here, in case lintfunc == r_fatal */
+	/* explicitly use awkwarn() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
-		warning(_("turning off `--lint' due to assignment to `LINT'"));
+		awkwarn(_("turning off `--lint' due to assignment to `LINT'"));
 
 	/* inform plug-in api of change */
 	update_ext_api();
@@ -989,7 +996,7 @@ set_LINT()
 /* set_TEXTDOMAIN --- update TEXTDOMAIN variable when TEXTDOMAIN assigned to */
 
 void
-set_TEXTDOMAIN()
+set_TEXTDOMAIN(void)
 {
 	NODE *tmp;
 
@@ -1006,7 +1013,7 @@ set_TEXTDOMAIN()
 void
 update_ERRNO_int(int errcode)
 {
-	char *cp;
+	const char *cp;
 
 	update_PROCINFO_num("errno", errcode);
 	if (errcode) {
@@ -1057,7 +1064,7 @@ unset_ERRNO(void)
 /* update_NR --- update the value of NR */
 
 void
-update_NR()
+update_NR(void)
 {
 #ifdef HAVE_MPFR
 	if (is_mpg_number(NR_node->var_value))
@@ -1066,30 +1073,30 @@ update_NR()
 #endif
 	if (NR_node->var_value->numbr != NR) {
 		unref(NR_node->var_value);
-		NR_node->var_value = make_number(NR);
+		NR_node->var_value = make_number((AWKNUM) NR);
 	}
 }
 
 /* update_NF --- update the value of NF */
 
 void
-update_NF()
+update_NF(void)
 {
 	long l;
 
 	l = get_number_si(NF_node->var_value);
-	if (NF == -1 || l != NF) {
-		if (NF == -1)
+	if (NF == BAD_NF || (unsigned long) l != NF) {
+		if (NF == BAD_NF)
 			(void) get_field(UNLIMITED - 1, NULL); /* parse record */
 		unref(NF_node->var_value);
-		NF_node->var_value = make_number(NF);
+		NF_node->var_value = make_number((AWKNUM) NF);
 	}
 }
 
 /* update_FNR --- update the value of FNR */
 
 void
-update_FNR()
+update_FNR(void)
 {
 #ifdef HAVE_MPFR
 	if (is_mpg_number(FNR_node->var_value))
@@ -1098,7 +1105,7 @@ update_FNR()
 #endif
 	if (FNR_node->var_value->numbr != FNR) {
 		unref(FNR_node->var_value);
-		FNR_node->var_value = make_number(FNR);
+		FNR_node->var_value = make_number((AWKNUM) FNR);
 	}
 }
 
@@ -1107,8 +1114,8 @@ NODE *frame_ptr;        /* current frame */
 STACK_ITEM *stack_ptr = NULL;
 STACK_ITEM *stack_bottom;
 STACK_ITEM *stack_top;
-static unsigned long STACK_SIZE = 256;    /* initial size of stack */
-int max_args = 0;       /* maximum # of arguments to printf, print, sprintf,
+static size_t STACK_SIZE = 256;    /* initial size of stack */
+unsigned max_args = 0;       /* maximum # of arguments to printf, print, sprintf,
                          * or # of array subscripts, or adjacent strings
                          * to be concatenated.
                          */
@@ -1121,7 +1128,7 @@ NODE **args_array = NULL;
  */
 
 STACK_ITEM *
-grow_stack()
+grow_stack(void)
 {
 	STACK_SIZE *= 2;
 	erealloc(stack_bottom, STACK_ITEM *, STACK_SIZE * sizeof(STACK_ITEM), "grow_stack");
@@ -1209,7 +1216,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 		if (assign)
 			*assign = reset_record;
 	} else
-		lhs = get_field(field_num, assign);
+		lhs = get_field((field_num_t) field_num, assign);
 	if (do_lint && reference && ((*lhs)->flags & NULL_FIELD) != 0)
 		lintwarn(_("reference to uninitialized field `$%ld'"),
 			      field_num);
@@ -1223,7 +1230,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
  */
 
 static AWKNUM
-calc_exp_posint(AWKNUM x, long n)
+calc_exp_posint(AWKNUM x, unsigned long n)
 {
 	AWKNUM mult = 1;
 
@@ -1243,11 +1250,11 @@ calc_exp(AWKNUM x1, AWKNUM x2)
 {
 	long lx;
 
-	if ((lx = x2) == x2) {		/* integer exponent */
+	if ((lx = (long) x2) == x2) {		/* integer exponent */
 		if (lx == 0)
 			return 1;
-		return (lx > 0) ? calc_exp_posint(x1, lx)
-				: 1.0 / calc_exp_posint(x1, -lx);
+		return (lx > 0) ? calc_exp_posint(x1, (unsigned long) lx)
+				: 1.0 / calc_exp_posint(x1, (unsigned long) -lx);
 	}
 	return (AWKNUM) pow((double) x1, (double) x2);
 }
@@ -1261,20 +1268,19 @@ setup_frame(INSTRUCTION *pc)
 	NODE *r = NULL;
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
-	int pcount, arg_count, i, j;
+	ulong_t pcount, arg_count, i, j;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
 	fp = f->fparms;
 	arg_count = (pc + 1)->expr_count;
 
-	if (pcount > 0) {
+	if (pcount)
 		ezalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
-	}
 
 	/* check for extra args */
 	if (arg_count > pcount) {
-		warning(
+		awkwarn(
 			_("function `%s' called with more arguments than declared"),
        			f->vname);
 		do {
@@ -1284,7 +1290,7 @@ setup_frame(INSTRUCTION *pc)
 		} while (--arg_count > pcount);
 	}
 
-	for (i = 0, j = arg_count - 1; i < pcount; i++, j--) {
+	for (i = 0u, j = arg_count - 1; i < pcount; i++, j--) {
 		getnode(r);
 		memset(r, 0, sizeof(NODE));
 		sp[i] = r;
@@ -1292,7 +1298,7 @@ setup_frame(INSTRUCTION *pc)
 		if (i >= arg_count) {
 			/* local variable */
 			r->type = Node_var_new;
-			r->vname = fp[i].param;
+			r->vname = fp[i].vname;
 			continue;
 		}
 
@@ -1337,17 +1343,17 @@ setup_frame(INSTRUCTION *pc)
 		default:
 			cant_happen();
 		}
-		r->vname = fp[i].param;
+		r->vname = fp[i].vname;
 	}
 
-	stack_adj(-arg_count);	/* adjust stack pointer */
+	stack_dec(arg_count);	/* adjust stack pointer */
 
 	if (pc->opcode == Op_indirect_func_call) {
 		r = POP();	/* indirect var */
 		DEREF(r);
 	}
 
-	frame_ptr->vname = source;	/* save current source */
+	frame_ptr->vname = (char*) source;	/* save current source */
 
 	if (do_profile || do_debug)
 		push_frame(frame_ptr);
@@ -1359,7 +1365,7 @@ setup_frame(INSTRUCTION *pc)
 	getnode(frame_ptr);
 	frame_ptr->type = Node_frame;
 	frame_ptr->stack = sp;
-	frame_ptr->prev_frame_size = (stack_ptr - stack_bottom); /* size of the previous stack frame */
+	frame_ptr->prev_frame_size = (size_t) (stack_ptr - stack_bottom); /* size of the previous stack frame */
 	frame_ptr->func_node = f;
 	frame_ptr->vname = NULL;
 	frame_ptr->reti = pc; /* on return execute pc->nexti */
@@ -1375,7 +1381,7 @@ restore_frame(NODE *fp)
 {
 	NODE *r;
 	NODE **sp;
-	int n;
+	ulong_t n;
 	NODE *func;
 	INSTRUCTION *ri;
 
@@ -1383,7 +1389,7 @@ restore_frame(NODE *fp)
 	n = func->param_cnt;
 	sp = frame_ptr->stack;
 
-	for (; n > 0; n--) {
+	for (; n; n--) {
 		r = *sp++;
 		if (r->type == Node_var)     /* local variable */
 			DEREF(r->var_value);
@@ -1418,9 +1424,9 @@ free_arrayfor(NODE *r)
 {
 	if (r->for_list != NULL) {
 		NODE *n;
-		size_t num_elems = r->for_list_size;
+		ulong_t num_elems = r->for_list_size;
 		NODE **list = r->for_list;
-		while (num_elems > 0) {
+		while (num_elems) {
 			n = list[--num_elems];
 			unref(n);
 		}
@@ -1436,7 +1442,7 @@ free_arrayfor(NODE *r)
  */
 
 INSTRUCTION *
-unwind_stack(long n)
+unwind_stack(size_t n)
 {
 	NODE *r;
 	INSTRUCTION *cp = NULL;
@@ -1588,7 +1594,7 @@ op_assign(OPCODE op)
 		break;
 	}
 
-	if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+	if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 		/* optimization */
 		t1->numbr = x;
 	} else {
@@ -1615,7 +1621,7 @@ PUSH_CODE(INSTRUCTION *cp)
 /* POP_CODE --- pop a code off the runtime stack */
 
 INSTRUCTION *
-POP_CODE()
+POP_CODE(void)
 {
 	NODE *r;
 	INSTRUCTION *cp;
@@ -1642,9 +1648,9 @@ typedef struct exec_state {
 	                     * implicit "open-file, read-record" loop (Op_newfile).
 	                     */
 
-	int rule;           /* rule for the INSTRUCTION */
+	enum defrule rule;           /* rule for the INSTRUCTION */
 
-	long stack_size;    /* For this particular usage, it is sufficient to save
+	size_t stack_size;    /* For this particular usage, it is sufficient to save
 	                     * only the size of the call stack. We do not
 	                     * store the actual stack pointer to avoid problems
 	                     * in case the stack gets realloc-ed.
@@ -1658,14 +1664,14 @@ static EXEC_STATE exec_state_stack;
 /* push_exec_state --- save an execution state on stack */
 
 static void
-push_exec_state(INSTRUCTION *cp, int rule, char *src, STACK_ITEM *sp)
+push_exec_state(INSTRUCTION *cp, enum defrule rule, const char *src, STACK_ITEM *sp)
 {
 	EXEC_STATE *es;
 
 	emalloc(es, EXEC_STATE *, sizeof(EXEC_STATE), "push_exec_state");
 	es->rule = rule;
 	es->cptr = cp;
-	es->stack_size = (sp - stack_bottom) + 1;
+	es->stack_size = (size_t) (sp - stack_bottom) + 1;
 	es->source = src;
 	es->next = exec_state_stack.next;
 	exec_state_stack.next = es;
@@ -1675,7 +1681,7 @@ push_exec_state(INSTRUCTION *cp, int rule, char *src, STACK_ITEM *sp)
 /* pop_exec_state --- pop one execution state off the stack */
 
 static INSTRUCTION *
-pop_exec_state(int *rule, char **src, long *sz)
+pop_exec_state(enum defrule *rule, const char **src, size_t *sz)
 {
 	INSTRUCTION *cp;
 	EXEC_STATE *es;
@@ -1687,7 +1693,7 @@ pop_exec_state(int *rule, char **src, long *sz)
 	if (rule != NULL)
 		*rule = es->rule;
 	if (src != NULL)
-		*src = (char *) es->source;
+		*src = es->source;
 	if (sz != NULL)
 		*sz = es->stack_size;
 	exec_state_stack.next = es->next;
@@ -1701,7 +1707,7 @@ pop_exec_state(int *rule, char **src, long *sz)
 int
 register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 {
-	int pos = 0;
+	unsigned pos = 0;
 
 	/*
 	 * multiple post-exec hooks aren't supported. post-exec hook is mainly
@@ -1722,7 +1728,7 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 		pos = !! do_debug;
 		if (num_exec_hook > pos)
 			memmove(pre_execute + pos + 1, pre_execute + pos,
-					(num_exec_hook - pos) * sizeof (preh));
+					(num_exec_hook - pos) * sizeof (pre_execute[0]));
 	}
 	pre_execute[pos] = preh;
 	num_exec_hook++;
@@ -1746,12 +1752,12 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 
 
 void
-init_interpret()
+init_interpret(void)
 {
 	long newval;
 
 	if ((newval = getenv_long("GAWK_STACKSIZE")) > 0)
-		STACK_SIZE = newval;
+		STACK_SIZE = (unsigned long) newval;
 
 	emalloc(stack_bottom, STACK_ITEM *, STACK_SIZE * sizeof(STACK_ITEM), "grow_stack");
 	stack_ptr = stack_bottom - 1;
