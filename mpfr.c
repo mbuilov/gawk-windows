@@ -662,7 +662,7 @@ format_ieee(mpfr_ptr x, int tval)
 /* do_mpfr_atan2 --- do the atan2 function */
 
 NODE *
-do_mpfr_atan2(unsigned nargs)
+do_mpfr_atan2(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpfr_ptr p1, p2;
@@ -697,7 +697,7 @@ do_mpfr_atan2(unsigned nargs)
 static inline NODE *
 do_mpfr_func(const char *name,
 		int (*mpfr_func)(),	/* putting argument types just gets the compiler confused */
-		unsigned nargs)
+		nargs_t nargs)
 {
 	NODE *t1, *res;
 	mpfr_ptr p1;
@@ -727,7 +727,7 @@ return result
 /* do_mpfr_sin --- do the sin function */
 
 NODE *
-do_mpfr_sin(unsigned nargs)
+do_mpfr_sin(nargs_t nargs)
 {
 	SPEC_MATH(sin);
 }
@@ -735,7 +735,7 @@ do_mpfr_sin(unsigned nargs)
 /* do_mpfr_cos --- do the cos function */
 
 NODE *
-do_mpfr_cos(unsigned nargs)
+do_mpfr_cos(nargs_t nargs)
 {
 	SPEC_MATH(cos);
 }
@@ -743,7 +743,7 @@ do_mpfr_cos(unsigned nargs)
 /* do_mpfr_exp --- exponential function */
 
 NODE *
-do_mpfr_exp(unsigned nargs)
+do_mpfr_exp(nargs_t nargs)
 {
 	SPEC_MATH(exp);
 }
@@ -751,7 +751,7 @@ do_mpfr_exp(unsigned nargs)
 /* do_mpfr_log --- the log function */
 
 NODE *
-do_mpfr_log(unsigned nargs)
+do_mpfr_log(nargs_t nargs)
 {
 	SPEC_MATH(log);
 }
@@ -759,7 +759,7 @@ do_mpfr_log(unsigned nargs)
 /* do_mpfr_sqrt --- do the sqrt function */
 
 NODE *
-do_mpfr_sqrt(unsigned nargs)
+do_mpfr_sqrt(nargs_t nargs)
 {
 	SPEC_MATH(sqrt);
 }
@@ -767,7 +767,7 @@ do_mpfr_sqrt(unsigned nargs)
 /* do_mpfr_int --- convert double to int for awk */
 
 NODE *
-do_mpfr_int(unsigned nargs)
+do_mpfr_int(nargs_t nargs)
 {
 	NODE *tmp, *r;
 
@@ -796,7 +796,7 @@ do_mpfr_int(unsigned nargs)
 /* do_mpfr_compl --- perform a ~ operation */
 
 NODE *
-do_mpfr_compl(unsigned nargs)
+do_mpfr_compl(nargs_t nargs)
 {
 	NODE *tmp, *r;
 	mpz_ptr zptr;
@@ -844,12 +844,12 @@ do_mpfr_compl(unsigned nargs)
 /* get_intval --- get the (converted) integral operand of a binary function. */
 
 static mpz_ptr
-get_intval(NODE *t1, unsigned argnum, const char *op)
+get_intval(NODE *t1, ulong_t argnum, const char *op)
 {
 	mpz_ptr pz;
 
 	if (do_lint && (fixtype(t1)->flags & NUMBER) == 0)
-		lintwarn(_("%s: received non-numeric argument #%d"), op, argnum);
+		lintwarn(_("%s: received non-numeric argument #%lu"), op, TO_ULONG(argnum));
 
 	(void) force_number(t1);
 
@@ -859,8 +859,8 @@ get_intval(NODE *t1, unsigned argnum, const char *op)
 			/* inf or NaN */
 			if (do_lint)
                        		lintwarn("%s",
-		mpg_fmt(_("%s: argument #%d has invalid value %Rg, using 0"),
-                                	op, argnum, left)
+		mpg_fmt(_("%s: argument #%lu has invalid value %Rg, using 0"),
+                                	op, TO_ULONG(argnum), left)
 				);
 
 			emalloc(pz, mpz_ptr, sizeof (mpz_t), "get_intval");
@@ -870,15 +870,15 @@ get_intval(NODE *t1, unsigned argnum, const char *op)
 
 		if (mpfr_sgn(left) < 0)
 			fatal("%s",
-		mpg_fmt(_("%s: argument #%d negative value %Rg is not allowed"),
-					op, argnum, left)
+		mpg_fmt(_("%s: argument #%lu negative value %Rg is not allowed"),
+					op, TO_ULONG(argnum), left)
 				);
 
 		if (do_lint) {
 			if (! mpfr_integer_p(left))
 				lintwarn("%s",
-		mpg_fmt(_("%s: argument #%d fractional value %Rg will be truncated"),
-					op, argnum, left)
+		mpg_fmt(_("%s: argument #%lu fractional value %Rg will be truncated"),
+					op, TO_ULONG(argnum), left)
 				);
 		}
 
@@ -891,8 +891,8 @@ get_intval(NODE *t1, unsigned argnum, const char *op)
 	pz = t1->mpg_i;
 	if (mpz_sgn(pz) < 0)
 		fatal("%s",
-	mpg_fmt(_("%s: argument #%d negative value %Zd is not allowed"),
-					op, argnum, pz)
+	mpg_fmt(_("%s: argument #%lu negative value %Zd is not allowed"),
+					op, TO_ULONG(argnum), pz)
 				);
 
 	return pz;	/* must not be freed */
@@ -914,7 +914,7 @@ free_intval(NODE *t, mpz_ptr pz)
 /* do_mpfr_lshift --- perform a << operation */
 
 NODE *
-do_mpfr_lshift(unsigned nargs)
+do_mpfr_lshift(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	unsigned long shift;
@@ -923,8 +923,8 @@ do_mpfr_lshift(unsigned nargs)
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
-	pz1 = get_intval(t1, 1, "lshift");
-	pz2 = get_intval(t2, 2, "lshift");
+	pz1 = get_intval(t1, 1u, "lshift");
+	pz2 = get_intval(t2, 2u, "lshift");
 
 	/*
 	 * mpz_get_ui: If op is too big to fit an unsigned long then just
@@ -946,7 +946,7 @@ do_mpfr_lshift(unsigned nargs)
 /* do_mpfr_rshift --- perform a >> operation */
 
 NODE *
-do_mpfr_rshift(unsigned nargs)
+do_mpfr_rshift(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	unsigned long shift;
@@ -955,7 +955,7 @@ do_mpfr_rshift(unsigned nargs)
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
-	pz1 = get_intval(t1, 1, "rshift");
+	pz1 = get_intval(t1, 1u, "rshift");
 	pz2 = get_intval(t2, 2, "rshift");
 
 	/* N.B: See do_mpfp_lshift. */
@@ -974,20 +974,20 @@ do_mpfr_rshift(unsigned nargs)
 /* do_mpfr_and --- perform an & operation */
 
 NODE *
-do_mpfr_and(unsigned nargs)
+do_mpfr_and(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	unsigned i;
+	ulong_t i;
 
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("and: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "and");
 
 	res = mpg_integer();
-	for (i = 1; i < nargs; i++) {
+	for (i = 1u; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "and");
 		mpz_and(res->mpg_i, pz1, pz2);
@@ -1006,20 +1006,20 @@ do_mpfr_and(unsigned nargs)
 /* do_mpfr_or --- perform an | operation */
 
 NODE *
-do_mpfr_or(unsigned nargs)
+do_mpfr_or(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	unsigned i;
+	ulong_t i;
 
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("or: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "or");
 
 	res = mpg_integer();
-	for (i = 1; i < nargs; i++) {
+	for (i = 1u; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "or");
 		mpz_ior(res->mpg_i, pz1, pz2);
@@ -1037,20 +1037,20 @@ do_mpfr_or(unsigned nargs)
 /* do_mpfr_xor --- perform an ^ operation */
 
 NODE *
-do_mpfr_xor(unsigned nargs)
+do_mpfr_xor(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	unsigned i;
+	nargs_t i;
 
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("xor: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "xor");
 
 	res = mpg_integer();
-	for (i = 1; i < nargs; i++) {
+	for (i = 1u; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "xor");
 		mpz_xor(res->mpg_i, pz1, pz2);
@@ -1068,7 +1068,7 @@ do_mpfr_xor(unsigned nargs)
 /* do_mpfr_strtonum --- the strtonum function */
 
 NODE *
-do_mpfr_strtonum(unsigned nargs)
+do_mpfr_strtonum(nargs_t nargs)
 {
 	NODE *tmp, *r;
 
@@ -1104,7 +1104,7 @@ static mpz_t seed;	/* current seed */
 /* do_mpfr_rand --- do the rand function */
 
 NODE *
-do_mpfr_rand(unsigned nargs)
+do_mpfr_rand(nargs_t nargs)
 {
 	NODE *res;
 	int tval;
@@ -1138,7 +1138,7 @@ do_mpfr_rand(unsigned nargs)
 /* do_mpfr_srand --- seed the random number generator */
 
 NODE *
-do_mpfr_srand(unsigned nargs)
+do_mpfr_srand(nargs_t nargs)
 {
 	NODE *res;
 
@@ -1163,7 +1163,7 @@ do_mpfr_srand(unsigned nargs)
 	res = mpg_integer();
 	mpz_set(res->mpg_i, seed);	/* previous seed */
 
-	if (nargs == 0)
+	if (!nargs)
 		mpz_set_ui(seed, (unsigned long) time((time_t *) 0));
 	else {
 		NODE *tmp;
@@ -1194,7 +1194,7 @@ do_mpfr_srand(unsigned nargs)
  */
 
 NODE *
-do_mpfr_intdiv(unsigned nargs)
+do_mpfr_intdiv(nargs_t nargs)
 {
 	NODE *numerator, *denominator, *result;
 	NODE *num, *denom;
