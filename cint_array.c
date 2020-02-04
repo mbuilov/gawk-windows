@@ -465,7 +465,7 @@ cint_list(NODE *symbol, NODE *t)
 		list = xn->alist(xn, t);
 		assert(list != NULL);
 		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
-		t->flags = (unsigned int) assoc_kind;
+		t->flags = assoc_kind;
 		if (num_elems == 1u || num_elems == xn->table_size)
 			return list;
 		erealloc(list, NODE **, list_size * sizeof(NODE *), "cint_list");
@@ -476,7 +476,7 @@ cint_list(NODE *symbol, NODE *t)
 	if ((assoc_kind & AINUM) == 0) {
 		/* not sorting by "index num" */
 		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
-		t->flags = (unsigned int) assoc_kind;
+		t->flags = assoc_kind;
 	}
 
 	/* populate it with index in ascending or descending order */
