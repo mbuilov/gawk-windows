@@ -1232,8 +1232,8 @@ set_FIELDWIDTHS(void)
 	}
 
 	if (fatal_error)
-		fatal(_("invalid FIELDWIDTHS value, for field %d, near `%s'"),
-			      i + 1, scan);
+		fatal(_("invalid FIELDWIDTHS value, for field %llu, near `%s'"),
+			0ull + i + 1, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */

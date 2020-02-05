@@ -98,7 +98,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		(void) putc('(', stderr);
 		if (file)
 			(void) fprintf(stderr, "FILENAME=%.*s ", (int) len, file);
-		(void) fprintf(stderr, "FNR=%llu) ", (unsigned long long)0 + FNR);
+		(void) fprintf(stderr, "FNR=%llu) ", 0ull + FNR);
 	}
 
 	(void) fprintf(stderr, "%s", s);
@@ -119,6 +119,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 /* msg --- take a varargs error message and print it */
 
+ATTRIBUTE_PRINTF_AT1(mesg)
 void
 msg(const char *mesg, ...)
 {
@@ -130,6 +131,7 @@ msg(const char *mesg, ...)
 
 /* r_warning --- print a warning message */
 
+ATTRIBUTE_PRINTF_AT1(mesg)
 void
 r_warning(const char *mesg, ...)
 {
@@ -139,6 +141,7 @@ r_warning(const char *mesg, ...)
 	va_end(args);
 }
 
+ATTRIBUTE_PRINTF_AT1(mesg)
 void
 error(const char *mesg, ...)
 {
@@ -162,6 +165,8 @@ set_loc(const char *file, unsigned line)
 
 /* r_fatal --- print a fatal error message */
 
+ATTRIBUTE_NORETURN
+ATTRIBUTE_PRINTF_AT1(mesg)
 void
 r_fatal(const char *mesg, ...)
 {

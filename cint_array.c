@@ -534,7 +534,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 	fprintf(output_fp, "table_size: %lu (total), %lu (cint), %lu (int + str)\n",
 				TO_ULONG(symbol->table_size), TO_ULONG(cint_size), TO_ULONG(xsize));
 	indent(indent_level);
-	fprintf(output_fp, "array_capacity: %llu\n", (unsigned long long)0 + symbol->array_capacity);
+	fprintf(output_fp, "array_capacity: %llu\n", 0ull + symbol->array_capacity);
 	indent(indent_level);
 	fprintf(output_fp, "Load Factor: %.2g\n", (AWKNUM) (cint_size / symbol->array_capacity));
 
