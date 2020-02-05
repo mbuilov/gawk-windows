@@ -40,7 +40,7 @@ static inline void
 unfield(NODE **l, NODE **r)
 {
 	/* if was a field, turn it into a var */
-	if (((*r)->flags & MALLOC) != 0 || (*r)->valref == 1) {
+	if (((*r)->flags & MALLOC) != 0 || (*r)->valref == 1u) {
 		(*l) = (*r);
 	} else {
 		(*l) = dupnode(*r);
@@ -62,14 +62,15 @@ r_interpret(INSTRUCTION *code)
 	NODE *t1, *t2;
 	NODE **lhs;
 	AWKNUM x, x2;
-	int di;
+	bool di;
+	regoff_t ri;
 	Regexp *rp;
 	NODE *set_array = NULL;	/* array with a post-assignment routine */
 	NODE *set_idx = NULL;	/* the index of the array element */
 
 
 /* array subscript */
-#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, true))
+#define mk_sub(n)  	(n == 1u ? POP_SCALAR() : concat_exp(n, true))
 
 #ifdef EXEC_HOOK
 #define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (false)
@@ -93,8 +94,9 @@ top:
 			sourceline = pc->source_line;
 
 #ifdef EXEC_HOOK
-		for (di = 0; di < num_exec_hook; di++) {
-			if (! pre_execute[di](& pc))
+		unsigned ui;
+		for (ui = 0; ui < num_exec_hook; ui++) {
+			if (! pre_execute[ui](& pc))
 				goto top;
 		}
 #endif
@@ -148,7 +150,8 @@ top:
 		case Op_push_i:
 			m = pc->memory;
 			if (! do_traditional && (m->flags & INTLSTR) != 0) {
-				char *orig, *trans, save;
+				const char *orig, *trans;
+				char save;
 
 				save = m->stptr[m->stlen];
 				m->stptr[m->stlen] = '\0';
@@ -600,7 +603,7 @@ mod:
 			lhs = TOP_ADDRESS();
 			t1 = *lhs;
 			force_number(t1);
-			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+			if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 				/* optimization */
 				t1->numbr += x;
 				r = t1;
@@ -619,7 +622,7 @@ mod:
 			t1 = *lhs;
 			force_number(t1);
 			r = make_number(t1->numbr);
-			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+			if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
  				/* optimization */
 				t1->numbr += x;
 			} else {
@@ -752,7 +755,7 @@ mod:
 					*lhs = dupnode(t1);
 			}
 
-			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {
+			if (t1 != t2 && t1->valref == 1u && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {
 				size_t nlen = t1->stlen + t2->stlen;
 
 				erealloc(t1->stptr, char *, nlen + 1, "r_interpret");
@@ -807,13 +810,13 @@ mod:
 			if (set_idx != NULL) {
 				di = true;
 				if (pc->assign_ctxt == Op_sub_builtin
-					&& (r = TOP())
+					&& NULL != (r = TOP())
 					&& get_number_si(r) == 0	/* no substitution performed */
 				)
 					di = false;
 				else if ((pc->assign_ctxt == Op_K_getline
 						|| pc->assign_ctxt == Op_K_getline_redir)
-					&& (r = TOP())
+					&& NULL != (r = TOP())
 					&& get_number_si(r) <= 0 	/* EOF or error */
 				)
 					di = false;
@@ -898,7 +901,7 @@ mod:
 		case Op_K_delete:
 			t1 = POP_ARRAY(false);
 			do_delete(t1, pc->expr_count);
-			stack_adj(-pc->expr_count);
+			stack_dec(pc->expr_count);
 			break;
 
 		case Op_K_delete_loop:
@@ -920,10 +923,10 @@ mod:
 		{
 			NODE **list = NULL;
 			NODE *array, *sort_str;
-			size_t num_elems = 0;
+			ulong_t num_elems;
 			static NODE *sorted_in = NULL;
 			const char *how_to_sort = "@unsorted";
-			char save;
+			char save = '\0'; /* Silence compilers.  It's used only when saved_end == true.  */
 			bool saved_end = false;
 
 			/* get the array */
@@ -931,7 +934,7 @@ mod:
 
 			/* sanity: check if empty */
 			num_elems = assoc_length(array);
-			if (num_elems == 0)
+			if (!num_elems)
 				goto arrayfor;
 
 			if (sorted_in == NULL)		/* do this once */
@@ -963,27 +966,27 @@ arrayfor:
 			r->type = Node_arrayfor;
 			r->for_list = list;
 			r->for_list_size = num_elems;		/* # of elements in list */
-			r->cur_idx = -1;			/* current index */
+			r->cur_list_idx = (unsigned long)-1;			/* current index */
 			r->for_array = array;		/* array */
 			PUSH(r);
 
-			if (num_elems == 0)
+			if (!num_elems)
 				JUMPTO(pc->target_jmp);   /* Op_arrayfor_final */
 		}
 			break;
 
 		case Op_arrayfor_incr:
 			r = TOP();	/* Node_arrayfor */
-			if (++r->cur_idx == r->for_list_size) {
+			if (++r->cur_list_idx == r->for_list_size) {
 				NODE *array;
 				array = r->for_array;	/* actual array */
 				if (do_lint && array->table_size != r->for_list_size)
-					lintwarn(_("for loop: array `%s' changed size from %ld to %ld during loop execution"),
-						array_vname(array), (long) r->for_list_size, (long) array->table_size);
+					lintwarn(_("for loop: array `%s' changed size from %lu to %lu during loop execution"),
+						array_vname(array), TO_ULONG(r->for_list_size), TO_ULONG(array->table_size));
 				JUMPTO(pc->target_jmp);	/* Op_arrayfor_final */
 			}
 
-			t1 = r->for_list[r->cur_idx];
+			t1 = r->for_list[r->cur_list_idx];
 			lhs = get_lhs(pc->array_var, false);
 			unref(*lhs);
 			*lhs = dupnode(t1);
@@ -1002,28 +1005,24 @@ arrayfor:
 
 		case Op_ext_builtin:
 		{
-			size_t arg_count = pc->expr_count;
+			ulong_t arg_count = pc->expr_count;
 			awk_ext_func_t *f = pc[1].c_function;
 			size_t min_req = f->min_required_args;
 			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
 
 			if (arg_count < min_req)
-				fatal(_("%s: called with %lu arguments, expecting at least %lu"),
-						pc[1].func_name,
-						(unsigned long) arg_count,
-						(unsigned long) min_req);
+				fatal(_("%s: called with %lu arguments, expecting at least %llu"),
+						pc[1].func_name, TO_ULONG(arg_count), 0ull + min_req);
 
 			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %lu arguments, expecting no more than %lu"),
-						pc[1].func_name,
-						(unsigned long) arg_count,
-						(unsigned long) max_expect);
+				lintwarn(_("%s: called with %lu arguments, expecting no more than %llu"),
+						pc[1].func_name, TO_ULONG(arg_count), 0ull + max_expect);
 
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc(arg_count, & result, f));
+			r = awk_value_to_node(pc->extfunc((int) arg_count, & result, f));
 			(void) POP_CODE();
-			while (arg_count-- > 0) {
+			while (arg_count--) {
 				t1 = POP();
 				if (t1->type == Node_val)
 					DEREF(t1);
@@ -1068,13 +1067,13 @@ arrayfor:
 			t1 = *get_field(0, (Func_ptr *) 0);
 match_re:
 			rp = re_update(m);
-			di = research(rp, t1->stptr, 0, t1->stlen, RE_NO_FLAGS);
-			di = (di == -1) ^ (op != Op_nomatch);
+			ri = research(rp, t1->stptr, 0, t1->stlen, RE_NO_FLAGS);
+			di = (ri == -1) ^ (op != Op_nomatch);
 			if (op != Op_match_rec) {
 				decr_sp();
 				DEREF(t1);
 				if (m->type == Node_dynregex) {
-				 	DEREF(m->re_exp);
+					DEREF(m->re_exp);
 					m->re_exp = NULL;
 				}
 			}
@@ -1100,11 +1099,12 @@ match_re:
 		case Op_indirect_func_call:
 		{
 			NODE *f = NULL;
-			int arg_count;
 			char save;
 
-			arg_count = (pc + 1)->expr_count;
-			t1 = PEEK(arg_count);	/* indirect var */
+			{
+				ulong_t arg_count = (pc + 1)->expr_count;
+				t1 = PEEK(arg_count);	/* indirect var */
+			}
 
 			if (t1->type != Node_val)	/* @a[1](p) not allowed in grammar */
 				fatal(_("indirect function call requires a simple scalar value"));
@@ -1128,7 +1128,7 @@ match_re:
 				fatal(_("`%s' is not a function, so it cannot be called indirectly"),
 						t1->stptr);
 			} else if (f->type == Node_builtin_func) {
-				int arg_count = (pc + 1)->expr_count;
+				ulong_t arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
 
 				assert(the_func != NULL);
@@ -1152,7 +1152,7 @@ match_re:
 					/* code copied from below, keep in sync */
 					INSTRUCTION *bc;
 					char *fname = pc->func_name;
-					int arg_count = (pc + 1)->expr_count;
+					ulong_t arg_count = (pc + 1)->expr_count;
 					static INSTRUCTION npc[2];
 
 					npc[0] = *pc;
@@ -1195,7 +1195,7 @@ match_re:
 				/* keep in sync with indirect call code */
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
-				int arg_count = (pc + 1)->expr_count;
+				ulong_t arg_count = (pc + 1)->expr_count;
 
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
@@ -1325,7 +1325,7 @@ match_re:
 					update_ERRNO_int(errcode);
 					if (do_traditional || ! pc->has_endfile)
 						fatal(_("error reading input file `%s': %s"),
-						curfile->public.name, strerror(errcode));
+						curfile->publ.name, strerror(errcode));
 				}
 
 				JUMPTO(ni);
@@ -1345,7 +1345,7 @@ match_re:
 			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
-				long stack_size = 0;
+				size_t stack_size = 0;
 
 				ni = pop_exec_state(& currule, & source, & stack_size);
 
@@ -1497,8 +1497,10 @@ match_re:
 
 /*	} forever */
 
+#ifdef COMPILE_UNREACHABLE_CODE
 	/* not reached */
 	return 0;
+#endif
 
 #undef mk_sub
 #undef JUMPTO
