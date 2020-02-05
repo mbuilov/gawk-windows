@@ -410,7 +410,9 @@ opcode2str(OPCODE op)
 	if (op >= Op_illegal && op < Op_final)
 		return optypes[op].desc;
 	fatal(_("unknown opcode %d"), (int) op);
+#ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;
+#endif
 }
 
 /* op2str --- convert an opcode type to corresponding operator or keyword */
@@ -426,7 +428,9 @@ op2str(OPCODE op)
 					optypes[op].desc);
 	} else
 		fatal(_("unknown opcode %d"), (int) op);
+#ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;
+#endif
 }
 
 
