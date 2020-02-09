@@ -5606,6 +5606,12 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	if (ret != 0) {
 		pop_context();	/* switch to prev context */
 		free_context(ctxt, false /* keep_globals */);
+
+		/* Remove @eval from FUNCTAB. */
+		NODE *s = make_string("@eval", 5);
+		(void) assoc_remove(func_table, s);
+		unref(s);
+
 		return false;
 	}
 
