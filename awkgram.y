@@ -992,6 +992,7 @@ regular_loop:
 		}
 		if ($11 != NULL)
 			$12 = list_prepend($12, $11);
+		add_lint($6, LINT_assign_in_cond);
 		$$ = mk_for_loop($1, $3, $6, $9, $12);
 
 		break_allowed--;
@@ -1423,6 +1424,7 @@ if_statement
 	  {
 		if ($5 != NULL)
 			$1->comment = $5;
+		add_lint($3, LINT_assign_in_cond);
 		$$ = mk_condition($3, $1, $6, NULL, NULL);
 	  }
 	| LEX_IF '(' exp r_paren opt_nls statement
@@ -1432,6 +1434,7 @@ if_statement
 			$1->comment = $5;
 		if ($8 != NULL)
 			$7->comment = $8;
+		add_lint($3, LINT_assign_in_cond);
 		$$ = mk_condition($3, $1, $6, $7, $9);
 	  }
 	;
