@@ -28,12 +28,7 @@
 
 #include <assert.h>
 #include <ctype.h>
-#ifndef VMS
 #include <stdint.h>
-#else
-#define SIZE_MAX __INT32_MAX
-#define PTRDIFF_MAX __INT32_MAX
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>

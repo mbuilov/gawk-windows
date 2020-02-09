@@ -1192,15 +1192,22 @@ $	chnlc = f$getsyi("CHANNELCNT")
 $	fillm = f$getjpi("","FILLM")
 $	if fillm.ge.chnlc then  fillm = chnlc - 1
 $	if fillm.ge.f_cnt then  f_cnt = fillm + 10
-$	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
-$	if f$parse("[.junk]").eqs."" then  create/Dir/Prot=(O:rwed) [.junk]
-$	gawk -- "BEGIN {for (i = 1; i <= ''f_cnt'; i++) print i, i}" >_manyfiles.dat
+$	if f$search("sys$disk:[.junk]*.*").nes.""
+$	then
+$	    rm sys$disk:[.junk]*.*;*
+$	endif
+$	if f$parse("sys$disk:[.junk]") .eqs. ""
+$	then
+$	    create/Dir/Prot=(O:rwed) sys$disk:[.junk]
+$	endif
+$	gawk -- "BEGIN {for (i = 1; i <= ''f_cnt'; i++) print i, i}" -
+           >_manyfiles.dat
 $	echo "(processing ''f_cnt' files; this may take quite a while)"
 $	set noOn	! continue even if gawk fails
 $	gawk -f manyfiles.awk _manyfiles.dat _manyfiles.dat
 $	define/User sys$error _NL:
 $	define/User sys$output _manyfiles.tmp
-$	search/Match=Nor/Output=_NL:/Log [.junk]*.* ""
+$	search/Match=Nor/Output=_NL:/Log sys$disk:[.junk]*.* ""
 $!/Log output: "%SEARCH-S-NOMATCH, <filename> - <#> records" plus 1 line summary
 $	gawk -v "F_CNT=''f_cnt'" -f - _manyfiles.tmp
 $deck	!some input begins with "$"
@@ -1210,7 +1217,8 @@ $eod
 $	set On
 $	skip_reason = "Test detection not implemented yet"
 $	gosub junit_report_skip
-$	rm _manyfiles.tmp;,_manyfiles.dat;,[.junk]*.*;*,[]junk.dir;
+$	rm sys$disk:_manyfiles.tmp;,sys$disk:_manyfiles.dat;
+$       rm sys$disk:[.junk]*.*;*,sys$disk:[]junk.dir;
 $	return
 $
 $compare:	echo "compare"
