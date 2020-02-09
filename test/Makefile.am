@@ -2017,6 +2017,12 @@ profile3:
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+profile5:
+	@echo $@
+	@$(AWK) --pretty=_$@ -f "$(srcdir)"/$@.awk 2> _$@.err
+	@cat _$@.err >> _$@ ; rm -f _$@.err
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 profile6:
 	@echo $@
 	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
