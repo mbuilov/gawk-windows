@@ -39,22 +39,10 @@ typedef int token_t;
 /* bad token */
 #define BADTOK 0
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(m, _Printf_format_string_)
-#endif
-static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(m, _Printf_format_string_)
-#endif
-static void error_ln(unsigned line, const char *m, ...) ATTRIBUTE_PRINTF_2;
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(mesg, _Printf_format_string_)
-#endif
-static void lintwarn_ln(unsigned line, const char *mesg, ...) ATTRIBUTE_PRINTF_2;
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(mesg, _Printf_format_string_)
-#endif
-static void warning_ln(unsigned line, const char *mesg, ...) ATTRIBUTE_PRINTF_2;
+ATTRIBUTE_PRINTF_AT1(m) static void yyerror(const char *m, ...);
+ATTRIBUTE_PRINTF_AT2(m) static void error_ln(unsigned line, const char *m, ...);
+ATTRIBUTE_PRINTF_AT2(mesg) static void lintwarn_ln(unsigned line, const char *mesg, ...);
+ATTRIBUTE_PRINTF_AT2(mesg) static void warning_ln(unsigned line, const char *mesg, ...);
 static char *get_src_buf(void);
 static token_t yylex(void);
 int	yyparse(void);
@@ -2482,9 +2470,7 @@ print_included_from(void)
 
 /* warning_ln --- print a warning message with location */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(mesg, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF_AT2(mesg)
 static void
 warning_ln(unsigned line, const char *mesg, ...)
 {
@@ -2502,9 +2488,7 @@ warning_ln(unsigned line, const char *mesg, ...)
 
 /* lintwarn_ln --- print a lint warning and location */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(mesg, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF_AT2(mesg)
 static void
 lintwarn_ln(unsigned line, const char *mesg, ...)
 {
@@ -2527,9 +2511,7 @@ lintwarn_ln(unsigned line, const char *mesg, ...)
 
 /* error_ln --- print an error message and location */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(m, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF_AT2(m)
 static void
 error_ln(unsigned line, const char *m, ...)
 {
@@ -2548,9 +2530,7 @@ error_ln(unsigned line, const char *m, ...)
 
 /* yyerror --- print a syntax error message, show where */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(m, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF_AT1(m)
 static void
 yyerror(const char *m, ...)
 {
