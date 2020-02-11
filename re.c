@@ -49,7 +49,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	int c, c2;
 	static bool first = true;
 	static bool no_dfa = false;
-	int i;
+	size_t i;
 	static struct dfa* dfaregs[2] = { NULL, NULL };
 	static bool nul_warned = false;
 
@@ -96,7 +96,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		if (gawk_mb_cur_max > 1 && ! is_multibyte) {
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
-			is_multibyte = mbrlen(src, end - src, &mbs);
+			is_multibyte = mbrlen(src, (size_t) (end - src), &mbs);
 			if (   is_multibyte == 1
 			    || is_multibyte == (size_t) -1
 			    || is_multibyte == (size_t) -2
@@ -165,13 +165,13 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				break;
 			case '8':
 			case '9':	/* a\9b not valid */
-				*dest++ = c;
+				*dest++ = (char) c;
 				src++;
 			{
 				static bool warned[2];
 
 				if (! warned[c - '8']) {
-					warning(_("regexp escape sequence `\\%c' treated as plain `%c'"), c, c);
+					awkwarn(_("regexp escape sequence `\\%c' treated as plain `%c'"), c, c);
 					warned[c - '8'] = true;
 				}
 			}
@@ -190,7 +190,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 					static bool warned[256];
 
 					if (! warned[c & 0xFF]) {
-						warning(_("regexp escape sequence `\\%c' is not a known regexp operator"), c);
+						awkwarn(_("regexp escape sequence `\\%c' is not a known regexp operator"), c);
 						warned[c & 0xFF] = true;
 					}
 				}
@@ -208,7 +208,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	} /* while */
 
 	*dest = '\0';
-	len = dest - buf;
+	len = (size_t) (dest - buf);
 
 	ezalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
@@ -281,8 +281,8 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		}
 	}
 
-	for (i = len - 1; i >= 0; i--) {
-		if (strchr("*+|?", buf[i]) != NULL) {
+	for (i = len; i > 0; i--) {
+		if (strchr("*+|?", buf[i-1]) != NULL) {
 			rp->maybe_long = true;
 			break;
 		}
@@ -293,7 +293,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 
 /* research --- do a regexp search. use dfa if possible */
 
-int
+regoff_t
 research(Regexp *rp, char *str, int start,
 	 size_t len, int flags)
 {
@@ -301,7 +301,7 @@ research(Regexp *rp, char *str, int start,
 	bool try_backref = false;
 	int need_start;
 	int no_bol;
-	int res;
+	regoff_t res;
 
 	need_start = ((flags & RE_NEED_START) != 0);
 	no_bol = ((flags & RE_NO_BOL) != 0);
@@ -351,8 +351,8 @@ research(Regexp *rp, char *str, int start,
 			 * Passing NULL as last arg speeds up search for cases
 			 * where we don't need the start/end info.
 			 */
-			res = re_search(&(rp->pat), str, start+len,
-				start, len, need_start ? &(rp->regs) : NULL);
+			res = re_search(&(rp->pat), str, (regoff_t) (start+len),
+				start, (regoff_t) len, need_start ? &(rp->regs) : NULL);
 		} else
 			res = 1;
 	} else
@@ -388,7 +388,9 @@ void
 dfaerror(const char *s)
 {
 	fatal("%s", s);
+#ifdef COMPILE_UNREACHABLE_CODE
 	exit(EXIT_FATAL);	/* for DJGPP */
+#endif
 }
 
 /* re_cache_get --- populate regexp cache if empty */
@@ -457,7 +459,7 @@ re_update(NODE *t)
 /* resetup --- choose what kind of regexps we match */
 
 void
-resetup()
+resetup(void)
 {
 	// init localeinfo for dfa
 	init_localeinfo(& localeinfo);
@@ -567,6 +569,7 @@ dfawarn(const char *dfa_warning)
 	 * This routine does nothing, since gawk does its own
 	 * (better) check for bad [[:foo:]] syntax.
 	 */
+	(void) dfa_warning;
 }
 
 /* check_bracket_exp --- look for /[:space:]/ that should be /[[:space:]]/ */
@@ -601,7 +604,7 @@ check_bracket_exp(char *s, size_t length)
 	bool found = false;
 	char save;
 	char *sp, *sp2, *end;
-	int len;
+	size_t len = 0; /* Silence compiler warning.  */
 	int count = 0;
 
 	if (length == 0)
@@ -613,7 +616,7 @@ check_bracket_exp(char *s, size_t length)
 	sp = s;
 
 again:
-	sp = sp2 = memchr(sp, '[', (end - sp));
+	sp = sp2 = (char*) memchr(sp, '[', (size_t) (end - sp));
 	if (sp == NULL)
 		goto done;
 
@@ -652,7 +655,7 @@ again:
 		if (classes[i].warned)
 			continue;
 		len = classes[i].len;
-		if (   len == (sp - sp2)
+		if (   len == (size_t) (sp - sp2)
 		    && memcmp(sp2, classes[i].name, len) == 0) {
 			found = true;
 			break;
@@ -660,8 +663,8 @@ again:
 	}
 
 	if (found && ! classes[i].warned) {
-		warning(_("regexp component `%.*s' should probably be `[%.*s]'"),
-				len, sp2, len, sp2);
+		awkwarn(_("regexp component `%.*s' should probably be `[%.*s]'"),
+				(int) len, sp2, (int) len, sp2);
 		classes[i].warned = true;
 	}
 
