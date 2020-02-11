@@ -36,7 +36,7 @@
 /* Declare some globals used by api_get_file: */
 extern IOBUF *curfile;
 extern INSTRUCTION *main_beginfile;
-extern int currule;
+extern enum defrule currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 static char *valtype2str(awk_valtype_t type);
@@ -79,7 +79,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 	/* if type is undefined */
 	if (arg->type == Node_var_new) {
 		if (wanted == AWK_UNDEFINED)
-			return true;
+			return awk_true;
 		else if (wanted == AWK_ARRAY) {
 			goto array;
 		} else {
@@ -90,7 +90,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 	/* at this point, we have real type */
 	if (arg->type == Node_var_array || arg->type == Node_array_ref) {
 		if (wanted != AWK_ARRAY && wanted != AWK_UNDEFINED)
-			return false;
+			return awk_false;
 		goto array;
 	} else
 		goto scalar;
@@ -449,7 +449,7 @@ static struct {
 /* free_api_string_copies --- release memory used by string copies */
 
 void
-free_api_string_copies()
+free_api_string_copies(void)
 {
 	size_t i;
 
@@ -607,7 +607,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -641,7 +641,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -668,7 +668,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -701,7 +701,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -757,6 +757,8 @@ api_sym_lookup(awk_ext_id_t id,
 {
 	NODE *node;
 
+	(void) id;
+
 	update_global_values();		/* make sure stuff like NF, NR, are up to date */
 
 	if (   name == NULL
@@ -786,6 +788,8 @@ api_sym_lookup_scalar(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) cookie;
 
+	(void) id;
+
 	if (node == NULL
 	    || result == NULL
 	    || node->type != Node_var)
@@ -806,6 +810,8 @@ api_sym_update(awk_ext_id_t id,
 {
 	NODE *node;
 	NODE *array_node;
+
+	(void) id;
 
 	if (   name == NULL
 	    || *name == '\0'
@@ -887,6 +893,8 @@ api_sym_update_scalar(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) cookie;
 
+	(void) id;
+
 	if (value == NULL
 	    || node == NULL
 	    || node->type != Node_var
@@ -903,7 +911,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 	 */
 	switch (value->val_type) {
 	case AWK_NUMBER:
-		if (node->var_value->valref == 1 && ! do_mpfr) {
+		if (node->var_value->valref == 1u && ! do_mpfr) {
 			NODE *r = node->var_value;
 
 			/* r_unref: */
@@ -922,7 +930,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 
 	case AWK_STRING:
 	case AWK_STRNUM:
-		if (node->var_value->valref == 1) {
+		if (node->var_value->valref == 1u) {
 			NODE *r = node->var_value;
 
 			/* r_unref: */
@@ -1005,6 +1013,8 @@ api_get_array_element(awk_ext_id_t id,
 	NODE *subscript;
 	NODE **aptr;
 
+	(void) id;
+
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1046,6 +1056,8 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
 	NODE *elem;
+
+	(void) id;
 
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
@@ -1111,6 +1123,8 @@ api_del_array_element(awk_ext_id_t id,
 {
 	NODE *array, *sub;
 
+	(void) id;
+
 	array = (NODE *) a_cookie;
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1137,6 +1151,8 @@ api_get_element_count(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) a_cookie;
 
+	(void) id;
+
 	if (count == NULL || node == NULL || node->type != Node_var_array)
 		return awk_false;
 
@@ -1151,6 +1167,8 @@ api_create_array(awk_ext_id_t id)
 {
 	NODE *n;
 
+	(void) id;
+
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
 	null_array(n);
@@ -1164,6 +1182,8 @@ static awk_bool_t
 api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 {
 	NODE *node = (NODE *) a_cookie;
+
+	(void) id;
 
 	if (   node == NULL
 	    || node->type != Node_var_array
@@ -1183,9 +1203,11 @@ api_flatten_array_typed(awk_ext_id_t id,
 		awk_valtype_t index_type, awk_valtype_t value_type)
 {
 	NODE **list;
-	size_t i, j;
+	ulong_t i, j;
 	NODE *array = (NODE *) a_cookie;
 	size_t alloc_size;
+
+	(void) id;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1205,7 +1227,7 @@ api_flatten_array_typed(awk_ext_id_t id,
 	(*data)->opaque2 = list;
 	(*data)->count = array->table_size;
 
-	for (i = j = 0; i < 2 * array->table_size; i += 2, j++) {
+	for (i = j = 0u; i < 2u * array->table_size; i += 2, j++) {
 		NODE *index, *value;
 
 		index = list[i];
@@ -1214,13 +1236,13 @@ api_flatten_array_typed(awk_ext_id_t id,
 		/* Convert index and value to API types. */
 		if (! node_to_awk_value(index,
 				& (*data)->elements[j].index, index_type)) {
-			fatal(_("api_flatten_array_typed: could not convert index %d to %s"),
-						(int) i, valtype2str(index_type));
+			fatal(_("api_flatten_array_typed: could not convert index %lu to %s"),
+						TO_ULONG(i), valtype2str(index_type));
 		}
 		if (! node_to_awk_value(value,
 				& (*data)->elements[j].value, value_type)) {
-			fatal(_("api_flatten_array_typed: could not convert value %d to %s"),
-						(int) i, valtype2str(value_type));
+			fatal(_("api_flatten_array_typed: could not convert value %lu to %s"),
+						TO_ULONG(i), valtype2str(value_type));
 		}
 	}
 	return awk_true;
@@ -1237,9 +1259,11 @@ api_release_flattened_array(awk_ext_id_t id,
 		awk_array_t a_cookie,
 		awk_flat_array_t *data)
 {
-	NODE *array = a_cookie;
+	NODE *array = (NODE*) a_cookie;
 	NODE **list;
-	size_t i, j, k;
+	ulong_t i, j, k;
+
+	(void) id;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1252,7 +1276,7 @@ api_release_flattened_array(awk_ext_id_t id,
 	list = (NODE **) data->opaque2;
 
 	/* free index nodes */
-	for (i = j = 0, k = 2 * array->table_size; i < k; i += 2, j++) {
+	for (i = j = 0u, k = 2u * array->table_size; i < k; i += 2, j++) {
 		/* Delete items flagged for delete. */
 		if (   (data->elements[j].flags & AWK_ELEMENT_DELETE) != 0
 		    && (array->flags & NO_EXT_SET) == 0) {
@@ -1273,6 +1297,8 @@ static awk_bool_t
 api_create_value(awk_ext_id_t id, awk_value_t *value,
 		awk_value_cookie_t *result)
 {
+	(void) id;
+
 	if (value == NULL || result == NULL)
 		return awk_false;
 
@@ -1297,6 +1323,8 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 {
 	NODE *val = (NODE *) value;
 
+	(void) id;
+
 	if (val == NULL)
 		return awk_false;
 
@@ -1313,10 +1341,14 @@ api_get_mpfr(awk_ext_id_t id)
 	mpfr_ptr p;
 	getmpfr(p);
 	mpfr_init(p);
+	(void) id;
 	return p;
 #else
+	(void) id;
 	fatal(_("api_get_mpfr: MPFR not supported"));
+#ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
+#endif
 #endif
 }
 
@@ -1329,10 +1361,14 @@ api_get_mpz(awk_ext_id_t id)
 	mpz_ptr p;
 	getmpz(p);
 	mpz_init(p);
+	(void) id;
 	return p;
 #else
+	(void) id;
 	fatal(_("api_get_mpfr: MPFR not supported"));
+#ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
+#endif
 #endif
 }
 
@@ -1346,11 +1382,13 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	int flag;	/* not used, sigh */
 	enum redirval redirtype;
 
+	(void) id;
+
 	if (name == NULL || namelen == 0) {
 		if (curfile == NULL) {
 			INSTRUCTION *pc;
-			int save_rule;
-			char *save_source;
+			enum defrule save_rule;
+			const char *save_source;
 
 			if (nextfile(& curfile, false) <= 0)
 				return awk_false;
@@ -1375,7 +1413,7 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 			currule = save_rule;
 			source = save_source;
 		}
-		*ibufp = &curfile->public;
+		*ibufp = &curfile->publ;
 		*obufp = NULL;
 
 		return awk_true;
@@ -1416,7 +1454,7 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	}
 
 	if (redirtype == redirect_none) {
-		warning(_("cannot open unrecognized file type `%s' for `%s'"),
+		awkwarn(_("cannot open unrecognized file type `%s' for `%s'"),
 			filetype, name);
 		return awk_false;
 	}
@@ -1424,7 +1462,7 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	if ((f = redirect_string(name, namelen, 0, redirtype, &flag, fd, false)) == NULL)
 		return awk_false;
 
-	*ibufp = f->iop ? & f->iop->public : NULL;
+	*ibufp = f->iop ? & f->iop->publ : NULL;
 	*obufp = f->output.fp ? & f->output : NULL;
 	return awk_true;
 }
@@ -1535,7 +1573,7 @@ gawk_api_t api_impl = {
 /* init_ext_api --- init the extension API */
 
 void
-init_ext_api()
+init_ext_api(void)
 {
 	/* force values to 1 / 0 */
 	api_impl.do_flags[0] = (do_lint ? 1 : 0);
@@ -1549,7 +1587,7 @@ init_ext_api()
 /* update_ext_api --- update the variables in the API that can change */
 
 void
-update_ext_api()
+update_ext_api(void)
 {
 	api_impl.do_flags[0] = (do_lint ? 1 : 0);
 }
