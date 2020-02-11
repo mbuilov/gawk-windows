@@ -35,6 +35,7 @@ int yydebug = 2;
 #endif
 
 static cmdtok_t yylex(void);
+ATTRIBUTE_PRINTF_AT1(mesg)
 static void yyerror(const char *mesg, ...);
 
 static int find_command(const char *token, size_t toklen);
@@ -288,7 +289,7 @@ command
 	  {
 		if (cmdtab[cmd_idx].cls == D_FRAME
 				&& $2 != NULL && $2->a_int < 0)
-			yyerror(_("invalid frame number: %d"), $2->a_int);
+			yyerror(_("invalid frame number: %d"), TO_LONG($2->a_int));
 	  }
 	| D_INFO D_STRING
 	  {
@@ -597,7 +598,7 @@ integer_range
 	  {
 		if ($1->a_int > $3->a_int)
 			yyerror(_("invalid range specification: %d - %d"),
-				$1->a_int, $3->a_int);
+				TO_LONG($1->a_int), TO_LONG($3->a_int));
 		else
 			$1->type = D_range;
 		$$ = $1;
@@ -1008,6 +1009,7 @@ free_cmdarg(CMDARG *list)
 
 /* yyerror --- print a syntax error message */
 
+ATTRIBUTE_PRINTF_AT1(mesg)
 static void
 yyerror(const char *mesg, ...)
 {
@@ -1158,7 +1160,7 @@ again:
 			}
 			return cmdtab[cmd_idx].cls;
 		} else {
-			yyerror(_("unknown command - \"%.*s\", try help"), toklen, tokstart);
+			yyerror(_("unknown command - \"%.*s\", try help"), (int) toklen, tokstart);
 			return '\n';
 		}
 	}
