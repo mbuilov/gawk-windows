@@ -95,7 +95,6 @@ $	def_dir = f$environment("default")
 $	create/dir 'def_dir'
 $	listdepth = 0
 $	pipeok = 0
-$       prepend_error = 0
 $	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float
 $
 $	list = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
@@ -395,6 +394,7 @@ $! common tests, not needing special set up: gawk -f 'test'.awk 'test'.in
 $addcomma:
 $anchgsub:
 $asgext:
+$back89:
 $backgsub:
 $concat1:
 $datanonl:
@@ -407,6 +407,7 @@ $funstack:
 $getline4:
 $getnr2tb:
 $getnr2tm:
+$gsubtst5:
 $gsubtst7:
 $gsubtst8:
 $hex2:
@@ -448,12 +449,6 @@ $uparrfs:
 $wjposer1:
 $	test_class = "basic"
 $       test_in = "''test'.in"
-$	goto common_with_test_in_redir
-$!
-$gsubtst5:
-$	test_class = "basic"
-$       test_in = "''test'.in"
-$       prepend_error = 1
 $	goto common_with_test_in_redir
 $!
 $sprintfc:
@@ -500,37 +495,23 @@ $common_with_test_in_redir:
 $! common with 'test'.in redirected.
 $!
 $	echo "''test'"
-$	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
-$	then
-$	    delete sys$disk:[]_'test'.tmp2;*
-$	endif
+$!	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
+$!	then
+$!	    delete sys$disk:[]_'test'.tmp2;*
+$!	endif
 $	if f$search("sys$disk:[]_''test'.tmp;*") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;*
 $	endif
-$       if prepend_error .eq. 1
-$       then
-$           tmp_error = "_''test'.tmp"
-$           tmp_output = "_''test'.tmp2"
-$       else
-$           tmp_error = "_''test'.tmp2"
-$           tmp_output = "_''test'.tmp"
-$       endif
-$       prepend_error = 0
+$       tmp_output = "_''test'.tmp"
 $       set noOn
-$       define/user sys$error 'tmp_error'
-$	gawk -f 'test'.awk < 'test_in' >'tmp_output'
+$	gawk -f 'test'.awk < 'test_in' >'tmp_output' 2>&1
 $	gawk_status = $status
 $	set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
-$	if f$search("sys$disk:[]_''test'.tmp2;2") .nes. ""
-$	then
-$	    delete sys$disk:[]_'test'.tmp2;2
-$	endif
-$       append _'test'.tmp2 _'test'.tmp
 $	if .not. gawk_status
 $       then
 $	    call exit_code 'gawk_status' _'test'.tmp
@@ -538,7 +519,7 @@ $       endif
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
-$	    rm _'test'.tmp;*,_'test'.tmp2;*
+$	    rm _'test'.tmp;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
@@ -1978,13 +1959,7 @@ $	else
 $	    gosub junit_report_fail_diff
 $	endif
 $	return
-$
-$back89:		! echo "back89"
-$	test_class = "basic"
-$       test_in = "''test'.in"
-$       prepend_error = 1
-$	goto common_with_test_in_redir
-$
+$!
 $tradanch:	echo "tradanch"
 $	test_class = "basic"
 $	if f$search("tradanch.ok").eqs."" then  create tradanch.ok
@@ -3813,8 +3788,17 @@ $profile5:
 $profile8:
 $	echo "''test'"
 $	test_class = "gawk_ext"
-$       if f$search("_''test'.tmp1") .nes. "" then delete _'test'.tmp1;*
+$       if f$search("sys$disk:[]_''test'.tmp1") .nes. ""
+$       then
+$           delete _'test'.tmp1;*
+$       endif
+$	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;*
+$	endif
+$       tmp_error = "_''test'.tmp2"
 $	define/user GAWK_NO_PP_RUN 1
+$       define/user sys$error 'tmp_error'
 $       set noOn
 $	gawk --pretty-print=_'test'.tmp1 -f 'test'.awk > _NL:
 $       gawk_status = $status
@@ -3823,6 +3807,11 @@ $	if f$search("sys$disk:[]_''test'.tmp1;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp1;2
 $	endif
+$	if f$search("sys$disk:[]_''test'.tmp2;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;2
+$	endif
+$       append _'test'.tmp2 _'test'.tmp1
 $	convert/fdl=nla0: _'test'.tmp1 sys$disk:[]_'test'.tmp
 $	convert/fdl=nla0: 'test'.ok _'test'.ok
 $	if .not. gawk_status
@@ -3830,6 +3819,8 @@ $       then
 $	    call exit_code 'gawk_status' _'test'.tmp
 $       endif
 $	cmp sys$disk:[]_'test'.ok sys$disk:[]_'test'.tmp
+$       cmp_status = $status
+$       if .not. gawk_status then gawk_status = cmp_status
 $	if gawk_status
 $	then
 $	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
