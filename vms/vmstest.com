@@ -3800,7 +3800,7 @@ $       tmp_error = "_''test'.tmp2"
 $	define/user GAWK_NO_PP_RUN 1
 $       define/user sys$error 'tmp_error'
 $       set noOn
-$	gawk --pretty-print=_'test'.tmp1 -f 'test'.awk > _NL:
+$	gawk --pretty-print=_'test'.tmp1 -f ./'test'.awk > _NL:
 $       gawk_status = $status
 $       set On
 $	if f$search("sys$disk:[]_''test'.tmp1;2") .nes. ""
@@ -3820,7 +3820,7 @@ $	    call exit_code 'gawk_status' _'test'.tmp
 $       endif
 $	cmp sys$disk:[]_'test'.ok sys$disk:[]_'test'.tmp
 $       cmp_status = $status
-$       if .not. gawk_status then gawk_status = cmp_status
+$       if gawk_status then gawk_status = cmp_status
 $	if gawk_status
 $	then
 $	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
