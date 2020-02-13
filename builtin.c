@@ -74,7 +74,7 @@ extern long random(void);
 extern void srandom(unsigned long seed);
 
 extern NODE **args_array;
-extern int max_args;
+extern ulong_t max_args;
 extern NODE **fields_arr;
 extern bool output_is_tty;
 extern FILE *output_fp;
@@ -94,6 +94,23 @@ fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
  * value to use here.
  */
 #define GAWK_RANDOM_MAX 0x7fffffffL
+
+/*
+ * Check if mbrlen have successfully parsed a non-null wide char.
+ */
+static inline int mbrlen_is_valid(size_t mb_len)
+{
+	/*
+	 * mbrlen returns:
+	 * 0          - for a null wide char,
+	 * (size_t)-1 - for an invalid multibyte sequence,
+	 * (size_t)-2 - for an incomplete multibyte character,
+	 * up to 4 bytes - for a utf-8 character, etc.
+	*/
+	/* Note: assume that negative integers are represented internally
+	   via 2's complement, which is not mandated by C.  */
+	return (int)mb_len > 0;
+}
 
 /* efwrite --- like fwrite, but with error checking */
 
@@ -152,7 +169,7 @@ wrerror:
 /* do_exp --- exponential function */
 
 NODE *
-do_exp(int nargs)
+do_exp(nargs_t nargs)
 {
 	NODE *tmp;
 	double d, res;
@@ -194,7 +211,7 @@ stdfile(const char *name, size_t len)
 /* do_fflush --- flush output, either named file or pipe or everything */
 
 NODE *
-do_fflush(int nargs)
+do_fflush(nargs_t nargs)
 {
 	struct redirect *rp;
 	NODE *tmp;
@@ -221,7 +238,7 @@ do_fflush(int nargs)
 	 */
 
 	/* fflush() */
-	if (nargs == 0) {
+	if (!nargs) {
 		status = flush_io();	// ERRNO updated
 		return make_number((AWKNUM) status);
 	}
@@ -244,10 +261,10 @@ do_fflush(int nargs)
 		if ((rp->flag & (RED_WRITE|RED_APPEND)) == 0) {
 			if ((rp->flag & RED_PIPE) != 0)
 				awkwarn(_("fflush: cannot flush: pipe `%.*s' opened for reading, not writing"),
-					len, file);
+					TO_PRINTF_WIDTH(len), file);
 			else
 				awkwarn(_("fflush: cannot flush: file `%.*s' opened for reading, not writing"),
-					len, file);
+					TO_PRINTF_WIDTH(len), file);
 			DEREF(tmp);
 			return make_number((AWKNUM) status);
 		}
@@ -258,17 +275,18 @@ do_fflush(int nargs)
 			if (status != 0) {
 				if (! is_non_fatal_redirect(tmp->stptr, tmp->stlen))
 					fatal(_("fflush: cannot flush file `%.*s': %s"),
-						len, file, strerror(errno));
+						TO_PRINTF_WIDTH(len), file, strerror(errno));
 				update_ERRNO_int(errno);
 			}
 		} else if ((rp->flag & RED_TWOWAY) != 0)
 				awkwarn(_("fflush: cannot flush: two-way pipe `%.*s' has closed write end"),
-					len, file);
+					TO_PRINTF_WIDTH(len), file);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
 		status = (non_fatal_flush_std_file(fp) == false);
 	} else {
 		status = -1;
-		awkwarn(_("fflush: `%.*s' is not an open file, pipe or co-process"), len, file);
+		awkwarn(_("fflush: `%.*s' is not an open file, pipe or co-process"),
+			TO_PRINTF_WIDTH(len), file);
 	}
 	DEREF(tmp);
 	return make_number((AWKNUM) status);
@@ -358,7 +376,7 @@ index_multibyte_buffer(char* src, char* dest, size_t len)
 /* do_index --- find index of a string */
 
 NODE *
-do_index(int nargs)
+do_index(nargs_t nargs)
 {
 	NODE *s1, *s2;
 	const char *p1, *p2;
@@ -424,7 +442,7 @@ do_index(int nargs)
 				if (pos == NULL)
 					ret = 0;
 				else
-					ret = pos - s1->wstptr + 1;	/* 1-based */
+					ret = (size_t) (pos - s1->wstptr) + 1;	/* 1-based */
 				goto out;
 			} else {
 				/*
@@ -456,7 +474,7 @@ do_index(int nargs)
 				if (pos == NULL)
 					ret = 0;
 				else
-					ret = pos - s1->wstptr + 1;	/* 1-based */
+					ret = (size_t) (pos - s1->wstptr) + 1;	/* 1-based */
 				goto out;
 			} else {
 				l1--;
@@ -485,7 +503,7 @@ double_to_int(double d)
 /* do_int --- convert double to int for awk */
 
 NODE *
-do_int(int nargs)
+do_int(nargs_t nargs)
 {
 	NODE *tmp;
 	double d;
@@ -503,7 +521,7 @@ do_int(int nargs)
 /* do_isarray --- check if argument is array */
 
 NODE *
-do_isarray(int nargs)
+do_isarray(nargs_t nargs)
 {
 	NODE *tmp;
 	int ret = 1;
@@ -522,7 +540,7 @@ do_isarray(int nargs)
 /* do_length --- length of a string, array or $0 */
 
 NODE *
-do_length(int nargs)
+do_length(nargs_t nargs)
 {
 	NODE *tmp;
 	size_t len;
@@ -531,7 +549,7 @@ do_length(int nargs)
 	tmp = POP();
 	if (tmp->type == Node_var_array) {
 		static bool warned = false;
-		unsigned long size;
+		ulong_t size;
 
 		if (do_posix)
 			fatal(_("length: received array argument"));
@@ -550,7 +568,7 @@ do_length(int nargs)
 		 */
 
 		size = assoc_length(tmp);
-		return make_number(size);
+		return make_number((AWKNUM) size);
 	}
 
 	assert(tmp->type == Node_val);
@@ -578,7 +596,7 @@ do_length(int nargs)
 /* do_log --- the log function */
 
 NODE *
-do_log(int nargs)
+do_log(nargs_t nargs)
 {
 	NODE *tmp;
 	double d, arg;
@@ -647,30 +665,33 @@ format_tree(
 	const char *fmt_string,
 	size_t n0,
 	NODE **the_args,
-	long num_args)
+	nargs_t num_args)
 {
 /* copy 'l' bytes from 's' to 'obufout' checking for space in the process */
 /* difference of pointers should be of ptrdiff_t type, but let us be kind */
-#define bchunk(s, l) \
+#define bchunk(s, l) { \
+	size_t l_ = (l); \
 	PRAGMA_WARNING_PUSH \
 	PRAGMA_WARNING_DISABLE_COND_IS_CONST \
-	if (l) { \
-	while ((l) > ofre) { \
-		size_t olen = obufout - obuf; \
-		erealloc(obuf, char *, osiz * 2, "format_tree"); \
-		ofre += osiz; \
-		osiz *= 2; \
-		obufout = obuf + olen; \
+	if (l_) { \
+		while (l_ > ofre) { \
+			size_t olen = (size_t) (obufout - obuf); \
+			erealloc(obuf, char *, osiz * 2, "format_tree"); \
+			ofre += osiz; \
+			osiz *= 2; \
+			obufout = obuf + olen; \
+		} \
+		memcpy(obufout, s, l_); \
+		obufout += l_; \
+		ofre -= l_; \
 	} \
-	memcpy(obufout, s, (size_t) (l)); \
-	obufout += (l); \
-	ofre -= (l); \
-} PRAGMA_WARNING_POP
+	PRAGMA_WARNING_POP \
+}
 
 /* copy one byte from 's' to 'obufout' checking for space in the process */
 #define bchunk_one(s) { \
 	if (ofre < 1) { \
-		size_t olen = obufout - obuf; \
+		size_t olen = (size_t) (obufout - obuf); \
 		erealloc(obuf, char *, osiz * 2, "format_tree"); \
 		ofre += osiz; \
 		osiz *= 2; \
@@ -681,16 +702,19 @@ format_tree(
 }
 
 /* Is there space for something L big in the buffer? */
-#define chksize(l)  if ((l) >= ofre) { \
-	size_t olen = obufout - obuf; \
-	size_t delta = osiz+l-ofre; \
-	erealloc(obuf, char *, osiz + delta, "format_tree"); \
-	obufout = obuf + olen; \
-	ofre += delta; \
-	osiz += delta; \
+#define chksize(l) { \
+	size_t l_ = (l); \
+	if (l_ >= ofre) { \
+		size_t olen = (size_t) (obufout - obuf); \
+		size_t delta = osiz + l_ - ofre; \
+		erealloc(obuf, char *, osiz + delta, "format_tree"); \
+		obufout = obuf + olen; \
+		ofre += delta; \
+		osiz += delta; \
+	} \
 }
 
-	long cur_arg = 0;
+	ulong_t cur_arg = 0u;
 	NODE *r = NULL;
 	int i, nc;
 	bool toofew = false;
@@ -700,7 +724,8 @@ format_tree(
 	const char *s0, *s1;
 	int cs1;
 	NODE *arg;
-	long fw, prec, argnum;
+	long fw, prec;
+	ulong_t argnum;
 	bool used_dollar;
 	bool lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
 	long *cur = NULL;
@@ -731,7 +756,7 @@ format_tree(
 	bool quote_flag = false;
 	int ii, jj;
 	char *chp;
-	size_t copy_count, char_count;
+	size_t copy_count;
 	char *nan_inf_val;
 	bool magic_posix_flag;
 #ifdef HAVE_MPFR
@@ -751,7 +776,7 @@ format_tree(
 	osiz = INITIAL_OUT_SIZE;
 	ofre = osiz - 1;
 
-	cur_arg = 1;
+	cur_arg = 1u;
 
 	{
 		size_t k;
@@ -790,8 +815,8 @@ format_tree(
 	 * Otherwise, return the current argument.
 	 */
 #define parse_next_arg() { \
-	if (argnum > 0) { \
-		if (cur_arg > 1) { \
+	if (argnum) { \
+		if (cur_arg > 1u) { \
 			msg(_("fatal: must use `count$' on all formats or none")); \
 			goto out; \
 		} \
@@ -826,7 +851,7 @@ format_tree(
 		fw = 0;
 		prec = 0;
 		base = 0;
-		argnum = 0;
+		argnum = 0u;
 		base = 0;
 		have_prec = false;
 		signchar = '\0';
@@ -929,15 +954,16 @@ check_pos:
 			}
 
 			if (cur == &fw) {
-				argnum = fw;
-				fw = 0;
-				used_dollar = true;
-				if (argnum <= 0) {
+				if (fw <= 0) {
 					msg(_("fatal: arg count with `$' must be > 0"));
 					goto out;
 				}
+				argnum = (unsigned long) fw;
+				fw = 0;
+				used_dollar = true;
 				if (argnum >= num_args) {
-					msg(_("fatal: arg count %ld greater than total number of supplied arguments"), argnum);
+					msg(_("fatal: arg count %lu greater than total number of supplied arguments"),
+						TO_ULONG(argnum));
 					goto out;
 				}
 			} else {
@@ -953,7 +979,7 @@ check_pos:
 				fatal(_("fatal: must use `count$' on all formats or none"));
 				break;	/* silence warnings */
 			} else if (! do_traditional && isdigit((unsigned char) *s1)) {
-				int val = 0;
+				ulong_t val = 0u;
 
 				for (; n0 > 0 && *s1 && isdigit((unsigned char) *s1); s1++, n0--) {
 					val *= 10;
@@ -1150,7 +1176,7 @@ out0:
 
 				memset(& state, 0, sizeof(state));
 				count = mbrlen(cp, arg->stlen, & state);
-				if (count != (size_t) -1 && count != (size_t) -2 && count > 0) {
+				if (mbrlen_is_valid(count)) {
 					prec = (long)count;
 					/* may need to increase fw so that padding happens, see pr_tail code */
 					if (fw > 0)
@@ -1165,7 +1191,7 @@ out0:
 			if (fw == 0 && ! have_prec)
 				prec = (long)arg->stlen;
 			else {
-				char_count = mbc_char_count(arg->stptr, arg->stlen);
+				size_t char_count = mbc_char_count(arg->stptr, arg->stlen);
 				if (! have_prec || prec > (long)char_count)
 					prec = (long)char_count;
 			}
@@ -1211,14 +1237,20 @@ out0:
 			 * Use snprintf return value to tell if there
 			 * is enough room in the buffer or not.
 			 */
-			while ((i = snprintf(cpbufs[1].buf,
+			/*
+			 * Pre-C99 snprintf returns -1 if output buffer is too small,
+			 * but C99' snprintf returns negative value only on error.
+			 * Assume snprintf will not fail - cast return value to
+			 * unsigned int to detect small buffer in both cases.
+			*/
+			while ((unsigned)(i = snprintf(cpbufs[1].buf,
 					     cpbufs[1].bufsize, "%.0f",
 					     tmpval)) >=
-			       (int)cpbufs[1].bufsize) {
+			       cpbufs[1].bufsize) {
 				if (cpbufs[1].buf == cpbufs[1].stackbuf)
 					cpbufs[1].buf = NULL;
 				if (i > 0) {
-					cpbufs[1].bufsize += ((i > (int)cpbufs[1].bufsize) ?
+					cpbufs[1].bufsize += (((unsigned)i > cpbufs[1].bufsize) ?
 							      i : cpbufs[1].bufsize);
 				}
 				else
@@ -1475,13 +1507,13 @@ mpf1:
 					fw--;
 				}
 			}
-			copy_count = prec;
+			copy_count = (size_t)prec;
 			if (fw == 0 && ! have_prec)
 				;
 			else if (gawk_mb_cur_max > 1) {
 				if (cs1 == 's') {
 					assert(cp == arg->stptr || cp == cpbuf);
-					copy_count = mbc_byte_count(arg->stptr, prec);
+					copy_count = mbc_byte_count(arg->stptr, (size_t)prec);
 				}
 				/* prec was set by code for %c */
 				/* else
@@ -1504,7 +1536,7 @@ mpf1:
 			if (do_posix || magic_posix_flag || nan_inf_val == NULL) {
 				if (do_lint && ! do_posix && ! magic_posix_flag)
 					lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
-								(double) tmpval, cs1);
+								(double) tmpval, (char) cs1);
 				tmpval = arg->numbr;
 				if (strchr("aAeEfFgG", cs1) == NULL)
 					cs1 = 'g';
@@ -1512,7 +1544,7 @@ mpf1:
 			} else {
 				if (do_lint)
 					lintwarn(_("[s]printf: value %s is out of range for `%%%c' format"),
-								nan_inf_val, cs1);
+								nan_inf_val, (char) cs1);
 				bchunk(nan_inf_val, strlen(nan_inf_val));
 				s0 = s1;
 				break;
@@ -1534,9 +1566,10 @@ mpf1:
 		{
 			static bool warned = false;
 
-			if (do_lint && tolower(cs1) == 'a' && ! warned) {
+			if (do_lint && tolower((unsigned char) (char) cs1) == 'a' && ! warned) {
 				warned = true;
-				lintwarn(_("%%%c format is POSIX standard but not portable to other awks"), cs1);
+				lintwarn(_("%%%c format is POSIX standard but not portable to other awks"),
+					(char) cs1);
 			}
 		}
 #endif
@@ -1585,47 +1618,64 @@ mpf1:
 				setlocale(LC_NUMERIC, "");
 #endif
 
-			switch (fmt_type) {
 #ifdef HAVE_MPFR
+			switch (fmt_type)
+#endif
+			{
+#ifdef HAVE_MPFR
+			/* mpfr_snprintf returns negative value only on error,
+			  so cast ofre to int */
 			case MP_INT_WITH_PREC:
-				sprintf(cp, "*.*Z%c", cs1);
+				sprintf(cp, "*.*Z%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
-					     (int) fw, (int) prec, zi)) >= ofre)
-					chksize(nc)
+					     TO_PRINTF_WIDTH(fw), TO_PRINTF_WIDTH(prec), zi)) >= (int)ofre)
+					chksize((unsigned)nc)
 				break;
 			case MP_INT_WITHOUT_PREC:
-				sprintf(cp, "*Z%c", cs1);
+				sprintf(cp, "*Z%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
-					     (int) fw, zi)) >= ofre)
-					chksize(nc)
+					     TO_PRINTF_WIDTH(fw), zi)) >= (int)ofre)
+					chksize((unsigned)nc)
 				break;
 			case MP_FLOAT:
-				sprintf(cp, "*.*R*%c", cs1);
+				sprintf(cp, "*.*R*%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
-					     (int) fw, (int) prec, ROUND_MODE, mf)) >= ofre)
-					chksize(nc)
+					     TO_PRINTF_WIDTH(fw), TO_PRINTF_WIDTH(prec), ROUND_MODE, mf)) >= (int)ofre)
+					chksize((unsigned)nc)
 				break;
-#endif
 			default:
-				if (have_prec || tolower(cs1) != 'a') {
-					sprintf(cp, "*.*%c", cs1);
+#endif
+				if (have_prec || tolower((unsigned char) (char) cs1) != 'a') {
+					sprintf(cp, "*.*%c", (char) cs1);
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-					while ((nc = snprintf(obufout, ofre, cpbuf,
-						     (int) fw, (int) prec,
-						     (double) tmpval)) >= (int)ofre)
-						chksize((unsigned)nc)
+					/*
+					 * Pre-C99 snprintf returns -1 if output buffer is too small,
+					 * but C99' snprintf returns negative value only on error.
+					 * Assume snprintf will not fail - cast return value to
+					 * unsigned int to detect small buffer in both cases.
+					*/
+					while ((unsigned)(nc = snprintf(obufout, ofre, cpbuf,
+						     TO_PRINTF_WIDTH(fw), TO_PRINTF_WIDTH(prec),
+						     (double) tmpval)) >= ofre)
+						chksize(nc < 0 ? ofre : (unsigned)nc)
 PRAGMA_WARNING_POP
 				} else {
 					// For %a and %A, use the default precision if it
 					// wasn't supplied by the user.
-					sprintf(cp, "*%c", cs1);
+					sprintf(cp, "*%c", (char) cs1);
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-					while ((nc = snprintf(obufout, ofre, cpbuf,
-						     (int) fw,
-						     (double) tmpval)) >= (int)ofre)
-						chksize((unsigned)nc)
+					/*
+					 * Pre-C99 snprintf returns -1 if output buffer is too small,
+					 * but C99' snprintf returns negative value only on error.
+					 * Assume snprintf will not fail - cast return value to
+					 * unsigned int to detect small buffer in both cases.
+					*/
+					while ((unsigned)(nc = snprintf(obufout, ofre, cpbuf,
+						     TO_PRINTF_WIDTH(fw),
+						     (double) tmpval)) >= ofre)
+						chksize(nc < 0 ? ofre : (unsigned)nc)
 PRAGMA_WARNING_POP
 				}
 			}
@@ -1641,14 +1691,15 @@ PRAGMA_WARNING_POP
 			s0 = s1;
 			break;
 		default:
-			if (do_lint && is_alpha(cs1))
-				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"), cs1);
+			if (do_lint && is_alpha((unsigned char) (char) cs1))
+				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"),
+					(char) cs1);
 			break;
 		}
 		if (toofew) {
 			msg("%s\n\t`%s'\n\t%*s%s",
 			      _("fatal: not enough arguments to satisfy format string"),
-			      fmt_string, (int) (s1 - fmt_string - 1), "",
+			      fmt_string, TO_PRINTF_WIDTH((size_t) (s1 - fmt_string - 1)), "",
 			      _("^ ran out for this one"));
 			goto out;
 		}
@@ -1662,7 +1713,7 @@ PRAGMA_WARNING_POP
 			_("too many arguments supplied for format string"));
 	}
 	bchunk(s0, (size_t)(s1 - s0));
-	olen_final = obufout - obuf;
+	olen_final = (size_t)(obufout - obuf);
 #define GIVE_BACK_SIZE (INITIAL_OUT_SIZE * 2)
 	if (ofre > GIVE_BACK_SIZE)
 		erealloc(obuf, char *, olen_final + 1, "format_tree");
@@ -1689,16 +1740,16 @@ out:
 /* printf_common --- common code for sprintf and printf */
 
 static NODE *
-printf_common(int nargs)
+printf_common(ulong_t nargs)
 {
-	int i;
+	ulong_t i;
 	NODE *r, *tmp;
 
-	assert(nargs > 0 && nargs <= max_args);
-	for (i = 1; i <= nargs; i++) {
+	assert(nargs && nargs <= max_args);
+	for (i = 1u; i <= nargs; i++) {
 		tmp = args_array[nargs - i] = POP();
 		if (tmp->type == Node_var_array) {
-			while (--i > 0)
+			while (--i)
 				DEREF(args_array[nargs - i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
@@ -1706,7 +1757,7 @@ printf_common(int nargs)
 
 	args_array[0] = force_string(args_array[0]);
 	r = format_tree(args_array[0]->stptr, args_array[0]->stlen, args_array, nargs);
-	for (i = 0; i < nargs; i++)
+	for (i = 0u; i < nargs; i++)
 		DEREF(args_array[i]);
 	return r;
 }
@@ -1714,11 +1765,11 @@ printf_common(int nargs)
 /* do_sprintf --- perform sprintf */
 
 NODE *
-do_sprintf(int nargs)
+do_sprintf(ulong_t nargs)
 {
 	NODE *r;
 
-	if (nargs == 0)
+	if (!nargs)
 		fatal(_("sprintf: no arguments"));
 
 	r = printf_common(nargs);
@@ -1731,7 +1782,7 @@ do_sprintf(int nargs)
 /* do_printf --- perform printf, including redirection */
 
 void
-do_printf(int nargs, int redirtype)
+do_printf(ulong_t nargs, int redirtype)
 {
 	FILE *fp = NULL;
 	NODE *tmp;
@@ -1739,7 +1790,7 @@ do_printf(int nargs, int redirtype)
 	int errflg = 0;
 	NODE *redir_exp = NULL;
 
-	if (nargs == 0) {
+	if (!nargs) {
 		if (do_traditional) {
 			if (do_lint)
 				lintwarn(_("printf: no arguments"));
@@ -1802,7 +1853,7 @@ do_printf(int nargs, int redirtype)
 /* do_sqrt --- do the sqrt function */
 
 NODE *
-do_sqrt(int nargs)
+do_sqrt(nargs_t nargs)
 {
 	NODE *tmp;
 	double arg;
@@ -1821,7 +1872,7 @@ do_sqrt(int nargs)
 /* do_substr --- do the substr function */
 
 NODE *
-do_substr(int nargs)
+do_substr(nargs_t nargs)
 {
 	NODE *t1;
 	NODE *r;
@@ -1830,7 +1881,7 @@ do_substr(int nargs)
 	double d_index = 0, d_length = 0;
 	size_t src_len;
 
-	if (nargs == 3) {
+	if (nargs == 3u) {
 		t1 = POP_NUMBER();
 		d_length = get_number_d(t1);
 		DEREF(t1);
@@ -1842,7 +1893,7 @@ do_substr(int nargs)
 
 	t1 = POP_STRING();
 
-	if (nargs == 3) {
+	if (nargs == 3u) {
 		if (! (d_length >= 1)) {
 			if (do_lint == DO_LINT_ALL)
 				lintwarn(_("substr: length %g is not >= 1"), d_length);
@@ -1892,7 +1943,7 @@ do_substr(int nargs)
 	else
 		indx = SIZE_MAX;
 
-	if (nargs == 2) {	/* third arg. missing */
+	if (nargs == 2u) {	/* third arg. missing */
 		/* use remainder of string */
 		length = t1->stlen - indx;	/* default to bytes */
 		if (gawk_mb_cur_max > 1) {
@@ -1928,8 +1979,8 @@ do_substr(int nargs)
 	if (length > src_len - indx) {
 		if (do_lint)
 			lintwarn(
-	_("substr: length %g at start index %g exceeds length of first argument (%lu)"),
-			d_length, d_index, (unsigned long int) src_len);
+	_("substr: length %g at start index %g exceeds length of first argument (%llu)"),
+			d_length, d_index, 0ull + src_len);
 		length = src_len - indx;
 	}
 
@@ -1960,7 +2011,7 @@ do_substr(int nargs)
 			wp++;
 		}
 		*cp = '\0';
-		r = make_str_node(substr, cp - substr, ALREADY_MALLOCED);
+		r = make_str_node(substr, (size_t) (cp - substr), ALREADY_MALLOCED);
 	}
 
 	DEREF(t1);
@@ -1970,7 +2021,7 @@ do_substr(int nargs)
 /* do_strftime --- format a time stamp */
 
 NODE *
-do_strftime(int nargs)
+do_strftime(nargs_t nargs)
 {
 	NODE *t1, *t2, *t3, *ret;
 	struct tm *tm;
@@ -2009,16 +2060,16 @@ do_strftime(int nargs)
 	}
 
 	t1 = t2 = t3 = NULL;
-	if (nargs > 0) {	/* have args */
+	if (nargs) {	/* have args */
 		NODE *tmp;
 
-		if (nargs == 3) {
+		if (nargs == 3u) {
 			t3 = POP_SCALAR();
 			do_gmt = boolval(t3);
 			DEREF(t3);
 		}
 
-		if (nargs >= 2) {
+		if (nargs >= 2u) {
 			t2 = POP_SCALAR();
 			if (do_lint && (fixtype(t2)->flags & NUMBER) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
@@ -2106,7 +2157,7 @@ done:
 /* do_systime --- get the time of day */
 
 NODE *
-do_systime(int nargs ATTRIBUTE_UNUSED)
+do_systime(nargs_t nargs)
 {
 	time_t lclock;
 	(void) nargs;
@@ -2118,7 +2169,7 @@ do_systime(int nargs ATTRIBUTE_UNUSED)
 /* do_mktime --- turn a time string into a timestamp */
 
 NODE *
-do_mktime(int nargs)
+do_mktime(nargs_t nargs)
 {
 	NODE *t1, *t2;
 	struct tm then;
@@ -2129,7 +2180,7 @@ do_mktime(int nargs)
 	char save;
 	bool do_gmt;
 
-	if (nargs == 2) {
+	if (nargs == 2u) {
 		t2 = POP_SCALAR();
 		do_gmt = boolval(t2);
 		DEREF(t2);
@@ -2182,7 +2233,7 @@ do_mktime(int nargs)
 /* do_system --- run an external command */
 
 NODE *
-do_system(int nargs)
+do_system(nargs_t nargs)
 {
 	NODE *tmp;
 	AWKNUM ret = 0;		/* floating point on purpose, compat Unix awk */
@@ -2243,12 +2294,12 @@ do_system(int nargs)
 /* do_print --- print items, separated by OFS, terminated with ORS */
 
 void
-do_print(int nargs, int redirtype)
+do_print(nargs_t nargs, int redirtype)
 {
 	struct redirect *rp = NULL;
 	int errflg = 0;
 	FILE *fp = NULL;
-	int i;
+	ulong_t i;
 	NODE *redir_exp = NULL;
 	NODE *tmp = NULL;
 
@@ -2279,10 +2330,10 @@ do_print(int nargs, int redirtype)
 	else
 		fp = stdout;
 
-	for (i = 1; i <= nargs; i++) {
+	for (i = 1u; i <= nargs; i++) {
 		tmp = args_array[i] = POP();
 		if (tmp->type == Node_var_array) {
-			while (--i > 0)
+			while (--i)
 				DEREF(args_array[i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
@@ -2299,21 +2350,21 @@ do_print(int nargs, int redirtype)
 	}
 
 	if (fp == NULL) {
-		for (i = nargs; i > 0; i--)
+		for (i = nargs; i; i--)
 			DEREF(args_array[i]);
 		return;
 	}
 
-	for (i = nargs; i > 0; i--) {
+	for (i = nargs; i; i--) {
 		efwrite(args_array[i]->stptr, sizeof(char), args_array[i]->stlen, fp, "print", rp, false);
 		DEREF(args_array[i]);
-		if (i != 1 && OFSlen > 0)
-			efwrite(OFS, sizeof(char), (size_t) OFSlen,
+		if (i != 1u && OFSlen > 0)
+			efwrite(OFS, sizeof(char), OFSlen,
 				fp, "print", rp, false);
 
 	}
 	if (ORSlen > 0)
-		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
+		efwrite(ORS, sizeof(char), ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
 		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
@@ -2322,15 +2373,16 @@ do_print(int nargs, int redirtype)
 /* do_print_rec --- special case printing of $0, for speed */
 
 void
-do_print_rec(int nargs, int redirtype)
+do_print_rec(nargs_t nargs, int redirtype)
 {
 	FILE *fp = NULL;
 	NODE *f0;
 	struct redirect *rp = NULL;
 	int errflg = 0;
 	NODE *redir_exp = NULL;
+	(void) nargs;
 
-	assert(nargs == 0);
+	assert(!nargs);
 	if (redirtype != 0) {
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg, true);
@@ -2369,7 +2421,7 @@ do_print_rec(int nargs, int redirtype)
 	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, false);
 
 	if (ORSlen > 0)
-		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
+		efwrite(ORS, sizeof(char), ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
 		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
@@ -2443,7 +2495,7 @@ wide_tolower(wchar_t *wstr, size_t wlen)
 /* do_tolower --- lower case a string */
 
 NODE *
-do_tolower(int nargs)
+do_tolower(nargs_t nargs)
 {
 	NODE *t1, *t2;
 	(void) nargs;
@@ -2475,7 +2527,7 @@ do_tolower(int nargs)
 /* do_toupper --- upper case a string */
 
 NODE *
-do_toupper(int nargs)
+do_toupper(nargs_t nargs)
 {
 	NODE *t1, *t2;
 	(void) nargs;
@@ -2507,7 +2559,7 @@ do_toupper(int nargs)
 /* do_atan2 --- do the atan2 function */
 
 NODE *
-do_atan2(int nargs)
+do_atan2(nargs_t nargs)
 {
 	NODE *t1, *t2;
 	double d1, d2;
@@ -2530,7 +2582,7 @@ do_atan2(int nargs)
 /* do_sin --- do the sin function */
 
 NODE *
-do_sin(int nargs)
+do_sin(nargs_t nargs)
 {
 	NODE *tmp;
 	double d;
@@ -2547,7 +2599,7 @@ do_sin(int nargs)
 /* do_cos --- do the cos function */
 
 NODE *
-do_cos(int nargs)
+do_cos(nargs_t nargs)
 {
 	NODE *tmp;
 	double d;
@@ -2571,13 +2623,13 @@ static char *const state = (char *const) istate;
 
 /* ARGSUSED */
 NODE *
-do_rand(int nargs ATTRIBUTE_UNUSED)
+do_rand(nargs_t nargs)
 {
 	double tmprand;
 	(void) nargs;
 #define RAND_DIVISOR ((double)GAWK_RANDOM_MAX+1.0)
 	if (firstrand) {
-		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
+		(void) initstate(1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), initstate() does it for us. */
 		firstrand = false;
 		setstate(state);
@@ -2652,26 +2704,26 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 /* do_srand --- seed the random number generator */
 
 NODE *
-do_srand(int nargs)
+do_srand(nargs_t nargs)
 {
 	NODE *tmp;
 	static long save_seed = 1;
 	long ret = save_seed;	/* SVR4 awk srand returns previous seed */
 
 	if (firstrand) {
-		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
+		(void) initstate(1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), we're changing the seed below */
 		firstrand = false;
 		(void) setstate(state);
 	}
 
-	if (nargs == 0)
-		srandom((unsigned int) (save_seed = (long) time((time_t *) 0)));
+	if (!nargs)
+		srandom((unsigned long) (save_seed = (long) time((time_t *) 0)));
 	else {
 		tmp = POP_SCALAR();
 		if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 			lintwarn(_("srand: received non-numeric argument"));
-		srandom((unsigned int) (save_seed = (long) force_number(tmp)->numbr));
+		srandom((unsigned long) (save_seed = (long) force_number(tmp)->numbr));
 		DEREF(tmp);
 	}
 	return make_number((AWKNUM) ret);
@@ -2683,22 +2735,22 @@ do_srand(int nargs)
  */
 
 NODE *
-do_match(int nargs)
+do_match(nargs_t nargs)
 {
 	NODE *tre, *t1, *dest, *it;
-	int rstart, len, ii;
-	int rlength;
+	regoff_t rstart, s;
+	size_t rlength, ii, len;
 	Regexp *rp;
-	regoff_t s;
 	char *start;
 	char *buf = NULL;
 	char buff[100];
 	size_t amt, oldamt = 0, ilen, slen;
 	char *subsepstr;
 	size_t subseplen;
+	long result_len;
 
 	dest = NULL;
-	if (nargs == 3) {	/* 3rd optional arg for the subpatterns */
+	if (nargs == 3u) {	/* 3rd optional arg for the subpatterns */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array)
 			fatal(_("match: third argument is not an array"));
@@ -2712,11 +2764,11 @@ do_match(int nargs)
 	if (rstart >= 0) {	/* match succeded */
 		size_t *wc_indices = NULL;
 
-		rlength = (int) (REEND(rp, t1->stptr) - RESTART(rp, t1->stptr));	/* byte length */
+		rlength = (size_t) (REEND(rp, t1->stptr) - RESTART(rp, t1->stptr));	/* byte length */
 		if (rlength > 0 && gawk_mb_cur_max > 1) {
 			t1 = str2wstr(t1, & wc_indices);
-			rlength = (int) (wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1);
-			rstart = (int) wc_indices[rstart];
+			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
+			rstart = (regoff_t) wc_indices[rstart];
 		}
 
 		rstart++;	/* now it's 1-based indexing */
@@ -2726,20 +2778,20 @@ do_match(int nargs)
 			subsepstr = SUBSEP_node->var_value->stptr;
 			subseplen = SUBSEP_node->var_value->stlen;
 
-			for (ii = 0; ii < (int) NUMSUBPATS(rp, t1->stptr); ii++) {
+			for (ii = 0; ii < NUMSUBPATS(rp, t1->stptr); ii++) {
 				/*
 				 * Loop over all the subpats; some of them may have
 				 * matched even if all of them did not.
 				 */
 				if ((s = SUBPATSTART(rp, t1->stptr, ii)) != -1) {
-					size_t subpat_start;
+					regoff_t subpat_start;
 					size_t subpat_len;
 
 					start = t1->stptr + s;
 					subpat_start = s;
-					subpat_len = len = (int) (SUBPATEND(rp, t1->stptr, ii) - s);
+					subpat_len = len = (size_t) (SUBPATEND(rp, t1->stptr, ii) - s);
 					if (len > 0 && gawk_mb_cur_max > 1) {
-						subpat_start = wc_indices[s];
+						subpat_start = (regoff_t) wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
 					}
 
@@ -2747,7 +2799,7 @@ do_match(int nargs)
 					it->flags |= USER_INPUT;
 					assoc_set(dest, make_number((AWKNUM) (ii)), it);;
 
-					sprintf(buff, "%d", ii);
+					sprintf(buff, "%llu", 0ull + ii);
 					ilen = strlen(buff);
 					amt = ilen + subseplen + strlen("length") + 1;
 
@@ -2779,16 +2831,17 @@ do_match(int nargs)
 		}
 		if (wc_indices != NULL)
 			efree(wc_indices);
+		result_len = (long) rlength;
 	} else {		/* match failed */
 		rstart = 0;
-		rlength = -1;
+		result_len = -1;
 	}
 
 	DEREF(t1);
 	unref(RSTART_node->var_value);
 	RSTART_node->var_value = make_number((AWKNUM) rstart);
 	unref(RLENGTH_node->var_value);
-	RLENGTH_node->var_value = make_number((AWKNUM) rlength);
+	RLENGTH_node->var_value = make_number((AWKNUM) result_len);
 	return make_number((AWKNUM) rstart);
 }
 
@@ -2891,7 +2944,7 @@ do_match(int nargs)
  */
 
 NODE *
-do_sub(int nargs, unsigned int flags)
+do_sub(nargs_t nargs, int flags)
 {
 	char *scan;
 	char *bp, *cp;
@@ -2946,7 +2999,7 @@ do_sub(int nargs, unsigned int flags)
 			if (d <= 0) {
 				(void) force_string(glob_flag);
 				awkwarn(_("gensub: third argument `%.*s' treated as 1"),
-						(int) glob_flag->stlen,
+						TO_PRINTF_WIDTH(glob_flag->stlen),
 						glob_flag->stptr);
 			}
 		}
@@ -2987,7 +3040,7 @@ do_sub(int nargs, unsigned int flags)
 
 	repl = rep_node->stptr;
 	replend = repl + rep_node->stlen;
-	repllen = replend - repl;
+	repllen = (size_t) (replend - repl);
 
 	ampersands = 0;
 
@@ -3077,7 +3130,7 @@ do_sub(int nargs, unsigned int flags)
 		 */
 		len = matchend - text + repllen
 		      + ampersands * (matchend - matchstart) + 1;
-		sofar = bp - buf;
+		sofar = (size_t) (bp - buf);
 		while (buflen < (sofar + len + 1)) {
 			buflen *= 2;
 			erealloc(buf, char *, buflen, "sub_common");
@@ -3122,7 +3175,7 @@ do_sub(int nargs, unsigned int flags)
 				) {
 					if (flags & GENSUB) {	/* gensub, behave sanely */
 						if (isdigit((unsigned char) scan[1])) {
-							unsigned dig = scan[1] - '0';
+							unsigned dig = (unsigned) (scan[1] - '0');
 							if (dig < NUMSUBPATS(rp, target->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
 								char *start, *end;
 
@@ -3182,7 +3235,7 @@ do_sub(int nargs, unsigned int flags)
 			*bp++ = *matchend;
 			matchend++;
 		}
-		textlen = text + textlen - matchend;
+		textlen = (size_t) (text + textlen - matchend);
 		text = matchend;
 
 #if 0
@@ -3196,7 +3249,7 @@ do_sub(int nargs, unsigned int flags)
 			break;
 
 	}
-	sofar = bp - buf;
+	sofar = (size_t) (bp - buf);
 	if (buflen < (sofar + textlen + 1)) {
 		buflen = sofar + textlen + 1;
 		erealloc(buf, char *, buflen, "do_sub");
@@ -3210,7 +3263,7 @@ do_sub(int nargs, unsigned int flags)
 	for (scan = text; scan < text + textlen; scan++)
 		*bp++ = *scan;
 	*bp = '\0';
-	textlen = bp - buf;
+	textlen = (size_t) (bp - buf);
 
 	if (mb_indices != NULL)
 		efree(mb_indices);
@@ -3249,9 +3302,9 @@ done:
 /* call_sub --- call do_sub indirectly */
 
 NODE *
-call_sub(const char *name, int nargs)
+call_sub(const char *name, nargs_t nargs)
 {
-	unsigned int flags = 0;
+	int flags = 0;
 	NODE *regex, *replace, *glob_flag;
 	NODE **lhs, *rhs;
 	NODE *zero = make_number(0.0);
@@ -3267,7 +3320,7 @@ call_sub(const char *name, int nargs)
 	bool need_free = false;
 	if (flags == 0 || flags == GSUB) {
 		/* sub or gsub */
-		if (nargs != 2)
+		if (nargs != 2u)
 			fatal(_("%s: can be called indirectly only with two arguments"), name);
 
 		replace = POP_STRING();
@@ -3290,7 +3343,7 @@ call_sub(const char *name, int nargs)
 		PUSH_ADDRESS(lhs);
 	} else {
 		/* gensub */
-		if (nargs == 4)
+		if (nargs == 4u)
 			rhs = POP();
 		else
 			rhs = NULL;
@@ -3344,13 +3397,13 @@ call_sub(const char *name, int nargs)
 /* call_match --- call do_match indirectly */
 
 NODE *
-call_match(int nargs)
+call_match(nargs_t nargs)
 {
 	NODE *regex, *text, *array;
 	NODE *result;
 
 	regex = text = array = NULL;
-	if (nargs == 3)
+	if (nargs == 3u)
 		array = POP();
 	regex = POP();
 
@@ -3384,21 +3437,21 @@ call_match(int nargs)
 /* call_split_func --- call do_split or do_pat_split indirectly */
 
 NODE *
-call_split_func(const char *name, int nargs)
+call_split_func(const char *name, nargs_t nargs)
 {
 	NODE *regex, *seps;
 	NODE *result;
 
 	regex = seps = NULL;
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("indirect call to %s requires at least two arguments"),
 				name);
 
-	if (nargs == 4)
+	if (nargs == 4u)
 		seps = POP();
 
 	bool need_free = false;
-	if (nargs >= 3) {
+	if (nargs >= 3u) {
 		regex = POP_STRING();
 		if ((regex->flags & REGEX) != 0)
 			regex = regex->typed_re;
@@ -3449,7 +3502,7 @@ make_integer(uintmax_t n)
 /* do_lshift --- perform a << operation */
 
 NODE *
-do_lshift(int nargs)
+do_lshift(nargs_t nargs)
 {
 	NODE *s1, *s2;
 	uintmax_t uval, ushift, res;
@@ -3489,7 +3542,7 @@ do_lshift(int nargs)
 /* do_rshift --- perform a >> operation */
 
 NODE *
-do_rshift(int nargs)
+do_rshift(nargs_t nargs)
 {
 	NODE *s1, *s2;
 	uintmax_t uval, ushift, res;
@@ -3529,24 +3582,24 @@ do_rshift(int nargs)
 /* do_and --- perform an & operation */
 
 NODE *
-do_and(int nargs)
+do_and(nargs_t nargs)
 {
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
 
 	res = ~(uintmax_t) 0;	/* start off with all ones */
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("and: called with less than two arguments"));
 
-	for (; nargs > 0; nargs--) {
+	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("and: argument %d is non-numeric"), nargs);
+			lintwarn(_("and: argument %lu is non-numeric"), TO_ULONG(nargs));
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("and: argument %d negative value %g is not allowed"), nargs, val);
+			fatal(_("and: argument %lu negative value %g is not allowed"), TO_ULONG(nargs), val);
 
 		uval = (uintmax_t) val;
 		res &= uval;
@@ -3560,24 +3613,24 @@ do_and(int nargs)
 /* do_or --- perform an | operation */
 
 NODE *
-do_or(int nargs)
+do_or(nargs_t nargs)
 {
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
 
 	res = 0;
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("or: called with less than two arguments"));
 
-	for (; nargs > 0; nargs--) {
+	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("or: argument %d is non-numeric"), nargs);
+			lintwarn(_("or: argument %lu is non-numeric"), TO_ULONG(nargs));
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("or: argument %d negative value %g is not allowed"), nargs, val);
+			fatal(_("or: argument %lu negative value %g is not allowed"), TO_ULONG(nargs), val);
 
 		uval = (uintmax_t) val;
 		res |= uval;
@@ -3591,24 +3644,24 @@ do_or(int nargs)
 /* do_xor --- perform an ^ operation */
 
 NODE *
-do_xor(int nargs)
+do_xor(nargs_t nargs)
 {
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
 
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("xor: called with less than two arguments"));
 
 	res = 0;	/* start with all zeroes */
-	for (; nargs > 0; nargs--) {
+	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("xor: argument %d is non-numeric"), nargs);
+			lintwarn(_("xor: argument %lu is non-numeric"), TO_ULONG(nargs));
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("xor: argument %d negative value %g is not allowed"), nargs, val);
+			fatal(_("xor: argument %lu negative value %g is not allowed"), TO_ULONG(nargs), val);
 
 		uval = (uintmax_t) val;
 		res ^= uval;
@@ -3622,7 +3675,7 @@ do_xor(int nargs)
 /* do_compl --- perform a ~ operation */
 
 NODE *
-do_compl(int nargs)
+do_compl(nargs_t nargs)
 {
 	NODE *tmp;
 	double d;
@@ -3649,7 +3702,7 @@ do_compl(int nargs)
 /* do_strtonum --- the strtonum function */
 
 NODE *
-do_strtonum(int nargs)
+do_strtonum(nargs_t nargs)
 {
 	NODE *tmp;
 	AWKNUM d;
@@ -3843,7 +3896,7 @@ localecategory_from_argument(NODE *t)
  */
 
 NODE *
-do_dcgettext(int nargs)
+do_dcgettext(nargs_t nargs)
 {
 	NODE *tmp, *t1, *t2 = NULL;
 	char *string;
@@ -3854,25 +3907,25 @@ do_dcgettext(int nargs)
 	char *domain;
 	char save1 = '\0', save2 = '\0';
 
-	if (nargs == 3) {	/* third argument */
+	if (nargs == 3u) {	/* third argument */
 		tmp = POP_STRING();
 		lc_cat = localecategory_from_argument(tmp);
 		DEREF(tmp);
 	} else
 		lc_cat = LC_MESSAGES;
 
-	if (nargs >= 2) {  /* second argument */
+	if (nargs >= 2u) {  /* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
 		str_terminate(t2, save2);
 	} else
 		domain = TEXTDOMAIN;
 #else
-	if (nargs == 3) {
+	if (nargs == 3u) {
 		tmp = POP_STRING();
 		DEREF(tmp);
 	}
-	if (nargs >= 2) {
+	if (nargs >= 2u) {
 		t2 = POP_STRING();
 		DEREF(t2);
 	}
@@ -3900,7 +3953,7 @@ do_dcgettext(int nargs)
 
 
 NODE *
-do_dcngettext(int nargs)
+do_dcngettext(nargs_t nargs)
 {
 	NODE *tmp, *t1, *t2, *t3;
 	char *string1, *string2;
@@ -3915,7 +3968,7 @@ do_dcngettext(int nargs)
 	char save = '\0', save1 = '\0', save2 = '\0';
 	bool saved_end = false;
 
-	if (nargs == 5) {	/* fifth argument */
+	if (nargs == 5u) {	/* fifth argument */
 		tmp = POP_STRING();
 		lc_cat = localecategory_from_argument(tmp);
 		DEREF(tmp);
@@ -3923,7 +3976,7 @@ do_dcngettext(int nargs)
 		lc_cat = LC_MESSAGES;
 
 	t3 = NULL;
-	if (nargs >= 4) {	/* fourth argument */
+	if (nargs >= 4u) {	/* fourth argument */
 		t3 = POP_STRING();
 		domain = t3->stptr;
 		save = domain[t3->stlen];
@@ -3932,11 +3985,11 @@ do_dcngettext(int nargs)
 	} else
 		domain = TEXTDOMAIN;
 #else
-	if (nargs == 5) {
+	if (nargs == 5u) {
 		tmp = POP_STRING();
 		DEREF(tmp);
 	}
-	if (nargs >= 4) {
+	if (nargs >= 4u) {
 		t3 = POP_STRING();
 		DEREF(t3);
 	}
@@ -3990,7 +4043,7 @@ do_dcngettext(int nargs)
  */
 
 NODE *
-do_bindtextdomain(int nargs)
+do_bindtextdomain(nargs_t nargs)
 {
 	NODE *t1, *t2;
 	const char *directory, *domain;
@@ -4002,7 +4055,7 @@ do_bindtextdomain(int nargs)
 	domain = TEXTDOMAIN;
 	char save = '\0', save1 = '\0';
 
-	if (nargs == 2) {	/* second argument */
+	if (nargs == 2u) {	/* second argument */
 		t2 = POP_STRING();
 		domain = (const char *) t2->stptr;
 		save = t2->stptr[t2->stlen];
@@ -4041,7 +4094,7 @@ do_bindtextdomain(int nargs)
  */
 
 NODE *
-do_intdiv(int nargs)
+do_intdiv(nargs_t nargs)
 {
 	NODE *numerator, *denominator, *result;
 	double num, denom, quotient, remainder;
@@ -4096,14 +4149,14 @@ do_intdiv(int nargs)
 /* do_typeof --- return a string with the type of the arg */
 
 NODE *
-do_typeof(int nargs)
+do_typeof(nargs_t nargs)
 {
 	NODE *arg;
 	char *res = NULL;
 	bool deref = true;
 	NODE *dbg;
 
-	if (nargs == 2) {	/* 2nd optional arg for debugging */
+	if (nargs == 2u) {	/* 2nd optional arg for debugging */
 		dbg = POP_PARAM();
 		if (dbg->type != Node_var_array)
 			fatal(_("typeof: second argument is not an array"));
@@ -4130,8 +4183,8 @@ do_typeof(int nargs)
 					 * snapshot at a consistent moment in
 					 * time
 					 */
-					long hw = nextfree[i].highwater;
-					long active;
+					size_t hw = nextfree[i].highwater;
+					size_t active;
 #ifdef MEMDEBUG
 					active = nextfree[i].active;
 #else
@@ -4219,18 +4272,19 @@ mbc_byte_count(const char *ptr, size_t numchars)
 {
 	mbstate_t cur_state;
 	size_t sum = 0;
-	int mb_len;
+	size_t mb_len;
 
 	memset(& cur_state, 0, sizeof(cur_state));
 
 	assert(gawk_mb_cur_max > 1);
-	mb_len = (int) mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
-	if (mb_len <= 0)
+
+	mb_len = mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
+	if (!mbrlen_is_valid(mb_len))
 		return numchars;	/* no valid m.b. char */
 
 	for (; numchars > 0; numchars--) {
-		mb_len = (int) mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
-		if (mb_len <= 0)
+		mb_len = mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
+		if (!mbrlen_is_valid(mb_len))
 			break;
 		sum += mb_len;
 		ptr += mb_len;
@@ -4246,20 +4300,20 @@ mbc_char_count(const char *ptr, size_t numbytes)
 {
 	mbstate_t cur_state;
 	size_t sum = 0;
-	int mb_len;
+	size_t mb_len;
 
 	if (gawk_mb_cur_max == 1)
 		return numbytes;
 
 	memset(& cur_state, 0, sizeof(cur_state));
 
-	mb_len = (int) mbrlen(ptr, numbytes, &cur_state);
-	if (mb_len <= 0)
+	mb_len = mbrlen(ptr, numbytes, &cur_state);
+	if (!mbrlen_is_valid(mb_len))
 		return numbytes;	/* no valid m.b. char */
 
 	while (numbytes > 0) {
-		mb_len = (int) mbrlen(ptr, numbytes, &cur_state);
-		if (mb_len <= 0)
+		mb_len = mbrlen(ptr, numbytes, &cur_state);
+		if (!mbrlen_is_valid(mb_len))
 			break;
 		sum++;
 		ptr += mb_len;
@@ -4276,7 +4330,7 @@ int sanitize_exit_status(int status)
 	int ret = 0;
 
 	if (WIFEXITED(status))
-		ret = WEXITSTATUS(status); /* normal exit */
+		ret = (int) WEXITSTATUS(status); /* normal exit */
 	else if (WIFSIGNALED(status)) {
 		bool coredumped = false;
 #ifdef WCOREDUMP
@@ -4346,11 +4400,11 @@ format_nan_inf(NODE *n, char format)
 #ifdef HAVE_MPFR
 fmt:
 #endif
-	if (isupper(format)) {
-		int i;
+	if (isupper((unsigned char) format)) {
+		unsigned i;
 
 		for (i = 0; buf[i] != '\0'; i++)
-			buf[i] = (char) toupper(buf[i]);
+			buf[i] = (char) toupper((unsigned char) buf[i]);
 	}
 	return buf;
 }
