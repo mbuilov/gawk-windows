@@ -45,7 +45,7 @@
 static size_t STR_CHAIN_MAX = 2;
 
 extern FILE *output_fp;
-extern void indent(int indent_level);
+extern void indent(unsigned indent_level);
 
 static NODE **str_array_init(NODE *symbol, NODE *subs);
 static NODE **str_lookup(NODE *symbol, NODE *subs);
@@ -89,20 +89,20 @@ const array_funcs_t env_array_func = {
 	env_store,
 };
 
-static inline NODE **str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1);
+static inline NODE **str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1);
 static void grow_table(NODE *symbol);
 
-static unsigned long gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code);
-static unsigned long scramble(unsigned long x);
-static unsigned long awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code);
+static ulong_t gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code);
+static ulong_t scramble(ulong_t x);
+static ulong_t awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code);
 
-unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code) = awk_hash;
+ulong_t (*hash)(const char *s, size_t len, ulong_t hsize, ulong_t *code) = awk_hash;
 
 
 /* str_array_init --- array initialization routine */
 
 static NODE **
-str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
+str_array_init(NODE *symbol, NODE *subs)
 {
 	if (symbol == NULL) {		/* first time */
 		long newval;
@@ -110,12 +110,13 @@ str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("STR_CHAIN_MAX")) > 0)
-			STR_CHAIN_MAX = newval;
+			STR_CHAIN_MAX = (unsigned long) newval;
 		if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
 			hash = gst_hash_string;
 	} else
 		null_array(symbol);
 
+	(void) symbol, (void) subs;
 	return & success_node;
 }
 
@@ -132,17 +133,17 @@ str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 static NODE **
 str_lookup(NODE *symbol, NODE *subs)
 {
-	unsigned long hash1;
+	ulong_t hash1;
 	NODE **lhs;
 	BUCKET *b;
-	size_t code1;
+	ulong_t code1;
 
 	subs = force_string(subs);
 
 	if (symbol->buckets == NULL)
 		grow_table(symbol);
 	hash1 = hash(subs->stptr, subs->stlen,
-			(unsigned long) symbol->array_size, & code1);
+			symbol->array_size, & code1);
 	if ((lhs = str_find(symbol, subs, code1, hash1)) != NULL)
 		return lhs;
 
@@ -154,7 +155,7 @@ str_lookup(NODE *symbol, NODE *subs)
 			&& (symbol->table_size / symbol->array_size) > STR_CHAIN_MAX) {
 		grow_table(symbol);
 		/* have to recompute hash value for new size */
-		hash1 = code1 % (unsigned long) symbol->array_size;
+		hash1 = code1 % symbol->array_size;
 	}
 
 
@@ -220,27 +221,28 @@ str_lookup(NODE *symbol, NODE *subs)
 static NODE **
 str_exists(NODE *symbol, NODE *subs)
 {
-	unsigned long hash1;
-	size_t code1;
+	ulong_t hash1;
+	ulong_t code1;
 
-	if (symbol->table_size == 0)
+	if (!symbol->table_size)
 		return NULL;
 
 	subs = force_string(subs);
-	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, & code1);
+	hash1 = hash(subs->stptr, subs->stlen, symbol->array_size, & code1);
 	return str_find(symbol, subs, code1, hash1);
 }
 
 /* str_clear --- flush all the values in symbol[] */
 
 static NODE **
-str_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+str_clear(NODE *symbol, NODE *subs)
 {
-	unsigned long i;
+	ulong_t i;
 	BUCKET *b, *next;
 	NODE *r;
+	(void) subs;
 
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL; b = next) {
 			next = b->ahnext;
 			r = b->ahvalue;
@@ -268,16 +270,16 @@ str_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 static NODE **
 str_remove(NODE *symbol, NODE *subs)
 {
-	unsigned long hash1;
+	ulong_t hash1;
 	BUCKET *b, *prev;
 	NODE *s2;
 	size_t s1_len;
 
-	if (symbol->table_size == 0)
+	if (!symbol->table_size)
 		return NULL;
 
 	s2 = force_string(subs);
-	hash1 = hash(s2->stptr, s2->stlen, (unsigned long) symbol->array_size, NULL);
+	hash1 = hash(s2->stptr, s2->stlen, symbol->array_size, NULL);
 
 	for (b = symbol->buckets[hash1], prev = NULL; b != NULL;
 				prev = b, b = b->ahnext) {
@@ -301,7 +303,7 @@ str_remove(NODE *symbol, NODE *subs)
 			freebucket(b);
 
 			/* one less element in array */
-			if (--symbol->table_size == 0) {
+			if (!--symbol->table_size) {
 				if (symbol->buckets != NULL)
 					efree(symbol->buckets);
 				symbol->ainit(symbol, NULL);	/* re-initialize symbol */
@@ -320,22 +322,22 @@ str_remove(NODE *symbol, NODE *subs)
 static NODE **
 str_copy(NODE *symbol, NODE *newsymb)
 {
-	BUCKET **old, **new, **pnew;
+	BUCKET **b_old, **b_new, **pnew;
 	BUCKET *chain, *newchain;
-	unsigned long cursize, i;
+	ulong_t cursize, i;
 
-	assert(symbol->table_size > 0);
+	assert(symbol->table_size);
 
 	/* find the current hash size */
 	cursize = symbol->array_size;
 
 	/* allocate new table */
-	ezalloc(new, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
+	ezalloc(b_new, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
 
-	old = symbol->buckets;
+	b_old = symbol->buckets;
 
-	for (i = 0; i < cursize; i++) {
-		for (chain = old[i], pnew = & new[i]; chain != NULL;
+	for (i = 0u; i < cursize; i++) {
+		for (chain = b_old[i], pnew = & b_new[i]; chain != NULL;
 				chain = chain->ahnext
 		) {
 			NODE *oldval, *newsubs;
@@ -371,7 +373,7 @@ str_copy(NODE *symbol, NODE *newsymb)
 	}
 
 	newsymb->table_size = symbol->table_size;
-	newsymb->buckets = new;
+	newsymb->buckets = b_new;
 	newsymb->array_size = cursize;
 	newsymb->flags = symbol->flags;
 	return NULL;
@@ -386,11 +388,11 @@ str_list(NODE *symbol, NODE *t)
 	NODE **list;
 	NODE *subs, *val;
 	BUCKET *b;
-	unsigned long num_elems, list_size, i, k = 0;
-	int elem_size = 1;
+	ulong_t num_elems, list_size, i, k = 0u;
+	unsigned elem_size = 1;
 	assoc_kind_t assoc_kind;
 
-	if (symbol->table_size == 0)
+	if (!symbol->table_size)
 		return NULL;
 
 	assoc_kind = (assoc_kind_t) t->flags;
@@ -400,14 +402,14 @@ str_list(NODE *symbol, NODE *t)
 	/* allocate space for array */
 	num_elems = symbol->table_size;
 	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
-		num_elems = 1;
+		num_elems = 1u;
 	list_size =  elem_size * num_elems;
 
 	emalloc(list, NODE **, list_size * sizeof(NODE *), "str_list");
 
 	/* populate it */
 
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
 			/* index */
 			subs = b->ahname;
@@ -439,7 +441,7 @@ str_list(NODE *symbol, NODE *t)
 AWKNUM
 str_kilobytes(NODE *symbol)
 {
-	unsigned long bucket_cnt;
+	ulong_t bucket_cnt;
 	AWKNUM kb;
 
 	bucket_cnt = symbol->table_size;
@@ -458,8 +460,9 @@ str_dump(NODE *symbol, NODE *ndump)
 {
 #define HCNT	31
 
-	int indent_level;
-	unsigned long i, bucket_cnt;
+	unsigned indent_level;
+	ulong_t i;
+	unsigned q, bucket_cnt;
 	BUCKET *b;
 	static size_t hash_dist[HCNT + 1];
 
@@ -477,11 +480,11 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %lu\n", (unsigned long) STR_CHAIN_MAX);
+	fprintf(output_fp, "STR_CHAIN_MAX: %llu\n", 0ull + STR_CHAIN_MAX);
 	indent(indent_level);
-	fprintf(output_fp, "array_size: %lu\n", (unsigned long) symbol->array_size);
+	fprintf(output_fp, "array_size: %lu\n", TO_ULONG(symbol->array_size));
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %lu\n", (unsigned long) symbol->table_size);
+	fprintf(output_fp, "table_size: %lu\n", TO_ULONG(symbol->table_size));
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain: %.2g\n",
 				((AWKNUM) symbol->table_size) / symbol->array_size);
@@ -492,27 +495,27 @@ str_dump(NODE *symbol, NODE *ndump)
 	/* hash value distribution */
 
 	memset(hash_dist, '\0', (HCNT + 1) * sizeof(size_t));
-	for (i = 0; i < symbol->array_size; i++) {
+	for (i = 0u; i < symbol->array_size; i++) {
 		bucket_cnt = 0;
-		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext)
-			bucket_cnt++;
-		if (bucket_cnt >= HCNT)
-			bucket_cnt = HCNT;
+		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
+			if (++bucket_cnt == HCNT)
+				break;
+		}
 		hash_dist[bucket_cnt]++;
 	}
 
 	indent(indent_level);
 	fprintf(output_fp, "Hash distribution:\n");
 	indent_level++;
-	for (i = 0; i <= HCNT; i++) {
-		if (hash_dist[i] > 0) {
+	for (q = 0; q <= HCNT; q++) {
+		if (hash_dist[q] > 0) {
 			indent(indent_level);
-			if (i == HCNT)
-				fprintf(output_fp, "[>=%lu]:%lu\n",
-					(unsigned long) HCNT, (unsigned long) hash_dist[i]);
+			if (q == HCNT)
+				fprintf(output_fp, "[>=%d]:%llu\n",
+					HCNT, 0ull + hash_dist[q]);
 			else
-				fprintf(output_fp, "[%lu]:%lu\n",
-					(unsigned long) i, (unsigned long) hash_dist[i]);
+				fprintf(output_fp, "[%u]:%llu\n",
+					q, 0ull + hash_dist[q]);
 		}
 	}
 	indent_level--;
@@ -524,7 +527,7 @@ str_dump(NODE *symbol, NODE *ndump)
 
 		fprintf(output_fp, "\n");
 		aname = make_aname(symbol);
-		for (i = 0; i < symbol->array_size; i++) {
+		for (i = 0u; i < symbol->array_size; i++) {
 			for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext)
 				assoc_info(b->ahname, b->ahvalue, ndump, aname);
 		}
@@ -538,11 +541,11 @@ str_dump(NODE *symbol, NODE *ndump)
 
 /* awk_hash --- calculate the hash function of the string in subs */
 
-static unsigned long
-awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
+static ulong_t
+awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code)
 {
-	unsigned long h = 0;
-	unsigned long htmp;
+	ulong_t h;
+	ulong_t htmp;
 
 	/*
 	 * Ozan Yigit's original sdbm hash, copied from Margo Seltzers
@@ -567,10 +570,10 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 	 */
 #define HASHC   htmp = (h << 6);  \
 		h = *s++ + htmp + (htmp << 10) - h ; \
-		htmp &= 0xFFFFFFFF; \
-		h &= 0xFFFFFFFF
+		htmp &= 0xFFFFFFFFul; \
+		h &= 0xFFFFFFFFul
 
-	h = 0;
+	h = 0u;
 
 	/* "Duff's Device" */
 	if (len > 0) {
@@ -603,7 +606,7 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 /* str_find --- locate symbol[subs] */
 
 static inline NODE **
-str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1)
+str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1)
 {
 	BUCKET *b;
 	size_t s2_len;
@@ -631,11 +634,11 @@ str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1)
 static void
 grow_table(NODE *symbol)
 {
-	BUCKET **old, **new;
+	BUCKET **b_old, **b_new;
 	BUCKET *chain, *next;
-	int i, j;
-	unsigned long oldsize, newsize, k;
-	unsigned long hash1;
+	unsigned i;
+	ulong_t oldsize, newsize, k;
+	ulong_t hash1;
 
 	/*
 	 * This is an array of primes. We grow the table by an order of
@@ -658,7 +661,7 @@ grow_table(NODE *symbol)
 	/* find next biggest hash size */
 	newsize = oldsize = symbol->array_size;
 
-	for (i = 0, j = sizeof(sizes)/sizeof(sizes[0]); i < j; i++) {
+	for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++) {
 		if (oldsize < sizes[i]) {
 			newsize = sizes[i];
 			break;
@@ -670,15 +673,15 @@ grow_table(NODE *symbol)
 	}
 
 	/* allocate new table */
-	ezalloc(new, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
+	ezalloc(b_new, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
 
-	old = symbol->buckets;
-	symbol->buckets = new;
+	b_old = symbol->buckets;
+	symbol->buckets = b_new;
 	symbol->array_size = newsize;
 
 	/* brand new hash table, set things up and return */
-	if (old == NULL) {
-		symbol->table_size = 0;
+	if (b_old == NULL) {
+		symbol->table_size = 0u;
 		return;
 	}
 
@@ -689,17 +692,17 @@ grow_table(NODE *symbol)
 	 * and is explicitly set to 0 if a new one.
 	 */
 
-	for (k = 0; k < oldsize; k++) {
-		for (chain = old[k]; chain != NULL; chain = next) {
+	for (k = 0u; k < oldsize; k++) {
+		for (chain = b_old[k]; chain != NULL; chain = next) {
 			next = chain->ahnext;
 			hash1 = chain->ahcode % newsize;
 
 			/* remove from old list, add to new */
-			chain->ahnext = new[hash1];
-			new[hash1] = chain;
+			chain->ahnext = b_new[hash1];
+			b_new[hash1] = chain;
 		}
 	}
-	efree(old);
+	efree(b_old);
 }
 
 
@@ -727,11 +730,11 @@ Paolo
  * ADR: Slightly modified to work w/in the context of gawk.
  */
 
-static unsigned long
-gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code)
+static ulong_t
+gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code)
 {
-	unsigned long hashVal = 1497032417;    /* arbitrary value */
-	unsigned long ret;
+	ulong_t hashVal = 1497032417ul;    /* arbitrary value */
+	ulong_t ret;
 
 	while (len--) {
 		hashVal += *str++;
@@ -750,11 +753,13 @@ gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code)
 	return ret;
 }
 
-static unsigned long
-scramble(unsigned long x)
+static ulong_t
+scramble(ulong_t x)
 {
-	if (sizeof(long) == 4) {
-		int y = ~x;
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_COND_IS_CONST
+	if (sizeof(x) == 4) {
+		ulong_t y = ~x;
 
 		x += (y << 10) | (y >> 22);
 		x += (x << 6)  | (x >> 26);
@@ -766,6 +771,7 @@ scramble(unsigned long x)
 		x += (x << 27) | (x >> 5);
 		x += (x << 31);
 	}
+PRAGMA_WARNING_POP
 
 	return x;
 }
@@ -792,7 +798,9 @@ env_remove(NODE *symbol, NODE *subs)
 static NODE **
 env_clear(NODE *symbol, NODE *subs)
 {
+#ifndef _MSC_VER
 	extern char **environ;
+#endif
 	NODE **val = str_clear(symbol, subs);
 
 	environ = NULL;	/* ZAP! */
