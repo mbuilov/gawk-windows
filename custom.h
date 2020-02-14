@@ -44,6 +44,10 @@
 #include <fp.h>
 /* isnan () macro is broken */
 #undef isnan
+/* VMS has POSIX confirming limits.h */
+#ifndef _REGEX_INCLUDE_LIMITS_H
+#define _REGEX_INCLUDE_LIMITS_H 1
+#endif
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #endif /* _GNU_SOURCE */
