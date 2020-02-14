@@ -122,7 +122,7 @@ debug_print_comment_s(const char *name, INSTRUCTION *comment, unsigned line)
 {
 	if (comment != NULL)
 		fprintf(stderr, "%d: %s: <%.*s>\n", line, name,
-				(int) (comment->memory->stlen - 1),
+				TO_PRINTF_WIDTH(comment->memory->stlen - 1),
 				comment->memory->stptr);
 }
 #define debug_print_comment(comment) \
@@ -5111,7 +5111,7 @@ yyerror(const char *m, ...)
 		msg("%s", end_of_file_line);
 		mesg = _("source files / command-line arguments must contain complete functions or rules");
 	} else
-		msg("%.*s", (int) (bp - thisline), thisline);
+		msg("%.*s", TO_PRINTF_WIDTH((size_t) (bp - thisline)), thisline);
 
 	va_start(args, m);
 	if (mesg == NULL)
@@ -6213,11 +6213,11 @@ end_regexp:
 						if (source)
 							lintwarn(
 						_("%s: %u: tawk regex modifier `/.../%c' doesn't work in gawk"),
-								source, sourceline, peek);
+								source, sourceline, (char) peek);
 						else
 							lintwarn(
 						_("tawk regex modifier `/.../%c' doesn't work in gawk"),
-								peek);
+								(char) peek);
 					}
 				}
 				if (collecting_typed_regexp) {
@@ -6746,10 +6746,10 @@ retry:
 			if (do_lint) {
 				if (base == 8)
 					lintwarn("numeric constant `%.*s' treated as octal",
-						(int) strlen(tokstart)-1, tokstart);
+						TO_PRINTF_WIDTH(strlen(tokstart) - 1), tokstart);
 				else if (base == 16)
 					lintwarn("numeric constant `%.*s' treated as hexadecimal",
-						(int) strlen(tokstart)-1, tokstart);
+						TO_PRINTF_WIDTH(strlen(tokstart) - 1), tokstart);
 			}
 		}
 
@@ -7417,7 +7417,7 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
 	else if ((n->flags & REGEX) != 0)
-		print_func(fp, "@/%.*s/\n", n->stlen, n->stptr);
+		print_func(fp, "@/%.*s/\n", TO_PRINTF_WIDTH(n->stlen), n->stptr);
 	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
@@ -7666,10 +7666,10 @@ func_use(const char *name, enum defref how)
 {
 	struct fdesc *fp;
 	size_t len;
-	ulong_t ind;
+	unsigned ind;
 
 	len = strlen(name);
-	ind = hash(name, len, HASHSIZE, NULL);
+	ind = (unsigned) hash(name, len, HASHSIZE, NULL);
 
 	for (fp = ftable[ind]; fp != NULL; fp = fp->next)
 		if (strcmp(fp->name, name) == 0)
@@ -7679,7 +7679,7 @@ func_use(const char *name, enum defref how)
 
 	ezalloc(fp, struct fdesc *, sizeof(struct fdesc), "func_use");
 	emalloc(fp->name, char *, len + 1, "func_use");
-	strcpy(fp->name, name);
+	memcpy(fp->name, name, len + 1);
 	fp->next = ftable[ind];
 	ftable[ind] = fp;
 
@@ -7749,7 +7749,7 @@ static void
 param_sanity(INSTRUCTION *arglist)
 {
 	INSTRUCTION *argl, *arg;
-	unsigned i = 1;
+	ulong_t i = 1u;
 
 	if (arglist == NULL)
 		return;
@@ -7757,7 +7757,7 @@ param_sanity(INSTRUCTION *arglist)
 		arg = argl->lasti;
 		if (arg->opcode == Op_match_rec)
 			warning_ln(arg->source_line,
-				_("regexp constant for parameter #%u yields boolean value"), i);
+				_("regexp constant for parameter #%lu yields boolean value"), TO_ULONG(i));
 		argl = arg->nexti;
 		i++;
 	}
