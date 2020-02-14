@@ -1782,7 +1782,7 @@ do_sprintf(ulong_t nargs)
 /* do_printf --- perform printf, including redirection */
 
 void
-do_printf(ulong_t nargs, int redirtype)
+do_printf(ulong_t nargs, enum redirval redirtype)
 {
 	FILE *fp = NULL;
 	NODE *tmp;
@@ -1794,7 +1794,7 @@ do_printf(ulong_t nargs, int redirtype)
 		if (do_traditional) {
 			if (do_lint)
 				lintwarn(_("printf: no arguments"));
-			if (redirtype != 0) {
+			if (redirtype != redirect_none) {
 				redir_exp = TOP();
 				if (redir_exp->type != Node_val)
 					fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
@@ -1807,7 +1807,7 @@ do_printf(ulong_t nargs, int redirtype)
 		fatal(_("printf: no arguments"));
 	}
 
-	if (redirtype != 0) {
+	if (redirtype != redirect_none) {
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
@@ -2294,7 +2294,7 @@ do_system(nargs_t nargs)
 /* do_print --- print items, separated by OFS, terminated with ORS */
 
 void
-do_print(nargs_t nargs, int redirtype)
+do_print(nargs_t nargs, enum redirval redirtype)
 {
 	struct redirect *rp = NULL;
 	int errflg = 0;
@@ -2305,7 +2305,7 @@ do_print(nargs_t nargs, int redirtype)
 
 	assert(nargs <= max_args);
 
-	if (redirtype != 0) {
+	if (redirtype != redirect_none) {
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
@@ -2373,7 +2373,7 @@ do_print(nargs_t nargs, int redirtype)
 /* do_print_rec --- special case printing of $0, for speed */
 
 void
-do_print_rec(nargs_t nargs, int redirtype)
+do_print_rec(nargs_t nargs, enum redirval redirtype)
 {
 	FILE *fp = NULL;
 	NODE *f0;
@@ -2383,7 +2383,7 @@ do_print_rec(nargs_t nargs, int redirtype)
 	(void) nargs;
 
 	assert(!nargs);
-	if (redirtype != 0) {
+	if (redirtype != redirect_none) {
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
