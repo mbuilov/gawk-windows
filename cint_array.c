@@ -241,6 +241,7 @@ cint_lookup(NODE *symbol, NODE *subs)
 	cint_size = (xn == NULL) ? symbol->table_size
 				: (symbol->table_size - xn->table_size);
 	assert(xn == NULL || symbol->table_size >= xn->table_size);
+	assert(capacity >= cint_size);
 	if ((capacity - cint_size) > THRESHOLD)
 		goto xinstall;
 
@@ -1067,6 +1068,7 @@ leaf_lookup(NODE *symbol, NODE *array, ulong_t k, ulong_t size, ulong_t base)
 		symbol->array_capacity += size;
 	}
 
+	assert(k >= base);
 	lhs = array->nodes + (k - base); /* leaf element */
 	if (*lhs == NULL) {
 		array->table_size++;	/* one more element in leaf array */
@@ -1082,6 +1084,7 @@ static inline NODE **
 leaf_exists(NODE *array, ulong_t k)
 {
 	NODE **lhs;
+	assert(k >= array->array_base);
 	lhs = array->nodes + (k - array->array_base);
 	return (*lhs != NULL) ? lhs : NULL;
 }
@@ -1119,6 +1122,7 @@ leaf_remove(NODE *symbol, NODE *array, ulong_t k)
 {
 	NODE **lhs;
 
+	assert(k >= array->array_base);
 	lhs = array->nodes + (k - array->array_base);
 	if (*lhs == NULL)
 		return false;
