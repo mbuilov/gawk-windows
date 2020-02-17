@@ -529,7 +529,8 @@ int_list(NODE *symbol, NODE *t)
 	size_t list_size, k = 0;
 	BUCKET *b;
 	NODE *r, *subs, *xn;
-	size_t j, elem_size = 1;
+	size_t j;
+	unsigned elem_size = 1;
 	long num;
 	static char buf[100];
 	assoc_kind_t assoc_kind;
@@ -633,8 +634,8 @@ int_dump(NODE *symbol, NODE *ndump)
 	NODE *xn = NULL;
 	ulong_t str_size = 0u, int_size = 0u;
 	ulong_t i;
-	unsigned j;
-	size_t bucket_cnt;
+	unsigned k;
+	size_t j, bucket_cnt;
 	static unsigned long hash_dist[HCNT + 1];
 
 	indent_level = ndump->alevel;
@@ -676,25 +677,28 @@ int_dump(NODE *symbol, NODE *ndump)
 	memset(hash_dist, 0, sizeof(hash_dist));
 	for (i = 0u; i < symbol->array_size; i++) {
 		bucket_cnt = 0;
-		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext)
+		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext) {
 			bucket_cnt += b->aicount;
-		if (bucket_cnt >= HCNT)
-			bucket_cnt = HCNT;
+			if (bucket_cnt >= HCNT) {
+				bucket_cnt = HCNT;
+				break;
+			}
+		}
 		hash_dist[bucket_cnt]++;
 	}
 
 	indent(indent_level);
 	fprintf(output_fp, "Hash distribution:\n");
 	indent_level++;
-	for (j = 0; j <= HCNT; j++) {
-		if (hash_dist[j] > 0) {
+	for (k = 0; k <= HCNT; k++) {
+		if (hash_dist[k] > 0) {
 			indent(indent_level);
-			if (j == HCNT)
+			if (k == HCNT)
 				fprintf(output_fp, "[>=%d]:%lu\n",
-					HCNT, hash_dist[j]);
+					HCNT, hash_dist[k]);
 			else
 				fprintf(output_fp, "[%u]:%lu\n",
-					j, hash_dist[j]);
+					k, hash_dist[k]);
 		}
 	}
 	indent_level--;
@@ -714,7 +718,7 @@ int_dump(NODE *symbol, NODE *ndump)
 		for (i = 0u; i < symbol->array_size; i++) {
 			for (b = symbol->buckets[i]; b != NULL; b = b->ainext) {
 				for (j = 0; j < b->aicount; j++) {
-					subs->numbr = TO_ULONG(b->ainum[j]);
+					subs->numbr = TO_LONG(b->ainum[j]);
 					assoc_info(subs, b->aivalue[j], ndump, aname);
 				}
 			}
