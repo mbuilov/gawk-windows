@@ -27,7 +27,7 @@
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #include <readline/history.h>
-extern char **command_completion(const char *text, size_t start, size_t end);
+extern char **command_completion(const char *text, int start, int end);
 extern void initialize_pager(FILE *fp); /* debug.c */
 extern NODE *get_function(void);
 #else
