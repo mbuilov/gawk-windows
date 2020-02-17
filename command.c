@@ -126,8 +126,8 @@ struct argtoken {
 #define argtab zz_debug_argtab
 #define cmdtab zz_debug_cmdtab
 
-extern struct argtoken argtab[];
-extern struct cmdtoken cmdtab[];
+extern const struct argtoken argtab[];
+extern const struct cmdtoken cmdtab[];
 
 static CMDARG *mk_cmdarg(enum argtype type);
 static void append_cmdarg(CMDARG *arg);
@@ -1742,7 +1742,7 @@ yyreduce:
           {
 		if (cmdtab[cmd_idx].cls == D_FRAME
 				&& yyvsp[0] != NULL && yyvsp[0]->a_int < 0)
-			yyerror(_("invalid frame number: %d"), TO_LONG(yyvsp[0]->a_int));
+			yyerror(_("invalid frame number: %ld"), TO_LONG(yyvsp[0]->a_int));
 	  }
 #line 1748 "command.c"
     break;
@@ -2118,7 +2118,7 @@ yyreduce:
 #line 598 "command.y"
           {
 		if (yyvsp[-2]->a_int > yyvsp[0]->a_int)
-			yyerror(_("invalid range specification: %d - %d"),
+			yyerror(_("invalid range specification: %ld - %ld"),
 				TO_LONG(yyvsp[-2]->a_int), TO_LONG(yyvsp[0]->a_int));
 		else
 			yyvsp[-2]->type = D_range;
@@ -2610,7 +2610,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 
 /* command names sorted in ascending order */
 
-struct cmdtoken cmdtab[] = {
+const struct cmdtoken cmdtab[] = {
 { "backtrace", "bt", D_backtrace, D_BACKTRACE, do_backtrace,
 	gettext_noop("backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames.") },
 { "break", "b", D_break, D_BREAK, do_breakpoint,
@@ -2703,7 +2703,7 @@ struct cmdtoken cmdtab[] = {
 	 NULL },
 };
 
-struct argtoken argtab[] = {
+const struct argtoken argtab[] = {
 	{ "args", D_info, A_ARGS },
 	{ "break", D_info, A_BREAK },
 	{ "del", D_enable, A_DEL },
@@ -2727,10 +2727,10 @@ struct argtoken argtab[] = {
 Func_cmd
 get_command(enum argtype ctype)
 {
-	unsigned i;
-	for (i = 0; cmdtab[i].name != NULL; i++) {
-		if (cmdtab[i].type == ctype)
-			return cmdtab[i].cf_ptr;
+	const struct cmdtoken *cmd;
+	for (cmd = cmdtab; cmd->name != NULL; cmd++) {
+		if (cmd->type == ctype)
+			return cmd->cf_ptr;
 	}
 	return (Func_cmd) 0;
 }
@@ -2740,10 +2740,10 @@ get_command(enum argtype ctype)
 const char *
 get_command_name(enum argtype ctype)
 {
-	unsigned i;
-	for (i = 0; cmdtab[i].name != NULL; i++) {
-		if (cmdtab[i].type == ctype)
-			return cmdtab[i].name;
+	const struct cmdtoken *cmd;
+	for (cmd = cmdtab; cmd->name != NULL; cmd++) {
+		if (cmd->type == ctype)
+			return cmd->name;
 	}
 	return NULL;
 }
@@ -2955,7 +2955,8 @@ again:
 			}
 			return cmdtab[cmd_idx].cls;
 		} else {
-			yyerror(_("unknown command - \"%.*s\", try help"), (int) toklen, tokstart);
+			yyerror(_("unknown command - \"%.*s\", try help"),
+				TO_PRINTF_WIDTH(toklen), tokstart);
 			return '\n';
 		}
 	}
@@ -3215,7 +3216,7 @@ static int
 find_command(const char *token, size_t toklen)
 {
 	const char *name, *abrv;
-	size_t i, k;
+	int i, k;
 	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
@@ -3237,7 +3238,7 @@ find_command(const char *token, size_t toklen)
 				&& toklen == strlen(name)
 				&& strncmp(name, token, toklen) == 0
 		)
-			return (int) i;
+			return i;
 
 		if (*name > *token || i == (k - 1))
 			try_exact = false;
@@ -3246,9 +3247,9 @@ find_command(const char *token, size_t toklen)
 			abrv = cmdtab[i].abbrvn;
 			if (abrv[0] == token[0]) {
 				if (toklen == 1 && ! abrv[1])
-					abrv_match = (int) i;
+					abrv_match = i;
 				else if (toklen == 2 && abrv[1] == token[1])
-					abrv_match = (int) i;
+					abrv_match = i;
 			}
 		}
 		if (! try_exact && abrv_match >= 0)
@@ -3261,7 +3262,7 @@ find_command(const char *token, size_t toklen)
 				if ((i == k - 1 || strncmp(cmdtab[i + 1].name, token, toklen) != 0)
 					&& (i == 0 || strncmp(cmdtab[i - 1].name, token, toklen) != 0)
 				)
-					partial_match = (int) i;
+					partial_match = i;
 			}
 		}
 	}
@@ -3339,7 +3340,7 @@ next_word(const char *p, size_t len, const char **endp)
 
 
 char **
-command_completion(const char *text, size_t start, size_t end)
+command_completion(const char *text, int start, int end)
 {
 	const char *cmdtok, *e;
 	int idx;
@@ -3350,7 +3351,7 @@ command_completion(const char *text, size_t start, size_t end)
 	rl_attempted_completion_over = true;	/* no default filename completion please */
 
 	this_cmd = D_illegal;
-	len = start;
+	len = (size_t) start;
 	if ((cmdtok = next_word(rl_line_buffer, len, &e)) == NULL)	/* no first word yet */
 		return  rl_completion_matches(text, command_generator);
 	len -= (size_t) (e - rl_line_buffer);
