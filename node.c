@@ -182,7 +182,7 @@ goodnum:
  * (more complicated) variations on this theme didn't seem to pay off, but
  * systematic testing might be in order at some point.
  */
-static const char *values[] = {
+static const char *const values[] = {
 	"0",
 	"1",
 	"2",
@@ -631,6 +631,8 @@ parse_escape(const char **string_ptr)
 				break;
 			}
 		}
+		if (do_lint && j == 2 && isxdigit((unsigned char)*(*string_ptr)))
+			lintwarn(_("hex escape \\x%.*s of %d characters probably not interpreted the way you expect"), 3, start, 3);
 		return (int) i;
 	case '\\':
 	case '"':
@@ -702,7 +704,7 @@ NODE *
 str2wstr(NODE *n, size_t **ptr)
 {
 	size_t i, count, src_count;
-	char *sp;
+	const char *sp;
 	mbstate_t mbs;
 	wchar_t wc, *wsp;
 	static bool warned = false;
@@ -764,9 +766,9 @@ str2wstr(NODE *n, size_t **ptr)
 		 * big speed up. Thanks to Ulrich Drepper for the tip.
 		 * 11/2010: Thanks to Paolo Bonzini for some even faster code.
 		 */
-		if (is_valid_character(*sp)) {
+		if (is_valid_character((unsigned char)*sp)) {
 			count = 1;
-			wc = btowc_cache(*sp);
+			wc = btowc_cache((unsigned char)*sp);
 		} else
 			count = mbrtowc(& wc, sp, src_count, & mbs);
 		switch (count) {
