@@ -455,8 +455,11 @@ function_list(bool sort)
 /* print_vars --- print names and values of global variables */
 
 void
-print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
+print_vars(NODE **table, Func_print print_func, FILE *fp)
 {
+#if defined _MSC_VER && defined _PREFAST_
+#define print_func fprintf
+#endif
 	unsigned i;
 	NODE *r;
 
@@ -467,12 +470,15 @@ print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
 			continue;
 		print_func(fp, "%s: ", r->vname);
 		if (r->type == Node_var_array)
-			print_func(fp, "array, %ld elements\n", assoc_length(r));
+			print_func(fp, "array, %lu elements\n", TO_ULONG(assoc_length(r)));
 		else if (r->type == Node_var_new)
 			print_func(fp, "untyped variable\n");
 		else if (r->type == Node_var)
 			valinfo(r->var_value, print_func, fp);
 	}
+#if defined _MSC_VER && defined _PREFAST_
+#undef print_func
+#endif
 }
 
 
