@@ -490,7 +490,7 @@ mpg_set_var(NODE *n)
 /* set_PREC --- update MPFR PRECISION related variables when PREC assigned to */
 
 void
-set_PREC()
+set_PREC(void)
 {
 	mpfr_prec_t prec = 0;
 	NODE *val;
@@ -549,7 +549,7 @@ set_PREC()
 		p = get_number_si(val);
 		if (p < MPFR_PREC_MIN || p > MPFR_PREC_MAX) {
 			force_string(val);
-			warning(_("PREC value `%.*s' is invalid"), (int) val->stlen, val->stptr);
+			warning(_("PREC value `%.*s' is invalid"), TO_PRINTF_WIDTH(val->stlen), val->stptr);
 		} else {
 			prec = (mpfr_prec_t) p;
 			do_ieee_fmt = false;
@@ -596,7 +596,7 @@ get_rnd_mode(const char rmode)
  */
 
 void
-set_ROUNDMODE()
+set_ROUNDMODE(void)
 {
 	if (do_mpfr) {
 		mpfr_rnd_t rndm = -1;
@@ -609,7 +609,7 @@ set_ROUNDMODE()
 			ROUND_MODE = rndm;
 			MPFR_round_mode = n->stptr[0];
 		} else
-			warning(_("RNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
+			warning(_("RNDMODE value `%.*s' is invalid"), TO_PRINTF_WIDTH(n->stlen), n->stptr);
 	}
 }
 
