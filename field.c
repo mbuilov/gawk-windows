@@ -1182,14 +1182,15 @@ set_FIELDWIDTHS(void)
 			break;
 
 		// Look for skip value. We allow N:M and N:*.
+#define MAX_FIELD_LEN ((size_t)-1 < UINT_MAX ? (size_t)-1 : UINT_MAX)
 		/*
 		 * Detect an invalid base-10 integer, a valid value that
 		 * is followed by something other than a blank or '\0',
-		 * or a value that is not in the range [1..UINT_MAX].
+		 * or a value that is not in the range [1..MAX_FIELD_LEN].
 		 */
 		errno = 0;
 		ul_tmp = strtoul(scan, &end, 10);
-		if (errno == 0 && *end == ':' && (0 < ul_tmp && ul_tmp <= UINT_MAX)) {
+		if (errno == 0 && *end == ':' && (0 < ul_tmp && ul_tmp <= MAX_FIELD_LEN)) {
 			FIELDWIDTHS->fields[i].skip = ul_tmp;
 			scan = end + 1;
 			if (*scan == '-' || is_blank(*scan)) {
@@ -1204,7 +1205,7 @@ set_FIELDWIDTHS(void)
 
 		if (errno != 0
 		    	|| (*end != '\0' && ! is_blank(*end))
-				|| !(0 < ul_tmp && ul_tmp <= UINT_MAX)
+				|| !(0 < ul_tmp && ul_tmp <= MAX_FIELD_LEN)
 		) {
 			if (*scan == '*') {
 				for (scan++; is_blank(*scan); scan++)
@@ -1213,7 +1214,7 @@ set_FIELDWIDTHS(void)
 				if (*scan != '\0')
 					fatal(_("`*' must be the last designator in FIELDWIDTHS"));
 
-				FIELDWIDTHS->fields[i].len = UINT_MAX;
+				FIELDWIDTHS->fields[i].len = MAX_FIELD_LEN;
 				FIELDWIDTHS->nf = i+1;
 			}
 			else
@@ -1233,7 +1234,7 @@ set_FIELDWIDTHS(void)
 
 	if (fatal_error)
 		fatal(_("invalid FIELDWIDTHS value, for field %llu, near `%s'"),
-			0ull + i + 1, scan);
+			1ull + i, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */
