@@ -87,7 +87,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 			file = FILENAME_node->var_value->stptr;
 			(void) putc('(', stderr);
 			if (file)
-				(void) fprintf(stderr, "FILENAME=%.*s ", (int) len, file);
+				(void) fprintf(stderr, "FILENAME=%.*s ", TO_PRINTF_WIDTH(len), file);
 			(void) mpfr_fprintf(stderr, "FNR=%Zd) ", val->mpg_i);
 		}
 	} else
@@ -97,7 +97,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		file = FILENAME_node->var_value->stptr;
 		(void) putc('(', stderr);
 		if (file)
-			(void) fprintf(stderr, "FILENAME=%.*s ", (int) len, file);
+			(void) fprintf(stderr, "FILENAME=%.*s ", TO_PRINTF_WIDTH(len), file);
 		(void) fprintf(stderr, "FNR=%llu) ", 0ull + FNR);
 	}
 
