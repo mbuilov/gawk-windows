@@ -4288,7 +4288,7 @@ retry:
 	}
 
 	if (! is_letter(c)) {
-		yyerror(_("invalid char '%c' in expression"), c);
+		yyerror(_("invalid char '%c' in expression"), (char) c);
 		return lasttok = LEX_EOF;
 	}
 
