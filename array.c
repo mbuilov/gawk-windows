@@ -33,7 +33,7 @@ NODE *success_node;
 
 static size_t SUBSEPlen;
 static char *SUBSEP;
-static char indent_char[] = "    ";
+static const char indent_char[] = "    ";
 
 static NODE **null_lookup(NODE *symbol, NODE *subs);
 static NODE **null_dump(NODE *symbol, NODE *subs);
@@ -578,7 +578,7 @@ do_delete(NODE *symbol, ulong_t nsubs)
 			if (do_lint) {
 				subs = force_string(subs);
 				lintwarn(_("delete: index `%.*s' not in array `%s'"),
-					(int) subs->stlen, subs->stptr, array_vname(symbol));
+					TO_PRINTF_WIDTH(subs->stlen), subs->stptr, array_vname(symbol));
 			}
 			/* avoid memory leak, free all subs */
 			free_subs(i);
@@ -593,7 +593,7 @@ do_delete(NODE *symbol, ulong_t nsubs)
 				subs = force_string(subs);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
 					array_vname(symbol),
-					(int) subs->stlen,
+					TO_PRINTF_WIDTH(subs->stlen),
 					subs->stptr);
 			}
 			symbol = val;
@@ -665,7 +665,7 @@ value_info(NODE *n)
 
 	if ((n->flags & (STRING|STRCUR)) != 0) {
 		fprintf(output_fp, "<");
-		fprintf(output_fp, "\"%.*s\"", (int) n->stlen, n->stptr);
+		fprintf(output_fp, "\"%.*s\"", TO_PRINTF_WIDTH(n->stlen), n->stptr);
 		if ((n->flags & (NUMBER|NUMCUR)) != 0) {
 #ifdef HAVE_MPFR
 			if (is_mpg_float(n))
@@ -714,7 +714,7 @@ value_info(NODE *n)
 					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 #ifdef HAVE_MPFR
-		fprintf(output_fp, ", RNDMODE=\"%c\"", n->strndmode);
+		fprintf(output_fp, ", RNDMODE=\"%c\"", (char) n->strndmode);
 #endif
 	}
 
