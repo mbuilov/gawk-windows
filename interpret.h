@@ -258,7 +258,7 @@ uninitialized_scalar:
 			if (do_lint && in_array(t1, t2) == NULL) {
 				t2 = force_string(t2);
 				lintwarn(_("reference to uninitialized element `%s[\"%.*s\"]'"),
-					array_vname(t1), (int) t2->stlen, t2->stptr);
+					array_vname(t1), TO_PRINTF_WIDTH(t2->stlen), t2->stptr);
 				if (t2->stlen == 0)
 					lintwarn(_("subscript of array `%s' is null string"), array_vname(t1));
 			}
@@ -316,7 +316,7 @@ uninitialized_scalar:
 			} else if (r->type != Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
-						array_vname(t1), (int) t2->stlen, t2->stptr);
+						array_vname(t1), TO_PRINTF_WIDTH(t2->stlen), t2->stptr);
 			} else
 				DEREF(t2);
 
@@ -330,7 +330,7 @@ uninitialized_scalar:
 				t2 = force_string(t2);
 				if (pc->do_reference)
 					lintwarn(_("reference to uninitialized element `%s[\"%.*s\"]'"),
-						array_vname(t1), (int) t2->stlen, t2->stptr);
+						array_vname(t1), TO_PRINTF_WIDTH(t2->stlen), t2->stptr);
 				if (t2->stlen == 0)
 					lintwarn(_("subscript of array `%s' is null string"), array_vname(t1));
 			}
@@ -339,7 +339,7 @@ uninitialized_scalar:
 			if ((*lhs)->type == Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
-						array_vname(t1), (int) t2->stlen, t2->stptr);
+						array_vname(t1), TO_PRINTF_WIDTH(t2->stlen), t2->stptr);
 			}
 
 			/*
@@ -658,7 +658,7 @@ mod:
 			if ((*lhs)->type == Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
-						array_vname(t1), (int) t2->stlen, t2->stptr);
+						array_vname(t1), TO_PRINTF_WIDTH(t2->stlen), t2->stptr);
 			}
 			DEREF(t2);
 
@@ -1237,7 +1237,7 @@ match_re:
 						ruletab[currule]);
 
 			do {
-				int ret;
+				long_t ret;
 				ret = nextfile(& curfile, false);
 				if (ret <= 0)
 					r = do_getline(pc->into_var, curfile);
@@ -1282,7 +1282,7 @@ match_re:
 
 		case Op_newfile:
 		{
-			int ret;
+			long_t ret;
 
 			ret = nextfile(& curfile, false);
 
@@ -1336,7 +1336,7 @@ match_re:
 
 		case Op_K_nextfile:
 		{
-			int ret;
+			long_t ret;
 
 			if (currule != Rule && currule != BEGINFILE)
 				fatal(_("`nextfile' cannot be called from a `%s' rule"),
@@ -1446,7 +1446,7 @@ match_re:
 
 		case Op_cond_pair:
 		{
-			int result;
+			bool result;
 			INSTRUCTION *ip;
 
 			t1 = TOP_SCALAR();   /* from right hand side expression */
