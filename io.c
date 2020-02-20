@@ -272,19 +272,18 @@ struct recmatch {
         size_t rt_len;  /* length of terminator */
 };
 
-
 static int iop_close(IOBUF *iop);
 static void close_one(void);
 static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how);
 #ifndef PIPES_SIMULATED
-static int wait_any(int interesting);
+static int wait_any(pid_t interesting);
 #endif
 static IOBUF *gawk_popen(const char *cmd, struct redirect *rp);
-static IOBUF *iop_alloc(int fd, const char *name, int errno_val);
+static IOBUF *iop_alloc(fd_t fd, const char *name, int errno_val);
 static IOBUF *iop_finish(IOBUF *iop);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
-static int two_way_open(const char *str, struct redirect *rp, int extfd);
+static int two_way_open(const char *str, struct redirect *rp, fd_t extfd);
 #ifdef HAVE_TERMIOS_H
 static bool pty_vs_pipe(const char *command);
 #endif
@@ -321,8 +320,8 @@ struct inet_socket_info {
 static bool inetfile(const char *str, size_t len, struct inet_socket_info *isn);
 
 static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
-static unsigned long get_read_timeout(IOBUF *iop);
-static ssize_t read_with_timeout(int fd, void *buf, size_t size);
+static ulong_t get_read_timeout(IOBUF *iop);
+static ssize_t read_with_timeout(fd_t fd, void *buf, size_t size);
 
 static bool read_can_timeout = false;
 static unsigned long read_timeout;
@@ -402,7 +401,7 @@ binmode(const char *mode)
 static int vmsrtl_fileno(FILE *);
 static int vmsrtl_fileno(fp) FILE *fp; { return fileno(fp); }
 #undef fileno
-#define fileno(FP) (((FP) && *(FP)) ? vmsrtl_fileno(FP) : -1)
+#define fileno(FP) (((FP) && *(FP)) ? vmsrtl_fileno(FP) : INVALID_HANDLE)
 #endif	/* VMS */
 
 /* after_beginfile --- reset necessary state after BEGINFILE has run */
@@ -432,7 +431,7 @@ after_beginfile(IOBUF **curfile)
 		valid = iop->valid;
 		errno = 0;
 		update_ERRNO_int(errcode);
-		iop_close(iop);
+		(void) iop_close(iop);
 		*curfile = NULL;
 		if (! valid && errcode == EISDIR && ! do_traditional) {
 			awkwarn(_("command line argument `%s' is a directory: skipped"), fname);
@@ -449,14 +448,14 @@ after_beginfile(IOBUF **curfile)
  * *curfile = NULL  ----> hit EOF, run ENDFILE block
  */
 
-int
+long
 nextfile(IOBUF **curfile, bool skipping)
 {
 	static long i = 1;
 	static bool files = false;
 	NODE *arg, *tmp;
 	const char *fname;
-	int fd = INVALID_HANDLE;
+	fd_t fd = INVALID_HANDLE;
 	int errcode = 0;
 	IOBUF *iop = *curfile;
 	long argc;
@@ -628,10 +627,10 @@ inrec(IOBUF *iop, int *errcode)
 /* remap_std_file --- reopen a standard descriptor on /dev/null */
 
 static int
-remap_std_file(int oldfd)
+remap_std_file(fd_t oldfd)
 {
-	int newfd;
-	int ret = -1;
+	fd_t newfd, fd;
+	int ret;
 
 	/*
 	 * Give OS-specific routines in gawkmisc.c a chance to interpret
@@ -640,13 +639,17 @@ remap_std_file(int oldfd)
 	newfd = os_devopen("/dev/null", O_RDWR);
 	if (newfd == INVALID_HANDLE)
 		newfd = open("/dev/null", O_RDWR);
-	if (newfd >= 0) {
+	if (newfd != INVALID_HANDLE) {
 		/* if oldfd is open, dup2() will close oldfd for us first. */
-		ret = dup2(newfd, oldfd);
-		if (ret == 0)
-			close(newfd);
+		int save_errno;
+		fd = dup2(newfd, oldfd);
+		save_errno = errno;
+		close(newfd);
+		if (fd == INVALID_HANDLE)
+			errno = save_errno;
+		ret = fd; /* INVALID_HANDLE aka -1 if dup2() failed */
 	} else
-		ret = 0;
+		ret = 0; /* can't open "/dev/null", ignore an error */
 
 	return ret;
 }
@@ -761,14 +764,14 @@ redflags2str(int flags)
 
 struct redirect *
 redirect_string(const char *str, size_t explen, bool not_string,
-		int redirtype, int *errflg, int extfd, bool failure_fatal)
+		enum redirval redirtype, int *errflg, fd_t extfd, bool failure_fatal)
 {
 	struct redirect *rp;
 	unsigned int tflag = 0;
 	unsigned int outflag = 0;
 	const char *direction = "to";
 	const char *mode;
-	int fd;
+	fd_t fd;
 	const char *what = NULL;
 	bool new_rp = false;
 #ifdef HAVE_SOCKETS
@@ -823,7 +826,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 	if (do_lint && (strncmp(str, "0", explen) == 0
 			|| strncmp(str, "1", explen) == 0))
 		lintwarn(_("filename `%.*s' for `%s' redirection may be result of logical expression"),
-				(int) explen, str, what);
+				TO_PRINTF_WIDTH(explen), str, what);
 
 #ifdef HAVE_SOCKETS
 	/*
@@ -848,7 +851,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		 * a good bet that the child has died. So recover it.
 		 */
 		if ((rp->flag & RED_EOF) != 0 && redirtype == redirect_pipein) {
-			if (rp->pid != -1)
+			if (rp->pid != BAD_PID)
 #if defined(__MINGW32__) || defined(_MSC_VER)
 				/* MinGW cannot wait for any process.  */
 				wait_any(rp->pid);
@@ -871,7 +874,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			if (do_lint && rpflag != newflag)
 				lintwarn(
 		_("unnecessary mixing of `>' and `>>' for file `%.*s'"),
-					(int) explen, rp->value);
+					TO_PRINTF_WIDTH(explen), rp->value);
 
 			break;
 		}
@@ -894,7 +897,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		init_output_wrapper(& rp->output);
 		rp->output.name = str;
 		rp->iop = NULL;
-		rp->pid = -1;
+		rp->pid = BAD_PID;
 		rp->status = 0;
 	} else
 		str = rp->value;	/* get \0 terminated string */
@@ -969,7 +972,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			if (! rp->iop->valid) {
 				if (! do_traditional && rp->iop->errcode != 0)
 					update_ERRNO_int(rp->iop->errcode);
-				iop_close(rp->iop);
+				(void) iop_close(rp->iop);
 				rp->iop = NULL;
 			}
 			break;
@@ -1105,13 +1108,13 @@ redirect_string(const char *str, size_t explen, bool not_string,
 /* redirect --- Redirection for printf and print commands */
 
 struct redirect *
-redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
+redirect(NODE *redir_exp, enum redirval redirtype, int *errflg, bool failure_fatal)
 {
 	bool not_string = ((fixtype(redir_exp)->flags & STRING) == 0);
 
 	redir_exp = force_string(redir_exp);
 	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
-				redirtype, errflg, -1, failure_fatal);
+				redirtype, errflg, BAD_PID, failure_fatal);
 }
 
 /* getredirect --- find the struct redirect for this file or pipe */
@@ -1248,7 +1251,7 @@ do_close(nargs_t nargs)
 
 		if (do_lint)
 			lintwarn(_("close: `%.*s' is not an open file, pipe or co-process"),
-				(int) tmp->stlen, tmp->stptr);
+				TO_PRINTF_WIDTH(tmp->stlen), tmp->stptr);
 
 		if (! do_traditional) {
 			/* update ERRNO manually, using errno = ENOENT is a stretch. */
@@ -1358,7 +1361,7 @@ close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 
 	if (status != 0) {
 		int save_errno = errno;
-		char *s = strerror(save_errno);
+		const char *s = strerror(save_errno);
 
 		/*
 		 * BWK's awk, as far back as SVR4 (1989) would check
@@ -1482,6 +1485,9 @@ flush_io(void)
 				if (is_non_fatal_redirect(rp->value, strlen(rp->value)))
 					messagefunc = r_warning;
 
+#if defined _MSC_VER && defined _PREFAST_
+#define messagefunc printf
+#endif
 				if ((rp->flag & RED_PIPE) != 0)
 					messagefunc(_("pipe flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
@@ -1491,6 +1497,9 @@ flush_io(void)
 				else
 					messagefunc(_("file flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
+#if defined _MSC_VER && defined _PREFAST_
+#undef messagefunc
+#endif
 				status++;
 			}
 		}
@@ -1598,9 +1607,12 @@ str2mode(const char *mode)
 
 #ifdef HAVE_SOCKETS
 
+/* Socket descriptor */
+typedef int socket_t;
+
 /* socketopen --- open a socket and set it into connected state */
 
-static int
+static socket_t
 socketopen(int family, int type, const char *localpname,
 	const char *remotepname, const char *remotehostname, bool *hard_error)
 {
@@ -1611,8 +1623,8 @@ socketopen(int family, int type, const char *localpname,
 
 	int lerror, rerror;
 
-	int socket_fd = INVALID_HANDLE;
-	int any_remote_host = (strcmp(remotehostname, "0") == 0);
+	socket_t socket_fd = INVALID_HANDLE;
+	bool any_remote_host = (strcmp(remotehostname, "0") == 0);
 
 	memset(& lhints, '\0', sizeof (lhints));
 
@@ -1702,7 +1714,7 @@ socketopen(int family, int type, const char *localpname,
 					break;
 			} else { /* remote host is ANY => create a server */
 				if (type == SOCK_STREAM) {
-					int clientsocket_fd = INVALID_HANDLE;
+					socket_t clientsocket_fd = INVALID_HANDLE;
 
 					struct sockaddr_storage remote_addr;
 					socklen_t namelen = sizeof(remote_addr);
@@ -1765,11 +1777,11 @@ nextrres:
  * Note that for POSIX systems os_devopen() is a no-op.
  */
 
-int
+fd_t
 devopen_simple(const char *name, const char *mode, bool try_real_open)
 {
-	int openfd;
-	char *cp;
+	fd_t openfd;
+	const char *cp;
 	char *ptr;
 	int flag = 0;
 
@@ -1792,7 +1804,7 @@ devopen_simple(const char *name, const char *mode, bool try_real_open)
 	}
 
 	if (strncmp(name, "/dev/", 5) == 0) {
-		cp = (char *) name + 5;
+		cp = name + 5;
 
 		if (strcmp(cp, "stdin") == 0 && (flag & O_ACCMODE) == O_RDONLY)
 			openfd = fileno(stdin);
@@ -1827,10 +1839,10 @@ done:
  * change the string.
  */
 
-int
+fd_t
 devopen(const char *name, const char *mode)
 {
-	int openfd;
+	fd_t openfd;
 	int flag;
 	struct inet_socket_info isi;
 	int save_errno = 0;
@@ -1862,14 +1874,14 @@ devopen(const char *name, const char *mode)
 		cp[isi.remoteport.offset+isi.remoteport.len] = '\0';
 
 		if (first_time) {
-			char *cp1, *end;
+			char *end;
 			unsigned long count = 0;
-			char *ms2;
+			const char *cp2, *ms2;
 
 			first_time = false;
-			if ((cp1 = getenv("GAWK_SOCK_RETRIES")) != NULL) {
-				count = strtoul(cp1, & end, 10);
-				if (end != cp1 && count > 0)
+			if ((cp2 = getenv("GAWK_SOCK_RETRIES")) != NULL) {
+				count = strtoul(cp2, & end, 10);
+				if (end != cp2 && count > 0)
 					def_retries = count;
 			}
 
@@ -1947,7 +1959,7 @@ strictopen:
 // Factors out common code for the two versions of fork_and_open_slave_pty().
 
 static void
-push_pty_line_disciplines(int slave)
+push_pty_line_disciplines(fd_t slave)
 {
 #ifdef I_PUSH
 	/*
@@ -1971,7 +1983,7 @@ push_pty_line_disciplines(int slave)
 // Factors out common code for the two versions of fork_and_open_slave_pty().
 
 static void
-set_slave_pty_attributes(int slave)
+set_slave_pty_attributes(fd_t slave)
 {
 	struct termios st;
 
@@ -2016,9 +2028,9 @@ set_slave_pty_attributes(int slave)
  */
 
 static bool
-fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
+fork_and_open_slave_pty(const char *slavenam, fd_t master, const char *command, pid_t *pid)
 {
-	int slave;
+	fd_t slave;
 	int save_errno;
 
 #if defined _AIX || defined __hpux
@@ -2064,7 +2076,7 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 		execl("/bin/sh", "sh", "-c", command, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 
-	case -1:
+	case BAD_PID:
 		save_errno = errno;
 		close(master);
 		errno = save_errno;
@@ -2116,7 +2128,7 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 		execl("/bin/sh", "sh", "-c", command, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 
-	case -1:
+	case BAD_PID:
 		save_errno = errno;
 		close(master);
 		close(slave);
@@ -2141,14 +2153,14 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 /* two_way_open --- open a two way communications channel */
 
 static int
-two_way_open(const char *str, struct redirect *rp, int extfd)
+two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 {
 	static bool no_ptys = false;
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
 	if (extfd >= 0 || inetfile(str, strlen(str), NULL)) {
-		int fd, newfd;
+		fd_t fd, newfd;
 
 		fd = (extfd >= 0) ? extfd : devopen(str, "rw");
 		if (fd == INVALID_HANDLE)
@@ -2176,7 +2188,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		if (! rp->iop->valid) {
 			if (! do_traditional && rp->iop->errcode != 0)
 				update_ERRNO_int(rp->iop->errcode);
-			iop_close(rp->iop);
+			(void) iop_close(rp->iop);
 			rp->iop = NULL;
 			rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
 			return false;
@@ -2200,11 +2212,11 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 #endif
 		char slavenam[32];
 		char c;
-		int master, dup_master;
+		fd_t master, dup_master;
 		pid_t pid;
 		struct stat statb;
 		/* Use array of chars to avoid ASCII / EBCDIC issues */
-		static char pty_chars[] = "pqrstuvwxyzabcdefghijklmno";
+		static const char pty_chars[] = "pqrstuvwxyzabcdefghijklmno";
 
 		if (! initialized) {
 			unsigned i;
@@ -2232,7 +2244,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 			master = open("/dev/ptmx", O_RDWR);
 #endif
 			if (master >= 0) {
-				char *tem;
+				const char *tem;
 
 				grantpt(master);
 				unlockpt(master);
@@ -2257,7 +2269,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 			c = first_pty_letter;
 			do {
 				unsigned i;
-				char *cp;
+				const char *cp;
 
 				for (i = 0; i < 16; i++) {
 					sprintf(slavenam, "/dev/pty%c%x", c, i);
@@ -2300,7 +2312,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		if (! rp->iop->valid) {
 			if (! do_traditional && rp->iop->errcode != 0)
 				update_ERRNO_int(rp->iop->errcode);
-			iop_close(rp->iop);
+			(void) iop_close(rp->iop);
 			rp->iop = NULL;
 			(void) kill(pid, SIGKILL);
 			return false;
@@ -2314,11 +2326,11 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		rp->output.mode = "w";
 		if ((dup_master = dup(master)) < 0
 		    || (rp->output.fp = fdopen(dup_master, "w")) == NULL) {
-			iop_close(rp->iop);
+			(void) iop_close(rp->iop);
 			rp->iop = NULL;
 			(void) close(master);
 			(void) kill(pid, SIGKILL);
-			if (dup_master > 0)
+			if (dup_master >= 0)
 				(void) close(dup_master);
 			return false;
 		} else
@@ -2335,11 +2347,11 @@ use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */
 	/* case 4: two way pipe to a child process */
     {
-	int ptoc[2], ctop[2];
-	int pid;
+	fd_t ptoc[2], ctop[2];
+	pid_t pid;
 	int save_errno;
 #if defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
-	int save_stdout, save_stdin;
+	fd_t save_stdout, save_stdin;
 #if defined(__MINGW32__) || defined(_MSC_VER)
 	char *qcmd = NULL;
 #endif
@@ -2360,12 +2372,12 @@ use_pipes:
 	save_stdin = dup(0);	/* duplicate stdin */
 	save_stdout = dup(1);	/* duplicate stdout */
 
-	if (save_stdout == -1 || save_stdin == -1) {
+	if (save_stdout == INVALID_HANDLE || save_stdin == INVALID_HANDLE) {
 		/* if an error occurs close all open file handles */
 		save_errno = errno;
-		if (save_stdin != -1)
+		if (save_stdin != INVALID_HANDLE)
 			close(save_stdin);
-		if (save_stdout != -1)
+		if (save_stdout != INVALID_HANDLE)
 			close(save_stdout);
 		close(ptoc[0]); close(ptoc[1]);
 		close(ctop[0]); close(ctop[1]);
@@ -2404,7 +2416,7 @@ use_pipes:
 #else  /* __MINGW32__ || _MSC_VER */
 	/* It's safe to truncate 64-bit process handle
 	  to 32-bit integer on 64-bit Windows.  */
-	pid = (int) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
+	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
 		     qcmd = quote_cmd(str), NULL);
 	efree(qcmd);
 #endif
@@ -2477,7 +2489,7 @@ use_pipes:
 	if (! rp->iop->valid) {
 		if (! do_traditional && rp->iop->errcode != 0)
 			update_ERRNO_int(rp->iop->errcode);
-		iop_close(rp->iop);
+		(void) iop_close(rp->iop);
 		rp->iop = NULL;
 		(void) close(ctop[1]);
 		(void) close(ptoc[0]);
@@ -2490,7 +2502,7 @@ use_pipes:
 	rp->output.mode = "w";
 	rp->output.name = str;
 	if (rp->output.fp == NULL) {
-		iop_close(rp->iop);
+		(void) iop_close(rp->iop);
 		rp->iop = NULL;
 		(void) close(ctop[0]);
 		(void) close(ctop[1]);
@@ -2543,9 +2555,9 @@ use_pipes:
  */
 
 static int
-wait_any(int interesting)	/* pid of interest, if any */
+wait_any(pid_t interesting)	/* pid of interest, if any */
 {
-	int pid;
+	pid_t pid;
 	int status = 0;
 	struct redirect *redp;
 #ifdef HAVE_SIGPROCMASK
@@ -2565,17 +2577,17 @@ wait_any(int interesting)	/* pid of interest, if any */
 #if defined(__MINGW32__) || defined(_MSC_VER)
 	if (interesting < 0) {
 		status = -1;
-		pid = -1;
+		pid = BAD_PID;
 	}
 	else {
 		/* It's safe to truncate 64-bit process handle
 		  to 32-bit integer on 64-bit Windows.  */
-		pid = (int) _cwait(& status, interesting, 0);
+		pid = (pid_t) _cwait(& status, interesting, 0);
 	}
 	if (pid == interesting && pid > 0) {
 		for (redp = red_head; redp != NULL; redp = redp->next)
 			if (interesting == redp->pid) {
-				redp->pid = -1;
+				redp->pid = BAD_PID;
 				redp->status = status;
 				break;
 			}
@@ -2593,7 +2605,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 		 * (i.e. interesting is non-zero), then we must hang until we
 		 * get exit status for that child.
 		 */
-		if ((pid = waitpid(-1, & status, (interesting ? 0 : WNOHANG))) == 0)
+		if ((pid = waitpid(BAD_PID, & status, (interesting ? 0 : WNOHANG))) == 0)
 			/* No children have exited */
 			break;
 # elif defined(HAVE_SYS_WAIT_H)	/* POSIX compatible sys/wait.h */
@@ -2603,15 +2615,15 @@ wait_any(int interesting)	/* pid of interest, if any */
 # endif
 		if (interesting && pid == interesting) {
 			break;
-		} else if (pid != -1) {
+		} else if (pid != BAD_PID) {
 			for (redp = red_head; redp != NULL; redp = redp->next)
 				if (pid == redp->pid) {
-					redp->pid = -1;
+					redp->pid = BAD_PID;
 					redp->status = status;
 					break;
 				}
 		}
-		if (pid == -1 && errno == ECHILD)
+		if (pid == BAD_PID && errno == ECHILD)
 			break;
 	}
 #ifndef HAVE_SIGPROCMASK
@@ -2632,10 +2644,10 @@ wait_any(int interesting)	/* pid of interest, if any */
 static IOBUF *
 gawk_popen(const char *cmd, struct redirect *rp)
 {
-	int p[2];
-	int pid;
+	fd_t p[2];
+	pid_t pid;
 #if defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
-	int save_stdout;
+	fd_t save_stdout;
 #if defined(__MINGW32__) || defined(_MSC_VER)
 	char *qcmd = NULL;
 #endif
@@ -2655,7 +2667,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #if defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
 	rp->iop = NULL;
 	save_stdout = dup(1); /* save stdout */
-	if (save_stdout == -1) {
+	if (save_stdout == INVALID_HANDLE) {
 		close(p[0]);
 		close(p[1]);
 		return NULL;	/* failed */
@@ -2678,7 +2690,9 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #ifdef __EMX__
 	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", cmd, NULL);
 #else  /* __MINGW32__ || _MSC_VER */
-	pid = (int) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
+	/* It's safe to truncate 64-bit process handle
+	  to 32-bit integer on 64-bit Windows.  */
+	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
 		     qcmd = quote_cmd(cmd), NULL);
 	efree(qcmd);
 #endif
@@ -2706,7 +2720,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	}
 #endif /* NOT __EMX__, NOT __MINGW32__, NOT _MSC_VER */
 
-	if (pid == -1) {
+	if (pid == BAD_PID) {
 		close(p[0]); close(p[1]);
 		fatal(_("cannot create child process for `%s' (fork: %s)"), cmd, strerror(errno));
 	}
@@ -2716,8 +2730,8 @@ gawk_popen(const char *cmd, struct redirect *rp)
 		close(p[0]);
 		fatal(_("close of pipe failed (%s)"), strerror(errno));
 	}
-#endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
+#endif
 	if ((BINMODE & BINMODE_INPUT) != 0)
 		os_setbinmode(p[0], O_BINARY);
 	rp->iop = iop_alloc(p[0], cmd, 0);
@@ -2726,7 +2740,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if (! rp->iop->valid) {
 		if (! do_traditional && rp->iop->errcode != 0)
 			update_ERRNO_int(rp->iop->errcode);
-		iop_close(rp->iop);
+		(void) iop_close(rp->iop);
 		rp->iop = NULL;
 	}
 
@@ -2743,10 +2757,10 @@ gawk_pclose(struct redirect *rp)
 	rp->iop = NULL;
 
 	/* process previously found, return stored status */
-	if (rp->pid == -1)
+	if (rp->pid == BAD_PID)
 		return rp->status;
 	rp->status = sanitize_exit_status(wait_any(rp->pid));
-	rp->pid = -1;
+	rp->pid = BAD_PID;
 	return rp->status;
 }
 
@@ -2784,7 +2798,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 			update_ERRNO_int(rp->iop->errcode);
 		(void) pclose(current);
 		rp->iop->publ.fd = INVALID_HANDLE;
-		iop_close(rp->iop);
+		(void) iop_close(rp->iop);
 		rp->iop = NULL;
 		current = NULL;
 	}
@@ -2797,7 +2811,8 @@ gawk_popen(const char *cmd, struct redirect *rp)
 static int
 gawk_pclose(struct redirect *rp)
 {
-	int rval, aval, fd = rp->iop->publ.fd;
+	int rval, aval
+	fd_t fd = rp->iop->publ.fd;
 
 	if (rp->iop != NULL) {
 		rp->iop->publ.fd = dup(fd);	  /* kludge to allow close() + pclose() */
@@ -2888,7 +2903,7 @@ do_getline_redir(bool into_variable, enum redirval redirtype)
 /* do_getline --- read in a line, into var and without redirection */
 
 NODE *
-do_getline(int into_variable, IOBUF *iop)
+do_getline(bool into_variable, IOBUF *iop)
 {
 	int cnt = EOF;
 	char *s = NULL;
@@ -2952,8 +2967,8 @@ init_awkpath(path_info *pi)
 {
 	char *path;
 	char *start, *end, *p;
-	size_t len, i;
-	unsigned max_path;		/* (# of allocated paths)-1 */
+	size_t len;
+	unsigned i, max_path;		/* (# of allocated paths)-1 */
 
 	pi->max_pathlen = 0;
 	if ((path = getenv(pi->envname)) == NULL || *path == '\0')
@@ -2994,7 +3009,7 @@ init_awkpath(path_info *pi)
 				continue;
 
 			len = (size_t) (end - start);
-			if (len) {
+			if (len > 0) {
 				emalloc(p, char *, len + 2, "init_awkpath");
 				memcpy(p, start, len);
 
@@ -3021,7 +3036,7 @@ static char *
 do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 {
 	char *path;
-	int i;
+	unsigned i;
 
 	assert(errcode != NULL);
 
@@ -3059,7 +3074,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 /* find_source --- find source file with default file extension handling */
 
 char *
-find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
+find_source(const char *src, struct stat *stb, int *errcode, bool is_extlib)
 {
 	char *path;
 	path_info *pi = (is_extlib ? & pi_awklibpath : & pi_awkpath);
@@ -3138,10 +3153,10 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 
 /* srcopen --- open source file */
 
-int
+fd_t
 srcopen(SRCFILE *s)
 {
-	int fd = INVALID_HANDLE;
+	fd_t fd = INVALID_HANDLE;
 
 	if (s->stype == SRC_STDIN)
 		fd = fileno(stdin);
@@ -3374,7 +3389,7 @@ find_two_way_processor(const char *name, struct redirect *rp)
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
 static IOBUF *
-iop_alloc(int fd, const char *name, int errno_val)
+iop_alloc(fd_t fd, const char *name, int errno_val)
 {
 	IOBUF *iop;
 
@@ -3493,8 +3508,9 @@ grow_iop_buffer(IOBUF *iop)
 		fatal(_("could not allocate more input memory"));
 
 	/* Make sure there's room for a disk block */
+	/* Note: need a space for one extra byte over disk block */
 	if (newsize - valid <= iop->readsize)
-		newsize += iop->readsize + 1;
+		newsize = valid + iop->readsize + 1;
 
 	/* Check for overflow, again */
 	if (newsize <= iop->size)
@@ -3739,7 +3755,7 @@ again:
 
 	/* succession of tests is easier to trace in GDB. */
 	if (RSre->maybe_long) {
-		char *matchend = iop->off + reend;
+		const char *matchend = iop->off + reend;
 		size_t tail = (size_t) (iop->dataend - matchend);
 
 		if (tail < RS->stlen)
@@ -3827,7 +3843,7 @@ find_longest_terminator:
 
 /* retryable --- return true if PROCINFO[<filename>, "RETRY"] exists */
 
-static inline int
+static inline bool
 retryable(IOBUF *iop)
 {
 	return PROCINFO_node && in_PROCINFO(iop->publ.name, "RETRY", NULL);
@@ -3835,7 +3851,7 @@ retryable(IOBUF *iop)
 
 /* errno_io_retry --- Does the I/O error indicate that the operation should be retried later? */
 
-static inline int
+static inline bool
 errno_io_retry(void)
 {
 	switch (errno) {
@@ -3853,9 +3869,9 @@ errno_io_retry(void)
 #ifdef ETIMEDOUT
 	case ETIMEDOUT:
 #endif
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	}
 }
 
@@ -3956,20 +3972,20 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			recm.rt_start = iop->off + recm.len;
 
 		/* read more data, break if EOF */
-		amt_to_read = iop->readsize;
-
 		/* subtract one in read count to leave room for sentinel */
 		room_left = (size_t) (iop->end - iop->dataend) - 1;
+		amt_to_read = iop->readsize;
 
-		if (room_left < amt_to_read) {
+		if (room_left < iop->readsize) {
 			grow_iop_buffer(iop);
 			/* adjust recm contents */
 			recm.start = iop->off;
 			if (recm.rt_start != NULL)
 				recm.rt_start = iop->off + recm.len;
 			room_left = (size_t) (iop->end - iop->dataend) - 1;
+			assert(room_left >= iop->readsize);
 		}
-		while (amt_to_read + iop->readsize < room_left)
+		while (amt_to_read <= room_left - iop->readsize)
 			amt_to_read += iop->readsize;
 
 #ifdef SSIZE_MAX
@@ -4187,7 +4203,7 @@ inetfile(const char *str, size_t len, struct inet_socket_info *isi)
 	struct inet_socket_info buf;
 
 	/* syntax: /inet/protocol/localport/hostname/remoteport */
-	if (len < 5 || memcmp(cp, "/inet", 5) != 0)
+	if (len < 5 || memcmp(cp, "/inet", 5) != 0 || len >= (unsigned)-1)
 		/* quick exit */
 		return false;
 	if (! isi)
@@ -4321,7 +4337,7 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 	else if (pidx1 == NULL && pidx2 != NULL)
 		strcpy(sub->stptr, pidx2);
 	else
-		sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+		sprintf(sub->stptr, "%s%.*s%s", pidx1, TO_PRINTF_WIDTH(subsep->stlen),
 				subsep->stptr, pidx2);
 
 	r = in_array(PROCINFO_node, sub);
@@ -4333,16 +4349,16 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 
 /* get_read_timeout --- get timeout in milliseconds for reading */
 
-static unsigned long
+static ulong_t
 get_read_timeout(IOBUF *iop)
 {
-	unsigned long tmout = 0;
+	ulong_t tmout = 0u;
 
 	if (PROCINFO_node != NULL) {
 		const char *name = iop->publ.name;
 		NODE *val = NULL;
 		static NODE *full_idx = NULL;
-		static const char *last_name = NULL;
+		static char *last_name = NULL;
 
 		/*
 		 * Do not re-construct the full index when last redirection
@@ -4351,7 +4367,7 @@ get_read_timeout(IOBUF *iop)
 		if (full_idx == NULL || strcmp(name, last_name) != 0) {
 			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
 			if (last_name != NULL)
-				efree((void *) last_name);
+				efree(last_name);
 			last_name = estrdup(name, strlen(name));
 		} else	/* use cached full index */
 			val = in_array(PROCINFO_node, full_idx);
@@ -4379,7 +4395,7 @@ get_read_timeout(IOBUF *iop)
  */
 
 static ssize_t
-read_with_timeout(int fd, void *buf, size_t size)
+read_with_timeout(fd_t fd, void *buf, size_t size)
 {
 #if ! defined(VMS)
 	fd_set readfds;
@@ -4394,7 +4410,7 @@ read_with_timeout(int fd, void *buf, size_t size)
 	if (!s)
 		return read_wrap(fd, buf, size);
 #else
-	int s = fd;
+	fd_t s = fd;
 #endif
 
 #ifdef _MSC_VER
@@ -4434,11 +4450,11 @@ typedef long suseconds_t;
 }
 
 /*
- * read_wrap --- wrapper around read() function.
+ * read_wrap --- wrapper around OS-specific read() function.
  */
 
 ssize_t
-read_wrap(int fd, void *buf, size_t size)
+read_wrap(fd_t fd, void *buf, size_t size)
 {
 #ifndef _MSC_VER
 	return read(fd, buf, size);
