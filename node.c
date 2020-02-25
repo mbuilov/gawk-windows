@@ -247,10 +247,10 @@ r_format_val(const char *format, unsigned index, NODE *s)
 
 		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
-			r = format_tree("%.0f", 4, dummy, 2);
+			r = format_tree("%.0f", 4, dummy, 2u);
 			s->stfmt = STFMT_UNUSED;
 		} else {
-			r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
+			r = format_tree(format, fmt_list[index]->stlen, dummy, 2u);
 			assert(r != NULL);
 			s->stfmt = index;
 		}
