@@ -5278,7 +5278,7 @@ out:
 
 /* parse_program --- read in the program and convert into a list of instructions */
 
-int
+bool
 parse_program(INSTRUCTION **pcode, bool from_eval)
 {
 	int ret;
@@ -7414,6 +7414,9 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 void
 valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
+#if defined _MSC_VER && defined _PREFAST_
+#define print_func fprintf
+#endif
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
 	else if ((n->flags & REGEX) != 0)
@@ -7432,6 +7435,9 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		print_func(fp, "%.17g\n", n->numbr);
 	} else
 		print_func(fp, "?? flags %s\n", flags2str(n->flags));
+#if defined _MSC_VER && defined _PREFAST_
+#undef print_func
+#endif
 }
 
 
