@@ -448,7 +448,7 @@ after_beginfile(IOBUF **curfile)
  * *curfile = NULL  ----> hit EOF, run ENDFILE block
  */
 
-long
+long_t
 nextfile(IOBUF **curfile, bool skipping)
 {
 	static long i = 1;
@@ -2986,19 +2986,19 @@ init_awkpath(path_info *pi)
 	i = 0;
 
 	if (*path == envsep) {	/* null entry at front of path */
-		pi->awkpath[i++] = ".";
+		pi->awkpath[i++] = (char*) ".";
 		pi->max_pathlen = 1;
 	}
 
 	while (*start) {
 		if (*start == envsep) {
 			if (start[1] == envsep) {
-				pi->awkpath[i++] = ".";
+				pi->awkpath[i++] = (char*) ".";
 				if (pi->max_pathlen == 0)
 					pi->max_pathlen = 1;
 				start++;
 			} else if (start[1] == '\0') {
-				pi->awkpath[i++] = ".";
+				pi->awkpath[i++] = (char*) ".";
 				if (pi->max_pathlen == 0)
 					pi->max_pathlen = 1;
 				break;
