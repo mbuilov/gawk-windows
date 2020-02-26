@@ -39,7 +39,7 @@ extern INSTRUCTION *main_beginfile;
 extern enum defrule currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
-static char *valtype2str(awk_valtype_t type);
+static const char *valtype2str(awk_valtype_t type);
 static NODE *ns_lookup(const char *name_space, const char *name, char **full_name);
 
 /*
@@ -865,11 +865,11 @@ api_sym_update(awk_ext_id_t id,
 	if (   (node->flags & NO_EXT_SET) != 0
 	    || is_off_limits_var(full_name)) {	/* most built-in vars not allowed */
 		node->flags |= NO_EXT_SET;
-		efree((void *) full_name);
+		efree(full_name);
 		return awk_false;
 	}
 
-	efree((void *) full_name);
+	efree(full_name);
 
 	if (    value->val_type != AWK_ARRAY
 	    && (node->type == Node_var || node->type == Node_var_new)) {
@@ -1119,7 +1119,7 @@ remove_element(NODE *array, NODE *subscript)
 
 static awk_bool_t
 api_del_array_element(awk_ext_id_t id,
-		awk_array_t a_cookie, const awk_value_t* const index)
+		awk_array_t a_cookie, const awk_value_t *const index)
 {
 	NODE *array, *sub;
 
@@ -1376,7 +1376,7 @@ api_get_mpz(awk_ext_id_t id)
 
 static awk_bool_t
 api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype,
-		int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
+		fd_t fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
 {
 	const struct redirect *f;
 	int flag;	/* not used, sigh */
@@ -1406,7 +1406,7 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 				pc = pc->nexti;
 			}
 			pc->opcode = Op_stop;
-		        (void) (*interpret)(main_beginfile);
+			(void) (*interpret)(main_beginfile);
 			pc->opcode = Op_after_beginfile;
 			after_beginfile(& curfile);
 			/* restore execution state */
@@ -1605,13 +1605,13 @@ print_ext_versions(void)
 
 /* valtype2str --- return a printable representation of a value type */
 
-static char *
+static const char *
 valtype2str(awk_valtype_t type)
 {
 	static char buf[100];
 
 	// Important: keep in same order as in gawkapi.h!
-	static char *values[] = {
+	static const char *const values[] = {
 		"AWK_UNDEFINED",
 		"AWK_NUMBER",
 		"AWK_STRING",
@@ -1623,7 +1623,7 @@ valtype2str(awk_valtype_t type)
 	};
 
 	if (AWK_UNDEFINED <= type && type <= AWK_VALUE_COOKIE)
-		return values[(int) type];
+		return values[type];
 
 	sprintf(buf, "unknown type! (%d)", (int) type);
 
@@ -1653,7 +1653,7 @@ ns_lookup(const char *name_space, const char *name, char **fullname)
 	if (fullname != NULL)
 		*fullname = buf;
 	else
-		efree((void *) buf);
+		efree(buf);
 
 	return f;
 }
