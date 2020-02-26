@@ -299,8 +299,8 @@ research(Regexp *rp, char *str, int start,
 {
 	const char *ret = str;
 	bool try_backref = false;
-	int need_start;
-	int no_bol;
+	bool need_start;
+	bool no_bol;
 	regoff_t res;
 
 	need_start = ((flags & RE_NEED_START) != 0);
@@ -600,10 +600,10 @@ check_bracket_exp(char *s, size_t length)
 		{ "[:blank:]", 9, false },
 		{ NULL, 0 }
 	};
-	int i;
+	unsigned i;
 	bool found = false;
 	char save;
-	char *sp, *sp2, *end;
+	const char *sp, *sp2, *end;
 	size_t len = 0; /* Silence compiler warning.  */
 	int count = 0;
 
@@ -616,7 +616,7 @@ check_bracket_exp(char *s, size_t length)
 	sp = s;
 
 again:
-	sp = sp2 = (char*) memchr(sp, '[', (size_t) (end - sp));
+	sp = sp2 = (const char*) memchr(sp, '[', (size_t) (end - sp));
 	if (sp == NULL)
 		goto done;
 
@@ -664,7 +664,7 @@ again:
 
 	if (found && ! classes[i].warned) {
 		awkwarn(_("regexp component `%.*s' should probably be `[%.*s]'"),
-				(int) len, sp2, (int) len, sp2);
+				TO_PRINTF_WIDTH(len), sp2, TO_PRINTF_WIDTH(len), sp2);
 		classes[i].warned = true;
 	}
 
