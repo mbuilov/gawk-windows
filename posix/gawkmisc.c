@@ -25,8 +25,8 @@
 #endif
 
 char quote = '\'';
-char *defpath = DEFPATH;
-char *deflibpath = DEFLIBPATH;
+const char *defpath = DEFPATH;
+const char *deflibpath = DEFLIBPATH;
 char envsep = ':';
 
 #ifndef INVALID_HANDLE
@@ -36,14 +36,14 @@ char envsep = ':';
 
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
 
-char *
+const char *
 gawk_name(const char *filespec)
 {
-	char *p;
+	const char *p;
 
 	/* "path/name" -> "name" */
 	p = strrchr(filespec, '/');
-	return (p == NULL ? (char *) filespec : p + 1);
+	return (p == NULL ? filespec : p + 1);
 }
 
 /* os_arg_fixup --- fixup the command line */
@@ -276,7 +276,7 @@ os_isatty(int fd)
 /* files_are_same --- return true if files are identical */
 
 int
-files_are_same(char *path, SRCFILE *src)
+files_are_same(const char *path, SRCFILE *src)
 {
 	struct stat st;
 
