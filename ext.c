@@ -73,7 +73,7 @@ load_ext(const char *lib_name)
 				lib_name, INIT_FUNC, dlerror());
 
 	if (install_func(& api_impl, NULL /* ext_id */) == 0)
-		warning(_("load_ext: library `%s' initialization routine `%s' failed"),
+		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
 				lib_name, INIT_FUNC);
 }
 
@@ -85,7 +85,6 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 	NODE *symbol, *f;
 	INSTRUCTION *b;
 	const char *name = funcinfo->name;
-	int count = funcinfo->max_expected_args;
 	const char *install_name;
 
 	if (name == NULL || *name == '\0')
@@ -134,10 +133,6 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 			fatal(_("make_builtin: function name `%s' previously defined"), name);
 	}
 
-	if (count < 0)
-		fatal(_("make_builtin: negative argument count for function `%s'"),
-				name);
-
 	b = bcalloc(Op_symbol, 1, 0);
 	b->extfunc = funcinfo->function;
 	b->c_function = (awk_ext_func_t *) funcinfo;
@@ -153,16 +148,16 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 /* get_argument --- get the i'th argument of a dynamically linked function */
 
 NODE *
-get_argument(int i)
+get_argument(size_t i)
 {
 	NODE *t;
-	int arg_count;
+	ulong_t arg_count;
 	INSTRUCTION *pc;
 
 	pc = TOP()->code_ptr;		/* Op_ext_builtin instruction */
 	arg_count = pc->expr_count;	/* # of arguments supplied */
 
-	if (i < 0 || i >= arg_count)
+	if (i >= arg_count)
 		return NULL;
 
 	t = PEEK(arg_count - i);
@@ -191,9 +186,9 @@ get_argument(int i)
  */
 
 NODE *
-get_actual_argument(NODE *t, int i, bool want_array)
+get_actual_argument(NODE *t, size_t i, bool want_array)
 {
-	char *fname;
+	const char *fname;
 	INSTRUCTION *pc;
 
 	pc = TOP()->code_ptr;	/* Op_ext_builtin instruction */
@@ -211,32 +206,33 @@ get_actual_argument(NODE *t, int i, bool want_array)
 
 	if (want_array) {
 		if (t->type != Node_var_array)
-			fatal(_("function `%s': argument #%d: attempt to use scalar as an array"),
-				fname, i + 1);
+			fatal(_("function `%s': argument #%llu: attempt to use scalar as an array"),
+				fname, 0ull + i + 1);
 	} else {
 		if (t->type != Node_val)
-			fatal(_("function `%s': argument #%d: attempt to use array as a scalar"),
-				fname, i + 1);
+			fatal(_("function `%s': argument #%llu: attempt to use array as a scalar"),
+				fname, 0ull + i + 1);
 	}
 	assert(t->type == Node_var_array || t->type == Node_val);
 	return t;
 }
 
-#else
+#else /* !DYNAMIC */
 
 /* load_ext --- dummy version if extensions not available */
 
 void
 load_ext(const char *lib_name)
 {
+	(void) lib_name;
 	fatal(_("dynamic loading of libraries is not supported"));
 }
-#endif
+#endif /* !DYNAMIC */
 
 /* close_extensions --- execute extension cleanup routines */
 
 void
-close_extensions()
+close_extensions(void)
 {
 	SRCFILE *s;
 
