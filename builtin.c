@@ -345,13 +345,13 @@ strncasecmpmbs(const unsigned char *s1, const unsigned char *s2, size_t n)
 		dest =       1,        2, 1, 1,        1,        2,        3. 1
 */
 static void
-index_multibyte_buffer(char* src, char* dest, size_t len)
+index_multibyte_buffer(const char src[], char dest[], size_t len)
 {
 	size_t idx, prev_idx;
 	mbstate_t mbs, prevs;
 
 	memset(& prevs, 0, sizeof(mbstate_t));
-	for (idx = prev_idx = 0 ; idx < len ; idx++) {
+	for (idx = prev_idx = 0; idx < len; idx++) {
 		size_t mbclen;
 		mbs = prevs;
 		mbclen = mbrlen(src + prev_idx, idx - prev_idx + 1, & mbs);
@@ -370,7 +370,7 @@ index_multibyte_buffer(char* src, char* dest, size_t len)
 			/* Can't reach.  */
 		}
 		dest[idx] = (char)mbclen;
-    }
+	}
 }
 
 /* do_index --- find index of a string */
@@ -731,7 +731,7 @@ format_tree(
 	long *cur = NULL;
 	uintmax_t uval;
 	bool sgn;
-	int base;
+	unsigned base;
 	/*
 	 * Although this is an array, the elements serve two different
 	 * purposes. The first element is the general buffer meant
@@ -850,7 +850,6 @@ format_tree(
 		cur = &fw;
 		fw = 0;
 		prec = 0;
-		base = 0;
 		argnum = 0u;
 		base = 0;
 		have_prec = false;
@@ -2741,11 +2740,11 @@ do_match(nargs_t nargs)
 	regoff_t rstart, s;
 	size_t rlength, ii, len;
 	Regexp *rp;
-	char *start;
+	const char *start;
 	char *buf = NULL;
 	char buff[100];
 	size_t amt, oldamt = 0, ilen, slen;
-	char *subsepstr;
+	const char *subsepstr;
 	size_t subseplen;
 	long result_len;
 
@@ -2946,21 +2945,22 @@ do_match(nargs_t nargs)
 NODE *
 do_sub(nargs_t nargs, int flags)
 {
-	char *scan;
-	char *bp, *cp;
+	const char *scan;
+	char *bp;
+	const char *cp;
 	char *buf = NULL;
 	size_t buflen;
-	char *matchend;
+	const char *matchend;
 	size_t len;
-	char *matchstart;
-	char *text;
+	const char *matchstart;
+	const char *text;
 	size_t textlen = 0;
-	char *repl;
-	char *replend;
+	const char *repl;
+	const char *replend;
 	size_t repllen;
 	size_t sofar;
-	int ampersands;
-	int matches = 0;
+	unsigned ampersands;
+	unsigned matches = 0;
 	Regexp *rp;
 	NODE *rep_node;		/* replacement text */
 	NODE *target;		/* string to make sub. in; $0 if none given */
@@ -3899,8 +3899,8 @@ NODE *
 do_dcgettext(nargs_t nargs)
 {
 	NODE *tmp, *t1, *t2 = NULL;
-	char *string;
-	char *the_result;
+	const char *string;
+	const char *the_result;
 	size_t reslen;
 #if defined(ENABLE_NLS) && ENABLE_NLS && defined(LC_MESSAGES) && defined(HAVE_DCGETTEXT)
 	int lc_cat;
@@ -3956,10 +3956,10 @@ NODE *
 do_dcngettext(nargs_t nargs)
 {
 	NODE *tmp, *t1, *t2, *t3;
-	char *string1, *string2;
+	const char *string1, *string2;
 	unsigned long number;
 	AWKNUM d;
-	char *the_result;
+	const char *the_result;
 	size_t reslen;
 
 #if defined(ENABLE_NLS) && ENABLE_NLS && defined(LC_MESSAGES) && defined(HAVE_DCGETTEXT)
@@ -4057,7 +4057,7 @@ do_bindtextdomain(nargs_t nargs)
 
 	if (nargs == 2u) {	/* second argument */
 		t2 = POP_STRING();
-		domain = (const char *) t2->stptr;
+		domain = t2->stptr;
 		save = t2->stptr[t2->stlen];
 		t2->stptr[t2->stlen] = '\0';
 	}
@@ -4065,7 +4065,7 @@ do_bindtextdomain(nargs_t nargs)
 	/* first argument */
 	t1 = POP_STRING();
 	if (t1->stlen > 0) {
-		directory = (const char *) t1->stptr;
+		directory = t1->stptr;
 		str_terminate(t1, save1);
 	}
 
@@ -4078,6 +4078,9 @@ do_bindtextdomain(nargs_t nargs)
 		t2->stptr[t2->stlen] = save;
 		DEREF(t2);
 	}
+
+	if (the_result == NULL)
+		the_result = "";
 
 	return make_string(the_result, strlen(the_result));
 }
@@ -4152,7 +4155,7 @@ NODE *
 do_typeof(nargs_t nargs)
 {
 	NODE *arg;
-	char *res = NULL;
+	const char *res = NULL;
 	bool deref = true;
 	NODE *dbg;
 
