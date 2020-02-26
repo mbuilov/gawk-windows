@@ -26,22 +26,22 @@ char quote = '\'';
 char envsep = ';';
 
 # ifdef DEFPATH
-char *defpath = DEFPATH;
+const char *defpath = DEFPATH;
 # else
-char *defpath = ".;c:\\lib\\awk;c:\\gnu\\lib\\awk";
+const char *defpath = ".;c:\\lib\\awk;c:\\gnu\\lib\\awk";
 # endif
 /* the Makefile should define DEFLIBPATH */
-char *deflibpath = DEFLIBPATH;
+const char *deflibpath = DEFLIBPATH;
 
 #ifdef __EMX__
 #include<io.h>
 
 static int _os2_is_abs_path(const char *dirname);
-static char* _os2_unixroot(const char *path);
-static const char* _os2_unixroot_path(const char *path);
+static char *_os2_unixroot(const char *path);
+static const char *_os2_unixroot_path(const char *path);
 #endif
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #ifdef HAVE_SOCKETS
 #include <socket.h>
 
@@ -59,11 +59,14 @@ static const char* _os2_unixroot_path(const char *path);
 #include <windows.h>
 #endif
 
+#if ! defined(S_ISREG) && defined(S_IFREG)
+#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
 
-char *
-gawk_name(filespec)
-const char *filespec;
+const char *
+gawk_name(const char *filespec)
 {
 	char *p, *q;
 
@@ -80,6 +83,8 @@ const char *filespec;
 	return strlwr(p);
 }
 
+
+#ifdef HAVE_MEMCPY_ULONG
 
 /*
  * memcpy_long() & memset_ulong() are 32-bit replacements for MSC which
@@ -99,6 +104,10 @@ register unsigned long l;
 	return ret;
 }
 
+#endif /* HAVE_MEMCPY_ULONG */
+
+
+#ifdef HAVE_MEMSET_ULONG
 
 void *
 memset_ulong(dest, val, l)
@@ -115,13 +124,13 @@ register unsigned long l;
 	return ((void *) ret);
 }
 
+#endif /* HAVE_MEMSET_ULONG */
+
 
 /* os_arg_fixup --- fixup the command line */
 
 void
-os_arg_fixup(argcp, argvp)
-int *argcp;
-char ***argvp;
+os_arg_fixup(int *argcp, char ***argvp)
 {
 #ifdef __EMX__
 # ifdef initialize_main
@@ -132,17 +141,16 @@ char ***argvp;
 # endif
 
 	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
-	defpath = (char*) _os2_unixroot_path(defpath);
+	defpath = _os2_unixroot_path(defpath);
 #endif /* __EMX__ */
+	(void) argcp, (void) argvp;
 	return;
 }
 
 /* os_devopen --- open special per-OS devices */
 
-int
-os_devopen(name, flag)
-const char *name;
-int flag;
+fd_t
+os_devopen(const char *name, int flag)
 {
 #ifdef __EMX__
 	/* do not use open(name, flag) here !!! */
@@ -161,9 +169,7 @@ int flag;
 /* optimal_bufsize --- determine optimal buffer size */
 
 size_t
-optimal_bufsize(fd, stb)
-int fd;
-struct stat *stb;
+optimal_bufsize(fd_t fd, struct stat *stb)
 {
 	/* force all members to zero in case OS doesn't use all of them. */
 	memset(stb, '\0', sizeof(struct stat));
@@ -180,15 +186,14 @@ struct stat *stb;
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
 	if (S_ISREG(stb->st_mode)
 	    && 0 < stb->st_size && stb->st_size < DEFBLKSIZE) /* small file */
-		return stb->st_size;
+		return (size_t) stb->st_size;
 	return DEFBLKSIZE;
 }
 
 /* ispath --- return true if path has directory components */
 
 int
-ispath(file)
-const char *file;
+ispath(const char *file)
 {
 #ifdef __EMX__
 	return (strpbrk(file, "/\\") != NULL ||
@@ -209,8 +214,7 @@ const char *file;
 /* isdirpunct --- return true if char is a directory separator */
 
 int
-isdirpunct(c)
-int c;
+isdirpunct(int c)
 {
 	return (strchr(":\\/", c) != NULL);
 }
@@ -218,9 +222,7 @@ int c;
 /* os_close_on_exec --- set close on exec flag, print warning if fails */
 
 void
-os_close_on_exec(fd, name, what, dir)
-int fd;
-const char *name, *what, *dir;
+os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 {
 #if (defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)) || defined __EMX__
 	if (fd <= 2)	/* sanity */
@@ -230,12 +232,13 @@ const char *name, *what, *dir;
 		warning("%s %s `%s': could not set close-on-exec: %s",
 			what, dir, name, strerror(errno));
 #endif
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	HANDLE fh = (HANDLE)_get_osfhandle(fd);
 
 	if (fh && fh != INVALID_HANDLE_VALUE)
 		SetHandleInformation(fh, HANDLE_FLAG_INHERIT, 0);
 #endif
+	(void) name, (void) what, (void) dir;
 }
 
 /* os_isdir --- is this an fd on a directory? */
@@ -245,8 +248,7 @@ const char *name, *what, *dir;
 #endif
 
 int
-os_isdir(fd)
-int fd;
+os_isdir(fd_t fd)
 {
 	struct stat sbuf;
 
@@ -269,6 +271,9 @@ os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 #ifdef S_IFIFO
 	case S_IFIFO:
 #endif
+#ifdef _S_IFIFO
+	case _S_IFIFO:
+#endif
 		return true;
 	case S_IFDIR:
 		*isdir = true;
@@ -281,7 +286,7 @@ os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 /* os_is_setuid --- true if running setuid root */
 
 int
-os_is_setuid()
+os_is_setuid(void)
 {
 #ifdef __EMX__
       	long uid, euid;
@@ -304,8 +309,7 @@ os_is_setuid()
 static int orig_tty_mode = -1;
 
 int
-os_setbinmode(fd, mode)
-int fd, mode;
+os_setbinmode(fd_t fd, int mode)
 {
 	int prev_mode = setmode(fd, mode);
 
@@ -322,18 +326,17 @@ int fd, mode;
 /* os_restore_mode --- restore the original mode of the console device */
 
 void
-os_restore_mode (fd)
-int fd;
+os_restore_mode(fd_t fd)
 {
 	if (orig_tty_mode != -1) {
-		setmode(fd, orig_tty_mode);
+		(void) setmode(fd, orig_tty_mode);
 	}
 }
 
 /* os_isatty --- return true if fd is a tty */
 
 int
-os_isatty(int fd)
+os_isatty(fd_t fd)
 {
 #if defined(__MINGW32__) || defined(_MSC_VER)
 	return (isatty(fd) && lseek(fd, SEEK_CUR, 0) == -1);
@@ -341,15 +344,15 @@ os_isatty(int fd)
 	return isatty(fd);
 #endif
 }
- 
+
 /* files_are_same --- return true if files are identical */
 
 int
-files_are_same(char *path, SRCFILE *src)
+files_are_same(const char *path, SRCFILE *src)
 {
 	struct stat st;
 	size_t pathlen;
-	char *p, *s;
+	const char *p, *s;
 
 	if (stat (path, & st) == 0) {
 		/* If they have a working `stat', honor that.  */
@@ -367,7 +370,7 @@ files_are_same(char *path, SRCFILE *src)
 		for (p = path, s = src->fullpath;
 		     p <= path + pathlen;
 		     p++, s++) {
-			if (tolower(*p) != tolower(*s)
+			if (tolower((unsigned char)*p) != tolower((unsigned char)*s)
 			    && !((*p == '/' || *p == '\\')
 				 && (*s == '/' || *s == '\\')))
 				return 0;
@@ -596,7 +599,7 @@ void *os2_dlsym(void *handle, const char *name)
 
 #endif /* __EMX__ */
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 extern void *xmalloc (size_t);
 
@@ -611,7 +614,7 @@ setenv (const char *name, const char *value, int rewrite)
   if (getenv (name) && !rewrite)
     return 0;
 
-  entry = xmalloc (strlen (name) + 1 + strlen (value) + 1);
+  entry = (char*) xmalloc (strlen (name) + 1 + strlen (value) + 1);
   strcat (strcat (strcpy (entry, name), "="), value);
   if (putenv (entry) != 0)
     {
@@ -632,7 +635,7 @@ unsetenv (const char *name)
 
 /* MinGW 3.21 and later defines usleep as an inline function in
    unistd.h, which conflicts with the version below.  */
-#if __MINGW32_MAJOR_VERSION + (__MINGW32_MINOR_VERSION > 20) < 4
+#if defined(_MSC_VER) || (__MINGW32_MAJOR_VERSION + (__MINGW32_MINOR_VERSION > 20) < 4)
 int
 usleep(unsigned int usec)
 {
@@ -643,6 +646,9 @@ usleep(unsigned int usec)
   return usec - msecf * 1000 < 0 ? 0 : (int)(usec - msecf * 1000);
 }
 #endif
+
+
+#ifndef _MSC_VER
 
 /* The implementation of wctob in the MS runtime is problematic
    because it doesn't allow to distinguish between WEOF and 0xff, due
@@ -666,9 +672,26 @@ wctob (wint_t wc)
   return EOF;
 }
 
+#else /* _MSC_VER */
+
+/* M.B. No problems with newer MS runtime - it typedefs both wint_t and wchar_t as
+   unsigned short, e.g. in locale Russian_Russia.1251:
+   wctob(WEOF) == -1, wctob(0xff) == 0x79.  */
+
+/* 1) Check that wint_t do not sign-extends (like 'char' do) WEOF and 0xff */
+typedef int ms_wint_t_check_1[1-2*((unsigned)0xff != (wint_t)0xff)];
+typedef int ms_wint_t_check_2[1-2*((unsigned)WEOF != (wint_t)WEOF)];
+
+/* 2) check that (wint_t)WEOF fits in wchar_t */
+typedef int ms_wchar_t_check[1-2*((wint_t)WEOF != (wchar_t)WEOF)];
+
+#endif /* _MSC_VER */
+
 
 #undef setlocale
 #include <locale.h>
+
+#ifndef _MSC_VER
 
 /* On Posix systems, 'setlocale' looks at LC_* variables in the
    environment, and Gawk users might expect that on Windows as well.
@@ -677,7 +700,7 @@ wctob (wint_t wc)
 static const char *
 lc_var (int category)
 {
-  static const char *loc_name[LC_MAX - LC_MIN + 1] = {
+  static const char *const loc_name[LC_MAX - LC_MIN + 1] = {
     "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME"
   };
 
@@ -703,11 +726,11 @@ w32_setlocale (int category, const char *value)
       const char *lc_val = getenv ("LC_ALL");
 
       if (!lc_val)
-	lc_val = getenv (lc_var (category));
+        lc_val = getenv (lc_var (category));
       if (!lc_val)
-	lc_val = getenv ("LANG");
+        lc_val = getenv ("LANG");
       if (lc_val)
-	new_locale = lc_val;
+        new_locale = lc_val;
     }
 
   /* If VALUE includes a codeset, i.e. a Windows codepage number, we
@@ -719,74 +742,126 @@ w32_setlocale (int category, const char *value)
       const char *p = strchr (new_locale, '.');
 
       if (p && isdigit (p[1]))
-	setlocale (LC_CTYPE, new_locale);
+        setlocale (LC_CTYPE, new_locale);
     }
   return setlocale (category, new_locale);
 }
+
+#else /* _MSC_VER */
+
+static void
+set_lcat_from_env(int cat, const char name[])
+{
+	const char *lc = getenv(name);
+	if (lc && lc[0] && !setlocale(cat, lc))
+		fatal(_("Bad locale: %s=%s"), name, lc);
+}
+
+/* Set locale based on the values of environment variables.  */
+/* M.B. Note: w32_setlocale is buggy - it doesn't set e.g. LC_NUMERIC
+  from the environment if called as w32_setlocale(LC_ALL, ""), if
+  both LC_ALL and LANG are not defined in the environment.  */
+void
+set_locale_from_env(const char *def)
+{
+	const char *lc = getenv("LC_ALL");
+	if (lc && lc[0]) {
+		if (!setlocale(LC_ALL, lc))
+			fatal(_("Bad locale: LC_ALL=%s"), lc);
+		return;
+	}
+
+	/* LANG is the default for all LC_...  */
+	lc = getenv("LANG");
+
+	/* if LANG is not defined - set the system default.
+	   (If def is "", locale may be be set to e.g. Russian_Russia.1251).  */
+	if (!lc || !lc[0])
+		lc = def;
+
+	if (!setlocale(LC_ALL, lc))
+		fatal(_("Bad locale: LANG=%s"), lc);
+
+	/* set all locale categories from the environment:
+	   specific LC_... take precedence over LANG.  */
+	set_lcat_from_env(LC_CTYPE,    "LC_CTYPE");
+	set_lcat_from_env(LC_COLLATE,  "LC_COLLATE");
+	set_lcat_from_env(LC_MONETARY, "LC_MONETARY");
+	set_lcat_from_env(LC_NUMERIC,  "LC_NUMERIC");
+	set_lcat_from_env(LC_TIME,     "LC_TIME");
+}
+
+#endif /* _MSC_VER */
 
 /* Replacement for the missing nl_langinfo.  Only CODESET is currently
    supported.  */
 #include <langinfo.h>
 
-char *
+const char *
 nl_langinfo (int item)
 {
   switch (item)
     {
       case CODESET:
-	{
-	  /* Shamelessly stolen from Gnulib's nl_langinfo.c.  */
-	  static char buf[2 + 10 + 1];
-	  char const *locale = setlocale (LC_CTYPE, NULL);
-	  char *codeset = buf;
-	  size_t codesetlen;
-	  codeset[0] = '\0';
+        {
+          /* M.B. Reworked Gnulib's implementation of nl_langinfo:
+             - Gnulib's implementation is unnecessary complex,
+             - Gnulib's implementation doesn't handle UTF-8 code page.  */
+          static char buf[2 + 10 + 1] = "CP";
+          const char *locale = setlocale (LC_CTYPE, NULL);
+          const char *codeset = "";
+          const char *codeset_end = codeset;
 
-	  if (locale && locale[0])
-	    {
-	      /* If the locale name contains an encoding after the
-		 dot, return it.  */
-	      char *dot = strchr (locale, '.');
+          if (locale && locale[0])
+            {
+              /* If the locale name contains an encoding after the
+                 dot, return it.  */
+              const char *dot = strchr (locale, '.');
 
-	      if (dot)
-		{
-		  /* Look for the possible @... trailer and remove it,
-		     if any.  */
-		  char *codeset_start = dot + 1;
-		  char const *modifier = strchr (codeset_start, '@');
+              if (dot)
+                {
+                  codeset = dot + 1;
 
-		  if (! modifier)
-		    codeset = codeset_start;
-		  else
-		    {
-		      codesetlen = modifier - codeset_start;
-		      if (codesetlen < sizeof buf)
-			{
-			  codeset = memcpy (buf, codeset_start, codesetlen);
-			  codeset[codesetlen] = '\0';
-			}
-		    }
-		}
-	    }
-	  /* If setlocale is successful, it returns the number of the
-	     codepage, as a string.  Otherwise, fall back on Windows
-	     API GetACP, which returns the locale's codepage as a
-	     number (although this doesn't change according to what
-	     the 'setlocale' call specified).  Either way, prepend
-	     "CP" to make it a valid codeset name.  */
-	  codesetlen = strlen (codeset);
-	  if (0 < codesetlen && codesetlen < sizeof buf - 2)
-	    memmove (buf + 2, codeset, codesetlen + 1);
-	  else
-	    sprintf (buf + 2, "%u", GetACP ());
-	  codeset = memcpy (buf, "CP", 2);
+                  /* Check if codeset is UTF8 */
+                  if ((codeset[0] == 'u' || codeset[0] == 'U') &&
+                      (codeset[1] == 't' || codeset[1] == 'T') &&
+                      (codeset[2] == 'f' || codeset[2] == 'F') &&
+                     ((codeset[3] == '8' && codeset[4] == '\0') ||
+                      (codeset[3] == '-' && codeset[4] == '8' && codeset[5] == '\0')))
+                    {
+                      return "UTF-8";
+                    }
 
-	  return codeset;
-	}
+                  /* Look for the possible @... trailer and remove it,
+                     if any.  */
+                  codeset_end = strchr (codeset, '@');
+                  if (! codeset_end)
+                    codeset_end = strchr (codeset, '\0');
+                }
+            }
+
+          /* If setlocale is successful, it returns the number of the
+             codepage, as a string.  Otherwise, fall back on Windows
+             API GetACP, which returns the locale's codepage as a
+             number (although this doesn't change according to what
+             the 'setlocale' call specified).  Either way, prepend
+             "CP" to make it a valid codeset name.  */
+          {
+            size_t codesetlen = (size_t) (codeset_end - codeset);
+            if (0 < codesetlen && codesetlen < sizeof(buf) - 2)
+              ((char*) memcpy (buf + 2, codeset, codesetlen))[codesetlen] = '\0';
+            else
+              sprintf (buf + 2, "%u", GetACP ());
+          }
+
+          return buf;
+        }
       default:
-	return (char *) "";
+        return "";
     }
 }
+
+#include <process.h> /* for _spawnvp */
 
 /*
  * On MS-Windows with MinGW, execvp causes the shell and the re-exec'ed
@@ -863,7 +938,7 @@ dlclose (void *handle)
 {
   if (!handle || handle == INVALID_HANDLE_VALUE)
     return -1;
-  if (!FreeLibrary (handle))
+  if (!FreeLibrary ((HMODULE)handle))
     return -1;
 
   return 0;
@@ -880,7 +955,7 @@ dlsym (void *handle, const char *name)
       return NULL;
     }
 
-  addr = GetProcAddress (handle, name);
+  addr = GetProcAddress ((HMODULE)handle, name);
   if (!addr)
     last_err = GetLastError ();
 
@@ -893,8 +968,8 @@ int
 socket_to_fd(SOCKET s)
 {
   return (s == INVALID_SOCKET
-	  ? INVALID_HANDLE
-	  : _open_osfhandle (s, O_BINARY | O_NOINHERIT));
+          ? INVALID_HANDLE
+          : _open_osfhandle ((intptr_t)s, O_BINARY | O_NOINHERIT));
 }
 
 int
@@ -908,24 +983,24 @@ w32_socket(int family, int type, int protocol)
   if (s == INVALID_SOCKET)
     {
       switch (WSAGetLastError ())
-	{
-	  case WSAEMFILE:
-	    errno = EMFILE;
-	    break;
-	  case WSANOTINITIALISED:
-	  case WSAENETDOWN:
-	    errno = EACCES;
-	    break;
-	  case WSAENOBUFS:
-	    errno = ENOMEM;
-	    break;
-	  case WSAEFAULT:
-	    errno = EFAULT;
-	    break;
-	  default:
-	    errno = EINVAL;
-	    break;
-	}
+        {
+          case WSAEMFILE:
+            errno = EMFILE;
+            break;
+          case WSANOTINITIALISED:
+          case WSAENETDOWN:
+            errno = EACCES;
+            break;
+          case WSAENOBUFS:
+            errno = ENOMEM;
+            break;
+          case WSAEFAULT:
+            errno = EFAULT;
+            break;
+          default:
+            errno = EINVAL;
+            break;
+        }
     }
 
   return socket_to_fd (s);
@@ -1056,7 +1131,7 @@ static const struct signal_and_status sigtbl[] = {
 int
 w32_status_to_termsig (unsigned status)
 {
-  int i;
+  unsigned i;
 
   for (i = 0; i < sizeof (sigtbl) / sizeof (sigtbl[0]); i++)
     if (status == sigtbl[i].status)
@@ -1073,23 +1148,23 @@ w32_maybe_set_errno (void)
   switch (w32err)
     {
       /* When stdout is redirected to a pipe, and the program that
-	 reads the pipe (e.g., a pager) exits, Windows doesn't set
-	 errno to a useful value.  Help it DTRT.  */
+         reads the pipe (e.g., a pager) exits, Windows doesn't set
+         errno to a useful value.  Help it DTRT.  */
       case ERROR_BAD_PIPE:
       case ERROR_PIPE_BUSY:
       case ERROR_NO_DATA:
       case ERROR_PIPE_NOT_CONNECTED:
-	errno = EPIPE;
-	break;
+        errno = EPIPE;
+        break;
       default:
-	errno = EINVAL;
-	break;
+        errno = EINVAL;
+        break;
     }
 }
 
-#endif	/* __MINGW32__ */
+#endif	/* __MINGW32__ || _MSC_VER */
 
-#if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__) || defined(_MSC_VER)
 
 void
 init_sockets(void)
@@ -1104,21 +1179,21 @@ init_sockets(void)
 #endif
 }
 
-#endif	/* __DJGPP__ || __MINGW32__ */
+#endif	/* __DJGPP__ || __MINGW32__ || __EMX__ || _MSC_VER */
 
 #ifdef __DJGPP__
 
 /* Replacement for the missing nl_langinfo.  DJGPP provides only C locale.  */
 #include <langinfo.h>
 
-char *
+const char *
 nl_langinfo (int item)
 {
   switch (item)
     {
       case CODESET:
       default:
-        return (char *) "";
+        return "";
     }
 }
 
@@ -1150,3 +1225,57 @@ putwc(wchar_t wc, FILE *stream)
 }
 
 #endif /* __DJGPP__ */
+
+
+#ifdef _MSC_VER
+
+/* Array of multibyte program args converted from Unicode.  */
+static char **gawk_argv = NULL;
+
+/* Convert program arguments from wide-char to multibyte
+  according to the locale codepage.  */
+char **
+convert_wargv(int argc, wchar_t **wargv)
+{
+	wchar_t **wa = wargv;
+	char **argv;
+
+	/* Note: argv array must be NULL-terminated.  */
+	emalloc(argv, char **, sizeof(*argv) * (argc + 1), "convert_wargv");
+
+	for (; *wa; wa++) {
+		const size_t need = wcstombs(NULL, *wa, 0);
+
+		if ((size_t) -1 == need)
+			fatal(_("failed to convert argument %u (Unicode -> LC_CTYPE=%s): %s"),
+				(unsigned)(wa - wargv), setlocale(LC_CTYPE, NULL), strerror(errno));
+
+		{
+			char *a;
+			emalloc(a, char *, need + 1, "convert_wargv");
+
+			wcstombs(a, *wa, need + 1);
+			argv[wa - wargv] = a;
+		}
+	}
+
+	/* argv - is a NULL-terminated array of pointers */
+	argv[wa - wargv] = NULL;
+
+	return (gawk_argv = argv);
+}
+
+/* Free arguments array allocated by convert_wargv().
+  This is called from final_exit().  */
+void
+gawk_free_argv(void)
+{
+	if (gawk_argv) {
+		char **a = gawk_argv;
+		for (; *a; a++)
+			efree(*a);
+		efree(gawk_argv);
+	}
+}
+
+#endif /* _MSC_VER */
