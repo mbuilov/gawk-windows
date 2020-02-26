@@ -1,4 +1,4 @@
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 #include <process.h>
 
@@ -22,16 +22,16 @@ unsigned int getegid (void)
   return (0);
 }
 
-#endif	/* __MINGW32__ */
+#endif	/* __MINGW32__ || _MSC_VER */
 
 int getpgrp(void)
 {
   return (0);
 }
 
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 int getppid(void)
 {
   return (0);
 }
-#endif	/* __DJGPP__ || __MINGW32__ */
+#endif	/* __DJGPP__ || __MINGW32__ || _MSC_VER */
