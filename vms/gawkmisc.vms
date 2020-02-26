@@ -80,8 +80,8 @@ int   SYS$TRNLNM(
         const struct item_list_3 * item_list);
 
 char quote = '\'';
-char *defpath = DEFPATH;
-char *deflibpath = DEFLIBPATH;
+const char *defpath = DEFPATH;
+const char *deflibpath = DEFLIBPATH;
 char envsep  = ',';
 #define VMS_NAME_LEN 255
 static char vms_name[VMS_NAME_LEN+1];
@@ -132,7 +132,7 @@ static int sys_trnlnm
  * passed exec() argv[0] and handle both cases.
  */
 
-char *
+const char *
 gawk_name(filespec)
 const char *filespec;
 {
@@ -628,7 +628,7 @@ int fd;
 /* files_are_same --- deal with VMS struct stat */
 
 int
-files_are_same(char *newfile, SRCFILE *oldfile)
+files_are_same(const char *newfile, SRCFILE *oldfile)
 {
 	struct stat st, *f1, *f2;
 
