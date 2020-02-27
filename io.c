@@ -2416,7 +2416,7 @@ use_pipes:
 #else  /* __MINGW32__ || _MSC_VER */
 	/* It's safe to truncate 64-bit process handle
 	  to 32-bit integer on 64-bit Windows.  */
-	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
+	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/D /S /C",
 		     qcmd = quote_cmd(str), NULL);
 	efree(qcmd);
 #endif
@@ -2692,7 +2692,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #else  /* __MINGW32__ || _MSC_VER */
 	/* It's safe to truncate 64-bit process handle
 	  to 32-bit integer on 64-bit Windows.  */
-	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/c",
+	pid = (pid_t) spawnl(P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/D /S /C",
 		     qcmd = quote_cmd(cmd), NULL);
 	efree(qcmd);
 #endif
@@ -2945,7 +2945,7 @@ do_getline(bool into_variable, IOBUF *iop)
 
 typedef struct {
 	const char *envname;
-	char **dfltp;		/* pointer to address of default path */
+	const char **dfltp;	/* pointer to address of default path */
 	char **awkpath;		/* array containing library search paths */
 	size_t max_pathlen;	/* length of the longest item in awkpath */
 } path_info;
@@ -2965,8 +2965,7 @@ static path_info pi_awklibpath = {
 static void
 init_awkpath(path_info *pi)
 {
-	char *path;
-	char *start, *end, *p;
+	const char *path, *start, *end, *p;
 	size_t len;
 	unsigned i, max_path;		/* (# of allocated paths)-1 */
 
@@ -3010,14 +3009,16 @@ init_awkpath(path_info *pi)
 
 			len = (size_t) (end - start);
 			if (len > 0) {
-				emalloc(p, char *, len + 2, "init_awkpath");
-				memcpy(p, start, len);
+				char *ap;
+
+				emalloc(ap, char *, len + 2, "init_awkpath");
+				memcpy(ap, start, len);
 
 				/* add directory punctuation if necessary */
 				if (! isdirpunct(end[-1]))
-					p[len++] = '/';
-				p[len] = '\0';
-				pi->awkpath[i++] = p;
+					ap[len++] = '/';
+				ap[len] = '\0';
+				pi->awkpath[i++] = ap;
 				if (len > pi->max_pathlen)
 					pi->max_pathlen = len;
 
