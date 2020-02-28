@@ -28,6 +28,11 @@ extern int _getopt_internal (int ___argc, char *const *___argv,
 /* Reentrant versions which can handle parsing multiple argument
    vectors at the same time.  */
 
+enum _getopt_ordering
+  {
+    REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
+  };
+
 /* Data type for reentrant functions.  */
 struct _getopt_data
 {
@@ -81,10 +86,7 @@ struct _getopt_data
      of the value of `ordering'.  In the case of RETURN_IN_ORDER, only
      `--' can cause `getopt' to return -1 with `optind' != ARGC.  */
 
-  enum
-    {
-      REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
-    } __ordering;
+  enum _getopt_ordering __ordering;
 
   /* If the POSIXLY_CORRECT environment variable is set.  */
   int __posixly_correct;
