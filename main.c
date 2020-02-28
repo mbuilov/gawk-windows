@@ -24,10 +24,14 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2019
+#define UPDATE_YEAR	2020
 
 #include "awk.h"
 #include "getopt.h"
+
+#ifdef _MSC_VER
+#include <process.h> /* for getpid */
+#endif
 
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
@@ -51,8 +55,8 @@ typedef void *stackoverflow_context_t;
 static const char *varfile = DEFAULT_VARFILE;
 const char *command_file = NULL;	/* debugger commands */
 
-static void usage(int exitval, FILE *fp) ATTRIBUTE_NORETURN;
-static void copyleft(void) ATTRIBUTE_NORETURN;
+ATTRIBUTE_NORETURN static void usage(int exitval, FILE *fp);
+ATTRIBUTE_NORETURN static void copyleft(void);
 static void cmdline_fs(char *str);
 static void init_args(int argc0, int argc, const char *argv0, char **argv);
 static void init_vars(void);
@@ -63,12 +67,12 @@ static void catchsig(int sig);
 static int catchsegv(void *fault_address, int serious);
 static void catchstackoverflow(int emergency, stackoverflow_context_t scp);
 #endif
-static void nostalgia(void) ATTRIBUTE_NORETURN;
-static void version(void) ATTRIBUTE_NORETURN;
+ATTRIBUTE_NORETURN static void nostalgia(void);
+ATTRIBUTE_NORETURN static void version(void);
 static void init_fds(void);
 static void init_groupset(void);
 static void save_argv(int, char **);
-static const char *platform_name();
+static const char *platform_name(void);
 
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
@@ -79,9 +83,9 @@ NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
 NODE *PREC_node, *ROUNDMODE_node;
 NODE *TEXTDOMAIN_node;
 
-long NF;
-long NR;
-long FNR;
+field_num_t NF;
+field_num_t NR;
+field_num_t FNR;
 int BINMODE;
 bool IGNORECASE;
 char *OFS;
@@ -95,7 +99,7 @@ char *TEXTDOMAIN;
  *	set_CONVFMT -> fmt_index -> force_string: gets NULL CONVFMT
  * Fun, fun, fun, fun.
  */
-char *CONVFMT = "%.6g";
+const char *CONVFMT = "%.6g";
 
 NODE *Nnull_string;		/* The global null string */
 
@@ -125,32 +129,37 @@ extern int yydebug;
 
 SRCFILE *srcfiles; /* source files */
 
+enum assign_type {
+	PRE_ASSIGN = 1,
+	PRE_ASSIGN_FS
+};
+
 /*
  * structure to remember variable pre-assignments
  */
 struct pre_assign {
-	enum assign_type { PRE_ASSIGN = 1, PRE_ASSIGN_FS } type;
+	enum assign_type type;
 	char *val;
 };
 
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
-static long numassigns = -1;			/* how many of them */
+static ulong_t assigns_count = 0u;			/* how many of them */
 
 static bool disallow_var_assigns = false;	/* true for --exec */
 
-static void add_preassign(enum assign_type type, char *val);
+static void add_preassign(enum assign_type type, const char *val);
 
 static void parse_args(int argc, char **argv);
 static void set_locale_stuff(void);
 static bool stopped_early = false;
 
-int do_flags = false;
+int do_flags = 0;
 bool do_optimize = true;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
 static int do_binary = false;		/* hands off my data! */
 static int do_version = false;		/* print version info */
 static const char *locale = "";		/* default value to setlocale */
-static char *locale_dir = LOCALEDIR;	/* default locale dir */
+static const char *locale_dir = LOCALEDIR;	/* default locale dir */
 
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
@@ -188,7 +197,7 @@ static const struct option optab[] = {
 	{ "lint",		optional_argument,	NULL,	'L' },
 	{ "lint-old",		no_argument,		NULL,	't' },
 	{ "load",		required_argument,	NULL,	'l' },
-#if defined(LOCALEDEBUG)
+#if defined(LOCALEDEBUG) || defined(_MSC_VER)
 	{ "locale",		required_argument,	NULL,	'Z' },
 #endif
 	{ "non-decimal-data",	no_argument,		NULL,	'n' },
@@ -210,16 +219,84 @@ static const struct option optab[] = {
 	{ NULL, 0, NULL, '\0' }
 };
 
+#ifdef _MSC_VER
+
+/* Get value of command-line option:
+   -Zlocale-name or -Z locale-name or --loc[ale]=locale-name or --loc[ale] locale-name,
+   Returns option value or NULL if the option is not specified.
+   Panics if the option specified without a value,
+   else terminates opt_name_array to the length of the option name.  */
+/* Note: before the call, opt_name_array must contain "--locale".  */
+/* Note: doesn't support parsing of 'Z' short option if it's groupped with other
+   short options, like "-MOZ locale-name".  */
+static const wchar_t *
+get_specified_locale(wchar_t **wa, char opt_name_array[])
+{
+	const wchar_t *w = NULL;
+	for (; *wa; wa++) {
+		w = *wa;
+		if (L'-' == w[0] && L'Z' == w[1]) {
+			opt_name_array[1] = 'Z';
+			w += 2;
+			break;
+		}
+		if (L'-' != w[0] || L'-' != w[1] || L'l' != w[2] || L'o' != w[3] || L'c' != w[4])
+			continue;
+		w += 5;
+		if (L'=' == *w || !*w)
+			break;
+		if (L'a' != *w)
+			continue;
+		w++;
+		if (L'=' == *w || !*w)
+			break;
+		if (L'l' != *w)
+			continue;
+		w++;
+		if (L'=' == *w || !*w)
+			break;
+		if (L'e' != *w)
+			continue;
+		w++;
+		if (L'=' == *w || !*w)
+			break;
+	}
+
+	if (!*wa)
+		return NULL; /* -Z or --loc[ale] option wasn't found.  */
+
+	opt_name_array[(unsigned)(w - *wa)] = '\0';
+	if (*w)
+		return w + (L'=' == *w); /* -Zlocale-name or --loc[ale]=locale-name, return locale-name.  */
+
+	/* -Z locale-name or --loc[ale] locale-name.  */
+	{
+		const wchar_t *locale_name = wa[1];
+		if (!locale_name)
+			fatal(_("option '%s' requires an argument"), opt_name_array);
+		return locale_name;
+	}
+}
+
+#endif /* _MSC_VER */
+
 /* main --- process args, parse program, run it, clean up */
 
 int
+#ifndef _MSC_VER
 main(int argc, char **argv)
+#else
+wmain(int argc, wchar_t **wargv)
+#endif
 {
-	int i;
+	ulong_t i;
 	char *extra_stack;
-	int have_srcfile = 0;
-	SRCFILE *s;
-	char *cp;
+	unsigned have_srcfile = 0;
+	const SRCFILE *s;
+	const char *cp;
+#ifdef _MSC_VER
+	char **argv;
+#endif
 #if defined(LOCALEDEBUG)
 	const char *initial_locale;
 #endif
@@ -234,6 +311,38 @@ main(int argc, char **argv)
 		mtrace();
 #endif /* HAVE_MTRACE */
 #endif /* HAVE_MCHECK_H */
+
+#ifdef _MSC_VER
+	/* Temporary set program name.
+	   This is needed for error messages - in case of bad locale.  */
+	myname = "gawk";
+
+	/* Set locale according to user's wishes.
+	   (Current locale is "C").  */
+	{
+		const wchar_t *spec_locale;
+		char opt_name_array[] = "--locale";
+
+		/* Command-line option takes precedence over environment vars.  */
+		spec_locale = get_specified_locale(wargv, opt_name_array);
+		if (!spec_locale)
+			set_locale_from_env(locale);
+		else if (!_wsetlocale (LC_ALL, spec_locale))
+			fatal(_("Bad locale name specified by the option '%s'"), opt_name_array);
+	}
+
+	/* Convert program arguments to multibyte strings.  */
+	argv = convert_wargv(argc, wargv);
+
+	/* Currently 'locale' variable has the value "",
+	   which on POSIX systems, when passed to setlocale(), means to
+	   initialize locale from the corresponding environment variables.
+	   But under Windows, passing "" to setlocale(), will initialize
+	   locale from the registry, ignoring environment variables.
+	   Now system locale have been set from the environment, don't change
+	   it by the next calls to setlocale(..., locale).  */
+	locale = setlocale(LC_ALL, NULL);
+#endif /* _MSC_VER */
 
 	myname = gawk_name(argv[0]);
 	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
@@ -339,7 +448,7 @@ main(int argc, char **argv)
 	if (do_posix) {
 		use_lc_numeric = true;
 		if (do_traditional)	/* both on command line */
-			warning(_("`--posix' overrides `--traditional'"));
+			awkwarn(_("`--posix' overrides `--traditional'"));
 		else
 			do_flags |= DO_TRADITIONAL;
 			/*
@@ -350,12 +459,12 @@ main(int argc, char **argv)
 
 	if (do_traditional && do_non_decimal_data) {
 		do_flags &= ~DO_NON_DEC_DATA;
-		warning(_("`--posix'/`--traditional' overrides `--non-decimal-data'"));
+		awkwarn(_("`--posix'/`--traditional' overrides `--non-decimal-data'"));
 	}
 
 	if (do_binary) {
 		if (do_posix)
-			warning(_("`--posix' overrides `--characters-as-bytes'"));
+			awkwarn(_("`--posix' overrides `--characters-as-bytes'"));
 		else
 			gawk_mb_cur_max = 1;	/* hands off my data! */
 #if defined(LC_ALL)
@@ -403,8 +512,8 @@ main(int argc, char **argv)
 	init_fields();
 
 	/* Now process the pre-assignments */
-	int dash_v_errs = 0;	// bad stuff for -v
-	for (i = 0; i <= numassigns; i++) {
+	unsigned dash_v_errs = 0;	// bad stuff for -v
+	for (i = 0u; i < assigns_count; i++) {
 		if (preassigns[i].type == PRE_ASSIGN)
 			dash_v_errs += (arg_assign(preassigns[i].val, true) == false);
 		else	/* PRE_ASSIGN_FS */
@@ -543,31 +652,33 @@ main(int argc, char **argv)
 		efree(extra_stack);
 
 	final_exit(exit_val);
+#ifdef COMPILE_UNREACHABLE_CODE
 	return exit_val;	/* to suppress warnings */
+#endif
 }
 
 /* add_preassign --- add one element to preassigns */
 
 static void
-add_preassign(enum assign_type type, char *val)
+add_preassign(enum assign_type type, const char *val)
 {
-	static long alloc_assigns;		/* for how many are allocated */
+	static ulong_t alloc_assigns = 0u;		/* for how many are allocated */
 
-#define INIT_SRC 4
-
-	++numassigns;
+#define INIT_SRC 4u
 
 	if (preassigns == NULL) {
 		emalloc(preassigns, struct pre_assign *,
 			INIT_SRC * sizeof(struct pre_assign), "add_preassign");
 		alloc_assigns = INIT_SRC;
-	} else if (numassigns >= alloc_assigns) {
+	} else if (assigns_count >= alloc_assigns) {
 		alloc_assigns *= 2;
 		erealloc(preassigns, struct pre_assign *,
 			alloc_assigns * sizeof(struct pre_assign), "add_preassigns");
 	}
-	preassigns[numassigns].type = type;
-	preassigns[numassigns].val = estrdup(val, strlen(val));
+	preassigns[assigns_count].type = type;
+	preassigns[assigns_count].val = estrdup(val, strlen(val));
+
+	assigns_count++;
 
 #undef INIT_SRC
 }
@@ -624,7 +735,7 @@ usage(int exitval, FILE *fp)
 #ifdef GAWKDEBUG
 	fputs(_("\t-Y\t\t\t--parsedebug\n"), fp);
 #endif
-#ifdef GAWKDEBUG
+#if defined(LOCALEDEBUG) || defined(_MSC_VER)
 	fputs(_("\t-Z locale-name\t\t--locale=locale-name\n"), fp);
 #endif
 
@@ -652,7 +763,7 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fflush(fp);
 
 	if (ferror(fp)) {
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 		if (errno == 0 || errno == EINVAL)
 			w32_maybe_set_errno();
 #endif
@@ -661,9 +772,9 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 			die_via_sigpipe();
 
 		if (fp == stdout)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+			awkwarn(_("error writing standard output (%s)"), strerror(errno));
 		else if (fp == stderr)
-			warning(_("error writing standard error (%s)"), strerror(errno));
+			awkwarn(_("error writing standard error (%s)"), strerror(errno));
 
 		// some other problem than SIGPIPE
 		exit(EXIT_FAILURE);
@@ -675,7 +786,7 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 /* copyleft --- print out the short GNU copyright information */
 
 static void
-copyleft()
+copyleft(void)
 {
 	static const char blurb_part1[] =
 	  N_("Copyright (C) 1989, 1991-%d Free Software Foundation.\n\
@@ -694,21 +805,27 @@ GNU General Public License for more details.\n\
 	static const char blurb_part3[] =
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n");
+	static const char patched_by[] =
+	  N_("\nPatched by: Michael M. Builov <mbuilov@gmail.com>.\n");
 
 	/* multiple blurbs are needed for some brain dead compilers. */
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
 	printf(_(blurb_part1), UPDATE_YEAR);	/* Last update year */
+PRAGMA_WARNING_POP
 	fputs(_(blurb_part2), stdout);
 	fputs(_(blurb_part3), stdout);
+	fputs(_(patched_by), stdout);
 	fflush(stdout);
 
 	if (ferror(stdout)) {
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 		if (errno == 0 || errno == EINVAL)
 			w32_maybe_set_errno();
 #endif
 		/* don't warn about stdout if EPIPE, but do error exit */
 		if (errno != EPIPE)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+			awkwarn(_("error writing standard output (%s)"), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -843,7 +960,7 @@ static const struct varinit varinit[] = {
 /* init_vars --- actually initialize everything in the symbol table */
 
 static void
-init_vars()
+init_vars(void)
 {
 	const struct varinit *vp;
 	NODE *n;
@@ -901,13 +1018,13 @@ path_environ(const char *pname, const char *dflt)
 /* load_environ --- populate the ENVIRON array */
 
 static NODE *
-load_environ()
+load_environ(void)
 {
-#if ! (defined(VMS) && defined(__DECC))
+#if ! (defined(VMS) && defined(__DECC)) && !defined(_MSC_VER)
 	extern char **environ;
 #endif
 	char *var, *val;
-	int i;
+	unsigned i;
 	NODE *sub, *newval;
 	static bool been_here = false;
 
@@ -915,6 +1032,14 @@ load_environ()
 		return ENVIRON_node;
 
 	been_here = true;
+
+#ifdef _MSC_VER
+	/* environ variable initially is NULL, because the program uses wmain().
+	   According to MSDN, environ variable is initialized on a first call
+	   to _getenv or _putenv.  */
+	if (!environ)
+		(void)getenv("");
+#endif
 
 	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), Node_var_array);
 	for (i = 0; environ[i] != NULL; i++) {
@@ -956,16 +1081,16 @@ load_environ()
 /* load_procinfo_argv --- populate PROCINFO["argv"] */
 
 static void
-load_procinfo_argv()
+load_procinfo_argv(void)
 {
 	NODE *sub;
 	NODE *val;
 	NODE *argv_array;
-	int i;
+	unsigned i;
 
 	// build the sub-array first
 	getnode(argv_array);
- 	memset(argv_array, '\0', sizeof(NODE));  /* valgrind wants this */
+	memset(argv_array, '\0', sizeof(NODE));  /* valgrind wants this */
 	null_array(argv_array);
 	argv_array->parent_array = PROCINFO_node;
 	argv_array->vname = estrdup("argv", 4);
@@ -978,13 +1103,12 @@ load_procinfo_argv()
 	// hook it into PROCINFO
 	sub = make_string("argv", 4);
 	assoc_set(PROCINFO_node, sub, argv_array);
-
 }
 
 /* load_procinfo --- populate the PROCINFO array */
 
 static NODE *
-load_procinfo()
+load_procinfo(void)
 {
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	int i;
@@ -1072,7 +1196,7 @@ load_procinfo()
 
 /* is_std_var --- return true if a variable is a standard variable */
 
-int
+bool
 is_std_var(const char *var)
 {
 	const struct varinit *vp;
@@ -1094,7 +1218,7 @@ is_std_var(const char *var)
  * 			to extension functions
  */
 
-int
+bool
 is_off_limits_var(const char *var)
 {
 	const struct varinit *vp;
@@ -1128,7 +1252,7 @@ get_spec_varname(Func_ptr fptr)
 
 /* arg_assign --- process a command-line assignment */
 
-int
+bool
 arg_assign(char *arg, bool initing)
 {
 	char *cp, *cp2;
@@ -1136,7 +1260,7 @@ arg_assign(char *arg, bool initing)
 	NODE *var;
 	NODE *it;
 	NODE **lhs;
-	long save_FNR;
+	field_num_t save_FNR;
 
 	if (! initing && disallow_var_assigns)
 		return false;	/* --exec */
@@ -1246,7 +1370,7 @@ arg_assign(char *arg, bool initing)
 	 * name like v=abc instead of just v in var->vname
 	 */
 
-	cp2 = estrdup(arg, cp - arg);	/* var name */
+	cp2 = estrdup(arg, (size_t) (cp - arg));	/* var name */
 
 	var = variable(0, cp2, Node_var);
 	if (var == NULL)	/* error */
@@ -1328,7 +1452,7 @@ catchstackoverflow(int emergency, stackoverflow_context_t scp)
 /* nostalgia --- print the famous error message and die */
 
 static void
-nostalgia()
+nostalgia(void)
 {
 	/*
 	 * N.B.: This string is not gettextized, on purpose.
@@ -1342,7 +1466,7 @@ nostalgia()
 /* version --- print version message */
 
 static void
-version()
+version(void)
 {
 	printf("%s", version_string);
 #ifdef DYNAMIC
@@ -1359,13 +1483,15 @@ version()
 	 * then exit successfully, do nothing else.
 	 */
 	copyleft();
+#ifdef COMPILE_UNREACHABLE_CODE
 	exit(EXIT_SUCCESS);
+#endif
 }
 
 /* init_fds --- check for 0, 1, 2, open on /dev/null if possible */
 
 static void
-init_fds()
+init_fds(void)
 {
 	struct stat sbuf;
 	int fd;
@@ -1375,7 +1501,7 @@ init_fds()
 	/* maybe no stderr, don't bother with error mesg */
 	for (fd = 0; fd <= 2; fd++) {
 		if (fstat(fd, &sbuf) < 0) {
-#if MAKE_A_HEROIC_EFFORT
+#ifdef MAKE_A_HEROIC_EFFORT
 			if (do_lint)
 				lintwarn(_("no pre-opened fd %d"), fd);
 #endif
@@ -1393,7 +1519,7 @@ init_fds()
 /* init_groupset --- initialize groupset */
 
 static void
-init_groupset()
+init_groupset(void)
 {
 #if defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 #ifdef GETGROUPS_NOT_STANDARD
@@ -1488,7 +1614,7 @@ save_argv(int argc, char **argv)
  */
 
 void
-update_global_values()
+update_global_values(void)
 {
 	const struct varinit *vp;
 
@@ -1500,7 +1626,7 @@ update_global_values()
 
 /* getenv_long --- read a long value (>= 0) from an environment var. */
 
-long
+long_t
 getenv_long(const char *name)
 {
 	const char *val;
@@ -1521,11 +1647,11 @@ parse_args(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L::nNo::Op::MPrSstVYZ:";
+	const char optlist[] = "+F:f:v:W;bcCd::D::e:E:ghi:l:L::nNo::Op::MPrSstVYZ:";
 	int old_optind;
 	int c;
-	char *scan;
-	char *src;
+	const char *scan;
+	const char *src;
 
 	/* we do error messages ourselves on invalid options */
 	opterr = false;
@@ -1598,7 +1724,7 @@ parse_args(int argc, char **argv)
 
 		case 'e':
 			if (optarg[0] == '\0')
-				warning(_("empty argument to `-e/--source' ignored"));
+				awkwarn(_("empty argument to `-e/--source' ignored"));
 			else
 				(void) add_srcfile(SRC_CMDLINE, optarg, srcfiles, NULL, NULL);
 			break;
@@ -1659,12 +1785,12 @@ parse_args(int argc, char **argv)
 
 		case 'p':
 			if (do_pretty_print)
-				warning(_("`--profile' overrides `--pretty-print'"));
+				awkwarn(_("`--profile' overrides `--pretty-print'"));
 			do_flags |= DO_PROFILE;
 			/* fall through */
 		case 'o':
 			if (c == 'o' && do_profile)
-				warning(_("`--profile' overrides `--pretty-print'"));
+				awkwarn(_("`--profile' overrides `--pretty-print'"));
 			do_flags |= DO_PRETTY_PRINT;
 			if (optarg != NULL)
 				set_prof_file(optarg);
@@ -1676,7 +1802,7 @@ parse_args(int argc, char **argv)
 #ifdef HAVE_MPFR
 			do_flags |= DO_MPFR;
 #else
-			warning(_("-M ignored: MPFR/GMP support not compiled in"));
+			awkwarn(_("-M ignored: MPFR/GMP support not compiled in"));
 #endif
 			break;
 
@@ -1686,7 +1812,7 @@ parse_args(int argc, char **argv)
 
 		case 'r':
 			do_flags |= DO_INTERVALS;
- 			break;
+			break;
 
 		case 's':
 			do_optimize = false;
@@ -1721,9 +1847,12 @@ parse_args(int argc, char **argv)
 				break;
 			}
 #endif
-#if defined(LOCALEDEBUG)
+#if defined(LOCALEDEBUG) || defined(_MSC_VER)
 			if (c == 'Z') {
+				/* for _MSC_VER: this option is already processed */
+#ifndef _MSC_VER
 				locale = optarg;
+#endif
 				break;
 			}
 #endif
@@ -1815,13 +1944,15 @@ set_locale_stuff(void)
 /* platform_name --- return the platform name */
 
 static const char *
-platform_name()
+platform_name(void)
 {
 	// Cygwin and Mac OS X count as POSIX
 #if defined(__VMS)
 	return "vms";
 #elif defined(__MINGW32__)
 	return "mingw";
+#elif defined(_MSC_VER)
+	return "windows";
 #elif defined(__DJGPP__)
 	return "djgpp";
 #elif defined(__EMX__)
