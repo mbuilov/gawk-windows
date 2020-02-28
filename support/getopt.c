@@ -550,7 +550,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
       for (nameend = d->__nextchar; *nameend && *nameend != '='; nameend++)
 	/* Do nothing.  */ ;
-      namelen = (unsigned)(nameend - d->__nextchar);
+      namelen = (unsigned int) (nameend - d->__nextchar);
 
       /* Test all long options for either exact match
 	 or abbreviated matches.  */
@@ -577,7 +577,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		     || pfound->val != p->val)
 	      {
 		/* Second or later nonexact match found.  */
-		struct option_list *newp = malloc (sizeof (*newp));
+		struct option_list *newp = (struct option_list *) malloc (sizeof (*newp));
 		newp->p = p;
 		newp->needs_free = 1;
 		newp->next = ambig_list;
@@ -843,7 +843,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
   {
     char c = *d->__nextchar++;
-    char *temp = strchr (optstring, c);
+    const char *temp = strchr (optstring, c);
 
     /* Increment `optind' when we start to process its last character.  */
     if (*d->__nextchar == '\0')
@@ -958,7 +958,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 	/* Test all long options for either exact match
 	   or abbreviated matches.  */
 	for (p = longopts, option_index = 0; p->name; p++, option_index++)
-	  if (!strncmp (p->name, d->__nextchar, nameend - d->__nextchar))
+	  if (!strncmp (p->name, d->__nextchar, (unsigned int) (nameend - d->__nextchar)))
 	    {
 	      if ((unsigned int) (nameend - d->__nextchar) == strlen (p->name))
 		{
