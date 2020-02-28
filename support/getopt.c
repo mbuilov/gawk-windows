@@ -152,7 +152,7 @@ static struct _getopt_data getopt_data;
    whose names are inconsistent.  */
 
 #ifndef getenv
-extern char *getenv ();
+extern char *getenv (const char *name);
 #endif
 
 #endif /* not __GNU_LIBRARY__ */
@@ -284,6 +284,7 @@ _getopt_initialize (int argc, char *const *argv, const char *optstring,
   /* Start processing options with ARGV-element 1 (since ARGV-element 0
      is the program name); the sequence of previously skipped
      non-option ARGV-elements is empty.  */
+  (void)argc, (void)argv;
 
   d->__first_nonopt = d->__last_nonopt = d->optind;
 
@@ -549,7 +550,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
       for (nameend = d->__nextchar; *nameend && *nameend != '='; nameend++)
 	/* Do nothing.  */ ;
-      namelen = nameend - d->__nextchar;
+      namelen = (unsigned)(nameend - d->__nextchar);
 
       /* Test all long options for either exact match
 	 or abbreviated matches.  */
