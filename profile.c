@@ -25,24 +25,31 @@
 
 #include "awk.h"
 
-static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags);
+static void pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags);
 static INSTRUCTION *end_line(INSTRUCTION *ip);
 static void pp_parenthesize(NODE *n);
-static void parenthesize(int type, NODE *left, NODE *right);
-static char *pp_list(int nargs, const char *paren, const char *delim);
+static void parenthesize(OPCODE type, NODE *left, NODE *right);
+static char *pp_list(ulong_t nargs, const char *paren, const char *delim);
 static char *pp_group3(const char *s1, const char *s2, const char *s3);
-static char *pp_concat(int nargs);
+static char *pp_concat(ulong_t nargs);
 static char *pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_regex);
 static char *pp_typed_regex(const char *in_str, size_t len, int delim);
-static bool is_binary(int type);
-static bool is_scalar(int type);
-static int prec_level(int type);
-static void pp_push(int type, char *s, int flag, INSTRUCTION *comment);
+static bool is_binary(OPCODE type);
+static bool is_scalar(OPCODE type);
+static unsigned prec_level(OPCODE type);
+
+enum pp_push_flag {
+	DONT_FREE = 1,
+	CAN_FREE  = 2
+};
+
+static void pp_push(OPCODE type, char *s, enum pp_push_flag flag, INSTRUCTION *comment);
 static NODE *pp_pop(void);
-static void print_comment(INSTRUCTION *pc, long in);
-const char *redir2str(int redirtype);
+#define DONT_INDENT ((unsigned)-1)
+static void print_comment(const INSTRUCTION *pc, unsigned in);
+const char *redir2str(enum redirval redirtype);
 static void pp_namespace(const char *name, INSTRUCTION *comment);
-static void pp_namespace_list(INSTRUCTION *list);
+static void pp_namespace_list(const INSTRUCTION *list);
 static char *adjust_namespace(char *name, bool *malloced);
 
 #define pp_str	vname
@@ -50,10 +57,7 @@ static char *adjust_namespace(char *name, bool *malloced);
 #define pp_next	rnode
 #define pp_comment	sub.nodep.x.cmnt
 
-#define DONT_FREE 1
-#define CAN_FREE  2
-
-static void dump_and_exit(int signum) ATTRIBUTE_NORETURN;
+ATTRIBUTE_NORETURN static void dump_and_exit(int signum);
 static void just_dump(int signum);
 
 /* pretty printing related functions and variables */
@@ -62,10 +66,10 @@ static NODE *pp_stack = NULL;
 static NODE *func_params;	/* function parameters */
 static FILE *prof_fp;	/* where to send the profile */
 
-static long indent_level = 0;
+static unsigned indent_level = 0;
 
 static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
-static const size_t tabs_len = sizeof(tabs) - 1;
+static const unsigned tabs_len = sizeof(tabs) - 1;
 
 #define check_indent_level() \
 	if (indent_level + 1 > tabs_len) \
@@ -73,7 +77,7 @@ static const size_t tabs_len = sizeof(tabs) - 1;
 		fatal(_("Program indentation level too deep. Consider refactoring your code"));
 
 
-#define SPACEOVER	0
+#define SPACEOVER	0u
 
 #define NO_PPRINT_FLAGS	0
 #define IN_FOR_HEADER	1
@@ -84,7 +88,7 @@ static const size_t tabs_len = sizeof(tabs) - 1;
 void
 set_prof_file(const char *file)
 {
-	int fd;
+	fd_t fd;
 
 	assert(file != NULL);
 	fd = devopen_simple(file, "w", true);
@@ -107,9 +111,9 @@ set_prof_file(const char *file)
 			(void) close(fd);
 
 		errno = e;
-		warning(_("could not open `%s' for writing: %s"),
+		awkwarn(_("could not open `%s' for writing: %s"),
 				file, strerror(errno));
-		warning(_("sending profile to standard error"));
+		awkwarn(_("sending profile to standard error"));
 		prof_fp = stderr;
 	}
 }
@@ -117,7 +121,7 @@ set_prof_file(const char *file)
 /* init_profiling_signals --- set up signal handling for gawk --profile */
 
 void
-init_profiling_signals()
+init_profiling_signals(void)
 {
 #ifdef __DJGPP__
 	signal(SIGINT, dump_and_exit);
@@ -135,18 +139,17 @@ init_profiling_signals()
 /* indent --- print out enough tabs */
 
 static void
-indent(long count)
+indent(ulong_t count)
 {
-	int i;
+	unsigned i;
 
 	if (do_profile) {
-		if (count == 0)
+		if (!count)
 			fprintf(prof_fp, "\t");
 		else
-			fprintf(prof_fp, "%6ld  ", count);
+			fprintf(prof_fp, "%6lu  ", TO_ULONG(count));
 	}
 
-	assert(indent_level >= 0);
 	for (i = 0; i < indent_level; i++)
 		fprintf(prof_fp, "\t");
 }
@@ -156,7 +159,6 @@ indent(long count)
 static void
 indent_in(void)
 {
-	assert(indent_level >= 0);
 	indent_level++;
 }
 
@@ -165,21 +167,21 @@ indent_in(void)
 static void
 indent_out(void)
 {
+	assert(indent_level);
 	indent_level--;
-	assert(indent_level >= 0);
 }
 
 /* pp_push --- push a pretty printed string onto the stack */
 
 static void
-pp_push(int type, char *s, int flag, INSTRUCTION *comment)
+pp_push(OPCODE type, char *s, enum pp_push_flag flag, INSTRUCTION *comment)
 {
 	NODE *n;
 	getnode(n);
 	n->pp_str = s;
 	n->pp_len = strlen(s);
 	n->flags = flag;
-	n->type = type;
+	n->type = (NODETYPE) type;
 	n->pp_next = pp_stack;
 	n->pp_comment = comment;
 	pp_stack = n;
@@ -188,7 +190,7 @@ pp_push(int type, char *s, int flag, INSTRUCTION *comment)
 /* pp_pop --- pop a pretty printed string off the stack */
 
 static NODE *
-pp_pop()
+pp_pop(void)
 {
 	NODE *n;
 	n = pp_stack;
@@ -209,7 +211,7 @@ pp_free(NODE *n)
 /* pprint --- pretty print a program segment */
 
 static void
-pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
+pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags)
 {
 	INSTRUCTION *pc;
 	NODE *t1;
@@ -219,8 +221,8 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 	INSTRUCTION *ip2;
 	NODE *m;
 	char *tmp;
-	int rule;
-	static int rule_count[MAXRULE];
+	enum defrule rule;
+	static unsigned rule_count[MAXRULE];
 	static bool skip_comment = false;
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
@@ -262,14 +264,14 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 				if (pc->nexti != (pc+1)->firsti
 				    && pc->nexti->opcode == Op_comment
 				    && pc->nexti->memory->comment_type == BLOCK_COMMENT)
-					print_comment(pc->nexti, -1);
+					print_comment(pc->nexti, DONT_INDENT);
 				ip1 = (pc + 1)->firsti;
 				ip2 = (pc + 1)->lasti;
 
 				if (do_profile) {
 					if (! rule_count[rule]++)
 						fprintf(prof_fp, _("\t# %s rule(s)\n\n"), ruletab[rule]);
-					indent(0);
+					indent(0u);
 				}
 				fprintf(prof_fp, "%s {", ruletab[rule]);
 				end_line(pc);
@@ -292,8 +294,8 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 					ip1 = (pc + 1)->firsti;
 					ip2 = (pc + 1)->lasti;
 
-					if (do_profile && ip1->exec_count > 0)
-						fprintf(prof_fp, " # %ld", ip1->exec_count);
+					if (do_profile && ip1->exec_count)
+						fprintf(prof_fp, " # %lu", TO_ULONG(ip1->exec_count));
 
 					end_line(ip1);
 					skip_comment = true;
@@ -308,7 +310,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			pprint(ip1, ip2, NO_PPRINT_FLAGS);
 			indent_out();
 			if (do_profile)
-				indent(0);
+				indent(0u);
 			fprintf(prof_fp, "}\n\n");
 			pc = (pc + 1)->lasti;
 			break;
@@ -317,7 +319,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			break;
 
 		case Op_stop:
-			memset(rule_count, 0, MAXRULE * sizeof(int));
+			memset(rule_count, 0, MAXRULE * sizeof(unsigned));
 			break;
 
 		case Op_push_i:
@@ -329,7 +331,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			else {
 				str = pp_string(m->stptr, m->stlen, '"');
 				if ((m->flags & INTLSTR) != 0) {
-					char *tmp = str;
+					tmp = str;
 					str = pp_group3("_", tmp, "");
 					efree(tmp);
 				}
@@ -352,7 +354,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			m = pc->memory;
 			switch (m->type) {
 			case Node_param_list:
-				pp_push(pc->opcode, func_params[m->param_cnt].param, DONT_FREE, pc->comment);
+				pp_push(pc->opcode, func_params[m->param_cnt].vname, DONT_FREE, pc->comment);
 				break;
 
 			case Node_var:
@@ -436,7 +438,7 @@ cleanup:
 				emalloc(str, char *, len, "pprint");
 				sprintf(str, "%s%s%s%.*s %s", t1->pp_str, op2str(pc->opcode),
 						pc->comment->memory->stptr,
-						(int) (indent_level + 1), tabs, t2->pp_str);
+						TO_PRINTF_WIDTH(indent_level + 1), tabs, t2->pp_str);
 			}
 			pp_free(t1);
 			pp_free(t2);
@@ -452,8 +454,8 @@ cleanup:
 		case Op_mod_i:
 			m = pc->memory;
 			t1 = pp_pop();
-			if (prec_level(pc->opcode) > prec_level(t1->type)
-					&& is_binary(t1->type))  /* (a - b) * 1 */
+			if (prec_level(pc->opcode) > prec_level((OPCODE) t1->type)
+					&& is_binary((OPCODE) t1->type))  /* (a - b) * 1 */
 				pp_parenthesize(t1);
 			if ((m->flags & NUMBER) != 0)
 				tmp = pp_number(m);
@@ -512,7 +514,7 @@ cleanup:
 		case Op_unary_plus:
 		case Op_not:
 			t1 = pp_pop();
-			if (is_binary(t1->type)
+			if (is_binary((OPCODE) t1->type)
 			    || (((OPCODE) t1->type) == pc->opcode
 				    && (pc->opcode == Op_unary_minus
 					    || pc->opcode == Op_unary_plus)))
@@ -541,7 +543,7 @@ cleanup:
 
 		case Op_store_field:
 			t1 = pp_pop(); /* field num */
-			if (is_binary(t1->type))
+			if (is_binary((OPCODE) t1->type))
 				pp_parenthesize(t1);
 			t2 = pp_pop(); /* r.h.s. */
 			fprintf(prof_fp, "$%s%s%s", t1->pp_str, op2str(pc->opcode), t2->pp_str);
@@ -558,12 +560,12 @@ cleanup:
 
 		case Op_K_delete:
 		{
-			char *array;
+			const char *array;
 			t1 = pp_pop();
 			array = t1->pp_str;
-			if (pc->expr_count > 0) {
+			if (pc->expr_count) {
 				char *sub;
-				sub = pp_list(pc->expr_count, NULL, pc->expr_count > 1 ? "][" : ", ");
+				sub = pp_list(pc->expr_count, NULL, pc->expr_count > 1u ? "][" : ", ");
 				fprintf(prof_fp, "%s %s[%s]", op2str(Op_K_delete), array, sub);
 				efree(sub);
 			} else
@@ -581,16 +583,17 @@ cleanup:
 
 		case Op_in_array:
 		{
-			char *array, *sub;
+			const char *array;
+			char *sub;
 			t1 = pp_pop();
 			array = t1->pp_str;
-			if (pc->expr_count > 1) {
+			if (pc->expr_count > 1u) {
 				sub = pp_list(pc->expr_count, "()", ", ");
 				str = pp_group3(sub, op2str(Op_in_array), array);
 				efree(sub);
 			} else {
 				t2 = pp_pop();
-				if (prec_level(t2->type) < prec_level(Op_in_array)) {
+				if (prec_level((OPCODE) t2->type) < prec_level(Op_in_array)) {
 					pp_parenthesize(t2);
 				}
 				sub = t2->pp_str;
@@ -647,7 +650,7 @@ cleanup:
 			} else
 				fname = (pc + 1)->func_name;
 			if (fname != NULL) {
-				if (pc->expr_count > 0) {
+				if (pc->expr_count) {
 					tmp = pp_list(pc->expr_count, "()", ", ");
 					str = pp_group3(fname, tmp, "");
 					efree(tmp);
@@ -674,7 +677,7 @@ cleanup:
 
 			if (pc->redir_type != 0) {
 				t1 = pp_pop();
-				if (is_binary(t1->type))
+				if (is_binary((OPCODE) t1->type))
 					pp_parenthesize(t1);
 				fprintf(prof_fp, "%s%s%s%s", op2str(pc->opcode),
 							tmp, redir2str(pc->redir_type), t1->pp_str);
@@ -709,14 +712,14 @@ cleanup:
 		{
 			char *restr, *txt;
 			t1 = pp_pop();
-			if (is_binary(t1->type))
+			if (is_binary((OPCODE) t1->type))
 				pp_parenthesize(t1);
 			txt = t1->pp_str;
 			m = pc->memory;
 			if (m->type == Node_dynregex) {
 				restr = txt;
 				t2 = pp_pop();
-				if (is_binary(t2->type))
+				if (is_binary((OPCODE) t2->type))
 					pp_parenthesize(t2);
 				txt = t2->pp_str;
 				str = pp_group3(txt, op2str(pc->opcode), restr);
@@ -746,11 +749,11 @@ cleanup:
 				tmp = pp_group3(op2str(Op_K_getline), "", "");
 
 			if (pc->redir_type != 0) {
-				int before = (pc->redir_type == redirect_pipein
+				bool before = (pc->redir_type == redirect_pipein
 							|| pc->redir_type == redirect_twoway);
 
 				t2 = pp_pop();
-				if (is_binary(t2->type))
+				if (is_binary((OPCODE) t2->type))
 					pp_parenthesize(t2);
 				if (before)
 					str = pp_group3(t2->pp_str, redir2str(pc->redir_type), tmp);
@@ -766,8 +769,8 @@ cleanup:
 		case Op_indirect_func_call:
 		case Op_func_call:
 		{
-			char *pre;
- 			int pcount;
+			const char *pre;
+			ulong_t pcount;
 			bool malloced = false;
 			char *fname = adjust_namespace(pc->func_name, & malloced);
 
@@ -776,7 +779,7 @@ cleanup:
 			else
 				pre = "";
 			pcount = (pc + 1)->expr_count;
-			if (pcount > 0) {
+			if (pcount) {
 				tmp = pp_list(pcount, "()", ", ");
 				str = pp_group3(pre, fname, tmp);
 				efree(tmp);
@@ -789,7 +792,7 @@ cleanup:
 
 			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			if (malloced)
-				efree((void *) fname);
+				efree(fname);
 		}
 			break;
 
@@ -804,7 +807,7 @@ cleanup:
 		case Op_K_return:
 		case Op_K_exit:
 			t1 = pp_pop();
-			if (is_binary(t1->type))
+			if (is_binary((OPCODE) t1->type))
 				pp_parenthesize(t1);
 			if (pc->source_line > 0) {	/* don't print implicit 'return' at end of function */
 				// avoid final trailing space to keep whiny users happy
@@ -913,7 +916,7 @@ cleanup:
 				if (comment1 != NULL) {
 					print_comment(comment1, 0);
 					indent(ip1->forloop_body->exec_count);
-					indent(1);
+					indent(1u);
 				}
 
 				if (ip1->forloop_cond->opcode == Op_no_op &&
@@ -929,7 +932,7 @@ cleanup:
 				if (comment2 != NULL) {
 					print_comment(comment2, 0);
 					indent(ip1->forloop_body->exec_count);
-					indent(1);
+					indent(1u);
 				}
 
 				pprint(pc->target_continue, pc->target_break, IN_FOR_HEADER);
@@ -950,7 +953,7 @@ cleanup:
 
 		case Op_K_arrayfor:
 		{
-			char *array;
+			const char *array;
 			const char *item;
 
 			ip1 = pc + 1;
@@ -958,7 +961,7 @@ cleanup:
 			array = t1->pp_str;
 			m = ip1->forloop_cond->array_var;
 			if (m->type == Node_param_list)
-				item = func_params[m->param_cnt].param;
+				item = func_params[m->param_cnt].vname;
 			else
 				item = m->vname;
 			indent(ip1->forloop_body->exec_count);
@@ -1027,8 +1030,8 @@ cleanup:
 			pp_free(t1);
 
 			ip1 = pc->branch_if;
-			if (ip1->exec_count > 0)
-				fprintf(prof_fp, " # %ld", ip1->exec_count);
+			if (ip1->exec_count)
+				fprintf(prof_fp, " # %lu", TO_ULONG(ip1->exec_count));
 			ip1 = end_line(ip1);
 			indent_in();
 			if (pc->comment != NULL)
@@ -1142,10 +1145,10 @@ cleanup:
 					"%.*s   %s",	// indent false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					(int) (indent_level + 1), tabs,		// indent
+					TO_PRINTF_WIDTH(indent_level + 1), tabs,		// indent
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					(int) (indent_level + 1), tabs,		// indent
+					TO_PRINTF_WIDTH(indent_level + 1), tabs,		// indent
 					f->pp_str			// false part
 					);
 			} else if (qm_comment != NULL) {
@@ -1160,7 +1163,7 @@ cleanup:
 					" : %s",	// : false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					(int) (indent_level + 1), tabs,		// indent
+					TO_PRINTF_WIDTH(indent_level + 1), tabs,		// indent
 					t->pp_str,			// true part
 					f->pp_str			// false part
 					);
@@ -1177,7 +1180,7 @@ cleanup:
 					cond->pp_str,			// condition
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					(int) (indent_level + 1), tabs,		// indent
+					TO_PRINTF_WIDTH(indent_level + 1), tabs,		// indent
 					f->pp_str			// false part
 					);
 			}
@@ -1213,7 +1216,7 @@ cleanup:
 
 /* end_line --- end pretty print line with new line or on-line comment  */
 
-INSTRUCTION *
+static INSTRUCTION *
 end_line(INSTRUCTION *ip)
 {
 	INSTRUCTION *ret = ip;
@@ -1221,7 +1224,7 @@ end_line(INSTRUCTION *ip)
 	if (ip->nexti->opcode == Op_comment
 	    && ip->nexti->memory->comment_type == EOL_COMMENT) {
 		fprintf(prof_fp, "\t");
-		print_comment(ip->nexti, -1);
+		print_comment(ip->nexti, DONT_INDENT);
 		ret = ip->nexti;
 	}
 	else
@@ -1241,21 +1244,27 @@ void
 pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 		size_t len, int delim, bool breaklines)
 {
+#if defined _MSC_VER && defined _PREFAST_
+#define print_func fprintf
+#endif
 	char *s = pp_string(in_str, len, delim);
-	int count;
+	unsigned count;
 	size_t slen;
-	const char *str = (const char *) s;
+	const char *str = s;
 #define BREAKPOINT	70 /* arbitrary */
 
 	slen = strlen(str);
 	for (count = 0; slen > 0; slen--, str++) {
 		print_func(fp, "%c", *str);
 		if (++count >= BREAKPOINT && breaklines) {
-			print_func(fp, "%c\n%c", delim, delim);
+			print_func(fp, "%c\n%c", (char) delim, (char) delim);
 			count = 0;
 		}
 	}
 	efree(s);
+#if defined _MSC_VER && defined _PREFAST_
+#undef print_func
+#endif
 }
 
 
@@ -1275,19 +1284,21 @@ just_dump(int signum)
 
 /* dump_and_exit --- dump the profile, the function stack, and exit */
 
+#if defined(__DJGPP__) || defined(SIGHUP)
 static void
 dump_and_exit(int signum)
 {
 	just_dump(signum);
 	final_exit(EXIT_FAILURE);
 }
+#endif /* __DJGPP__ || SIGHUP */
 
 /* print_lib_list --- print a list of all libraries loaded */
 
 static void
-print_lib_list(FILE *prof_fp)
+print_lib_list(FILE *prof_fp_arg)
 {
-	SRCFILE *s;
+	const SRCFILE *s;
 	static bool printed_header = false;
 	const char *indent = "";
 	bool found = false;
@@ -1299,27 +1310,27 @@ print_lib_list(FILE *prof_fp)
 		if (s->stype == SRC_EXTLIB) {
 			if (do_profile && ! printed_header) {
 				printed_header = true;
-				fprintf(prof_fp, _("%s# Loaded extensions (-l and/or @load)\n\n"), indent);
+				fprintf(prof_fp_arg, _("%s# Loaded extensions (-l and/or @load)\n\n"), indent);
 			}
 			found = true;
-			fprintf(prof_fp, "%s@load \"%s\"", indent, s->src);
+			fprintf(prof_fp_arg, "%s@load \"%s\"", indent, s->src);
 			if (s->comment != NULL) {
-				fprintf(prof_fp, "\t");
+				fprintf(prof_fp_arg, "\t");
 				print_comment(s->comment, indent_level + 1);
 			} else
-				fprintf(prof_fp, "\n");
+				fprintf(prof_fp_arg, "\n");
 		}
 	}
 	if (found)	/* we found some */
-		fprintf(prof_fp, "\n");
+		fprintf(prof_fp_arg, "\n");
 }
 
 /* print_include_list --- print a list of all files included */
 
 static void
-print_include_list(FILE *prof_fp)
+print_include_list(FILE *prof_fp_arg)
 {
-	SRCFILE *s;
+	const SRCFILE *s;
 	static bool printed_header = false;
 	bool found = false;
 
@@ -1330,34 +1341,34 @@ print_include_list(FILE *prof_fp)
 		if (s->stype == SRC_INC) {
 			if (! printed_header) {
 				printed_header = true;
-				fprintf(prof_fp, _("\n# Included files (-i and/or @include)\n\n"));
+				fprintf(prof_fp_arg, _("\n# Included files (-i and/or @include)\n\n"));
 			}
 			found = true;
-			fprintf(prof_fp, "# @include \"%s\"", s->src);
+			fprintf(prof_fp_arg, "# @include \"%s\"", s->src);
 			if (s->comment != NULL) {
-				fprintf(prof_fp, "\t");
+				fprintf(prof_fp_arg, "\t");
 				print_comment(s->comment, indent_level + 1);
 			} else
-				fprintf(prof_fp, "\n");
+				fprintf(prof_fp_arg, "\n");
 		}
 	}
 	if (found)	/* we found some */
-		fprintf(prof_fp, "\n");
+		fprintf(prof_fp_arg, "\n");
 }
 
 /* print_comment --- print comment text with proper indentation */
 
 static void
-print_comment(INSTRUCTION* pc, long in)
+print_comment(const INSTRUCTION *pc, unsigned in)
 {
-	char *text;
+	const char *text;
 	size_t count;
 	bool after_newline = false;
 
 	count = pc->memory->stlen;
 	text = pc->memory->stptr;
 
-	if (in >= 0)
+	if (in != DONT_INDENT)
 		indent(in);    /* is this correct? Where should comments go?  */
 	for (; count > 0; count--, text++) {
 		if (after_newline) {
@@ -1402,8 +1413,8 @@ dump_prog(INSTRUCTION *code)
 
 /* prec_level --- return the precedence of an operator, for paren tests */
 
-static int
-prec_level(int type)
+static unsigned
+prec_level(OPCODE type)
 {
 	switch (type) {
 	case Op_push_lhs:
@@ -1502,7 +1513,7 @@ prec_level(int type)
 /* is_scalar --- return true if scalar, false otherwise */
 
 static bool
-is_scalar(int type)
+is_scalar(OPCODE type)
 {
 	switch (type) {
 	case Op_push_lhs:
@@ -1534,7 +1545,7 @@ is_scalar(int type)
 /* is_binary --- return true if type represents a binary operator */
 
 static bool
-is_binary(int type)
+is_binary(OPCODE type)
 {
 	switch (type) {
 	case Op_geq:
@@ -1605,11 +1616,11 @@ pp_parenthesize(NODE *sp)
 /* parenthesize --- parenthesize two nodes relative to parent node type */
 
 static void
-parenthesize(int type, NODE *left, NODE *right)
+parenthesize(OPCODE type, NODE *left, NODE *right)
 {
-	int rprec = prec_level(right->type);
-	int lprec = prec_level(left->type);
-	int prec = prec_level(type);
+	unsigned rprec = prec_level((OPCODE) right->type);
+	unsigned lprec = prec_level((OPCODE) left->type);
+	unsigned prec = prec_level(type);
 
 	if (lprec < prec)
 		pp_parenthesize(left);
@@ -1635,17 +1646,17 @@ pp_typed_regex(const char *in_str, size_t len, int delim)
 
 /* pp_string_or_typed_regex --- pretty format a string, regex, or typed regex constant */
 
-char *
+static char *
 pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_regex)
 {
-	static char str_escapes[] = "\a\b\f\n\r\t\v\\";
-	static char str_printables[] = "abfnrtv\\";
-	static char re_escapes[] = "\a\b\f\n\r\t\v";
-	static char re_printables[] = "abfnrtv";
-	char *escapes;
-	char *printables;
-	char *cp;
-	int i;
+	static const char str_escapes[] = "\a\b\f\n\r\t\v\\";
+	static const char str_printables[] = "abfnrtv\\";
+	static const char re_escapes[] = "\a\b\f\n\r\t\v";
+	static const char re_printables[] = "abfnrtv";
+	const char *escapes;
+	const char *printables;
+	const char *cp;
+	size_t i;
 	const unsigned char *str = (const unsigned char *) in_str;
 	size_t ofre, osiz;
 	char *obuf, *obufout;
@@ -1662,7 +1673,7 @@ pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_r
 
 /* make space for something l big in the buffer */
 #define chksize(l)  if ((l) > ofre) { \
-		long olen = obufout - obuf; \
+		size_t olen = (size_t) (obufout - obuf); \
 		erealloc(obuf, char *, osiz * 2, "pp_string"); \
 		obufout = obuf + olen; \
 		ofre += osiz; \
@@ -1678,12 +1689,12 @@ pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_r
 	if (typed_regex)
 		*obufout++ = '@';
 
-	*obufout++ = delim;
+	*obufout++ = (char) delim;
 	for (; len > 0; len--, str++) {
 		chksize(2);		/* make space for 2 chars */
 		if (delim != '/' && *str == delim) {
 			*obufout++ = '\\';
-			*obufout++ = delim;
+			*obufout++ = (char) delim;
 		} else if (*str == '\0') {
 			*obufout++ = '\\';
 			*obufout++ = '0';
@@ -1691,26 +1702,26 @@ pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_r
 			*obufout++ = '0';
 			*obufout++ = '0';
 		} else if ((cp = strchr(escapes, *str)) != NULL) {
-			i = cp - escapes;
+			i = (size_t) (cp - escapes);
 			*obufout++ = '\\';
 			*obufout++ = printables[i];
 		/* NB: Deliberate use of lower-case versions. */
 		} else if (isascii(*str) && isprint(*str)) {
-			*obufout++ = *str;
+			*obufout++ = (char) *str;
 			ofre += 1;	/* used 1 less than expected */
 		} else {
-			size_t len;
+			size_t tlen;
 
 			chksize(8);		/* total available space is 10 */
 
 			sprintf(obufout, "\\%03o", *str & 0xff);
-			len = strlen(obufout);
-			ofre += (10 - len);	 /* adjust free space count */
-			obufout += len;
+			tlen = strlen(obufout);
+			ofre += (10 - tlen);	 /* adjust free space count */
+			obufout += tlen;
 		}
 	}
 	chksize(2);
-	*obufout++ = delim;
+	*obufout++ = (char) delim;
 	*obufout = '\0';
 	return obuf;
 #undef chksize
@@ -1742,16 +1753,16 @@ pp_node(NODE *n)
 /* pp_list --- pretty print a list, with surrounding characters and separator */
 
 static NODE **pp_args = NULL;
-static int npp_args;
+static ulong_t npp_args;
 
 static char *
-pp_list(int nargs, const char *paren, const char *delim)
+pp_list(ulong_t nargs, const char *paren, const char *delim)
 {
 	NODE *r;
- 	char *str, *s;
+	char *str, *s;
 	size_t len;
 	size_t delimlen;
-	int i;
+	ulong_t i;
 	INSTRUCTION *comment = NULL;
 
 	if (pp_args == NULL) {
@@ -1763,11 +1774,11 @@ pp_list(int nargs, const char *paren, const char *delim)
 	}
 
 	delimlen = strlen(delim);
-	if (nargs == 0)
+	if (!nargs)
 		len = 2;
 	else {
-		len = -delimlen;
-		for (i = 1; i <= nargs; i++) {
+		len = 0 - delimlen;
+		for (i = 1u; i <= nargs; i++) {
 			r = pp_args[i] = pp_pop();
 			len += r->pp_len + delimlen;
 			if (r->pp_comment != NULL) {
@@ -1787,14 +1798,14 @@ pp_list(int nargs, const char *paren, const char *delim)
 	if (paren != NULL)
 		*s++ = paren[0];
 
-	for (i = nargs; i > 0; i--) {
+	for (i = nargs; i; i--) {
 		// argument
 		r = pp_args[i];
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
 
 		// delimiter
-		if (i > 1 && delimlen > 0) {
+		if (i > 1u && delimlen > 0) {
 			memcpy(s, delim, delimlen);
 			s += delimlen;
 		}
@@ -1828,14 +1839,14 @@ is_unary_minus(const char *str)
 /* pp_concat --- handle concatenation and correct parenthesizing of expressions */
 
 static char *
-pp_concat(int nargs)
+pp_concat(ulong_t nargs)
 {
 	NODE *r;
- 	char *str, *s;
+	char *str, *s;
 	size_t len;
 	static const size_t delimlen = 1;	/* " " */
-	int i;
-	int pl_l, pl_r;
+	ulong_t i;
+	unsigned pl_l, pl_r;
 
 	if (pp_args == NULL) {
 		npp_args = nargs;
@@ -1850,8 +1861,8 @@ pp_concat(int nargs)
 	 * will be printed so pop them off backwards.
 	 */
 
-	len = -delimlen;
-	for (i = nargs; i >= 1; i--) {
+	len = 0 - delimlen;
+	for (i = nargs; i; i--) {
 		r = pp_args[i] = pp_pop();
 		len += r->pp_len + delimlen + 2;
 	}
@@ -1860,22 +1871,22 @@ pp_concat(int nargs)
 	s = str;
 
 	/* now copy in */
-	for (i = 1; i < nargs; i++) {
+	for (i = 1u; i < nargs; i++) {
 		r = pp_args[i];
 
 		if (r->pp_str[0] != '(') {
-			pl_l = prec_level(pp_args[i]->type);
-			pl_r = prec_level(pp_args[i+1]->type);
+			pl_l = prec_level((OPCODE) pp_args[i]->type);
+			pl_r = prec_level((OPCODE) pp_args[i+1]->type);
 
-			if (i >= 2 && is_unary_minus(r->pp_str)) {
+			if (i >= 2u && is_unary_minus(r->pp_str)) {
 				*s++ = '(';
 				memcpy(s, r->pp_str, r->pp_len);
 				s += r->pp_len;
 				*s++ = ')';
-			} else if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
+			} else if (is_scalar((OPCODE) pp_args[i]->type) && is_scalar((OPCODE) pp_args[i+1]->type)) {
 				memcpy(s, r->pp_str, r->pp_len);
 				s += r->pp_len;
-			} else if (pl_l <= pl_r || is_scalar(pp_args[i+1]->type)) {
+			} else if (pl_l <= pl_r || is_scalar((OPCODE) pp_args[i+1]->type)) {
 				*s++ = '(';
 				memcpy(s, r->pp_str, r->pp_len);
 				s += r->pp_len;
@@ -1894,13 +1905,13 @@ pp_concat(int nargs)
 		}
 	}
 
-	pl_l = prec_level(pp_args[nargs-1]->type);
-	pl_r = prec_level(pp_args[nargs]->type);
+	pl_l = prec_level((OPCODE) pp_args[nargs-1]->type);
+	pl_r = prec_level((OPCODE) pp_args[nargs]->type);
 	r = pp_args[nargs];
 	if (r->pp_str[0] == '(') {
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
-	} else if (is_unary_minus(r->pp_str) || ((pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)))) {
+	} else if (is_unary_minus(r->pp_str) || ((pl_l >= pl_r && ! is_scalar((OPCODE) pp_args[nargs]->type)))) {
 		*s++ = '(';
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
@@ -1910,7 +1921,7 @@ pp_concat(int nargs)
 		s += r->pp_len;
 	}
 
-	for (i = nargs; i >= 1; i--) {
+	for (i = nargs; i; i--) {
 		pp_free(pp_args[i]);
 	}
 
@@ -1951,13 +1962,14 @@ pp_group3(const char *s1, const char *s2, const char *s3)
 /* pp_func --- pretty print a function */
 
 int
-pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
+pp_func(INSTRUCTION *pc, void *data)
 {
-	int j;
+	ulong_t j;
 	static bool first = true;
 	NODE *func;
-	int pcount;
+	ulong_t pcount;
 	INSTRUCTION *fp;
+	(void) data;
 
 	if (first) {
 		first = false;
@@ -1973,10 +1985,10 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 
 	/* print any function comment */
 	if (pc->comment != NULL)
-		print_comment(pc->comment, -1);	/* -1 ==> don't indent */
+		print_comment(pc->comment, DONT_INDENT);
 
 	indent(pc->nexti->exec_count);
-	
+
 	bool malloced = false;
 	char *name = adjust_namespace(func->vname, & malloced);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), name);
@@ -1984,8 +1996,8 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		free(name);
 	pcount = func->param_cnt;
 	func_params = func->fparms;
-	for (j = 0; j < pcount; j++) {
-		fprintf(prof_fp, "%s", func_params[j].param);
+	for (j = 0u; j < pcount; j++) {
+		fprintf(prof_fp, "%s", func_params[j].vname);
 		if (j < pcount - 1)
 			fprintf(prof_fp, ", ");
 	}
@@ -1996,13 +2008,13 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	} else
 		fprintf(prof_fp, ")\n");
 	if (do_profile)
-		indent(0);
+		indent(0u);
 	fprintf(prof_fp, "{\n");
 	indent_in();
 	pprint(fp, NULL, NO_PPRINT_FLAGS);	/* function body */
 	indent_out();
 	if (do_profile)
-		indent(0);
+		indent(0u);
 	fprintf(prof_fp, "}\n");
 	return 0;
 }
@@ -2010,7 +2022,7 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 /* redir2str --- convert a redirection type into a printable value */
 
 const char *
-redir2str(int redirtype)
+redir2str(enum redirval redirtype)
 {
 	static const char *const redirtab[] = {
 		"",
@@ -2023,7 +2035,7 @@ redir2str(int redirtype)
 	};
 
 	if (redirtype < 0 || redirtype > redirect_twoway)
-		fatal(_("redir2str: unknown redirection type %d"), redirtype);
+		fatal(_("redir2str: unknown redirection type %d"), (int) redirtype);
 	return redirtab[redirtype];
 }
 
@@ -2060,7 +2072,7 @@ pp_namespace(const char *name, INSTRUCTION *comment)
 /* pp_namespace_list --- print the list, back to front, using recursion */
 
 static void
-pp_namespace_list(INSTRUCTION *list)
+pp_namespace_list(const INSTRUCTION *list)
 {
 	if (list == NULL)
 		return;
