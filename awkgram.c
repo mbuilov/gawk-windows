@@ -5348,7 +5348,7 @@ free_srcfile(SRCFILE *thisfile)
 /* do_add_srcfile --- add one item to srcfiles */
 
 static SRCFILE *
-do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
+do_add_srcfile(enum srctype stype, const char *src, char *path, SRCFILE *thisfile)
 {
 	SRCFILE *s;
 
@@ -5369,7 +5369,7 @@ do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
  */
 
 SRCFILE *
-add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
+add_srcfile(enum srctype stype, const char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
 {
 	SRCFILE *s;
 	struct stat sbuf;
@@ -5447,7 +5447,7 @@ static bool
 include_source(INSTRUCTION *file, void **srcfile_p)
 {
 	SRCFILE *s;
-	char *src = file->lextok;
+	const char *src = file->lextok;
 	int errcode;
 	bool already_included;
 
