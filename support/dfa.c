@@ -65,7 +65,7 @@ isasciidigit (char c)
 #include "localeinfo.h"
 
 #ifndef FALLTHROUGH
-# if __GNUC__ < 7
+# if defined __GNUC__ && __GNUC__ < 7
 #  define FALLTHROUGH ((void) 0)
 # else
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
@@ -613,7 +613,7 @@ static void regexp (struct dfa *dfa);
    * The return value is always in the range 1..N.
    * D->mbs is always valid afterwards.
    * *PWC is always set to something.  */
-static int
+static size_t
 mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
 {
   unsigned char uc = s[0];
@@ -644,7 +644,7 @@ prtok (token t)
     fprintf (stderr, "END");
   else if (0 <= t && t < NOTCHAR)
     {
-      unsigned int ch = t;
+      unsigned int ch = (unsigned int) t;
       fprintf (stderr, "0x%02x", ch);
     }
   else
@@ -921,8 +921,8 @@ setbit_case_fold_c (int b, charclass *c)
 static int
 fetch_wc (struct dfa *dfa)
 {
-  int nbytes = mbs_to_wchar (&dfa->lex.wctok, dfa->lex.ptr, dfa->lex.left,
-                             dfa);
+  size_t nbytes = mbs_to_wchar (&dfa->lex.wctok, dfa->lex.ptr, dfa->lex.left,
+                                dfa);
   int c = nbytes == 1 ? to_uchar (dfa->lex.ptr[0]) : EOF;
   dfa->lex.ptr += nbytes;
   dfa->lex.left -= nbytes;
@@ -1034,7 +1034,7 @@ parse_bracket_exp (struct dfa *dfa)
                       || (c == c1 && dfa->lex.ptr[0] == ']'))
                     break;
                   if (len < MAX_BRACKET_STRING_LEN)
-                    str[len++] = c;
+                    str[len++] = (char) c;
                   else
                     /* This is in any case an invalid class name.  */
                     str[0] = '\0';
@@ -1132,7 +1132,7 @@ parse_bracket_exp (struct dfa *dfa)
               if (wc != wc2 || wc == WEOF)
                 {
                   if (dfa->localeinfo.simple
-                      || (isasciidigit (c) & isasciidigit (c2)))
+                      || (isasciidigit ((char) c) & isasciidigit ((char) c2)))
                     {
                       for (int ci = c; ci <= c2; ci++)
                         if (dfa->syntax.case_fold && isalpha (ci))
@@ -1270,12 +1270,12 @@ lex (struct dfa *dfa)
               || ((dfa->lex.left
                    > !(dfa->syntax.syntax_bits & RE_NO_BK_PARENS))
                   && (dfa->lex.ptr[!(dfa->syntax.syntax_bits & RE_NO_BK_PARENS)
-                                   & (dfa->lex.ptr[0] == '\\')]
+                                   && (dfa->lex.ptr[0] == '\\')]
                       == ')'))
               || ((dfa->lex.left
                    > !(dfa->syntax.syntax_bits & RE_NO_BK_VBAR))
                   && (dfa->lex.ptr[!(dfa->syntax.syntax_bits & RE_NO_BK_VBAR)
-                                   & (dfa->lex.ptr[0] == '\\')]
+                                   && (dfa->lex.ptr[0] == '\\')]
                       == '|'))
               || ((dfa->syntax.syntax_bits & RE_NEWLINE_ALT)
                   && dfa->lex.left > 0 && dfa->lex.ptr[0] == '\n'))
@@ -1570,7 +1570,9 @@ lex (struct dfa *dfa)
   /* The above loop should consume at most a backslash
      and some other character.  */
   abort ();
+#ifdef COMPILE_UNREACHABLE_CODE
   return END;                   /* keeps pedantic compilers happy.  */
+#endif
 }
 
 static void
@@ -1663,7 +1665,7 @@ addtok_wc (struct dfa *dfa, wint_t wc)
   unsigned char buf[MB_LEN_MAX];
   mbstate_t s = { 0 };
   size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
-  int buflen;
+  size_t buflen;
 
   if (stored_bytes != (size_t) -1)
     buflen = stored_bytes;
@@ -1676,7 +1678,7 @@ addtok_wc (struct dfa *dfa, wint_t wc)
     }
 
   addtok_mb (dfa, buf[0], buflen == 1 ? 3 : 1);
-  for (int i = 1; i < buflen; i++)
+  for (size_t i = 1; i < buflen; i++)
     {
       addtok_mb (dfa, buf[i], i == buflen - 1 ? 2 : 0);
       addtok (dfa, CAT);
@@ -2129,7 +2131,7 @@ merge_constrained (position_set const *s1, position_set const *s2,
 static void
 merge (position_set const *s1, position_set const *s2, position_set *m)
 {
-  merge_constrained (s1, s2, -1, m);
+  merge_constrained (s1, s2, (unsigned)-1, m);
 }
 
 static void
@@ -2264,8 +2266,8 @@ state_index (struct dfa *d, position_set const *s, int context)
   d->states[i].hash = hash;
   alloc_position_set (&d->states[i].elems, s->nelem);
   copy (s, &d->states[i].elems);
-  d->states[i].context = context;
-  d->states[i].constraint = constraint;
+  d->states[i].context = (unsigned char) context;
+  d->states[i].constraint = (unsigned char) constraint;
   d->states[i].first_end = first_end;
   d->states[i].mbps.nelem = 0;
   d->states[i].mbps.elems = NULL;
@@ -2768,8 +2770,8 @@ dfaanalyze (struct dfa *d, bool searchflag)
       fprintf (stderr, "node %td:", i);
       prtok (d->tokens[i]);
       putc ('\n', stderr);
-      fprintf (stderr,
-               stk[-1].nullable ? " nullable: yes\n" : " nullable: no\n");
+      fputs (stk[-1].nullable ? " nullable: yes\n" : " nullable: no\n",
+             stderr);
       fprintf (stderr, " firstpos:");
       for (idx_t j = 0; j < stk[-1].nfirstpos; j++)
         {
@@ -2843,10 +2845,10 @@ dfaanalyze (struct dfa *d, bool searchflag)
   /* Build the initial state.  */
   if (separate_contexts & CTX_NEWLINE)
     state_index (d, &tmp, CTX_NEWLINE);
-  d->initstate_notbol = d->min_trcount
-    = state_index (d, &tmp, separate_contexts ^ CTX_ANY);
+  d->initstate_notbol = state_index (d, &tmp, separate_contexts ^ CTX_ANY);
+  d->min_trcount = (int) d->initstate_notbol;
   if (separate_contexts & CTX_LETTER)
-    d->min_trcount = state_index (d, &tmp, CTX_LETTER);
+    d->min_trcount = (int) state_index (d, &tmp, CTX_LETTER);
   d->min_trcount++;
   d->trcount = 0;
 
@@ -3003,7 +3005,7 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
       if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR)
         {
           zeroset (&matches);
-          setbit (d->tokens[pos.index], &matches);
+          setbit ((unsigned int) d->tokens[pos.index], &matches);
           if (d->tokens[pos.index] == uc)
             matched = true;
         }
@@ -3250,7 +3252,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
 {
   wint_t wc;
 
-  int mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
+  size_t mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
 
   /* This state has some operators which can match a multibyte character.  */
   d->mb_follows.nelem = 0;
@@ -3258,7 +3260,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   /* Calculate the state which can be reached from the state 's' by
      consuming 'mbclen' single bytes from the buffer.  */
   state_num s1 = s;
-  int mbci;
+  size_t mbci;
   for (mbci = 0; mbci < mbclen && (mbci == 0 || d->min_trcount <= s); mbci++)
     s = transit_state_singlebyte (d, s, pp);
   *pp += mbclen - mbci;
@@ -3552,6 +3554,7 @@ static char *
 dfaexec_mb (struct dfa *d, char const *begin, char *end,
             bool allow_nl, ptrdiff_t *count, bool *backref)
 {
+  (void)backref;
   return dfaexec_main (d, begin, end, allow_nl, count, true);
 }
 
@@ -3559,6 +3562,7 @@ static char *
 dfaexec_sb (struct dfa *d, char const *begin, char *end,
             bool allow_nl, ptrdiff_t *count, bool *backref)
 {
+  (void)d, (void)end, (void)backref;
   return dfaexec_main (d, begin, end, allow_nl, count, false);
 }
 
@@ -3568,6 +3572,7 @@ static char *
 dfaexec_noop (struct dfa *d, char const *begin, char *end,
               bool allow_nl, ptrdiff_t *count, bool *backref)
 {
+  (void)d, (void)end, (void)allow_nl, (void)count;
   *backref = true;
   return (char *) begin;
 }
@@ -4247,7 +4252,7 @@ dfamust (struct dfa const *d)
               while (++j < NOTCHAR)
                 if (tstbit (j, ccl)
                     && ! (case_fold_unibyte
-                          && toupper (j) == toupper (t)))
+                          && toupper (j) == toupper ((int) t)))
                   break;
               if (j < NOTCHAR)
                 {
@@ -4269,7 +4274,7 @@ dfamust (struct dfa const *d)
             }
           mp = allocmust (mp, ((rj - ri) >> 1) + 1);
           mp->is[0] = mp->left[0] = mp->right[0]
-            = case_fold_unibyte ? toupper (t) : t;
+            = (char) (case_fold_unibyte ? toupper ((int) t) : (int) t);
 
           idx_t i;
           for (i = 1; ri + 2 < rj; i++)
@@ -4277,7 +4282,7 @@ dfamust (struct dfa const *d)
               ri += 2;
               t = d->tokens[ri];
               mp->is[i] = mp->left[i] = mp->right[i]
-                = case_fold_unibyte ? toupper (t) : t;
+                = (char) (case_fold_unibyte ? toupper ((int) t) : (int) t);
             }
           mp->is[i] = mp->left[i] = mp->right[i] = '\0';
           mp->in = enlist (mp->in, mp->is, i);
@@ -4339,9 +4344,9 @@ dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
 
   for (int i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
-      unsigned char uc = i;
+      unsigned char uc = (char) i;
 
-      dfa->syntax.sbit[uc] = char_context (dfa, uc);
+      dfa->syntax.sbit[uc] = (char) char_context (dfa, uc);
       switch (dfa->syntax.sbit[uc])
         {
         case CTX_LETTER:
