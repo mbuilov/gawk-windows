@@ -210,7 +210,7 @@ xstrdup(const char *s)
 		r_fatal(_("xstrdup: null parameter"));
 
 	l = strlen(s);
-	p = xmemdup(s, l + 1);
+	p = (char*) xmemdup(s, l + 1);
 	p[l] = '\0';
 
 	return p;
