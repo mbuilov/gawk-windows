@@ -27,17 +27,23 @@ extern "C" {
 
 
 # ifndef __attribute__
-#  if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
+#  if !defined __GNUC__ || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
 #   define __attribute__(arg)
 #  endif
 # endif
 
 # ifndef ATTRIBUTE_NORETURN
-#  define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#  ifdef _MSC_VER
+#   define ATTRIBUTE_NORETURN __declspec(noreturn)
+#  else
+#   define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#  endif
 # endif
 
 # ifndef ATTRIBUTE_MALLOC
-#  if __GNUC__ >= 3
+#  ifdef _MSC_VER
+#   define ATTRIBUTE_MALLOC __declspec(restrict)
+#  elif defined __GNUC__ && __GNUC__ >= 3
 #   define ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
 #  else
 #   define ATTRIBUTE_MALLOC
@@ -49,15 +55,15 @@ extern "C" {
    or by using gnulib's xalloc-die module.  This is the
    function to call when one wants the program to die because of a
    memory allocation failure.  */
-extern void xalloc_die (void) ATTRIBUTE_NORETURN;
+ATTRIBUTE_NORETURN extern void xalloc_die (void);
 
-void *xmalloc (size_t s) ATTRIBUTE_MALLOC;
-void *xzalloc (size_t s) ATTRIBUTE_MALLOC;
-void *xcalloc (size_t n, size_t s) ATTRIBUTE_MALLOC;
+ATTRIBUTE_MALLOC void *xmalloc (size_t s);
+ATTRIBUTE_MALLOC void *xzalloc (size_t s);
+ATTRIBUTE_MALLOC void *xcalloc (size_t n, size_t s);
 void *xrealloc (void *p, size_t s);
 void *x2realloc (void *p, size_t *pn);
-void *xmemdup (void const *p, size_t s) ATTRIBUTE_MALLOC;
-char *xstrdup (char const *str) ATTRIBUTE_MALLOC;
+ATTRIBUTE_MALLOC void *xmemdup (void const *p, size_t s);
+ATTRIBUTE_MALLOC char *xstrdup (char const *str);
 
 /* Return 1 if an array of N objects, each of size S, cannot exist due
    to size arithmetic overflow.  S must be positive and N must be
@@ -112,10 +118,10 @@ char *xstrdup (char const *str) ATTRIBUTE_MALLOC;
 # if HAVE_INLINE
 #  define static_inline static inline
 # else
-void *xnmalloc (size_t n, size_t s) ATTRIBUTE_MALLOC;
+ATTRIBUTE_MALLOC void *xnmalloc (size_t n, size_t s);
 void *xnrealloc (void *p, size_t n, size_t s);
 void *x2nrealloc (void *p, size_t *pn, size_t s);
-char *xcharalloc (size_t n) ATTRIBUTE_MALLOC;
+ATTRIBUTE_MALLOC char *xcharalloc (size_t n);
 # endif
 
 # ifdef static_inline
@@ -123,8 +129,8 @@ char *xcharalloc (size_t n) ATTRIBUTE_MALLOC;
 /* Allocate an array of N objects, each with S bytes of memory,
    dynamically, with error checking.  S must be nonzero.  */
 
-static_inline void *xnmalloc (size_t n, size_t s) ATTRIBUTE_MALLOC;
-static_inline void *
+ATTRIBUTE_MALLOC static_inline void *xnmalloc (size_t n, size_t s);
+ATTRIBUTE_MALLOC static_inline void *
 xnmalloc (size_t n, size_t s)
 {
   if (xalloc_oversized (n, s))
@@ -134,9 +140,9 @@ xnmalloc (size_t n, size_t s)
 
 #ifdef GAWK
 #include <errno.h>
-extern void r_fatal(const char *msg, ...) ATTRIBUTE_NORETURN ;
+ATTRIBUTE_NORETURN extern void r_fatal(const char *msg, ...);
 
-void *
+ATTRIBUTE_MALLOC void *
 xmalloc(size_t bytes)
 {
   void *p;
@@ -151,7 +157,7 @@ xmalloc(size_t bytes)
    dynamically, with error checking.  S must be nonzero.
    Clear the contents afterwards.  */
 
-void *
+ATTRIBUTE_MALLOC void *
 xcalloc(size_t nmemb, size_t size)
 {
   void *p;
@@ -187,17 +193,18 @@ xalloc_die (void)
    for xnmemdup (P, N, S), since xmemdup (P, N * S) works without any
    need for an arithmetic overflow check.  */
 
-void *
+ATTRIBUTE_MALLOC void *
 xmemdup (void const *p, size_t s)
 {
   return memcpy (xmalloc (s), p, s);
 }
 
 /* xstrdup --- strdup and die if fails */
-char *xstrdup(const char *s)
+ATTRIBUTE_MALLOC char *
+xstrdup(const char *s)
 {
 	char *p;
-	int l;
+	size_t l;
 
 	if (s == NULL)
 		r_fatal(_("xstrdup: null parameter"));
@@ -313,8 +320,8 @@ x2nrealloc (void *p, size_t *pn, size_t s)
 /* Return a pointer to a new buffer of N bytes.  This is like xmalloc,
    except it returns char *.  */
 
-static_inline char *xcharalloc (size_t n) ATTRIBUTE_MALLOC;
-static_inline char *
+ATTRIBUTE_MALLOC static_inline char *xcharalloc (size_t n);
+ATTRIBUTE_MALLOC static_inline char *
 xcharalloc (size_t n)
 {
   return XNMALLOC (n, char);
@@ -324,7 +331,7 @@ xcharalloc (size_t n)
    There's no need for xnzalloc (N, S), since it would be equivalent
    to xcalloc (N, S).  */
 
-inline void *
+ATTRIBUTE_MALLOC inline void *
 xzalloc (size_t s)
 {
   return xcalloc(1, s);
