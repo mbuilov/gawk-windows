@@ -263,16 +263,17 @@ static uint32_t *rptr = &randtbl[1];
  * the last element to see if the front and rear pointers have wrapped.
  */
 static uint32_t *state = &randtbl[1];
-static int rand_type = TYPE_3;
+static unsigned int rand_type = TYPE_3;
 static int rand_deg = DEG_3;
 static int rand_sep = SEP_3;
 static uint32_t *end_ptr = &randtbl[DEG_3 + 1];
 
-static inline uint32_t good_rand(int32_t);
+static inline uint32_t good_rand(uint32_t);
 
-static inline uint32_t good_rand (x)
-	int32_t x;
-{
+static inline uint32_t good_rand (
+	uint32_t xx
+) {
+	int32_t x = (int32_t) xx;
 #ifdef  USE_WEAK_SEEDING
 /*
  * Historic implementation compatibility.
@@ -299,7 +300,7 @@ static inline uint32_t good_rand (x)
 	x = 16807 * lo - 2836 * hi;
 	if (x < 0)
 		x += 0x7fffffff;
-	return (x);
+	return (uint32_t) (x);
 #endif  /* !USE_WEAK_SEEDING */
 }
 
@@ -316,9 +317,9 @@ static inline uint32_t good_rand (x)
  * for default usage relies on values produced by this routine.
  */
 void
-srandom(x)
-	unsigned long x;
-{
+srandom(
+	unsigned long x
+) {
 	int i, lim;
 
 	shuffle_init = 1;
@@ -408,18 +409,18 @@ srandomdev()
  * complain about mis-alignment, but you should disregard these messages.
  */
 char *
-initstate(seed, arg_state, n)
-	unsigned long seed;		/* seed for R.N.G. */
-	char *arg_state;		/* pointer to state array */
-	long n;				/* # bytes of state info */
-{
+initstate(
+	unsigned long seed,		/* seed for R.N.G. */
+	char *arg_state,		/* pointer to state array */
+	long n				/* # bytes of state info */
+) {
 	char *ostate = (char *)(&state[-1]);
 	uint32_t *int_arg_state = (uint32_t *)arg_state;
 
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
 	else
-		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
+		state[-1] = MAX_TYPES * (uint32_t) (rptr - state) + rand_type;
 	if (n < BREAK_0) {
 		(void)fprintf(stderr,
 		    "random: not enough state (%ld bytes); ignored.\n", n);
@@ -452,7 +453,7 @@ initstate(seed, arg_state, n)
 	if (rand_type == TYPE_0)
 		int_arg_state[0] = rand_type;
 	else
-		int_arg_state[0] = MAX_TYPES * (rptr - state) + rand_type;
+		int_arg_state[0] = MAX_TYPES * (uint32_t) (rptr - state) + rand_type;
 	return(ostate);
 }
 
@@ -476,9 +477,9 @@ initstate(seed, arg_state, n)
  * complain about mis-alignment, but you should disregard these messages.
  */
 char *
-setstate(arg_state)
-	char *arg_state;		/* pointer to state array */
-{
+setstate(
+	char *arg_state		/* pointer to state array */
+) {
 	uint32_t *new_state = (uint32_t *)arg_state;
 	uint32_t type = new_state[0] % MAX_TYPES;
 	uint32_t rear = new_state[0] / MAX_TYPES;
@@ -487,7 +488,7 @@ setstate(arg_state)
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
 	else
-		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
+		state[-1] = MAX_TYPES * (uint32_t) (rptr - state) + rand_type;
 	switch(type) {
 	case TYPE_0:
 	case TYPE_1:
@@ -529,7 +530,7 @@ setstate(arg_state)
  * Returns a 31-bit random number.
  */
 static long
-random_old()
+random_old(void)
 {
 	uint32_t i;
 	uint32_t *f, *r;
@@ -558,7 +559,7 @@ random_old()
 }
 
 long
-random()
+random(void)
 {
 	/*
 	 * This function is a wrapper to the original random(), now renamed
