@@ -34,16 +34,17 @@
    'configure' down we could also use it with other compilers, but
    since this affects only the quality of diagnostics, why bother?  */
 #ifndef __cplusplus
-# if (201112L <= __STDC_VERSION__ \
-      || (!defined __STRICT_ANSI__ && 4 < __GNUC__ + (6 <= __GNUC_MINOR__)))
+# if (defined __STDC_VERSION__ && 201112L <= __STDC_VERSION__) \
+      || (!defined __STRICT_ANSI__ && defined __GNUC__ && 4 < __GNUC__ + (6 <= __GNUC_MINOR__))
 #  define _GL_HAVE__STATIC_ASSERT 1
 # endif
-# if (202000L <= __STDC_VERSION__ \
-      || (!defined __STRICT_ANSI__ && 9 <= __GNUC__))
+# if (defined __STDC_VERSION__ && 202000L <= __STDC_VERSION__) \
+      || (!defined __STRICT_ANSI__ && defined __GNUC__ && 9 <= __GNUC__)
 #  define _GL_HAVE__STATIC_ASSERT1 1
 # endif
 #else
-# if 201703L <= __cplusplus || 9 <= __GNUC__
+# if (defined __cplusplus && 201703L <= __cplusplus) \
+      || (defined __GNUC__ && 9 <= __GNUC__)
 #  define _GL_HAVE_STATIC_ASSERT1 1
 # endif
 #endif
@@ -182,7 +183,7 @@
    (!!sizeof (_GL_VERIFY_TYPE (R, DIAGNOSTIC)))
 
 #ifdef __cplusplus
-# if !GNULIB_defined_struct__gl_verify_type
+# if !defined GNULIB_defined_struct__gl_verify_type || !GNULIB_defined_struct__gl_verify_type
 template <int w>
   struct _gl_verify_type {
     unsigned int _gl_verify_error_if_negative: w;
@@ -214,10 +215,13 @@ template <int w>
 
 #if defined _GL_HAVE__STATIC_ASSERT
 # define _GL_VERIFY(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
-#else
+#elif ! defined _MSC_VER
 # define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
     extern int (*_GL_GENSYM (_gl_verify_function) (void))	       \
       [_GL_VERIFY_TRUE (R, DIAGNOSTIC)]
+#else
+# define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
+    typedef int _GL_GENSYM (_gl_verify_typedef) [1-2*!(R)]
 #endif
 
 /* _GL_STATIC_ASSERT_H is defined if this code is copied into assert.h.  */
@@ -270,8 +274,8 @@ template <int w>
    can suffer if R uses hard-to-optimize features such as function
    calls not inlined by the compiler.  */
 
-#if (__has_builtin (__builtin_unreachable) \
-     || 4 < __GNUC__ + (5 <= __GNUC_MINOR__))
+#if __has_builtin (__builtin_unreachable) \
+     || (defined __GNUC__ && 4 < __GNUC__ + (5 <= __GNUC_MINOR__))
 # define assume(R) ((R) ? (void) 0 : __builtin_unreachable ())
 #elif 1200 <= _MSC_VER
 # define assume(R) __assume (R)
