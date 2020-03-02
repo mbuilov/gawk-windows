@@ -80,9 +80,15 @@ using_simple_locale (bool multibyte)
      although it would be invalid for artificially-constructed locales
      where the native order is the collating-sequence order but there
      are multi-character collating elements.  */
+  char a[2] = {0};
+  char b[2] = {0};
   for (int i = 0; i < UCHAR_MAX; i++)
-    if (strcoll (((char []) {i, 0}), ((char []) {i + 1, 0})) <= 0)
-      return false;
+    {
+      a[0] = (char) i;
+      b[0] = (char) (i + 1);
+      if (strcoll (a, b) <= 0)
+        return false;
+    }
 
   return true;
 }
@@ -98,13 +104,14 @@ init_localeinfo (struct localeinfo *localeinfo)
 
   for (int i = CHAR_MIN; i <= CHAR_MAX; i++)
     {
-      char c = i;
-      unsigned char uc = i;
+      char c = (char) i;
+      unsigned char uc = (unsigned char) c;
       mbstate_t s = {0};
       wchar_t wc;
       size_t len = mbrtowc (&wc, &c, 1, &s);
-      localeinfo->sbclen[uc] = len <= 1 ? 1 : - (int) - len;
-      localeinfo->sbctowc[uc] = len <= 1 ? wc : WEOF;
+      signed char b = len <= 1 ? 1 : - (signed char)((size_t)0 - len);
+      localeinfo->sbclen[uc] = b; /* 1, -1 or -2 */
+      localeinfo->sbctowc[uc] = len <= 1 ? (wint_t) wc : WEOF;
     }
 }
 
@@ -147,7 +154,7 @@ case_folded_counterparts (wint_t c, wchar_t folded[CASE_FOLDED_BUFSIZE])
     folded[n++] = lc;
   for (i = 0; i < sizeof lonesome_lower / sizeof *lonesome_lower; i++)
     {
-      wint_t li = lonesome_lower[i];
+      wint_t li = (wint_t) lonesome_lower[i];
       if (li != lc && li != uc && li != c && towupper (li) == uc)
         folded[n++] = li;
     }
