@@ -24420,17 +24420,29 @@ main(int argc, char *argv[])
 @}
 @end example
 
+La versione fornita dal progetto GNU dei programmi di utilit@`a
+originali Unix hanno popolarizzato l'uso della versione lunga
+delle opzioni immesse nella riga di comando.  Per esempio,
+@option{--help} in aggiunta a @option{-h}.  Gli argomenti per queste
+opzioni lunghe sono forniti come argomenti separati [da uno o
+pi@`u spazi] sulla riga di comando (@samp{--source '@var{program-text}'})
+oppure sono separati dalla relativa opzione da un segno @samp{=}
+(@samp{--source='@var{program-text}'}).
+
 Incidentalmente, @command{gawk} al suo interno usa la funzione GNU
 @code{getopt_long()} per elaborare sia le normali opzioni che quelle lunghe
 in stile GNU
 (@pxref{Opzioni}).
 
-L'astrazione fornita da @code{getopt()} @`e molto utile ed @`e piuttosto comoda
-anche nei programmi @command{awk}.  Di seguito si riporta una versione
-@command{awk} di @code{getopt()}.  Questa funzione mette in evidenza uno dei
+L'astrazione fornita da @code{getopt()} @`e molto utile ed @`e piuttosto
+comoda anche nei programmi @command{awk}.  Di seguito si riporta una
+versione @command{awk} di @code{getopt()} che accetta sia le opzioni+
+lunghe che quelle corte.
+
+Questa funzione mette in evidenza uno dei
 maggiori punti deboli di @command{awk}, che @`e quello di essere molto carente
-nella manipolazione di caratteri singoli.  Sono necessarie ripetute chiamate a
-@code{substr()} per accedere a caratteri singoli.
+nella manipolazione di caratteri singoli.  La funzione deve usare ripetute
+chiamate a @code{substr()} per accedere a caratteri singoli
 (@pxref{Funzioni per stringhe}).@footnote{Questa funzione
 @`e stata scritta prima che @command{gawk} acquisisse la capacit@`a di
 dividere le stringhe in caratteri singoli usando @code{""} come separatore.
@@ -24444,6 +24456,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 @example
 @c file eg/lib/getopt.awk
 # getopt.awk --- imita in awk la funzione di libreria C getopt(3)
+#                Supporta anche le opzioni lunghe.
 @c endfile
 @ignore
 @c file eg/lib/getopt.awk
@@ -24452,6 +24465,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 #
 # Initial version: March, 1991
 # Revised: May, 1993
+# Opzioni lunghe aggiunte da Greg Minshall, Gennaio 2020
 @c endfile
 @end ignore
 @c file eg/lib/getopt.awk
@@ -24465,7 +24479,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 # Restituisce:
 #    -1     alla fine delle opzioni
 #    "?"    per un'opzione non riconosciuta
-#    <c>    un carattere che rappresenta l'opzione corrente
+#    <s>    una stringa che rappresenta l'opzione corrente
 
 # Dati privati:
 #    _opti  -- indice in un'opzione multipla, p.es., -abc
@@ -24479,19 +24493,19 @@ ogni altra variabile che @`e
 documentazione @`e essenziale per qualsiasi programma, e in modo particolare per
 le funzioni di libreria.
 
-La funzione @code{getopt()} dapprima controlla che sia stata effettivamente
+La funzione @code{getopt()} dapprima controlla di essere stata effettivamente
 chiamata con una stringa di opzioni (il parametro @code{opzioni}).  Se
-@code{opzioni} ha lunghezza zero, @code{getopt()} restituisce immediatamente
-@minus{}1:
+sia @code{opzioni} che @code{opzioni_lunghe} hanno lunghezza zero,
+@code{getopt()} restituisce immediatamente @minus{}1:
 
 @cindex @code{getopt()} @subentry funzione definita dall'utente
 @cindex funzione definita dall'utente @subentry @code{getopt()}
 @example
 @c file eg/lib/getopt.awk
-function getopt(argc, argv, opzioni,    unaopz, i)
+function getopt(argc, argv, opzioni, opzioni_lunghe,    unaopz, i)
 @{
-    if (length(opzioni) == 0)    # nessuna opzione specificata
-        return -1
+    if (length(opzioni) == 0 && length(opzioni_lunghe) == 0)
+        return -1                # nessuna opzione specificata
 
 @group
     if (argv[Optind] == "--") @{  # fatto tutto
@@ -24508,37 +24522,41 @@ function getopt(argc, argv, opzioni,    unaopz, i)
 
 Il successivo controllo cerca la fine delle opzioni.  Due trattini
 (@option{--}) marcano la fine delle opzioni da riga di comando, e lo stesso
-fa qualsiasi
-argomento sulla riga di comando che non inizi con @samp{-}.  @code{Optind} @`e
-usato per scorrere il vettore degli argomenti presenti sulla riga di comando;
-mantiene il suo valore attraverso chiamate successive a @code{getopt()}, perch@'e
-@`e una variabile globale.
+fa qualsiasi argomento sulla riga di comando che non inizi con @samp{-}
+(a meno che non sia un argomento all'opzione immediatamente precedente).
+@code{Optind} @`e usato per scorrere il vettore degli argomenti presenti
+sulla riga di comando; mantiene il suo valore attraverso chiamate
+successive a @code{getopt()}, perch@'e @`e una variabile globale.
 
-L'espressione regolare che viene usata, @code{@w{/^-[^:[:space:]/}},
-chiede di cercare un
+L'espressione regolare @code{@w{/^-[^:[:space:]/}}, chiede di cercare un
 @samp{-} seguito da qualsiasi cosa che non sia uno spazio vuoto o un carattere
 di due punti (@code{:}).
 Se l'argomento corrente sulla riga di comando non corrisponde a
 quest'espressione regolare, vuol dire che non si tratta di un'opzione, e
-quindi viene terminata l'elaborazione delle opzioni. Continuando:
+quindi viene terminata l'elaborazione delle opzioni.
+A questo punto si controlla se stiamo processando un'opzione corta (che
+consiste di una sola lettera), oppure un'opzione lunga (indicata da due
+trattini, p.es. @samp{--filename}).  Se si tratta di un'opzione corta,
+il programma prosegue cos@`{@dotless{i}}:
 
 @example
 @c file eg/lib/getopt.awk
-    if (_opti == 0)
-        _opti = 2
-    unaopz = substr(argv[Optind], _opti, 1)
-    Optopt = unaopz
-    i = index(opzioni, unaopz)
-    if (i == 0) @{
-        if (Opterr)
-            printf("%c -- opzione non ammessa\n", unaopz) > "/dev/stderr"
+    if (argv[Optind] !~ /^--/) @{        # se opzione corta
+        if (_opti == 0)
+            _opti = 2
+        unaopz = substr(argv[Optind], _opti, 1)
+        Optopt = unaopz
+        i = index(opzioni, unaopz)
+        if (i == 0) @{
+            if (Opterr)
+                printf("%c -- opzione non ammessa\n", unaopz) > "/dev/stderr"
         if (_opti >= length(argv[Optind])) @{
             Optind++
             _opti = 0
         @} else
             _opti++
-        return "?"
-    @}
+         return "?"
+        @}
 @c endfile
 @end example
 
@@ -24575,15 +24593,15 @@ conoscere quale lettera di opzione @`e quella non valida. Proseguendo:
 
 @example
 @c file eg/lib/getopt.awk
-    if (substr(opzioni, i + 1, 1) == ":") @{
-        # ottiene un argomento di opzione
-        if (length(substr(argv[Optind], _opti + 1)) > 0)
-            Optarg = substr(argv[Optind], _opti + 1)
-        else
-            Optarg = argv[++Optind]
-        _opti = 0
-    @} else
-        Optarg = ""
+        if (substr(opzioni, i + 1, 1) == ":") @{
+            # ottiene un argomento di opzione
+            if (length(substr(argv[Optind], _opti + 1)) > 0)
+                Optarg = substr(argv[Optind], _opti + 1)
+            else
+                Optarg = argv[++Optind]
+             _opti = 0
+        @} else
+            Optarg = ""
 @c endfile
 @end example
 
@@ -24600,23 +24618,105 @@ Continuando:
 
 @example
 @c file eg/lib/getopt.awk
-    if (_opti == 0 || _opti >= length(argv[Optind])) @{
+        if (_opti == 0 || _opti >= length(argv[Optind])) @{
+            Optind++
+            _opti = 0
+        @} else
+            _opti++
+        return unaopz
+@c endfile
+@end example
+
+Infine, per un'opzione corta, se @code{_opti} @`e zero o maggiore della
+lunghezza dell'argomento corrente sulla riga di comando, significa che
+l'elaborazione di quest'elemento in @code{argv} @`e terminata, quindi
+@code{Optind} @`e incrementato per puntare al successivo elemento
+in @code{argv}.  Se nessuna delle condizioni @`e vera, viene incrementato
+solo @code{_opti}, cosicch@'e la successiva lettera di opzione pu@`o
+essere elaborata con la successiva chiamata a @code{getopt()}.
+
+D'altra parte, se il test precedente determina che si ha a che fare con
+un'opzione lunga, il programma prosegue in maniera differente:
+
+@example
+@c file eg/lib/getopt.awk
+    @} else @{
+        j = index(argv[Optind], "=")
+        if (j > 0)
+            unaopz = substr(argv[Optind], 3, j - 3)
+        else
+            unaopz = substr(argv[Optind], 3)
+        Optopt = unaopz
+@c endfile
+@end example
+
+Per prima cosa cerchiamo di vedere se quest'opzione contiene al suo
+interno un segno "=", in quanto per le opzioni lunghe
+(p.es. @samp{--unaopzione}) @`e possibile che il relativo argomento
+sia specificato sia come @samp{--unaopzione=valore} che come
+@samp{@w{--unaopzione valore}}.
+
+@example
+@c file eg/lib/getopt.awk
+        i = match(opzioni_lunghe, "(^|,)" unaopz "($|[,:])")
+        if (i == 0) @{
+            if (Opterr)
+                 printf("%s -- opzione non ammessa\n", unaopz) > "/dev/stderr"
+            Optind++
+            return "?"
+        @}
+@c endfile
+@end example
+
+Poi, si tenta di trovare l'opzione corrente in @code{opzioni_lunghe}.
+L'espressione regolare fornita a @code{match()},
+@code{@w{"(^|,)" unaopz "($|[,:])"}},
+trova una corrispondenza per quest'opzione all'inizio di
+@code{opzioni_lunghe}, o all'inizio di una successiva opzione lunga
+(l'opzione lunga precedente dovrebbe essere delimitata da una
+virgola) e, comunque, o alla fine della stringa @code{opzioni_lunghe}
+(@samp{$}), oppure seguita da una virgola
+(che separa quest'opzione da un'opzione successiva)  da un
+":" (che indica che quest'opzione lunga accetta un argomento
+(@samp{@w{[,:]}}).
+
+Utilizzando quest'espressione regolare, si controlla che l'opzione
+corrente @`e presente oppure no in @code{opzioni_lunghe} (anche nel caso
+in cui la stringa @code{opzioni_lunghe} non sia stata specificata, il test
+dar@`a un risultato negativo).  In caso di errore, si pu@`o stampare un
+messaggio di errore e poi restituire @code{"?"}.
+Si continua poi:
+
+@example
+@c file eg/lib/getopt.awk
+        if (substr(opzioni_lunghe, i+1+length(unaopz), 1) == ":") @{
+            if (j > 0)
+                Optarg = substr(argv[Optind], j + 1)
+            else
+                Optarg = argv[++Optind]
+        @} else
+            Optarg = ""
+@c endfile
+@end example
+
+A questo punto si vede se quest'opzione accetta un argomento e, se
+cos@`{@dotless{i}} @`e, si imposta @code{Optarg} al valore di tale argomento
+(sia che si tratti del valore che segue il segno "=" sulla riga
+di comando, sia che si tratti del successivo argomento sulla riga
+si comando stessa).
+
+@example
+@c file eg/lib/getopt.awk
         Optind++
-        _opti = 0
-    @} else
-        _opti++
-    return unaopz
+        return unaopz
+    @}
 @}
 @c endfile
 @end example
 
-Infine, se @code{_opti} @`e zero o maggiore della lunghezza dell'argomento
-corrente sulla riga di comando, significa che l'elaborazione di
-quest'elemento in @code{argv} @`e
-terminata, quindi @code{Optind} @`e incrementato per
-puntare al successivo elemento in @code{argv}.  Se nessuna delle condizioni @`e
-vera, viene incrementato solo @code{_opti}, cosicch@'e la successiva lettera di
-opzione pu@`o essere elaborata con la successiva chiamata a @code{getopt()}.
+Incrementiamo @code{Optind} (che era gi@`a stato incrementato una volta
+se un argomento richiesto era separato dalla relativa opzione con un
+segno di "="), e restituiamo l'opzione lunga (senza i trattini iniziali).
 
 La regola @code{BEGIN} inizializza sia @code{Opterr} che @code{Optind} a uno.
 @code{Opterr} viene impostato a uno, perch@'e il comportamento di default per
@@ -24633,13 +24733,14 @@ BEGIN @{
 
     # programma di controllo
     if (_getopt_test) @{
-        while ((_go_c = getopt(ARGC, ARGV, "ab:cd")) != -1)
-            printf("c = <%c>, Optarg = <%s>\n",
-                                       _go_c, Optarg)
+        _myshortopts = "ab:cd"
+        _mylongopts = "longa,longb:,otherc,otherd"
+
+        while ((_go_c = getopt(ARGC, ARGV, _myshortopts, _mylongopts)) != -1)
+            printf("c = <%s>, Optarg = <%s>\n", _go_c, Optarg)
         printf("argomenti che non sono opzioni:\n")
         for (; Optind < ARGC; Optind++)
-            printf("\tARGV[%d] = <%s>\n",
-                                    Optind, ARGV[Optind])
+            printf("\tARGV[%d] = <%s>\n", Optind, ARGV[Optind])
     @}
 @}
 @c endfile
@@ -24647,7 +24748,7 @@ BEGIN @{
 
 Il resto della regola @code{BEGIN} @`e un semplice programma di controllo.  Qui
 sotto si riportano i risultati di
-due esecuzioni di prova
+alcune esecuzioni di prova
 del programma di controllo:
 
 @example
@@ -24666,9 +24767,21 @@ $ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -x -- xyz abc}
 @print{} argomenti che non sono opzioni:
 @print{}         ARGV[4] = <xyz>
 @print{}         ARGV[5] = <abc>
+
+$ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a \}
+> @kbd{--longa -b xx --longb=foo=bar --otherd --otherc arg1 arg2}
+@print{} c = <a>, Optarg = <>
+@print{} c = <longa>, Optarg = <>
+@print{} c = <b>, Optarg = <xx>
+@print{} c = <longb>, Optarg = <foo=bar>
+@print{} c = <otherd>, Optarg = <>
+@print{} c = <otherc>, Optarg = <>
+@print{} argomenti che non sono opzioni:
+@print{} 	ARGV[8] = <arg1>
+@print{} 	ARGV[9] = <arg2>
 @end example
 
-In entrambe le esecuzioni, il primo @option{--} fa terminare gli argomenti dati
+In tutte le esecuzioni, il primo @option{--} fa terminare gli argomenti dati
 ad @command{awk}, in modo che @command{awk} non tenti di interpretare le opzioni
 @option{-a}, etc. come sue opzioni.
 
