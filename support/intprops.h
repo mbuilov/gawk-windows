@@ -40,17 +40,39 @@
 /* True if the real type T is signed.  */
 #define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
 
+#ifndef _GL_WARNING_PUSH
+#ifdef _MSC_VER
+#define _GL_WARNING_PUSH __pragma(warning(push))
+#endif
+#endif
+
+#ifndef _GL_WARNING_POP
+#ifdef _MSC_VER
+#define _GL_WARNING_POP __pragma(warning(pop))
+#endif
+#endif
+
+#ifndef _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
+#ifdef _MSC_VER
+#define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE \
+  __pragma(warning(disable:4296)) /* expression is always true or false */
+#endif
+#endif
+
 /* Return 1 if the real expression E, after promotion, has a
    signed or floating type.  Do not evaluate E.  */
-#define EXPR_SIGNED(e) (_GL_INT_NEGATE_CONVERT (e, 1) < 0)
-
+#define EXPR_SIGNED(e) \
+  (_GL_WARNING_PUSH \
+  _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE \
+    (_GL_INT_NEGATE_CONVERT (e, 1) < 0) \
+  _GL_WARNING_POP)
 
 /* Minimum and maximum values for integer types and expressions.  */
 
 /* The width in bits of the integer type or expression T.
    Do not evaluate T.
    Padding bits are not supported; this is checked at compile-time below.  */
-#define TYPE_WIDTH(t) (sizeof (t) * CHAR_BIT)
+#define TYPE_WIDTH(t) (sizeof ((t)) * CHAR_BIT)
 
 /* The maximum and minimum values for the integer type T.  */
 #define TYPE_MINIMUM(t) ((t) ~ TYPE_MAXIMUM (t))
@@ -85,9 +107,9 @@
 
 /* Does the __typeof__ keyword work?  This could be done by
    'configure', but for now it's easier to do it by hand.  */
-#if (2 <= __GNUC__ \
-     || (1210 <= __IBMC__ && defined __IBM__TYPEOF__) \
-     || (0x5110 <= __SUNPRO_C && !__STDC__))
+#if (defined __GNUC__ && 2 <= __GNUC__) \
+     || (defined __IBMC__ && 1210 <= __IBMC__ && defined __IBM__TYPEOF__) \
+     || (defined __SUNPRO_C && 0x5110 <= __SUNPRO_C && !__STDC__)
 # define _GL_HAVE___TYPEOF__ 1
 #else
 # define _GL_HAVE___TYPEOF__ 0
@@ -221,14 +243,14 @@
    : (max) >> (b) < (a))
 
 /* True if __builtin_add_overflow (A, B, P) works when P is non-null.  */
-#if 5 <= __GNUC__ && !defined __ICC
+#if defined __GNUC__ && 5 <= __GNUC__ && !defined __ICC
 # define _GL_HAS_BUILTIN_OVERFLOW 1
 #else
 # define _GL_HAS_BUILTIN_OVERFLOW 0
 #endif
 
 /* True if __builtin_add_overflow_p (A, B, C) works.  */
-#define _GL_HAS_BUILTIN_OVERFLOW_P (7 <= __GNUC__)
+#define _GL_HAS_BUILTIN_OVERFLOW_P (defined __GNUC__ && 7 <= __GNUC__)
 
 /* The _GL*_OVERFLOW macros have the same restrictions as the
    *_RANGE_OVERFLOW macros, except that they do not assume that operands
@@ -374,7 +396,7 @@
    For now, assume all versions of GCC-like compilers generate bogus
    warnings for _Generic.  This matters only for older compilers that
    lack __builtin_add_overflow.  */
-#if __GNUC__
+#if defined __GNUC__ && __GNUC__
 # define _GL__GENERIC_BOGUS 1
 #else
 # define _GL__GENERIC_BOGUS 0
@@ -386,7 +408,7 @@
    for restrictions.  */
 #if _GL_HAS_BUILTIN_OVERFLOW
 # define _GL_INT_OP_WRAPV(a, b, r, op, builtin, overflow) builtin (a, b, r)
-#elif 201112 <= __STDC_VERSION__ && !_GL__GENERIC_BOGUS
+#elif defined __STDC_VERSION__ && 201112 <= __STDC_VERSION__ && !_GL__GENERIC_BOGUS
 # define _GL_INT_OP_WRAPV(a, b, r, op, builtin, overflow) \
    (_Generic \
     (*(r), \
@@ -424,7 +446,7 @@
 /* Store the low-order bits of A <op> B into *R, where OP specifies
    the operation and OVERFLOW the overflow predicate.  If *R is
    signed, its type is ST with bounds SMIN..SMAX; otherwise its type
-   is UT with bounds U..UMAX.  ST and UT are narrower than int.
+   is UT with bounds 0..UMAX.  ST and UT are narrower than int.
    Return 1 if the result overflows.  See above for restrictions.  */
 # if _GL_HAVE___TYPEOF__
 #  define _GL_INT_OP_WRAPV_SMALLISH(a,b,r,op,overflow,st,smin,smax,ut,umax) \
@@ -487,8 +509,8 @@
    T must be a signed integer type.  Return 1 if the result overflows.  */
 #define _GL_INT_OP_CALC(a, b, r, op, overflow, ut, t, tmin, tmax) \
   (overflow (a, b, tmin, tmax) \
-   ? (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 1) \
-   : (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 0))
+   ? (*(t*)(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 1) \
+   : (*(t*)(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 0))
 
 /* Return the low-order bits of A <op> B, where the operation is given
    by OP.  Use the unsigned type UT for calculation to avoid undefined
@@ -528,7 +550,7 @@
        : (b) <= -1 - (a)) \
       || ((EXPR_SIGNED (_GL_INT_CONVERT (a, b)) || (tmax) < (b)) \
           && (tmax) < (a) + (b))) \
-   : (tmax) < (b) || (tmax) - (b) < (a))
+   : (tmax) < (tmax) - (tmax) + (b) || (tmax) - (b) < (tmax) - (tmax) + (a))
 #define _GL_INT_SUBTRACT_RANGE_OVERFLOW(a, b, tmin, tmax) \
   (((a) < 0) == ((b) < 0) \
    ? ((a) < (b) \
@@ -545,11 +567,11 @@
   ((b) < 0 \
    ? ((a) < 0 \
       ? (EXPR_SIGNED (_GL_INT_CONVERT (tmax, b)) \
-         ? (a) < (tmax) / (b) \
+         ? (tmax) - (tmax) + (a) < (tmax) / (b) \
          : ((INT_NEGATE_OVERFLOW (b) \
              ? _GL_INT_CONVERT (b, tmax) >> (TYPE_WIDTH (b) - 1) \
              : (tmax) / -(b)) \
-            <= -1 - (a))) \
+            <= (tmax) - (tmax) - 1 - (a))) \
       : INT_NEGATE_OVERFLOW (_GL_INT_CONVERT (b, tmin)) && (b) == -1 \
       ? (EXPR_SIGNED (a) \
          ? 0 < (a) + (tmin) \
@@ -561,6 +583,6 @@
       ? (INT_NEGATE_OVERFLOW (_GL_INT_CONVERT (a, tmin)) && (a) == -1 \
          ? (EXPR_SIGNED (b) ? 0 < (b) + (tmin) : -1 - (tmin) < (b) - 1) \
          : (tmin) / (a) < (b)) \
-      : (tmax) / (b) < (a)))
+      : (tmax) / (b) < (tmax) - (tmax) + (a)))
 
 #endif /* _GL_INTPROPS_H */
