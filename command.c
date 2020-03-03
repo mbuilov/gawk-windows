@@ -95,7 +95,7 @@ static unsigned num_dim;
 static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";
-static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
+static CMDARG *append_statement(CMDARG *stmt_list, const char *stmt);
 static NODE *concat_args(CMDARG *a, unsigned count);
 
 #ifdef HAVE_LIBREADLINE
@@ -1679,7 +1679,7 @@ yyreduce:
   case 24:
 #line 239 "command.y"
           {
-		yyval = append_statement(arg_list, (char *) start_EVAL);
+		yyval = append_statement(arg_list, start_EVAL);
 		if (read_a_line == read_commands_string)	/* unserializing 'eval' in 'commands' */
 			yyval->a_string[0] = '\0';
 		free_cmdarg(arg_list);
@@ -1705,7 +1705,7 @@ yyreduce:
   case 27:
 #line 254 "command.y"
           {
-		arg_list = append_statement(yyvsp[-1], (char *) end_EVAL);
+		arg_list = append_statement(yyvsp[-1], end_EVAL);
 		if (read_a_line == read_commands_string) {	/* unserializing 'eval' in 'commands' */
 			char *str = arg_list->a_string;
 			size_t len = strlen(str);
@@ -1728,9 +1728,9 @@ yyreduce:
 		NODE *n;
 		CMDARG *arg;
 		n = yyvsp[0]->a_node;
-		arg = append_statement(NULL, (char *) start_EVAL);
+		arg = append_statement(NULL, start_EVAL);
 		(void) append_statement(arg, n->stptr);
-		(void) append_statement(arg, (char *) end_EVAL);
+		(void) append_statement(arg, end_EVAL);
 		free_cmdarg(arg_list);
 		arg_list = arg;
 	  }
@@ -2548,7 +2548,7 @@ yyreturn:
 /* append_statement --- append 'stmt' to the list of eval awk statements */
 
 static CMDARG *
-append_statement(CMDARG *stmt_list, char *stmt)
+append_statement(CMDARG *stmt_list, const char *stmt)
 {
 	CMDARG *a, *arg;
 	char *s;
@@ -3271,7 +3271,7 @@ find_command(const char *token, size_t toklen)
 
 /* do_help -- help command */
 
-int
+bool
 do_help(CMDARG *arg, enum argtype cmd)
 {
 	int i;

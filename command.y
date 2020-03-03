@@ -53,7 +53,7 @@ static unsigned num_dim;
 static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";
-static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
+static CMDARG *append_statement(CMDARG *stmt_list, const char *stmt);
 static NODE *concat_args(CMDARG *a, unsigned count);
 
 #ifdef HAVE_LIBREADLINE
@@ -237,7 +237,7 @@ eval_prologue
 statement_list
 	: /* empty */
 	  {
-		$$ = append_statement(arg_list, (char *) start_EVAL);
+		$$ = append_statement(arg_list, start_EVAL);
 		if (read_a_line == read_commands_string)	/* unserializing 'eval' in 'commands' */
 			$$->a_string[0] = '\0';
 		free_cmdarg(arg_list);
@@ -252,7 +252,7 @@ statement_list
 eval_cmd
 	: eval_prologue statement_list D_END
 	  {
-		arg_list = append_statement($2, (char *) end_EVAL);
+		arg_list = append_statement($2, end_EVAL);
 		if (read_a_line == read_commands_string) {	/* unserializing 'eval' in 'commands' */
 			char *str = arg_list->a_string;
 			size_t len = strlen(str);
@@ -271,9 +271,9 @@ eval_cmd
 		NODE *n;
 		CMDARG *arg;
 		n = $3->a_node;
-		arg = append_statement(NULL, (char *) start_EVAL);
+		arg = append_statement(NULL, start_EVAL);
 		(void) append_statement(arg, n->stptr);
-		(void) append_statement(arg, (char *) end_EVAL);
+		(void) append_statement(arg, end_EVAL);
 		free_cmdarg(arg_list);
 		arg_list = arg;
 	  }
@@ -753,7 +753,7 @@ nls
 /* append_statement --- append 'stmt' to the list of eval awk statements */
 
 static CMDARG *
-append_statement(CMDARG *stmt_list, char *stmt)
+append_statement(CMDARG *stmt_list, const char *stmt)
 {
 	CMDARG *a, *arg;
 	char *s;
@@ -1476,7 +1476,7 @@ find_command(const char *token, size_t toklen)
 
 /* do_help -- help command */
 
-int
+bool
 do_help(CMDARG *arg, enum argtype cmd)
 {
 	int i;
