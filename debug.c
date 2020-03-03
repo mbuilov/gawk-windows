@@ -48,7 +48,7 @@ extern const char *get_spec_varname(Func_ptr fptr);
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
 
-extern const char *redir2str(int redirtype);
+extern const char *redir2str(enum redirval redirtype);
 
 static char *linebuf = NULL;	/* used to print a single line of source */
 static size_t linebuf_len;
