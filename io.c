@@ -1818,7 +1818,7 @@ devopen_simple(const char *name, const char *mode, bool try_real_open)
 			struct stat sbuf;
 
 			cp += 3;
-			openfd = (int) strtoul(cp, & ptr, 10);
+			openfd = (fd_t) strtoul(cp, & ptr, 10);
 			if (openfd <= INVALID_HANDLE || ptr == cp
 			    || fstat(openfd, & sbuf) < 0)
 				openfd = INVALID_HANDLE;
