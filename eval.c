@@ -813,7 +813,7 @@ set_OFS(void)
 	else {
 		/* rebuild $0 using OFS that was current when $0 changed */
 		if (! field0_valid) {
-			get_field(UNLIMITED - 1, NULL);
+			(void) get_field(UNLIMITED - 1, NULL);
 			rebuild_record();
 		}
 	}
