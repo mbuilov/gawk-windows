@@ -73,7 +73,8 @@
 #endif
 
 /* In case that the system doesn't have isblank().  */
-#if !defined _LIBC && ! (defined isblank || (HAVE_ISBLANK && HAVE_DECL_ISBLANK))
+#if !defined _LIBC && ! (defined isblank || \
+  (defined HAVE_ISBLANK && defined HAVE_DECL_ISBLANK))
 # define isblank(ch) ((ch) == ' ' || (ch) == '\t')
 #endif
 
@@ -86,7 +87,7 @@
 #endif
 
 /* This is for other GNU distributions with internationalized messages.  */
-#if (HAVE_LIBINTL_H && ENABLE_NLS) || defined _LIBC
+#if (defined HAVE_LIBINTL_H && ENABLE_NLS) || defined _LIBC
 # include <libintl.h>
 # ifdef _LIBC
 #  undef gettext
@@ -104,7 +105,8 @@
 # define gettext_noop(String) String
 #endif
 
-#if (defined MB_CUR_MAX && HAVE_WCTYPE_H && HAVE_ISWCTYPE) || _LIBC
+#if (defined MB_CUR_MAX && defined HAVE_WCTYPE_H && defined HAVE_ISWCTYPE) || \
+  defined _LIBC
 # define RE_ENABLE_I18N
 #endif
 
@@ -345,7 +347,7 @@ typedef struct
     Idx idx;			/* for BACK_REF */
     re_context_type ctx_type;	/* for ANCHOR */
   } opr;
-#if __GNUC__ >= 2 && !defined __STRICT_ANSI__
+#if defined __GNUC__ && __GNUC__ >= 2 && !defined __STRICT_ANSI__
   re_token_type_t type : 8;
 #else
   re_token_type_t type;
@@ -446,12 +448,12 @@ typedef struct re_dfa_t re_dfa_t;
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
-#if defined _LIBC || HAVE_ALLOCA
+#if defined _LIBC || defined HAVE_ALLOCA
 # include <alloca.h>
 #endif
 
 #ifndef _LIBC
-# if HAVE_ALLOCA
+# ifdef HAVE_ALLOCA
 /* The OS usually guarantees only one guard page at the bottom of the stack,
    and a page size can be as small as 4096 bytes.  So we cannot safely
    allocate anything larger than 4096 bytes.  Also care for the possibility
@@ -536,6 +538,21 @@ typedef struct bin_tree_storage_t bin_tree_storage_t;
   || (((constraint) & NEXT_NEWLINE_CONSTRAINT) && !IS_NEWLINE_CONTEXT (context)) \
   || (((constraint) & NEXT_ENDBUF_CONSTRAINT) && !IS_ENDBUF_CONTEXT (context)))
 
+#ifndef CONSTANT_EXPR
+#ifdef _MSC_VER
+/* suppress warning 4127 - conditional expression is constant */
+#define CONSTANT_EXPR(expr) \
+  (__pragma(warning(push)) \
+  __pragma(warning(disable:4127)) \
+  (expr) \
+  __pragma(warning(pop)))
+#endif
+#endif
+
+#ifndef CONSTANT_EXPR
+#define CONSTANT_EXPR(expr) (expr)
+#endif
+
 struct re_dfastate_t
 {
   re_hashval_t hash;
@@ -610,7 +627,11 @@ typedef struct
 {
   /* The string object corresponding to the input string.  */
   re_string_t input;
+#if defined _LIBC || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L)
   const re_dfa_t *const dfa;
+#else
+  const re_dfa_t *dfa;
+#endif
   /* EFLAGS of the argument of regexec.  */
   int eflags;
   /* Where the matching ends.  */
@@ -758,7 +779,7 @@ static inline void
 bitset_set_all (bitset_t set)
 {
   memset (set, -1, sizeof (bitset_word_t) * (SBC_MAX / BITSET_WORD_BITS));
-  if (SBC_MAX % BITSET_WORD_BITS != 0)
+  if (CONSTANT_EXPR (SBC_MAX % BITSET_WORD_BITS != 0))
     set[BITSET_WORDS - 1] =
       ((bitset_word_t) 1 << SBC_MAX % BITSET_WORD_BITS) - 1;
 }
@@ -775,7 +796,7 @@ bitset_not (bitset_t set)
   int bitset_i;
   for (bitset_i = 0; bitset_i < SBC_MAX / BITSET_WORD_BITS; ++bitset_i)
     set[bitset_i] = ~set[bitset_i];
-  if (SBC_MAX % BITSET_WORD_BITS != 0)
+  if (CONSTANT_EXPR (SBC_MAX % BITSET_WORD_BITS != 0))
     set[BITSET_WORDS - 1] =
       ((((bitset_word_t) 1 << SBC_MAX % BITSET_WORD_BITS) - 1)
        & ~set[BITSET_WORDS - 1]);
@@ -845,14 +866,14 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
       findidx (table, indirect, extra, &p, pstr->len - idx);
       return p - pstr->mbs - idx;
     }
-  else
 # endif /* _LIBC */
-    return 1;
+  (void) pstr, (void) idx;
+  return 1;
 }
 #endif /* RE_ENABLE_I18N */
 
 #ifndef FALLTHROUGH
-# if __GNUC__ < 7
+# if defined __GNUC__ && __GNUC__ < 7
 #  define FALLTHROUGH ((void) 0)
 # else
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
