@@ -316,7 +316,7 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 
 	      p = buf;
 	      *p++ = dfa->nodes[node].opr.c;
-	      while (++node < (Idx) dfa->nodes_len
+	      while (0llu + ++node < dfa->nodes_len
 		     &&	dfa->nodes[node].type == CHARACTER
 		     && dfa->nodes[node].mb_partial)
 		*p++ = dfa->nodes[node].opr.c;
