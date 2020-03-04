@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Gennaio 2020
+@set UPDATE-MONTH Marzo 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -4978,8 +4978,11 @@ Il valore di default di @env{AWKPATH} @`e
 @samp{.:/usr/local/share/awk}.@footnote{La versione di @command{gawk}
 che state usando potrebbe usare una directory diversa; ci@`o dipende da come
 @command{gawk} @`e stato compilato e installato.  La directory effettiva @`e il
-valore di @code{$(datadir)} generato quando @`e stato configurato
-@command{gawk}.  Non @`e comunque il caso di preoccuparsi per questo.}
+valore di @code{$(pkgdatadir)} generato quando @`e stato configurato
+@command{gawk}.
+(Per ulteriori dettagli si veda il file @file{INSTALL} nella distribuzione
+in formato sorgente, e anche @ref{Installazione veloce}.
+Non @`e comunque il caso di preoccuparsi per questo.)}
 Poich@'e @file{.} @`e incluso all'inizio, @command{gawk} cerca dapprima nella
 directory corrente, e poi in @file{/usr/local/share/awk}.
 In pratica, questo vuol dire che solo raramente ci sar@`a bisogno di cambiare
@@ -5020,7 +5023,15 @@ attraverso la direttiva @code{@@load}
 Se la variabile d'ambiente @env{AWKLIBPATH} non esiste, o se ha come valore
 la stringa nulla, @command{gawk} usa un percorso di ricerca di default;
 questo normalmente vale @samp{/usr/local/lib/gawk}, anche se il suo valore
-pu@`o essere diverso, a seconda di come @`e stato installato @command{gawk}.
+pu@`o essere diverso, a seconda di come @`e stato installato
+@command{gawk}.@footnote{La vostra versione di @command{gawk}
+pu@`o utilizzare una directory differente; dipende da come @command{gawk}
+@`e stato generato e installato.  La directory utilizzata ha il valore
+che @`e stato generato per @code{$(pkgextensiondir)} nel momento in cui
+@`e stata fatta la configurazione di @command{gawk}.
+(Per ulteriori dettagli si veda il file @file{INSTALL} nella distribuzione
+in formato sorgente e anche @ref{Installazione veloce}.
+Non @`e comunque il caso di preoccuparsi per questo.)}
 
 @xref{File da usare a inizio sessione}, per informazioni su funzioni che possono
 essere di aiuto per gestire la variabile @env{AWKPATH}.
@@ -42378,7 +42389,15 @@ scrivere del codice che tiene conto di piattaforma / sistema operativo.
 La @value{PVERSION} 5.1 @`e stata creata per distribuire @command{gawk} con
 un nuovo numero di versione maggiore per l'API.  Sfortunatamente questo
 dettaglio era stato dimenticato al momento in cui era stata preparata la
-@value{PVERSION} 5.0.
+@value{PVERSION} 5.0.  Sono state aggiunte le seguenti funzionalit@`a:
+
+@itemize
+@item
+L'indice analitico di questo manuale @`e stato completamente rimaneggiato.
+
+@item
+@`E stato aggiunto il supporto per MSYS2.
+@end itemize
 
 @c XXX ADD MORE STUFF HERE
 @end ifclear
@@ -43788,6 +43807,9 @@ variabile @code{BINMODE}.
 Questo pu@`o causare problemi con altri componenti di tipo Unix che sono stati
 resi disponibile in MS-Windows, che si aspettano che @command{gawk} faccia
 automaticamente la conversione di @code{"\r\n"}, mentre cos@`{@dotless{i}} non @`e.
+
+In ambiente MSYS2, la compilazione usando i comandi classici
+@samp{./configure && make} funziona senza necessitare di alcuna modifica.
 
 @node Installazione su VMS
 @appendixsubsec Compilare e installare @command{gawk} su Vax/VMS e OpenVMS
