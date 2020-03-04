@@ -63,7 +63,7 @@ re_string_allocate (re_string_t *pstr, const char *str, Idx len, Idx init_len,
     return ret;
 
   pstr->word_char = dfa->word_char;
-  pstr->word_ops_used = dfa->word_ops_used;
+  pstr->word_ops_used = !!dfa->word_ops_used;
   pstr->mbs = pstr->mbs_allocated ? pstr->mbs : (unsigned char *) str;
   pstr->valid_len = (pstr->mbs_allocated || dfa->mb_cur_max > 1) ? 0 : len;
   pstr->valid_raw_len = pstr->valid_len;
@@ -147,7 +147,7 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
       /* Avoid overflow in realloc.  */
       const size_t max_object_size = MAX (sizeof (wint_t), sizeof (Idx));
       if (__glibc_unlikely (MIN (IDX_MAX, SIZE_MAX / max_object_size)
-			    < new_buf_len))
+			    < (size_t)0 + new_buf_len))
 	return REG_ESPACE;
 
       new_wcs = re_realloc (pstr->wcs, wint_t, new_buf_len);
@@ -188,8 +188,8 @@ re_string_construct_common (const char *str, Idx len, re_string_t *pstr,
   pstr->icase = icase;
   pstr->mbs_allocated = (trans != NULL || icase);
   pstr->mb_cur_max = dfa->mb_cur_max;
-  pstr->is_utf8 = dfa->is_utf8;
-  pstr->map_notascii = dfa->map_notascii;
+  pstr->is_utf8 = !!dfa->is_utf8;
+  pstr->map_notascii = !!dfa->map_notascii;
   pstr->stop = pstr->len;
   pstr->raw_stop = pstr->stop;
 }
@@ -244,7 +244,7 @@ build_wcs_buffer (re_string_t *pstr)
 	}
       else
 	p = (const char *) pstr->raw_mbs + pstr->raw_mbs_idx + byte_idx;
-      mbclen = __mbrtowc (&wc, p, remain_len, &pstr->cur_state);
+      mbclen = __mbrtowc (&wc, p, (size_t) remain_len, &pstr->cur_state);
       if (__glibc_unlikely (mbclen == (size_t) -1 || mbclen == 0
 			    || (mbclen == (size_t) -2
 				&& pstr->bufs_len >= pstr->len)))
@@ -266,7 +266,7 @@ build_wcs_buffer (re_string_t *pstr)
       /* Write wide character and padding.  */
       pstr->wcs[byte_idx++] = wc;
       /* Write paddings.  */
-      for (remain_len = byte_idx + mbclen - 1; byte_idx < remain_len ;)
+      for (remain_len = byte_idx + (Idx) mbclen - 1; byte_idx < remain_len ;)
 	pstr->wcs[byte_idx++] = WEOF;
     }
   pstr->valid_len = byte_idx;
@@ -306,7 +306,8 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	    {
 	      /* In case of a singlebyte character.  */
 	      pstr->mbs[byte_idx]
-		= toupper (pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx]);
+		= (unsigned char) toupper (pstr->raw_mbs[pstr->raw_mbs_idx
+							 + byte_idx]);
 	      /* The next step uses the assumption that wchar_t is encoded
 		 ASCII-safe: all ASCII values can be converted like this.  */
 	      pstr->wcs[byte_idx] = (wchar_t) pstr->mbs[byte_idx];
@@ -318,7 +319,8 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	  prev_st = pstr->cur_state;
 	  mbclen = __mbrtowc (&wc,
 			      ((const char *) pstr->raw_mbs + pstr->raw_mbs_idx
-			       + byte_idx), remain_len, &pstr->cur_state);
+			       + byte_idx), (size_t) remain_len,
+			      &pstr->cur_state);
 	  if (__glibc_likely (0 < mbclen && mbclen < (size_t) -2))
 	    {
 	      wchar_t wcu = __towupper (wc);
@@ -340,7 +342,7 @@ build_wcs_upper_buffer (re_string_t *pstr)
 			pstr->raw_mbs + pstr->raw_mbs_idx + byte_idx, mbclen);
 	      pstr->wcs[byte_idx++] = wcu;
 	      /* Write paddings.  */
-	      for (remain_len = byte_idx + mbclen - 1; byte_idx < remain_len ;)
+	      for (remain_len = byte_idx + (Idx) mbclen - 1; byte_idx < remain_len ;)
 		pstr->wcs[byte_idx++] = WEOF;
 	    }
 	  else if (mbclen == (size_t) -1 || mbclen == 0
@@ -349,7 +351,7 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	      /* It is an invalid character, an incomplete character
 		 at the end of the string, or '\0'.  Just use the byte.  */
 	      int ch = pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx];
-	      pstr->mbs[byte_idx] = ch;
+	      pstr->mbs[byte_idx] = (unsigned char) ch;
 	      /* And also cast it to wide char.  */
 	      pstr->wcs[byte_idx++] = (wchar_t) ch;
 	      if (__glibc_unlikely (mbclen == (size_t) -1))
@@ -381,13 +383,13 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	    for (i = 0; i < pstr->mb_cur_max && i < remain_len; ++i)
 	      {
 		ch = pstr->raw_mbs [pstr->raw_mbs_idx + src_idx + i];
-		buf[i] = pstr->trans[ch];
+		buf[i] = (char) pstr->trans[ch];
 	      }
-	    p = (const char *) buf;
+	    p = buf;
 	  }
 	else
 	  p = (const char *) pstr->raw_mbs + pstr->raw_mbs_idx + src_idx;
-	mbclen = __mbrtowc (&wc, p, remain_len, &pstr->cur_state);
+	mbclen = __mbrtowc (&wc, p, (size_t) remain_len, &pstr->cur_state);
 	if (__glibc_likely (0 < mbclen && mbclen < (size_t) -2))
 	  {
 	    wchar_t wcu = __towupper (wc);
@@ -395,14 +397,14 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	      {
 		size_t mbcdlen;
 
-		mbcdlen = __wcrtomb ((char *) buf, wcu, &prev_st);
+		mbcdlen = __wcrtomb (buf, wcu, &prev_st);
 		if (__glibc_likely (mbclen == mbcdlen))
 		  memcpy (pstr->mbs + byte_idx, buf, mbclen);
 		else if (mbcdlen != (size_t) -1)
 		  {
 		    size_t i;
 
-		    if (byte_idx + mbcdlen > pstr->bufs_len)
+		    if (byte_idx + mbcdlen > (size_t)0 + pstr->bufs_len)
 		      {
 			pstr->cur_state = prev_st;
 			break;
@@ -417,8 +419,9 @@ build_wcs_upper_buffer (re_string_t *pstr)
 		      }
 		    if (!pstr->offsets_needed)
 		      {
-			for (i = 0; i < (size_t) byte_idx; ++i)
-			  pstr->offsets[i] = i;
+			Idx idx;
+			for (idx = 0; idx < byte_idx; ++idx)
+			  pstr->offsets[idx] = idx;
 			pstr->offsets_needed = 1;
 		      }
 
@@ -428,16 +431,16 @@ build_wcs_upper_buffer (re_string_t *pstr)
 		    for (i = 1; i < mbcdlen; ++i)
 		      {
 			pstr->offsets[byte_idx + i]
-			  = src_idx + (i < mbclen ? i : mbclen - 1);
+			  = src_idx + (Idx) (i < mbclen ? i : mbclen - 1);
 			pstr->wcs[byte_idx + i] = WEOF;
 		      }
-		    pstr->len += mbcdlen - mbclen;
+		    pstr->len += (Idx) (mbcdlen - mbclen);
 		    if (pstr->raw_stop > src_idx)
-		      pstr->stop += mbcdlen - mbclen;
+		      pstr->stop += (Idx) (mbcdlen - mbclen);
 		    end_idx = (pstr->bufs_len > pstr->len)
 			      ? pstr->len : pstr->bufs_len;
-		    byte_idx += mbcdlen;
-		    src_idx += mbclen;
+		    byte_idx += (Idx) mbcdlen;
+		    src_idx += (Idx) mbclen;
 		    continue;
 		  }
 		else
@@ -450,13 +453,13 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	      {
 		size_t i;
 		for (i = 0; i < mbclen; ++i)
-		  pstr->offsets[byte_idx + i] = src_idx + i;
+		  pstr->offsets[byte_idx + i] = src_idx + (Idx) i;
 	      }
-	    src_idx += mbclen;
+	    src_idx += (Idx) mbclen;
 
 	    pstr->wcs[byte_idx++] = wcu;
 	    /* Write paddings.  */
-	    for (remain_len = byte_idx + mbclen - 1; byte_idx < remain_len ;)
+	    for (remain_len = byte_idx + (Idx) mbclen - 1; byte_idx < remain_len ;)
 	      pstr->wcs[byte_idx++] = WEOF;
 	  }
 	else if (mbclen == (size_t) -1 || mbclen == 0
@@ -467,7 +470,7 @@ build_wcs_upper_buffer (re_string_t *pstr)
 
 	    if (__glibc_unlikely (pstr->trans != NULL))
 	      ch = pstr->trans [ch];
-	    pstr->mbs[byte_idx] = ch;
+	    pstr->mbs[byte_idx] = (unsigned char) ch;
 
 	    if (__glibc_unlikely (pstr->offsets_needed != 0))
 	      pstr->offsets[byte_idx] = src_idx;
@@ -509,7 +512,7 @@ re_string_skip_chars (re_string_t *pstr, Idx new_raw_idx, wint_t *last_wc)
       Idx remain_len = pstr->raw_len - rawbuf_idx;
       prev_st = pstr->cur_state;
       mbclen = __mbrtowc (&wc2, (const char *) pstr->raw_mbs + rawbuf_idx,
-			  remain_len, &pstr->cur_state);
+			  (size_t) remain_len, &pstr->cur_state);
       if (__glibc_unlikely (mbclen == (size_t) -2 || mbclen == (size_t) -1
 			    || mbclen == 0))
 	{
@@ -517,14 +520,14 @@ re_string_skip_chars (re_string_t *pstr, Idx new_raw_idx, wint_t *last_wc)
 	  if (mbclen == 0 || remain_len == 0)
 	    wc = L'\0';
 	  else
-	    wc = *(unsigned char *) (pstr->raw_mbs + rawbuf_idx);
+	    wc = pstr->raw_mbs[rawbuf_idx];
 	  mbclen = 1;
 	  pstr->cur_state = prev_st;
 	}
       else
 	wc = wc2;
       /* Then proceed the next character.  */
-      rawbuf_idx += mbclen;
+      rawbuf_idx += (Idx) mbclen;
     }
   *last_wc = wc;
   return rawbuf_idx;
@@ -545,7 +548,7 @@ build_upper_buffer (re_string_t *pstr)
       int ch = pstr->raw_mbs[pstr->raw_mbs_idx + char_idx];
       if (__glibc_unlikely (pstr->trans != NULL))
 	ch = pstr->trans[ch];
-      pstr->mbs[char_idx] = toupper (ch);
+      pstr->mbs[char_idx] = (unsigned char) toupper (ch);
     }
   pstr->valid_len = char_idx;
   pstr->valid_raw_len = char_idx;
@@ -635,7 +638,8 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 		{
 		  memmove (pstr->wcs, pstr->wcs + offset,
 			   (pstr->valid_len - offset) * sizeof (wint_t));
-		  memmove (pstr->mbs, pstr->mbs + offset, pstr->valid_len - offset);
+		  memmove (pstr->mbs, pstr->mbs + offset,
+			   (size_t) (pstr->valid_len - offset));
 		  pstr->valid_len -= offset;
 		  pstr->valid_raw_len -= offset;
 		  for (low = 0; low < pstr->valid_len; low++)
@@ -664,7 +668,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 			{
 			  for (low = 0; low < pstr->valid_len; ++low)
 			    pstr->wcs[low] = WEOF;
-			  memset (pstr->mbs, 255, pstr->valid_len);
+			  memset (pstr->mbs, 255, (size_t) pstr->valid_len);
 			}
 		    }
 		  pstr->valid_raw_len = pstr->valid_len;
@@ -682,7 +686,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 #endif /* RE_ENABLE_I18N */
 	      if (__glibc_unlikely (pstr->mbs_allocated))
 		memmove (pstr->mbs, pstr->mbs + offset,
-			 pstr->valid_len - offset);
+			 (size_t) (pstr->valid_len - offset));
 	      pstr->valid_len -= offset;
 	      pstr->valid_raw_len -= offset;
 	      DEBUG_ASSERT (pstr->valid_len > 0);
@@ -735,14 +739,14 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 			{
 			  mbstate_t cur_state;
 			  wchar_t wc2;
-			  Idx mlen = raw + pstr->len - p;
+			  size_t mlen = (size_t) (raw + pstr->len - p);
 			  unsigned char buf[6];
 			  size_t mbclen;
 
 			  const unsigned char *pp = p;
 			  if (__glibc_unlikely (pstr->trans != NULL))
 			    {
-			      int i = mlen < 6 ? mlen : 6;
+			      int i = mlen < 6 ? (int) mlen : 6;
 			      while (--i >= 0)
 				buf[i] = pstr->trans[p[i]];
 			      pp = buf;
@@ -752,12 +756,13 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 			  memset (&cur_state, 0, sizeof (cur_state));
 			  mbclen = __mbrtowc (&wc2, (const char *) pp, mlen,
 					      &cur_state);
-			  if (raw + offset - p <= mbclen
+			  if ((size_t) (raw + offset - p) <= mbclen
 			      && mbclen < (size_t) -2)
 			    {
 			      memset (&pstr->cur_state, '\0',
 				      sizeof (mbstate_t));
-			      pstr->valid_len = mbclen - (raw + offset - p);
+			      pstr->valid_len
+				= (Idx) (mbclen - (size_t) (raw + offset - p));
 			      wc = wc2;
 			    }
 			  break;
@@ -781,7 +786,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 		  for (wcs_idx = 0; wcs_idx < pstr->valid_len; ++wcs_idx)
 		    pstr->wcs[wcs_idx] = WEOF;
 		  if (pstr->mbs_allocated)
-		    memset (pstr->mbs, 255, pstr->valid_len);
+		    memset (pstr->mbs, 255, (size_t) pstr->valid_len);
 		}
 	      pstr->valid_raw_len = pstr->valid_len;
 	    }
@@ -868,7 +873,7 @@ re_string_peek_byte_case (const re_string_t *pstr, Idx idx)
     return re_string_peek_byte (pstr, idx);
 #endif
 
-  return ch;
+  return (unsigned char) ch;
 }
 
 static unsigned char
@@ -901,7 +906,7 @@ re_string_fetch_byte_case (re_string_t *pstr)
 
       re_string_skip_bytes (pstr,
 			    re_string_char_size_at (pstr, pstr->cur_idx));
-      return ch;
+      return (unsigned char) ch;
     }
 #endif
 
@@ -1373,7 +1378,7 @@ re_node_set_contains (const re_node_set *set, Idx elem)
 
   /* Binary search the element.  */
   idx = 0;
-  right = set->nelem - 1;
+  right = (__re_size_t) (set->nelem - 1);
   while (idx < right)
     {
       mid = (idx + right) / 2;
@@ -1382,7 +1387,7 @@ re_node_set_contains (const re_node_set *set, Idx elem)
       else
 	right = mid;
     }
-  return set->elems[idx] == elem ? idx + 1 : 0;
+  return set->elems[idx] == elem ? (Idx) (idx + 1) : 0;
 }
 
 static void
@@ -1450,13 +1455,13 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
   dfa->nexts[dfa->nodes_len] = -1;
   re_node_set_init_empty (dfa->edests + dfa->nodes_len);
   re_node_set_init_empty (dfa->eclosures + dfa->nodes_len);
-  return dfa->nodes_len++;
+  return (Idx) dfa->nodes_len++;
 }
 
 static re_hashval_t
 calc_state_hash (const re_node_set *nodes, unsigned int context)
 {
-  re_hashval_t hash = nodes->nelem + context;
+  re_hashval_t hash = (re_hashval_t) (nodes->nelem + context);
   Idx i;
   for (i = 0 ; i < nodes->nelem ; i++)
     hash += nodes->elems[i];
