@@ -510,7 +510,7 @@ struct bin_tree_storage_t
 };
 typedef struct bin_tree_storage_t bin_tree_storage_t;
 
-#define CONTEXT_WORD 1
+#define CONTEXT_WORD 1u
 #define CONTEXT_NEWLINE (CONTEXT_WORD << 1)
 #define CONTEXT_BEGBUF (CONTEXT_NEWLINE << 1)
 #define CONTEXT_ENDBUF (CONTEXT_BEGBUF << 1)
@@ -627,11 +627,7 @@ typedef struct
 {
   /* The string object corresponding to the input string.  */
   re_string_t input;
-#if defined _LIBC || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L)
-  const re_dfa_t *const dfa;
-#else
   const re_dfa_t *dfa;
-#endif
   /* EFLAGS of the argument of regexec.  */
   int eflags;
   /* Where the matching ends.  */
