@@ -4611,9 +4611,12 @@ The default value for @env{AWKPATH} is
 @samp{.:/usr/local/share/awk}.@footnote{Your version of @command{gawk}
 may use a different directory; it
 will depend upon how @command{gawk} was built and installed. The actual
-directory is the value of @code{$(datadir)} generated when
-@command{gawk} was configured.  You probably don't need to worry about this,
-though.}  Since @file{.} is included at the beginning, @command{gawk}
+directory is the value of @code{$(pkgdatadir)} generated when
+@command{gawk} was configured.
+(For more detail, see the @file{INSTALL} file in the source distribution,
+and see @ref{Quick Installation}.
+You probably don't need to worry about this,
+though.)}  Since @file{.} is included at the beginning, @command{gawk}
 searches first in the current directory and then in @file{/usr/local/share/awk}.
 In practice, this means that you will rarely need to change the
 value of @env{AWKPATH}.
@@ -4651,7 +4654,15 @@ via the @code{@@load} keyword (@pxref{Loading Shared Libraries}).
 If @env{AWKLIBPATH} does not exist in the environment, or if it has
 an empty value, @command{gawk} uses a default path; this
 is typically @samp{/usr/local/lib/gawk}, although it can vary depending
-upon how @command{gawk} was built.
+upon how @command{gawk} was built.@footnote{Your version of @command{gawk}
+may use a different directory; it
+will depend upon how @command{gawk} was built and installed. The actual
+directory is the value of @code{$(pkgextensiondir)} generated when
+@command{gawk} was configured.
+(For more detail, see the @file{INSTALL} file in the source distribution,
+and see @ref{Quick Installation}.
+You probably don't need to worry about this,
+though.)}
 
 @xref{Shell Startup Files}, for information on functions that help to
 manipulate the @env{AWKLIBPATH} variable.
