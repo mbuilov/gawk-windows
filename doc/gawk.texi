@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH January, 2020
+@set UPDATE-MONTH March, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -39983,7 +39983,15 @@ to write code that takes the operating system / platform into account.
 
 Version 5.1 was created to release @command{gawk} with a correct
 major version number for the API. This was overlooked for version 5.0,
-unfortunately.
+unfortunately. It added the following features:
+
+@itemize
+@item
+The index for this manual was completely reworked.
+
+@item
+Support was added for MSYS2.
+@end itemize
 
 @c XXX ADD MORE STUFF HERE
 @end ifclear
@@ -41251,6 +41259,9 @@ need to use the @code{BINMODE} variable.
 This can cause problems with other Unix-like components that have
 been ported to MS-Windows that expect @command{gawk} to do automatic
 translation of @code{"\r\n"}, because it won't.
+
+Under MSYS2, compilation using the standard @samp{./configure && make}
+recipe works ``out of the box.''
 
 @node VMS Installation
 @appendixsubsec Compiling and Installing @command{gawk} on Vax/VMS and OpenVMS
