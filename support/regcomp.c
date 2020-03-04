@@ -316,7 +316,7 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 
 	      p = buf;
 	      *p++ = dfa->nodes[node].opr.c;
-	      while (0llu + ++node < dfa->nodes_len
+	      while ((size_t)0 + ++node < dfa->nodes_len
 		     &&	dfa->nodes[node].type == CHARACTER
 		     && dfa->nodes[node].mb_partial)
 		*p++ = dfa->nodes[node].opr.c;
@@ -1601,13 +1601,13 @@ static Idx
 search_duplicated_node (const re_dfa_t *dfa, Idx org_node,
 			unsigned int constraint)
 {
-  Idx idx;
-  for (idx = (Idx) dfa->nodes_len - 1; dfa->nodes[idx].duplicated && idx > 0;
+  size_t idx;
+  for (idx = dfa->nodes_len - 1; idx > 0 && dfa->nodes[idx].duplicated;
        --idx)
     {
       if (org_node == dfa->org_indices[idx]
 	  && constraint == dfa->nodes[idx].constraint)
-	return idx; /* Found.  */
+	return (Idx) idx; /* Found.  */
     }
   return -1; /* Not found.  */
 }
