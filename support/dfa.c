@@ -1006,7 +1006,7 @@ parse_bracket_exp (struct dfa *dfa)
     }
   wint_t wc = dfa->lex.wctok;
   int c1;
-  wint_t wc1;
+  wint_t wc1 = 0; /* Silence compiler: 'wc1' is set after 'c1' is changed.  */
   colon_warning_state = (c == ':');
   do
     {
