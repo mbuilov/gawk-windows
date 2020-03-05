@@ -27,6 +27,10 @@
 #include "awk.h"
 #include <math.h>
 
+#ifdef _MSC_VER
+#include <intrin.h> /* for _BitScanForward/_BitScanForward64 */
+#endif
+
 #ifdef HAVE_UINTMAX_T
 
 /* Assume IEEE-754 arithmetic on pre-C89 hosts.  */
@@ -76,13 +80,25 @@ Please port the following code to your weird host;
 static int
 count_trailing_zeros(uintmax_t n)
 {
-#if 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULLONG_MAX
+#if defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= UINT_MAX
+	return __builtin_ctz(n);
+#elif defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULONG_MAX
+	return __builtin_ctzl(n);
+#elif defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULLONG_MAX
 	return __builtin_ctzll(n);
+#elif defined _MSC_VER && UINTMAX_MAX <= ULONG_MAX
+	unsigned long Index;
+	(void) _BitScanForward(&Index, n);
+	return (int) Index;
+#elif defined _MSC_VER && UINTMAX_MAX <= ULLONG_MAX && defined _WIN64
+	unsigned long Index;
+	(void) _BitScanForward64(&Index, n);
+	return (int) Index;
 #else
 	int i = 0;
 	for (; (n & 3) == 0; n >>= 2)
 		i += 2;
-	return i + (1 & ~n);
+	return i + (int) (1 & ~n);
 #endif
 }
 
