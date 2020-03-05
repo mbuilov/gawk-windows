@@ -568,8 +568,8 @@ awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code)
 	 * result on both 32- and 64-bit systems. This may be a
 	 * bad idea.
 	 */
-#define HASHC   htmp = (h << 6);  \
-		h = *s++ + htmp + (htmp << 10) - h ; \
+#define HASHC   htmp = (h << 6u);  \
+		h = *s++ + htmp + (htmp << 10u) - h ; \
 		htmp &= 0xFFFFFFFFul; \
 		h &= 0xFFFFFFFFul
 
@@ -738,8 +738,8 @@ gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code)
 
 	while (len--) {
 		hashVal += *str++;
-		hashVal += (hashVal << 10);
-		hashVal ^= (hashVal >> 6);
+		hashVal += (hashVal << 10u);
+		hashVal ^= (hashVal >> 6u);
 	}
 
 	ret = scramble(hashVal);
@@ -761,15 +761,15 @@ PRAGMA_WARNING_DISABLE_COND_IS_CONST
 	if (sizeof(x) == 4) {
 		ulong_t y = ~x;
 
-		x += (y << 10) | (y >> 22);
-		x += (x << 6)  | (x >> 26);
-		x -= (x << 16) | (x >> 16);
+		x += (y << 10u) | (y >> 22u);
+		x += (x << 6u)  | (x >> 26u);
+		x -= (x << 16u) | (x >> 16u);
 	} else {
-		x ^= (~x) >> 31;
-		x += (x << 21) | (x >> 11);
-		x += (x << 5) | (x >> 27);
-		x += (x << 27) | (x >> 5);
-		x += (x << 31);
+		x ^= (~x) >> 31u;
+		x += (x << 21u) | (x >> 11u);
+		x += (x << 5u) | (x >> 27u);
+		x += (x << 27u) | (x >> 5u);
+		x += (x << 31u);
 	}
 PRAGMA_WARNING_POP
 
