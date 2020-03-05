@@ -124,6 +124,10 @@ void *x2nrealloc (void *p, size_t *pn, size_t s);
 ATTRIBUTE_MALLOC char *xcharalloc (size_t n);
 # endif
 
+# ifdef __cplusplus
+}
+# endif
+
 # ifdef static_inline
 
 /* Allocate an array of N objects, each with S bytes of memory,
@@ -215,7 +219,7 @@ xstrdup(const char *s)
 
 	return p;
 }
-#endif
+#endif /* GAWK */
 
 /* Change the size of an allocated block of memory P to an array of N
    objects each of S bytes, with error checking.  S must be nonzero.  */
@@ -337,10 +341,9 @@ xzalloc (size_t s)
   return xcalloc(1, s);
 }
 
-# endif
+# endif /* static_inline */
 
 # ifdef __cplusplus
-}
 
 /* C++ does not allow conversions from void * to other pointer types
    without a cast.  Use templates to work around the problem when
@@ -376,7 +379,7 @@ xmemdup (T const *p, size_t s)
   return (T *) xmemdup ((void const *) p, s);
 }
 
-# endif
+# endif /* __cplusplus */
 
 
 #endif /* !XALLOC_H_ */
