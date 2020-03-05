@@ -1626,6 +1626,13 @@ socketopen(int family, int type, const char *localpname,
 	socket_t socket_fd = INVALID_HANDLE;
 	bool any_remote_host = (strcmp(remotehostname, "0") == 0);
 
+#ifdef HAVE_GAI_STRERROR_BUF
+	char gai_buf[1024];
+#define gai_strerror_(e) gai_strerror_buf(e, gai_buf, sizeof(gai_buf))
+#else
+#define gai_strerror_(e) gai_strerror(e)
+#endif
+
 	memset(& lhints, '\0', sizeof (lhints));
 
 	lhints.ai_socktype = type;
@@ -1647,9 +1654,9 @@ socketopen(int family, int type, const char *localpname,
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {
 		if (strcmp(localpname, "0") != 0) {
-#ifdef HAVE_GAI_STRERROR
+#if defined HAVE_GAI_STRERROR || defined HAVE_GAI_STRERROR_BUF
 			awkwarn(_("local port %s invalid in `/inet': %s"), localpname,
-					gai_strerror(lerror));
+					gai_strerror_(lerror));
 #else
 			awkwarn(_("local port %s invalid in `/inet'"), localpname);
 #endif
@@ -1673,9 +1680,9 @@ socketopen(int family, int type, const char *localpname,
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
-#ifdef HAVE_GAI_STRERROR
+#if defined HAVE_GAI_STRERROR || defined HAVE_GAI_STRERROR_BUF
 			awkwarn(_("remote host and port information (%s, %s) invalid: %s"), remotehostname, remotepname,
-					gai_strerror(rerror));
+					gai_strerror_(rerror));
 #else
 			awkwarn(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
 #endif
