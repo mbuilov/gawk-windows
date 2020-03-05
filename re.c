@@ -269,7 +269,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	if (dfa && ! no_dfa) {
 		rp->dfareg = dfaalloc();
 		dfacopysyntax(rp->dfareg, dfaregs[ignorecase]);
-		dfacomp(buf, len, rp->dfareg, true);
+		dfacomp(buf, (ptrdiff_t) len, rp->dfareg, true);
 	} else
 		rp->dfareg = NULL;
 
