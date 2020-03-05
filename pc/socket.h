@@ -39,6 +39,7 @@ int w32_recvfrom (int, char *, int, int, struct sockaddr *, int *);
 int w32_shutdown (int, int);
 int socket_to_fd (SOCKET);
 SOCKET valid_socket (int);
+const char *gai_strerror_buf (int ecode, char buf[], unsigned int buf_size);
 
 #endif	/* __MINGW32__ || _MSC_VER */
 
