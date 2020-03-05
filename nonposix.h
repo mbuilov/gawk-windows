@@ -31,7 +31,7 @@
 
 #define FAKE_FD_VALUE 42
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 /* Replacements for sys/wait.h macros.  */
 # define WEXITSTATUS(stv) (((unsigned)(stv)) & ~0xC0000000)
 /* MS-Windows programs that crash due to a fatal exception exit with
@@ -57,22 +57,40 @@ unsigned int getegid (void);
 int unsetenv (const char *);
 int setenv (const char *, const char *, int);
 void w32_maybe_set_errno (void);
-char *w32_setlocale (int, const char *);
+
 /* libintl.h from GNU gettext defines setlocale to redirect that to
    its own function.  Note: this will have to be revisited if MinGW
    Gawk will support ENABLE_NLS at some point.  */
 #ifdef setlocale
 # undef setlocale
 #endif
+
+#ifndef _MSC_VER
+char *w32_setlocale (int, const char *);
 #define setlocale(c,v) w32_setlocale(c,v)
+#else
+void set_locale_from_env(const char *def);
+#endif
 
-#endif	/* __MINGW32__ */
+#endif	/* __MINGW32__ || _MSC_VER */
 
-#if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__)
+#ifdef _MSC_VER
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m)&_S_IFMT) == _S_IFDIR)
+#endif
+#ifndef S_ISCHR
+#define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
+#endif
+#ifndef S_ISFIFO
+#define S_ISFIFO(m) (((m)&_S_IFMT) == _S_IFIFO)
+#endif
+#endif
+
+#if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 int getpgrp(void);
 #endif
 
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 int getppid(void);
 #endif
 
