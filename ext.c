@@ -47,6 +47,13 @@ load_ext(const char *lib_name)
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
 
+#ifdef HAVE_DLERROR_BUF
+	char dl_buf[1024];
+#define dlerror_() dlerror_buf(dl_buf, sizeof(dl_buf))
+#else
+#define dlerror_() dlerror()
+#endif
+
 	if (do_sandbox)
 		fatal(_("extensions are not allowed in sandbox mode"));
 
@@ -58,19 +65,19 @@ load_ext(const char *lib_name)
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
 		fatal(_("load_ext: cannot open library `%s' (%s)"), lib_name,
-		      dlerror());
+		      dlerror_());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
 		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)"),
-				lib_name, dlerror());
+				lib_name, dlerror_());
 
 	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
 				dlsym(dl, INIT_FUNC);
 	if (install_func == NULL)
 		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)"),
-				lib_name, INIT_FUNC, dlerror());
+				lib_name, INIT_FUNC, dlerror_());
 
 	if (install_func(& api_impl, NULL /* ext_id */) == 0)
 		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
