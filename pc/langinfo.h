@@ -4,6 +4,6 @@
 
 #define CODESET 1
 
-extern char *nl_langinfo (int);
+extern const char *nl_langinfo (int);
 
 #endif
