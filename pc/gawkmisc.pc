@@ -1103,7 +1103,7 @@ gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
 
   ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
 		       | FORMAT_MESSAGE_IGNORE_INSERTS,
-		       NULL, ecode, 0, buf, buf_size, NULL);
+		       NULL, (DWORD) ecode, 0, buf, buf_size, NULL);
   while (ret > 0 && (buf[ret - 1] == '\n' || buf[ret - 1] == '\r'))
     --ret;
 
