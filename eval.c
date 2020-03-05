@@ -1124,7 +1124,7 @@ STACK_ITEM *stack_ptr = NULL;
 STACK_ITEM *stack_bottom;
 STACK_ITEM *stack_top;
 static size_t STACK_SIZE = 256;    /* initial size of stack */
-unsigned max_args = 0;       /* maximum # of arguments to printf, print, sprintf,
+ulong_t max_args = 0;       /* maximum # of arguments to printf, print, sprintf,
                          * or # of array subscripts, or adjacent strings
                          * to be concatenated.
                          */
