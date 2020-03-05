@@ -43,7 +43,7 @@
 
 /* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
    */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_DECL_TZNAME 1
 #endif
 
@@ -56,13 +56,18 @@
 /* Define to 1 if you have the `fwrite_unlocked' function. */
 #undef HAVE_FWRITE_UNLOCKED
 
-/* Define to 1 if you have the `gai_strerror' function. */
-#ifdef __MINGW32__
-#define HAVE_GAI_STRERROR 1
+/* Define to 1 if you have the `gai_strerror_buf' function. */
+#if defined(__MINGW32__) || defined(_MSC_VER)
+#define HAVE_GAI_STRERROR_BUF 1
+#endif
+
+/* Define to 1 if you have the `dlerror_buf' function. */
+#if defined(__MINGW32__) || defined(_MSC_VER)
+#define HAVE_DLERROR_BUF 1
 #endif
 
 /* have getaddrinfo */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_GETADDRINFO 1
 #endif
 
@@ -85,37 +90,37 @@
 #undef HAVE_ICONV
 
 /* Define to 1 if the system has the type `intmax_t'. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_INTMAX_T 1
 #endif
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_INTTYPES_H 1
 #endif
 
 /* Define to 1 if you have the `isascii' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_ISASCII 1
 #endif
 
 /* Define to 1 if you have the `iswctype' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_ISWCTYPE 1
 #endif
 
 /* Define to 1 if you have the `iswlower' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_ISWLOWER 1
 #endif
 
 /* Define to 1 if you have the `iswupper' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_ISWUPPER 1
 #endif
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_LANGINFO_CODESET 1
 #endif
 
@@ -132,20 +137,24 @@
 #undef HAVE_LIBSIGSEGV
 
 /* Define to 1 if you have the <locale.h> header file. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_LOCALE_H 1
 #endif
 
 /* Define to 1 if the system has the type 'long long int'. */
+#ifdef _MSC_VER
+#define HAVE_LONG_LONG_INT 1
+#else
 #undef HAVE_LONG_LONG_INT
+#endif
 
 /* Define to 1 if you have the `mbrlen' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_MBRLEN 1
 #endif
 
 /* Define to 1 if mbrtowc and mbstate_t are properly declared. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_MBRTOWC 1
 #endif
 
@@ -162,7 +171,7 @@
 #undef HAVE_MEMCPY_ULONG
 
 /* Define to 1 if you have the `memmove' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_MEMMOVE 1
 #endif
 
@@ -198,12 +207,12 @@
 #undef HAVE_POSIX_OPENPT
 
 /* Define to 1 if you have the `setenv' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_SETENV 1
 #endif
 
 /* Define to 1 if you have the `setlocale' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_SETLOCALE 1
 #endif
 
@@ -214,50 +223,53 @@
 #undef HAVE_SIGPROCMASK
 
 /* Define to 1 if you have the `snprintf' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_SNPRINTF 1
 #endif
 
 /* newer systems define this type here */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_SOCKADDR_STORAGE 1
 #endif
 
 /* we have sockets on this system */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_SOCKETS 1
 #endif
 
 /* Define to 1 if stdbool.h conforms to C99. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STDBOOL_H 1
 #endif
 
 /* Define to 1 if you have the <stddef.h> header file. */
-#ifdef __GNUC__
+#if defined __GNUC__ || defined _MSC_VER
 #define HAVE_STDDEF_H 1
 #endif
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STDINT_H 1
 #endif
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STDLIB_H 1
 #endif
 
 /* Define to 1 if you have the `strcasecmp' function. */
-#ifdef __DJGPP__
+#if defined(__DJGPP__) || defined(__EMX__) || defined(_MSC_VER)
 #define HAVE_STRCASECMP 1
+#endif
+#if defined(__EMX__) || defined(_MSC_VER)
+#define strcasecmp stricmp
 #endif
 
 /* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
 
 /* Define to 1 if you have the `strcoll' function. */
-#ifdef __DJGPP__
+#if defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STRCOLL 1
 #endif
 
@@ -276,14 +288,18 @@
 #define HAVE_STRINGIZE 1
 
 /* Define to 1 if you have the <strings.h> header file. */
+#ifdef _MSC_VER
+#undef HAVE_STRINGS_H
+#else
 #define HAVE_STRINGS_H 1
+#endif
 
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strncasecmp' function. */
 #define HAVE_STRNCASECMP 1
-#ifdef __EMX__
+#if defined(__EMX__) || defined(_MSC_VER)
 #define strncasecmp strnicmp
 #endif
 
@@ -294,7 +310,7 @@
 #define HAVE_STRTOD 1
 
 /* Define to 1 if you have the `strtoul' function. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STRTOUL 1
 #endif
 
@@ -305,7 +321,7 @@
 #undef HAVE_STRUCT_PASSWD_PW_PASSWD
 
 /* Define to 1 if `st_blksize' is a member of `struct stat'. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_STRUCT_STAT_ST_BLKSIZE 1
 #endif
 
@@ -332,7 +348,7 @@
 #undef HAVE_SYS_SOCKET_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-#if defined(__MINGW32__) || defined(__DJGPP__)
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_SYS_STAT_H 1
 #endif
 
@@ -353,7 +369,12 @@
 #undef HAVE_TERMIOS_H
 
 /* Define to 1 if you have the `timegm' function. */
+#ifdef _MSC_VER
+#define HAVE_TIMEGM 1
+#define timegm _mkgmtime
+#else
 #undef HAVE_TIMEGM
+#endif
 
 /* Define to 1 if you have the `tmpfile' function. */
 #ifdef __DJGPP__
@@ -365,12 +386,12 @@
 #undef HAVE_TM_ZONE
 
 /* Define to 1 if you have the `towlower' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_TOWLOWER 1
 #endif
 
 /* Define to 1 if you have the `towupper' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_TOWUPPER 1
 #endif
 
@@ -382,7 +403,7 @@
 #define HAVE_TZSET 1
 
 /* Define to 1 if the system has the type `uintmax_t'. */
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_UINTMAX_T 1
 #endif
 
@@ -392,10 +413,14 @@
 #endif
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
+#ifdef _MSC_VER
+#define HAVE_UNSIGNED_LONG_LONG_INT 1
+#else
 #undef HAVE_UNSIGNED_LONG_LONG_INT
+#endif
 
 /* Define to 1 if you have the `usleep' function. */
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_USLEEP 1
 #endif
 
@@ -403,37 +428,37 @@
 #undef HAVE_WAITPID
 
 /* Define to 1 if you have the <wchar.h> header file. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCHAR_H 1
 #endif
 
 /* Define to 1 if you have the `wcrtomb' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCRTOMB 1
 #endif
 
 /* Define to 1 if you have the `wcscoll' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCSCOLL 1
 #endif
 
 /* Define to 1 if you have the `wctype' function. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCTYPE 1
 #endif
 
 /* Define to 1 if you have the <wctype.h> header file. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCTYPE_H 1
 #endif
 
 /* systems should define this type here */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WCTYPE_T 1
 #endif
 
 /* systems should define this type here */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_WINT_T 1
 #endif
 
@@ -473,7 +498,7 @@
 #define PRINTF_HAS_A_FORMAT 1
 
 /* Define to 1 if *printf supports %F format */
-#ifdef __DJGPP__
+#if defined(__DJGPP__) || defined(_MSC_VER)
 #define PRINTF_HAS_F_FORMAT 1
 #endif
 
@@ -493,16 +518,21 @@
 #undef TIME_T_IN_SYS_TYPES_H
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#ifndef _MSC_VER
 #define TIME_WITH_SYS_TIME 1
+#endif
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
+
+/* Define to 1 if you have the `GetSystemTimeAsFileTime' function. */
+#define HAVE_GETSYSTEMTIMEASFILETIME 1
 
 /* Define to 1 if the character set is EBCDIC */
 #undef USE_EBCDIC
 
 /* This is required to compile Gnulib regex code.  */
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
 #define _GNU_SOURCE 1
 #endif
 /* Enable extensions on AIX 3, Interix.  */
@@ -611,7 +641,15 @@
 #undef socklen_t
 
 /* Define to `int' if <sys/types.h> does not define. */
+#ifdef _MSC_VER
+#ifdef _WIN64
+#define ssize_t __int64
+#else
+#define ssize_t int
+#endif
+#else /* !_MSC_VER */
 #undef ssize_t
+#endif /* !_MSC_VER */
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
@@ -639,9 +677,4 @@ extern bool is_valid_identifier(const char *name);
 
 #ifndef __DJGPP__
 #define HAVE_POPEN_H 1
-#endif
-
-#if defined(__EMX__)
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
 #endif
