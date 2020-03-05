@@ -127,13 +127,15 @@ typedef enum awk_bool {
  * characters) to skip before $1, and fields[0].len is the length of $1, etc.
  */
 
+struct awk_field_info {
+	size_t	skip;	/* amount to skip before field starts */
+	size_t	len;	/* length of field */
+};
+
 typedef struct {
 	awk_bool_t	use_chars;	/* false ==> use bytes */
 	size_t		nf;
-	struct awk_field_info {
-		size_t	skip;	/* amount to skip before field starts */
-		size_t	len;	/* length of field */
-	} fields[1];		/* actual dimension should be nf */
+	struct awk_field_info fields[1];	/* actual dimension should be nf */
 } awk_fieldwidth_info_t;
 
 /*
@@ -143,11 +145,14 @@ typedef struct {
 #define awk_fieldwidth_info_size(NF) (sizeof(awk_fieldwidth_info_t) + \
 			(((NF)-1) * sizeof(struct awk_field_info)))
 
+/* File descriptor type.  */
+typedef int fd_t;
+#define INVALID_HANDLE (-1)
+
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {
 	const char *name;	/* filename */
-	int fd;			/* file descriptor */
-#define INVALID_HANDLE (-1)
+	fd_t fd;		/* file descriptor */
 	void *opaque;           /* private data for input parsers */
 	/*
 	 * The get_record function is called to read the next record of data.
@@ -187,10 +192,9 @@ typedef struct awk_input {
 			const awk_fieldwidth_info_t **field_width);
 
 	/*
-	 * No argument prototype on read_func to allow for older systems
-	 * whose headers are not up to date.
+	 * The same arguments/return type as for POSIX read(2).
 	 */
-	ssize_t (*read_func)();
+	ssize_t (*read_func)(fd_t fd, void *buffer, size_t count);
 
 	/*
 	 * The close_func is called to allow the parser to free private data.
@@ -394,14 +398,16 @@ typedef struct awk_value {
  * one at a time, using the separate API for that purpose.
  */
 
+enum awk_element_flags {
+	AWK_ELEMENT_DEFAULT = 0,	/* set by gawk */
+	AWK_ELEMENT_DELETE = 1		/* set by extension if
+					   should be deleted */
+};
+
 typedef struct awk_element {
 	/* convenience linked list pointer, not used by gawk */
 	struct awk_element *next;
-	enum {
-		AWK_ELEMENT_DEFAULT = 0,	/* set by gawk */
-		AWK_ELEMENT_DELETE = 1		/* set by extension if
-						   should be deleted */
-	} flags;
+	enum awk_element_flags flags;
 	awk_value_t	index;
 	awk_value_t	value;
 } awk_element_t;
@@ -826,7 +832,7 @@ typedef struct gawk_api {
 			const char *name,
 			size_t name_len,
 			const char *filetype,
-			int fd,
+			fd_t fd,
 			/*
 			 * Return values (on success, one or both should
 			 * be non-NULL):
@@ -853,10 +859,18 @@ typedef struct gawk_api {
 #define set_argument(count, new_array) \
 	(api->api_set_argument(ext_id, count, new_array))
 
+#if defined(_MSC_VER) && defined(_PREFAST_)
+/* Annotate printf-like format string so compiler will check passed args.  */
+void fatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+void nonfatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+void warning(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+#else /* !(_MSC_VER && _PREFAST_) */
 #define fatal		api->api_fatal
 #define nonfatal	api->api_nonfatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
+#endif /* !(_MSC_VER && _PREFAST_) */
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
 #define register_output_wrapper(wrapper) (api->api_register_output_wrapper(ext_id, wrapper))
