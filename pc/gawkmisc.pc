@@ -37,8 +37,8 @@ const char *deflibpath = DEFLIBPATH;
 #include<io.h>
 
 static int _os2_is_abs_path(const char *dirname);
-static char *_os2_unixroot(const char *path);
-static const char *_os2_unixroot_path(const char *path);
+static char* _os2_unixroot(const char *path);
+static const char* _os2_unixroot_path(const char *path);
 #endif
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
@@ -60,7 +60,7 @@ static const char *_os2_unixroot_path(const char *path);
 #endif
 
 #if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
@@ -758,9 +758,9 @@ set_lcat_from_env(int cat, const char name[])
 }
 
 /* Set locale based on the values of environment variables.  */
-/* M.B. Note: w32_setlocale is buggy - it doesn't set e.g. LC_NUMERIC
-  from the environment if called as w32_setlocale(LC_ALL, ""), if
-  both LC_ALL and LANG are not defined in the environment.  */
+/* M.B. Note: w32_setlocale defined above is buggy - it doesn't set e.g.
+  LC_NUMERIC from the environment if called as w32_setlocale(LC_ALL, ""),
+  if both LC_ALL and LANG are not defined in the environment.  */
 void
 set_locale_from_env(const char *def)
 {
@@ -910,10 +910,9 @@ dlopen (const char *file, int mode)
   return dllhandle;
 }
 
-char *
-dlerror (void)
+const char *
+dlerror_buf (char buf[], unsigned int buf_size)
 {
-  static char errbuf[1024];
   DWORD ret;
 
   if (!last_err)
@@ -921,16 +920,19 @@ dlerror (void)
 
   ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
 		       | FORMAT_MESSAGE_IGNORE_INSERTS,
-		       NULL, last_err, 0, errbuf, sizeof (errbuf), NULL);
-  while (ret > 0 && (errbuf[ret - 1] == '\n' || errbuf[ret - 1] == '\r'))
+		       NULL, last_err, 0, buf, buf_size, NULL);
+  while (ret > 0 && (buf[ret - 1] == '\n' || buf[ret - 1] == '\r'))
     --ret;
 
-  errbuf[ret] = '\0';
+  buf[ret] = '\0';
   if (!ret)
-    sprintf (errbuf, "Error code %lu", last_err);
+    {
+      (void) _snprintf (buf, buf_size, "Error code %lu", last_err);
+      buf[buf_size - 1] = '\0';
+    }
 
   last_err = 0;
-  return errbuf;
+  return buf;
 }
 
 int
@@ -983,24 +985,24 @@ w32_socket(int family, int type, int protocol)
   if (s == INVALID_SOCKET)
     {
       switch (WSAGetLastError ())
-        {
-          case WSAEMFILE:
-            errno = EMFILE;
-            break;
-          case WSANOTINITIALISED:
-          case WSAENETDOWN:
-            errno = EACCES;
-            break;
-          case WSAENOBUFS:
-            errno = ENOMEM;
-            break;
-          case WSAEFAULT:
-            errno = EFAULT;
-            break;
-          default:
-            errno = EINVAL;
-            break;
-        }
+	{
+	  case WSAEMFILE:
+	    errno = EMFILE;
+	    break;
+	  case WSANOTINITIALISED:
+	  case WSAENETDOWN:
+	    errno = EACCES;
+	    break;
+	  case WSAENOBUFS:
+	    errno = ENOMEM;
+	    break;
+	  case WSAEFAULT:
+	    errno = EFAULT;
+	    break;
+	  default:
+	    errno = EINVAL;
+	    break;
+	}
     }
 
   return socket_to_fd (s);
@@ -1094,6 +1096,26 @@ w32_shutdown (int fd, int how)
   return shutdown (s, how);
 }
 
+const char *
+gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
+{
+  DWORD ret;
+
+  ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
+		       | FORMAT_MESSAGE_IGNORE_INSERTS,
+		       NULL, ecode, 0, buf, buf_size, NULL);
+  while (ret > 0 && (buf[ret - 1] == '\n' || buf[ret - 1] == '\r'))
+    --ret;
+
+  buf[ret] = '\0';
+  if (!ret)
+    {
+      (void) _snprintf (buf, buf_size, "Error code %lu", ecode);
+      buf[buf_size - 1] = '\0';
+    }
+
+  return buf;
+}
 #endif	/* HAVE_SOCKETS */
 
 /* Translate abnormal exit status of Windows programs into the signal
@@ -1148,17 +1170,17 @@ w32_maybe_set_errno (void)
   switch (w32err)
     {
       /* When stdout is redirected to a pipe, and the program that
-         reads the pipe (e.g., a pager) exits, Windows doesn't set
-         errno to a useful value.  Help it DTRT.  */
+	 reads the pipe (e.g., a pager) exits, Windows doesn't set
+	 errno to a useful value.  Help it DTRT.  */
       case ERROR_BAD_PIPE:
       case ERROR_PIPE_BUSY:
       case ERROR_NO_DATA:
       case ERROR_PIPE_NOT_CONNECTED:
-        errno = EPIPE;
-        break;
+	errno = EPIPE;
+	break;
       default:
-        errno = EINVAL;
-        break;
+	errno = EINVAL;
+	break;
     }
 }
 
