@@ -80,7 +80,7 @@
 
 /* Junk for dfa.[ch] */
 /* The __pure__ attribute was added in gcc 2.96.  */
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+#if defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96))
 # define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
 #else
 # define _GL_ATTRIBUTE_PURE /* empty */
