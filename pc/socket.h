@@ -3,7 +3,7 @@
 #ifndef GAWK_SOCKET_H
 #define GAWK_SOCKET_H
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 #include <io.h>
 
@@ -40,6 +40,6 @@ int w32_shutdown (int, int);
 int socket_to_fd (SOCKET);
 SOCKET valid_socket (int);
 
-#endif	/* __MINGW32__ */
+#endif	/* __MINGW32__ || _MSC_VER */
 
 #endif	/* GAWK_SOCKET_H */
