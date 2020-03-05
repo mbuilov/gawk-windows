@@ -13,7 +13,7 @@ timegm(struct tm *tm)
 	if (tz)
 		tz = estrdup(tz, strlen(tz));
 	if (setenv("TZ", tzreq, 1) < 0) {
-		warning(_("setenv(TZ, %s) failed (%s)"), tzreq, strerror(errno));
+		awkwarn(_("setenv(TZ, %s) failed (%s)"), tzreq, strerror(errno));
 		return -1;
 	}
 	tzset();
