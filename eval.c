@@ -25,9 +25,14 @@
 
 #include "awk.h"
 
+#ifdef _MSC_VER
+#include <math.h>
+#else
 extern double pow(double x, double y);
 extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
+#endif
+
 NODE **fcall_list = NULL;
 ulong_t fcall_count = 0u;
 enum defrule currule = UNKRULE;
