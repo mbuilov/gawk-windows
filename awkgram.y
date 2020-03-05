@@ -32,6 +32,7 @@
 
 #ifdef _MSC_VER
 #include <math.h> /* for fmod */
+#include <io.h>   /* for close */
 #endif
 
 #if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
