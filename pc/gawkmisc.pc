@@ -1110,7 +1110,7 @@ gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
   buf[ret] = '\0';
   if (!ret)
     {
-      (void) _snprintf (buf, buf_size, "Error code %lu", ecode);
+      (void) _snprintf (buf, buf_size, "Error code %d", ecode);
       buf[buf_size - 1] = '\0';
     }
 
