@@ -7,6 +7,6 @@
 extern void *dlopen (const char *, int);
 extern int   dlclose (void *);
 extern void *dlsym (void *, const char *);
-extern char *dlerror (void);
+extern const char *dlerror_buf (char buf[], unsigned int buf_size);
 
 #endif	/* DLFCN_H */
