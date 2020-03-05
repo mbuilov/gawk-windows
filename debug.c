@@ -30,6 +30,10 @@
 #include <fcntl.h>	/* open() */
 #endif
 
+#ifdef _MSC_VER
+#include <io.h>	/* close() */
+#endif
+
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #define execvp(p,a) w32_execvp(p,a)
 int w32_execvp(const char *, char **);

@@ -25,6 +25,10 @@
 
 #include "awk.h"
 
+#ifdef _MSC_VER
+#include <io.h> /* for close */
+#endif
+
 static void pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags);
 static INSTRUCTION *end_line(INSTRUCTION *ip);
 static void pp_parenthesize(NODE *n);
