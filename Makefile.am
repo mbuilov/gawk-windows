@@ -27,8 +27,8 @@
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
-# This insures that make flags get passed down to child makes.
-AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
+AM_CFLAGS = @CFLAGS@
+AM_LDFLAGS = @LDFLAGS@
 
 # Stuff to include in the dist that doesn't need it's own
 # Makefile.am files
@@ -77,6 +77,7 @@ SUBDIRS += extras doc awklib po test
 # what to make and install
 bin_PROGRAMS = gawk
 include_HEADERS = gawkapi.h
+BUILT_SOURCES = $(srcdir)/pc/Makefile.tst
 
 # sources for both gawk and dgawk
 base_sources = \
@@ -170,8 +171,7 @@ uninstall-recursive: uninstall-links
 check-local: gawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
-# And additional set up for the pc directory.
-dist-hook: pc/Makefile.tst
+dist-hook:
 	cd "$(distdir)"/extension ; rm -f *.o *.so
 	cd "$(srcdir)"/pc ; \
 	chmod u+w config.h ; \
@@ -185,22 +185,22 @@ dist-hook: pc/Makefile.tst
 
 # Special rules for individual files
 
-awkgram.c: awkgram.y
+$(srcdir)/awkgram.c: awkgram.y
 	$(YACC) -o $@ $(AM_YFLAGS) $(YFLAGS) $<
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
-command.c: command.y
+$(srcdir)/command.c: command.y
 	$(YACC) -o $@ -p zz $<
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
-pc/Makefile.tst: test/Makefile.in
-	test -d pc || mkdir pc
-	cat "$(top_srcdir)"/pc/Makefile.tst.prologue > pc/Makefile.tst
-	awk -f "$(top_srcdir)"/pc/GenMakefileTst.awk "$(top_srcdir)"/test/Makefile.in >> pc/Makefile.tst
+$(srcdir)/pc/Makefile.tst: test/Makefile.in pc/Makefile.tst.prologue pc/GenMakefileTst.awk
+	$(AM_V_GEN)$(MKDIR_P) "$(srcdir)"/pc && \
+	cat "$(srcdir)"/pc/Makefile.tst.prologue > "$(srcdir)"/pc/Makefile.tst && \
+	$(AWK) -f "$(srcdir)"/pc/GenMakefileTst.awk "$(srcdir)"/test/Makefile.in >> "$(srcdir)"/pc/Makefile.tst
 
 # This is for my development & testing.
 efence: gawk
-	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LDADD) $(LIBS) -lefence
+	$(CC) $(AM_LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LDADD) $(LIBS) -lefence
 
 diffout valgrind-scan:
 	@cd test && $(MAKE) $(AM_MAKEFLAGS) $@

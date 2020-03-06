@@ -209,13 +209,15 @@ GAWK_EXT_TESTS = \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 profile12 profile13 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	sandbox1 shadow shadowbuiltin sortfor sortfor2 sortu \
 	sourcesplit split_after_fpat \
-	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
-	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
+	splitarg4 strftfld strftime strtonum strtonum1 \
+	stupid1 stupid2 stupid3 stupid4 \
+	switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
+	symtab8 symtab9 symtab10 symtab11 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
 	typedregex5 typedregex6 \
 	typeof1 typeof2 typeof3 typeof4 typeof5 \
@@ -268,7 +270,7 @@ NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimpo
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
-	profile4 profile5 profile8 profile9 profile10 profile11
+	profile4 profile5 profile8 profile9 profile10 profile11 profile13
 
 
 # List of tests that need --re-interval
@@ -823,6 +825,12 @@ profile3:
 	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile5:
+	@echo $@
+	@$(AWK) --pretty=_$@ -f "$(srcdir)"/$@.awk 2> _$@.err
+	@cat _$@.err >> _$@ ; rm -f _$@.err
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile6:
 	@echo $@
@@ -3026,11 +3034,6 @@ profile4:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-profile5:
-	@echo $@ $(ZOS_FAIL)
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 profile8:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -3047,6 +3050,11 @@ profile10:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile11:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile13:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -3153,6 +3161,26 @@ strtonum1:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+stupid1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+stupid2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+stupid3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+stupid4:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 switch2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -3191,6 +3219,11 @@ symtab7:
 symtab10:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+symtab11:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 timeout:

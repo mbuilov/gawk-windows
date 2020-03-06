@@ -53,7 +53,7 @@ noinst_LTLIBRARIES =	\
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
-# On Cygwin, gettext requires that we link with -lintl 
+# On Cygwin, gettext requires that we link with -lintl
 MY_LIBS = $(LTLIBINTL)
 
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
@@ -151,7 +151,7 @@ dist_man_MANS = \
 	revtwoway.3am rwarray.3am time.3am
 
 # gettext requires this
-SUBDIRS = po 
+SUBDIRS = po
 
 distclean-local:
 	rm -fr .deps

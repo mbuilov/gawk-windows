@@ -32,7 +32,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 
 AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
 
-
+GAWK_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 AC_ZOS_USS
 
@@ -64,8 +64,7 @@ AC_CHECK_MEMBERS([struct stat.st_blksize])
 
 AM_PROG_AR
 AC_SYS_LARGEFILE
-AC_DISABLE_STATIC
-LT_INIT
+LT_INIT([win32-dll disable-static])
 dnl AC_PROG_INSTALL
 
 dnl use the same definition as the main configure script.

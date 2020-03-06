@@ -114,16 +114,17 @@ host_triplet = @host@
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../m4/arch.m4 \
-	$(top_srcdir)/../m4/mpfr.m4 $(top_srcdir)/m4/codeset.m4 \
-	$(top_srcdir)/m4/dirfd.m4 $(top_srcdir)/m4/gettext.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
-	$(top_srcdir)/m4/lcmessage.m4 $(top_srcdir)/m4/lib-ld.m4 \
-	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../m4/mpfr.m4 \
+	$(top_srcdir)/../m4/triplet-transformation.m4 \
+	$(top_srcdir)/m4/codeset.m4 $(top_srcdir)/m4/dirfd.m4 \
+	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lcmessage.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -416,6 +417,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -575,7 +577,7 @@ noinst_LTLIBRARIES = \
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
-# On Cygwin, gettext requires that we link with -lintl 
+# On Cygwin, gettext requires that we link with -lintl
 MY_LIBS = $(LTLIBINTL)
 filefuncs_la_SOURCES = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
@@ -649,7 +651,7 @@ dist_man_MANS = \
 
 
 # gettext requires this
-SUBDIRS = po 
+SUBDIRS = po
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

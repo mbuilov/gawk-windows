@@ -1,3 +1,12 @@
+2020-03-06         Jannick               <thirdedition@gmx.net>
+
+	* Makefile.am: Replace AM_MAKEFLAGS with AM_CFLAGS and AM_LDFLAGS.
+	Put pc/Makefile.tst into BUILT_SOURCES, instead of in dist-hook.
+	Add $(srcdir) to rules for the yacc files. Use AM_LDFLAGS in
+	the efence rule.
+	* configure.ac: Use GAWK_CANONICAL_HOST instead of AC_CANONICAL_HOST;
+	this supplies MSYS2 support. Remove use of EXEEXT.
+
 2020-03-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* NEWS: Updated.

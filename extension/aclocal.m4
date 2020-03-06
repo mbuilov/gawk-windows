@@ -1195,6 +1195,7 @@ AC_SUBST([am__untar])
 
 m4_include([../m4/arch.m4])
 m4_include([../m4/mpfr.m4])
+m4_include([../m4/triplet-transformation.m4])
 m4_include([m4/codeset.m4])
 m4_include([m4/dirfd.m4])
 m4_include([m4/gettext.m4])

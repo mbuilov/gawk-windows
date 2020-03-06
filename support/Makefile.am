@@ -23,8 +23,8 @@
 
 ## process this file with automake to produce Makefile.in
 
-# This insures that make flags get passed down to child makes.
-AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
+AM_CFLAGS  = @CFLAGS@
+AM_LDFLAGS = @LDFLAGS@
 
 # Stuff to include in the dist that doesn't need it's own
 # Makefile.am files
