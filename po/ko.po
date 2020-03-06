@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-12-22 21:25+0200\n"
+"POT-Creation-Date: 2020-03-06 11:41+0200\n"
 "PO-Revision-Date: 2019-03-04 16:44+0900\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <translation-team-ko@googlegroups.com>\n"
@@ -38,8 +38,8 @@ msgstr "`%s' 스칼라 매개변수를 배열로 취급하려고 합니다"
 msgid "attempt to use scalar `%s' as an array"
 msgstr "`%s' 스칼라 구조를 배열 구조로 취급하려고 합니다"
 
-#: array.c:400 array.c:567 builtin.c:88 builtin.c:1687 builtin.c:1733
-#: builtin.c:1746 builtin.c:2241 builtin.c:2268 eval.c:1151 eval.c:1155
+#: array.c:400 array.c:567 builtin.c:89 builtin.c:1688 builtin.c:1734
+#: builtin.c:1747 builtin.c:2242 builtin.c:2269 eval.c:1151 eval.c:1155
 #: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -75,30 +75,50 @@ msgstr "asort: 첫번째 인자는 배열이 아닙니다"
 msgid "asorti: first argument not an array"
 msgstr "asorti: 첫번째 인자는 배열이 아닙니다"
 
-#: array.c:840
+#: array.c:837
+#, fuzzy
+msgid "asort: first argument cannot be SYMTAB"
+msgstr "asort: 첫번째 인자는 배열이 아닙니다"
+
+#: array.c:838
+#, fuzzy
+msgid "asorti: first argument cannot be SYMTAB"
+msgstr "asorti: 첫번째 인자는 배열이 아닙니다"
+
+#: array.c:841
+#, fuzzy
+msgid "asort: first argument cannot be FUNCTAB"
+msgstr "asort: 첫번째 인자는 배열이 아닙니다"
+
+#: array.c:842
+#, fuzzy
+msgid "asorti: first argument cannot be FUNCTAB"
+msgstr "asorti: 첫번째 인자는 배열이 아닙니다"
+
+#: array.c:848
 msgid "asort: cannot use a subarray of first arg for second arg"
 msgstr "asort: 두번째 인자에 대한 첫번째 인자를 하위 배열로 취급할 수 없습니다"
 
-#: array.c:841
+#: array.c:849
 msgid "asorti: cannot use a subarray of first arg for second arg"
 msgstr ""
 "asorti: 두번째 인자에 대한 첫번째 인자를 하위 배열로 취급할 수 없습니다"
 
-#: array.c:846
+#: array.c:854
 msgid "asort: cannot use a subarray of second arg for first arg"
 msgstr "asort: 첫번째 인자에 대한 두번째 인자를 하위 배열로 취급할 수 없습니다"
 
-#: array.c:847
+#: array.c:855
 msgid "asorti: cannot use a subarray of second arg for first arg"
 msgstr ""
 "asorti: 첫번째 인자에 대한 두번째 인자를 하위 배열로 취급할 수 없습니다"
 
-#: array.c:1310
+#: array.c:1346
 #, c-format
 msgid "`%s' is invalid as a function name"
 msgstr "`%s' 명칭은 함수 이름으로 적절치 않습니다"
 
-#: array.c:1314
+#: array.c:1350
 #, c-format
 msgid "sort comparison function `%s' is not defined"
 msgstr "`%s' 정렬 비교 함수를 정의하지 않았습니다"
@@ -139,399 +159,399 @@ msgstr "switch문에 중복된 case 값: %s"
 msgid "duplicate `default' detected in switch body"
 msgstr "switch문에 중복된 `default' 절"
 
-#: awkgram.y:1035 awkgram.y:4459
+#: awkgram.y:1036 awkgram.y:4462
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "`break' 구문은 루프문 또는 switch문 밖에서 사용할 수 없습니다"
 
-#: awkgram.y:1045 awkgram.y:4451
+#: awkgram.y:1046 awkgram.y:4454
 msgid "`continue' is not allowed outside a loop"
 msgstr "`continue' 구문은 루프문 밖에서 사용할 수 없습니다"
 
-#: awkgram.y:1056
+#: awkgram.y:1057
 #, c-format
 msgid "`next' used in %s action"
 msgstr "`next' 구문을 %s 동작 내에서 취급했습니다"
 
-#: awkgram.y:1067
+#: awkgram.y:1068
 #, c-format
 msgid "`nextfile' used in %s action"
 msgstr "`nextfile' 구문을 %s 동작 내에서 취급했습니다"
 
-#: awkgram.y:1095
+#: awkgram.y:1096
 msgid "`return' used outside function context"
 msgstr "`return' 구문을 함수 밖 영역에서 취급했습니다"
 
-#: awkgram.y:1168
+#: awkgram.y:1169
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 "BEGIN과 END 안에 있는 순수한 `print' 구문은 `print \"\"'와 같은 모양새여야 합"
 "니다"
 
-#: awkgram.y:1238 awkgram.y:1287
+#: awkgram.y:1239 awkgram.y:1288
 msgid "`delete' is not allowed with SYMTAB"
 msgstr "`delete' 구문은 SYMTAB과 함께 취급할 수 없습니다"
 
-#: awkgram.y:1240 awkgram.y:1289
+#: awkgram.y:1241 awkgram.y:1290
 msgid "`delete' is not allowed with FUNCTAB"
 msgstr "`delete' 구문은 FUNCTAB과 함께 취급할 수 없습니다"
 
-#: awkgram.y:1274 awkgram.y:1278
+#: awkgram.y:1275 awkgram.y:1279
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr "`delete(array)'는 이식 불가능한 tawk 확장 기능입니다"
 
-#: awkgram.y:1414
+#: awkgram.y:1415
 msgid "multistage two-way pipelines don't work"
 msgstr "다중 스테이지 이중 파이프라인이 동작하지 않습니다"
 
-#: awkgram.y:1416
+#: awkgram.y:1417
 msgid "concatenation as I/O `>' redirection target is ambiguous"
 msgstr "`>' 입출력 리다이렉션 결합의 대상이 모호합니다"
 
-#: awkgram.y:1620
+#: awkgram.y:1623
 msgid "regular expression on right of assignment"
 msgstr "할당문의 우항에 정규 표현식이 있습니다"
 
-#: awkgram.y:1635 awkgram.y:1648
+#: awkgram.y:1638 awkgram.y:1651
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "`~' 또는 `!~' 연산자 좌항에 정규 표현식이 있습니다'"
 
-#: awkgram.y:1665 awkgram.y:1815
+#: awkgram.y:1668 awkgram.y:1818
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr ""
 "awk 이전 버전에서는 `for' 다음을 제외한 부분에서 `in' 키워드를 취급하지 않습"
 "니다"
 
-#: awkgram.y:1675
+#: awkgram.y:1678
 msgid "regular expression on right of comparison"
 msgstr "비교문 우항에 정규 표현식이 있습니다"
 
-#: awkgram.y:1794
+#: awkgram.y:1797
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr ""
 "`%s' 규칙 내에서 리다이렉션 처리하지 않는 `getline' 취급이 잘못되었습니다"
 
-#: awkgram.y:1797
+#: awkgram.y:1800
 msgid "non-redirected `getline' undefined inside END action"
 msgstr ""
 "END 동작 내에서 리다이렉션 처리하지 않는 `getline'을 정의하지 않았습니다"
 
-#: awkgram.y:1817
+#: awkgram.y:1820
 msgid "old awk does not support multidimensional arrays"
 msgstr "awk 이전 버전에서는 다차원 배열을 지원하지 않습니다"
 
-#: awkgram.y:1920
+#: awkgram.y:1923
 msgid "call of `length' without parentheses is not portable"
 msgstr "괄호를 뺀 `length' 호출은 이식 가능하지 않습니다"
 
-#: awkgram.y:1994
+#: awkgram.y:1997
 msgid "indirect function calls are a gawk extension"
 msgstr "간접 함수 호출 방식은 gawk 확장 기능입니다"
 
-#: awkgram.y:2007
+#: awkgram.y:2010
 #, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr "간접 함수 호출시 `%s' 특수 변수를 취급할 수 없습니다"
 
-#: awkgram.y:2040
+#: awkgram.y:2043
 #, c-format
 msgid "attempt to use non-function `%s' in function call"
 msgstr "함수가 아닌 `%s' 이름을 함수 호출 구역 안에서 취급하려고 합니다"
 
-#: awkgram.y:2105
+#: awkgram.y:2108
 msgid "invalid subscript expression"
 msgstr "잘못된 하위스크립트 연산식"
 
-#: awkgram.y:2478 awkgram.y:2498 gawkapi.c:273 gawkapi.c:290 msg.c:137
+#: awkgram.y:2481 awkgram.y:2501 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "경고: "
 
-#: awkgram.y:2496 gawkapi.c:245 gawkapi.c:288 msg.c:169
+#: awkgram.y:2499 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "실패: "
 
-#: awkgram.y:2549
+#: awkgram.y:2552
 msgid "unexpected newline or end of string"
 msgstr "예상치 못한 개행 문자 또는 문자열 끝"
 
-#: awkgram.y:2570
+#: awkgram.y:2573
 msgid ""
 "source files / command-line arguments must contain complete functions or "
 "rules"
 msgstr ""
 "원본 파일 / 명령행 인자에 완전한 함수 이름 또는 규칙이 들어있어야 합니다"
 
-#: awkgram.y:2852 awkgram.y:2930 awkgram.y:3168 debug.c:536 debug.c:552
+#: awkgram.y:2855 awkgram.y:2933 awkgram.y:3171 debug.c:536 debug.c:552
 #: debug.c:2829 debug.c:5194
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "읽을 `%s' 파일을 열 수 없습니다(%s)"
 
-#: awkgram.y:2853 awkgram.y:2990
+#: awkgram.y:2856 awkgram.y:2993
 #, c-format
 msgid "can't open shared library `%s' for reading (%s)"
 msgstr "읽을 `%s' 공유 라이브러리를 열 수 없습니다(%s)"
 
-#: awkgram.y:2855 awkgram.y:2931 awkgram.y:2991 builtin.c:149 debug.c:5345
+#: awkgram.y:2858 awkgram.y:2934 awkgram.y:2994 builtin.c:150 debug.c:5345
 msgid "reason unknown"
 msgstr "원인을 알 수 없음"
 
-#: awkgram.y:2864 awkgram.y:2888
+#: awkgram.y:2867 awkgram.y:2891
 #, c-format
 msgid "can't include `%s' and use it as a program file"
 msgstr "`%s' 요소를 프로그램 파일로 넣어 쓸 수 없습니다"
 
-#: awkgram.y:2877
+#: awkgram.y:2880
 #, c-format
 msgid "already included source file `%s'"
 msgstr "이미 `%s' 원본 파일을 넣었습니다"
 
-#: awkgram.y:2878
+#: awkgram.y:2881
 #, c-format
 msgid "already loaded shared library `%s'"
 msgstr "이미 `%s' 공유 라이브러리를 불러왔습니다"
 
-#: awkgram.y:2915
+#: awkgram.y:2918
 msgid "@include is a gawk extension"
 msgstr "@include는 gawk 확장 기능입니다"
 
-#: awkgram.y:2921
+#: awkgram.y:2924
 msgid "empty filename after @include"
 msgstr "@include 다음에 파일 이름이 없습니다"
 
-#: awkgram.y:2970
+#: awkgram.y:2973
 msgid "@load is a gawk extension"
 msgstr "@load는 gawk 확장 기능입니다"
 
-#: awkgram.y:2977
+#: awkgram.y:2980
 msgid "empty filename after @load"
 msgstr "@load 다음에 파일 이름이 없습니다"
 
-#: awkgram.y:3120
+#: awkgram.y:3123
 msgid "empty program text on command line"
 msgstr "명령행에 프로그램 텍스트가 없습니다"
 
-#: awkgram.y:3236
+#: awkgram.y:3239
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "`%s' 원본 파일을 읽을 수 없습니다(%s)"
 
-#: awkgram.y:3247
+#: awkgram.y:3250
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "`%s' 원본 파일이 비었습니다"
 
-#: awkgram.y:3306
+#: awkgram.y:3309
 #, c-format
 msgid "PEBKAC error: invalid character '\\%03o' in source code"
 msgstr "PEBKAC 오류: 소스 코드에 잘못된 문자 '\\%03o'"
 
-#: awkgram.y:3533
+#: awkgram.y:3536
 msgid "source file does not end in newline"
 msgstr "원본 파일이 개행 문자로 끝나지 않았습니다"
 
-#: awkgram.y:3654
+#: awkgram.y:3657
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "파일 끝에 `\\' 문자로 끝나지 않은 정규 표현식이 있습니다"
 
-#: awkgram.y:3681
+#: awkgram.y:3684
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 "%s: %d: gawk에서는 `/.../%c' tawk 정규표현식 수정자가 동작하지 않습니다"
 
-#: awkgram.y:3685
+#: awkgram.y:3688
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "gawk에서는 `/.../%c' tawk 정규 표현식 수정자가 동작하지 않습니다"
 
-#: awkgram.y:3698
+#: awkgram.y:3701
 msgid "unterminated regexp"
 msgstr "끝나지 않은 정규 표현식"
 
-#: awkgram.y:3702
+#: awkgram.y:3705
 msgid "unterminated regexp at end of file"
 msgstr "파일 끝에 끝나지 않은 정규 표현식"
 
-#: awkgram.y:3791
+#: awkgram.y:3794
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "`\\ #...' 행 연속 표현자는 이식 불가능합니다"
 
-#: awkgram.y:3813
+#: awkgram.y:3816
 msgid "backslash not last character on line"
 msgstr "행의 백슬래시 문자는 마지막 문자가 아닙니다"
 
-#: awkgram.y:3860 awkgram.y:3862
+#: awkgram.y:3863 awkgram.y:3865
 msgid "multidimensional arrays are a gawk extension"
 msgstr "다차원 배열은 gawk 확장 기능입니다"
 
-#: awkgram.y:3887
+#: awkgram.y:3890
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX에서는 `**=' 연산자를 허용하지 않습니다"
 
-#: awkgram.y:3889
+#: awkgram.y:3892
 msgid "old awk does not support operator `**='"
 msgstr "오래된 awk 버전에서는 `**=' 연산자를 지원하지 않습니다"
 
-#: awkgram.y:3898
+#: awkgram.y:3901
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX에서는 `**' 연산자를 지원하지 않습니다"
 
-#: awkgram.y:3900
+#: awkgram.y:3903
 msgid "old awk does not support operator `**'"
 msgstr "오래된 awk 버전에서는 `**' 연산자를 지원하지 않습니다"
 
-#: awkgram.y:3935
+#: awkgram.y:3938
 msgid "operator `^=' is not supported in old awk"
 msgstr "오래된 awk 버전에서는 `^=' 연산자를 지원하지 않습니다"
 
-#: awkgram.y:3943
+#: awkgram.y:3946
 msgid "operator `^' is not supported in old awk"
 msgstr "오래된 awk 버전에서는 `^' 연산자를 지원하지 않습니다"
 
-#: awkgram.y:4040 awkgram.y:4062 command.y:1187
+#: awkgram.y:4043 awkgram.y:4065 command.y:1187
 msgid "unterminated string"
 msgstr "끝나지 않은 문자열"
 
-#: awkgram.y:4050 main.c:1220
+#: awkgram.y:4053 main.c:1221
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX에서는 문자열 값에 물리 개행 문자를 허용하지 않습니다"
 
-#: awkgram.y:4052 node.c:453
+#: awkgram.y:4055 node.c:453
 msgid "backslash string continuation is not portable"
 msgstr "백슬래시 문자열 연속 표현자는 이식 불가능합니다"
 
-#: awkgram.y:4290
+#: awkgram.y:4293
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "표현식에 잘못된 문자 '%c'"
 
-#: awkgram.y:4385
+#: awkgram.y:4388
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "`%s'은(는) gawk 확장 기능입니다"
 
-#: awkgram.y:4390
+#: awkgram.y:4393
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX에서는 `%s'을(를) 허용하지 않습니다"
 
-#: awkgram.y:4398
+#: awkgram.y:4401
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "오래된 awk 버전에서는 `%s'을(를) 지원하지 않습니다"
 
-#: awkgram.y:4496
+#: awkgram.y:4499
 msgid "`goto' considered harmful!"
 msgstr "`goto' 사용은 바람직하지 않습니다!"
 
-#: awkgram.y:4565
+#: awkgram.y:4568
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d은(는) %s의 잘못된 인자 숫자입니다"
 
-#: awkgram.y:4600
+#: awkgram.y:4603
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr "%s: 인자의 마지막 부분으로서 문자열 그 자체는 반영하지 않습니다"
 
-#: awkgram.y:4605
+#: awkgram.y:4608
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "세번째 %s 매개변수는 값을 바꿀 수 없는 개체입니다"
 
-#: awkgram.y:4709 awkgram.y:4712
+#: awkgram.y:4712 awkgram.y:4715
 msgid "match: third argument is a gawk extension"
 msgstr "match: 세번째 인자는 gawk 확장 기능입니다"
 
-#: awkgram.y:4766 awkgram.y:4769
+#: awkgram.y:4769 awkgram.y:4772
 msgid "close: second argument is a gawk extension"
 msgstr "close: 두번째 인자는 gawk 확장 기능입니다"
 
-#: awkgram.y:4781
+#: awkgram.y:4784
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "dcgettext(_\"...\") 사용이 올바르지 않습니다: 앞서 표기한 언더스코어 문자를 "
 "제거하십시오"
 
-#: awkgram.y:4796
+#: awkgram.y:4799
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "dcngettext(_\"...\") 사용이 올바르지 않습니다: 앞서 표기한 언더스코어 문자를 "
 "제거하십시오"
 
-#: awkgram.y:4815
+#: awkgram.y:4818
 msgid "index: regexp constant as second argument is not allowed"
 msgstr "index: 두번째 인자 위치에는 정규표현식 상수를 허용하지 않습니다"
 
-#: awkgram.y:4868
+#: awkgram.y:4871
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "`%s' 함수: `%s' 매개 변수와 전역 변수가 겹칩니다"
 
-#: awkgram.y:4917 debug.c:4179 debug.c:4222 debug.c:5343
+#: awkgram.y:4920 debug.c:4179 debug.c:4222 debug.c:5343
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "기록할 `%s'을(를) 열 수 없습니다(%s)"
 
-#: awkgram.y:4918
+#: awkgram.y:4921
 msgid "sending variable list to standard error"
 msgstr "STDERR로 변수 목록 보내는 중"
 
-#: awkgram.y:4926
+#: awkgram.y:4929
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: 닫기 실패 (%s)"
 
-#: awkgram.y:4951
+#: awkgram.y:4954
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() 함수를 두번 호출했습니다!"
 
-#: awkgram.y:4959
+#: awkgram.y:4962
 msgid "there were shadowed variables."
 msgstr "중복 변수가 있습니다."
 
-#: awkgram.y:5036
+#: awkgram.y:5039
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "`%s' 함수 이름은 이미 앞에서 정의했습니다"
 
-#: awkgram.y:5087
+#: awkgram.y:5090
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "`%s' 함수: 함수 이름을 매개변수 이름으로 사용할 수 없습니다"
 
-#: awkgram.y:5090
+#: awkgram.y:5093
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "`%s' 함수: `%s' 특수 변수를 함수 이름으로 활용할 수 없습니다"
 
-#: awkgram.y:5094
+#: awkgram.y:5097
 #, c-format
 msgid "function `%s': parameter `%s' cannot contain a namespace"
 msgstr "`%s' 함수: `%s' 매개변수에 이름 공간 명칭을 넣을 수 없습니다"
 
-#: awkgram.y:5101
+#: awkgram.y:5104
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "`%s' 함수: 매개변수 #%d, `%s'이(가) 매개변수 #%d와(과) 중복됩니다"
 
-#: awkgram.y:5190
+#: awkgram.y:5193
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "`%s' 함수를 호출했지만 정의하지 않았습니다"
 
-#: awkgram.y:5194
+#: awkgram.y:5197
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "`%s' 함수를 정의했지만 직접 호출한 적이 없습니다"
 
-#: awkgram.y:5226
+#: awkgram.y:5229
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "#%d 매개변수의 정규표현식 상수에서 부울린 값을 넘겨줍니다"
 
-#: awkgram.y:5241
+#: awkgram.y:5244
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -540,53 +560,53 @@ msgstr ""
 "이름과 `(' 괄호 사이에 공백을 넣어 `%s' 함수를 호출했거나,\n"
 "변수 또는 배열로 사용했습니다"
 
-#: awkgram.y:5450
+#: awkgram.y:5453
 msgid "division by zero attempted"
 msgstr "0으로 나누기를 시도했습니다"
 
-#: awkgram.y:5459
+#: awkgram.y:5462
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "`%%'에서 0으로 나누기를 시도했습니다"
 
-#: awkgram.y:5798
+#: awkgram.y:5801
 msgid ""
 "cannot assign a value to the result of a field post-increment expression"
 msgstr "필드 후위 증가 연산자의 결과에 값을 할당할 수 없습니다"
 
-#: awkgram.y:5801
+#: awkgram.y:5804
 #, c-format
 msgid "invalid target of assignment (opcode %s)"
 msgstr "할당 대상이 잘못되었습니다(opcode %s)"
 
-#: awkgram.y:6693
+#: awkgram.y:6696
 #, c-format
 msgid "identifier %s: qualified names not allowed in traditional / POSIX mode"
 msgstr "%s 식별자: 기존 / POSIX 모드에서 한정 이름은 허용하지 않습니다"
 
-#: awkgram.y:6698
+#: awkgram.y:6701
 #, c-format
 msgid "identifier %s: namespace separator is two colons, not one"
 msgstr "%s 식별자: 이름 공간은 콜론 하나가 아닌 두개로 구분합니다."
 
-#: awkgram.y:6704
+#: awkgram.y:6707
 #, c-format
 msgid "qualified identifier `%s' is badly formed"
 msgstr "`%s' 한정 식별자의 구성이 올바르지 않습니다"
 
-#: awkgram.y:6711
+#: awkgram.y:6714
 #, c-format
 msgid ""
 "identifier `%s': namespace separator can only appear once in a qualified name"
 msgstr ""
 "`%s' 식별자: 이름 공간 구분자는 한정 명칭에서 한번만 나타내레 수 있습니다"
 
-#: awkgram.y:6760 awkgram.y:6811
+#: awkgram.y:6763 awkgram.y:6814
 #, c-format
 msgid "using reserved identifier `%s' as a namespace is not allowed"
 msgstr "`%s' 예약 식별자는 이름 공간 명칭으로 허용하지 않습니다"
 
-#: awkgram.y:6767 awkgram.y:6777
+#: awkgram.y:6770 awkgram.y:6780
 #, c-format
 msgid ""
 "using reserved identifier `%s' as second component of a qualified name is "
@@ -594,269 +614,269 @@ msgid ""
 msgstr ""
 "한정 명칭의 두번째 요소로서의 `%s' 예약 식별자 활용은 허용하지 않습니다"
 
-#: awkgram.y:6795
+#: awkgram.y:6798
 msgid "@namespace is a gawk extension"
 msgstr "@namespace는 gawk 확장 기능입니다"
 
-#: awkgram.y:6802
+#: awkgram.y:6805
 #, c-format
 msgid "namespace name `%s' must meet identifier naming rules"
 msgstr "`%s' 이름 공간 명칭에는 식별자 이름 규칙을 따라야합니다"
 
-#: builtin.c:143
+#: builtin.c:144
 #, c-format
 msgid "%s to \"%s\" failed (%s)"
 msgstr "%s을(를) \"%s\"(으)로 실패(%s)"
 
-#: builtin.c:147
+#: builtin.c:148
 msgid "standard output"
 msgstr "표준 출력"
 
-#: builtin.c:148
+#: builtin.c:149
 msgid "standard error"
 msgstr "표준 오류"
 
-#: builtin.c:162
+#: builtin.c:163
 msgid "exp: received non-numeric argument"
 msgstr "exp: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:168
+#: builtin.c:169
 #, c-format
 msgid "exp: argument %g is out of range"
 msgstr "exp: %g 인자 값이 범위를 벗어납니다"
 
-#: builtin.c:245
+#: builtin.c:246
 #, c-format
 msgid "fflush: cannot flush: pipe `%.*s' opened for reading, not writing"
 msgstr ""
 "fflush: 플러싱 불가: `%.*s' 파이프를 기록용이 아닌 읽기용으로 열었습니다"
 
-#: builtin.c:248
+#: builtin.c:249
 #, c-format
 msgid "fflush: cannot flush: file `%.*s' opened for reading, not writing"
 msgstr "fflush: 플러싱 불가: `%.*s' 파일을 기록용이 아닌 읽기용으로 열었습니다"
 
-#: builtin.c:259
+#: builtin.c:260
 #, c-format
 msgid "fflush: cannot flush file `%.*s': %s"
 msgstr "fflush: `%.*s' 파일 플러싱 불가: %s"
 
-#: builtin.c:264
+#: builtin.c:265
 #, c-format
 msgid "fflush: cannot flush: two-way pipe `%.*s' has closed write end"
 msgstr "fflush: 플러싱 불가: `%.*s' 양방향 파이프가 기록 끝에 닫혔습니다"
 
-#: builtin.c:270
+#: builtin.c:271
 #, c-format
 msgid "fflush: `%.*s' is not an open file, pipe or co-process"
 msgstr "fflush: `%.*s'은(는) 열어둔 파일, 파이프 또는 병행프로세스가 아닙니다"
 
-#: builtin.c:377
+#: builtin.c:378
 msgid "index: received non-string first argument"
 msgstr "index: 문자열이 아닌 첫번째 인자값을 받았습니다"
 
-#: builtin.c:379
+#: builtin.c:380
 msgid "index: received non-string second argument"
 msgstr "index: 문자열이 아닌 두번째 인자값을 받았습니다"
 
-#: builtin.c:492 mpfr.c:774
+#: builtin.c:493 mpfr.c:774
 msgid "int: received non-numeric argument"
 msgstr "int: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:531
+#: builtin.c:532
 msgid "length: received array argument"
 msgstr "length: 배열 인자 값을 받았습니다"
 
-#: builtin.c:534
+#: builtin.c:535
 msgid "`length(array)' is a gawk extension"
 msgstr "`length(array)'는 gawk 확장 기능입니다"
 
-#: builtin.c:553
+#: builtin.c:554
 msgid "length: received non-string argument"
 msgstr "length: 문자열이 아닌 인자 값을 받았습니다"
 
-#: builtin.c:582
+#: builtin.c:583
 msgid "log: received non-numeric argument"
 msgstr "log: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:585
+#: builtin.c:586
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: 음수인 %g 인자 값을 받았습니다"
 
-#: builtin.c:785 builtin.c:790 builtin.c:943
+#: builtin.c:786 builtin.c:791 builtin.c:944
 msgid "fatal: must use `count$' on all formats or none"
 msgstr ""
 "fatal: 모든 형식에 대해 `count$'를 쓰거나 아니면 아얘 쓰지 말아야 합니다"
 
-#: builtin.c:862
+#: builtin.c:863
 #, c-format
 msgid "field width is ignored for `%%' specifier"
 msgstr "`%%' 지정자의 필드 폭은 무시합니다"
 
-#: builtin.c:864
+#: builtin.c:865
 #, c-format
 msgid "precision is ignored for `%%' specifier"
 msgstr "`%%' 지정자의 정밀도는 무시합니다"
 
-#: builtin.c:866
+#: builtin.c:867
 #, c-format
 msgid "field width and precision are ignored for `%%' specifier"
 msgstr "`%%' 지정자의 필드 폭과 정밀도는 무시합니다"
 
-#: builtin.c:917
+#: builtin.c:918
 msgid "fatal: `$' is not permitted in awk formats"
 msgstr "fatal: `$'은(는) awk 형식에서 허용하지 않습니다"
 
-#: builtin.c:926
+#: builtin.c:927
 msgid "fatal: arg count with `$' must be > 0"
 msgstr "fatal: `$'의 인자 갯수는 0보타 커야합니다"
 
-#: builtin.c:930
+#: builtin.c:931
 #, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
 msgstr "fatal: 인자 갯수 %ld은(는) 지정 인자 전체 갯수보다 많아야 합니다"
 
-#: builtin.c:934
+#: builtin.c:935
 msgid "fatal: `$' not permitted after period in format"
 msgstr "fatal: 형식에 따르면 구두점 다음에 `$'을(를) 허용하지 않습니다"
 
-#: builtin.c:953
+#: builtin.c:954
 msgid "fatal: no `$' supplied for positional field width or precision"
 msgstr "fatal: 위치별 필드 폭 또는 정밀도로서의 `$'이(가) 없습니다"
 
-#: builtin.c:1023
+#: builtin.c:1024
 msgid "`l' is meaningless in awk formats; ignored"
 msgstr "awk 형식에서 `l'은 의미가 없습니다. 무시함"
 
-#: builtin.c:1027
+#: builtin.c:1028
 msgid "fatal: `l' is not permitted in POSIX awk formats"
 msgstr "fatal: `l'은 POSIX awk 형식에서 허용하지 않습니다"
 
-#: builtin.c:1040
+#: builtin.c:1041
 msgid "`L' is meaningless in awk formats; ignored"
 msgstr "awk 형식에서 `L'은 의미가 없습니다. 무시함"
 
-#: builtin.c:1044
+#: builtin.c:1045
 msgid "fatal: `L' is not permitted in POSIX awk formats"
 msgstr "fatal: `L'은 POSIX awk 형식에서 허용하지 않습니다"
 
-#: builtin.c:1057
+#: builtin.c:1058
 msgid "`h' is meaningless in awk formats; ignored"
 msgstr "awk 형식에서 `h'는 의미가 없습니다. 무시함"
 
-#: builtin.c:1061
+#: builtin.c:1062
 msgid "fatal: `h' is not permitted in POSIX awk formats"
 msgstr "fatal: `h'는 POSIX awk 형식에서 허용하지 않습니다"
 
-#: builtin.c:1091
+#: builtin.c:1092
 #, c-format
 msgid "[s]printf: value %g is too big for %%c format"
 msgstr "[s]printf: %%2$c 형식에 대해 %1$g 값이 너무 큽니다"
 
-#: builtin.c:1104
+#: builtin.c:1105
 #, c-format
 msgid "[s]printf: value %g is not a valid wide character"
 msgstr "[s]printf: %g 값은 올바른 범위의 문자가 아닙니다"
 
-#: builtin.c:1496
+#: builtin.c:1497
 #, c-format
 msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr "[s]printf: `%%%2$c' 형식에 대해  %1$g 값의 범위를 넘었습니다"
 
-#: builtin.c:1504
+#: builtin.c:1505
 #, c-format
 msgid "[s]printf: value %s is out of range for `%%%c' format"
 msgstr "[s]printf: `%%%2$c' 형식에 대해 %1$s 값의 범위를 넘었습니다"
 
-#: builtin.c:1529
+#: builtin.c:1530
 #, c-format
 msgid "%%%c format is POSIX standard but not portable to other awks"
 msgstr "%%%c 형식은 POSIX 표준이지만 다른 awk 프로그램에 이식할 수 없습니다."
 
-#: builtin.c:1629
+#: builtin.c:1630
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
 msgstr "알 수 없는 `%c' 형식 지정 문자 무시: 변환한 인자 값 없음"
 
-#: builtin.c:1634
+#: builtin.c:1635
 msgid "fatal: not enough arguments to satisfy format string"
 msgstr "fatal: 인자 값이 형식 문자열에서 지정한 만큼 충분하지 않습니다"
 
-#: builtin.c:1636
+#: builtin.c:1637
 msgid "^ ran out for this one"
 msgstr "^ 이 부분에 맞는 요소 빠짐"
 
-#: builtin.c:1643
+#: builtin.c:1644
 msgid "[s]printf: format specifier does not have control letter"
 msgstr "[s]printf: 형식 지정자에 제어 문자가 없습니다"
 
-#: builtin.c:1646
+#: builtin.c:1647
 msgid "too many arguments supplied for format string"
 msgstr "형식 문자열에 너무나 많은 인자 값을 넣었습니다"
 
-#: builtin.c:1706
+#: builtin.c:1707
 msgid "sprintf: no arguments"
 msgstr "sprintf: 인자 값 없음"
 
-#: builtin.c:1729 builtin.c:1740
+#: builtin.c:1730 builtin.c:1741
 msgid "printf: no arguments"
 msgstr "printf: 인자 값 없음"
 
-#: builtin.c:1755
+#: builtin.c:1756
 msgid "printf: attempt to write to closed write end of two-way pipe"
 msgstr "printf: 이미 닫힌 양방향 파이프라인의 쓰기 끝 지점에서 쓰기 시도"
 
-#: builtin.c:1796
+#: builtin.c:1797
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:1800
+#: builtin.c:1801
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "substr: 음의 %g 인자 값을 넣어 호출했습니다"
 
-#: builtin.c:1831
+#: builtin.c:1832
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: %g 길이가 1보다 크거나 같지 않습니다"
 
-#: builtin.c:1833
+#: builtin.c:1834
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: %g 길이가 0보다 크거나 같지 않습니다"
 
-#: builtin.c:1847
+#: builtin.c:1848
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: 숫자가 아닌 %g 길이 값을 자릅니다"
 
-#: builtin.c:1852
+#: builtin.c:1853
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr ""
 "substr: 문자열 인덱싱 번호로는 %g 길이 값이 너무 커서 %g 값으로 자릅니다"
 
-#: builtin.c:1864
+#: builtin.c:1865
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: %g 시작 인덱스 값이 잘못되어 1을 사용합니다"
 
-#: builtin.c:1869
+#: builtin.c:1870
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: 시작 인덱스로 사용하는 %g 비 정수값을 자릅니다"
 
-#: builtin.c:1892
+#: builtin.c:1893
 msgid "substr: source string is zero length"
 msgstr "substr: 원본 문자열 길이가 0입니다"
 
-#: builtin.c:1906
+#: builtin.c:1907
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: %g 시작 인덱스 값이 문자열 길이보다 큽니다"
 
-#: builtin.c:1914
+#: builtin.c:1915
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -864,230 +884,230 @@ msgstr ""
 "substr: %2$g 시작 인덱스로부터의 %1$g 길이는 첫번째 인자 값의 길이를 초과합니"
 "다(%3$lu)"
 
-#: builtin.c:1987
+#: builtin.c:1988
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: PROCINFO[\"strftime\"]의 형식 값에 숫자 값이 있습니다"
 
-#: builtin.c:2007
+#: builtin.c:2008
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: 숫자가 아닌 두번째 인자 값을 받았습니다"
 
-#: builtin.c:2017
+#: builtin.c:2018
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: 두번째 인자 값이 0보다 작거나 time_t보다 큽니다"
 
-#: builtin.c:2024
+#: builtin.c:2025
 msgid "strftime: second argument out of range for time_t"
 msgstr "strftime: 두번째 인자 값이 time_t 범위를 벗어납니다"
 
-#: builtin.c:2033
+#: builtin.c:2034
 msgid "strftime: received non-string first argument"
 msgstr "strftime: 문자열이 아닌 첫번째 인자 값을 받았습니다"
 
-#: builtin.c:2040
+#: builtin.c:2041
 msgid "strftime: received empty format string"
 msgstr "strftime: 빈 형식 문자열을 받았습니다"
 
-#: builtin.c:2123
+#: builtin.c:2124
 msgid "mktime: received non-string argument"
 msgstr "mktime: 문자열이 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2140
+#: builtin.c:2141
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: 지정 값 중 최소 한개 이상이 기본 범위를 벗어납니다"
 
-#: builtin.c:2176
+#: builtin.c:2177
 msgid "'system' function not allowed in sandbox mode"
 msgstr "샌드박스 모드에서는 'system' 함수 실행을 허용하지 않습니다"
 
-#: builtin.c:2181
+#: builtin.c:2182
 msgid "system: received non-string argument"
 msgstr "system: 문자열이 아닌 인자값을 받았습니다"
 
-#: builtin.c:2250 builtin.c:2323
+#: builtin.c:2251 builtin.c:2326
 msgid "print: attempt to write to closed write end of two-way pipe"
 msgstr "print: 이미 닫힌 양방향 파이프라인의 쓰기 끝 지점에서 쓰기 시도"
 
-#: builtin.c:2346
+#: builtin.c:2349
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "초기화하지 않은 `$%d'번 필드 참조"
 
-#: builtin.c:2431
+#: builtin.c:2434
 msgid "tolower: received non-string argument"
 msgstr "tolower: 문자열이 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2462
+#: builtin.c:2465
 msgid "toupper: received non-string argument"
 msgstr "toupper: 문자열이 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2495 mpfr.c:674
+#: builtin.c:2498 mpfr.c:674
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: 숫자가 아닌 첫번째 인자 값을 받았습니다"
 
-#: builtin.c:2497 mpfr.c:676
+#: builtin.c:2500 mpfr.c:676
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: 숫자가 아닌 두번째 인자 값을 받았습니다"
 
-#: builtin.c:2516
+#: builtin.c:2519
 msgid "sin: received non-numeric argument"
 msgstr "sin: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2532
+#: builtin.c:2535
 msgid "cos: received non-numeric argument"
 msgstr "cos: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2646 mpfr.c:1169
+#: builtin.c:2649 mpfr.c:1169
 msgid "srand: received non-numeric argument"
 msgstr "srand: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:2677
+#: builtin.c:2680
 msgid "match: third argument is not an array"
 msgstr "match: 세번째 인자 값이 배열이 아닙니다"
 
-#: builtin.c:2920
+#: builtin.c:2923
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: 세번째 `%.*s' 인자 값을 1로 취급합니다"
 
-#: builtin.c:3242
+#: builtin.c:3246
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s: 인자 값 2개만을 사용하여 간접 호출할 수 있습니다"
 
-#: builtin.c:3342
+#: builtin.c:3369
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "%s 간접 호출시 최소 인자 값 2개가 필요합니다"
 
-#: builtin.c:3397
+#: builtin.c:3436
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: 숫자가 아닌 첫번째 인자 값을 받았습니다"
 
-#: builtin.c:3399
+#: builtin.c:3438
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: 숫자가 아닌 두번째 인자 값을 받았습니다"
 
-#: builtin.c:3405
+#: builtin.c:3444
 #, c-format
 msgid "lshift(%f, %f): negative values are not allowed"
 msgstr "lshift(%f, %f): 음수 값은 허용하지 않습니다"
 
-#: builtin.c:3409
+#: builtin.c:3448
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): 소숫점 아래 값은 잘립니다"
 
-#: builtin.c:3411
+#: builtin.c:3450
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): 쉬프팅한 값이 크면 이상한 결과를 가져올 수 있습니다"
 
-#: builtin.c:3436
+#: builtin.c:3475
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: 숫자가 아닌 첫번째 인자 값을 받았습니다"
 
-#: builtin.c:3438
+#: builtin.c:3477
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: 숫자가 아닌 두번째 인자 값을 받았습니다"
 
-#: builtin.c:3444
+#: builtin.c:3483
 #, c-format
 msgid "rshift(%f, %f): negative values are not allowed"
 msgstr "rshift(%f, %f): 음수 값은 허용하지 않습니다"
 
-#: builtin.c:3448
+#: builtin.c:3487
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): 소숫점 아래 값은 잘립니다"
 
-#: builtin.c:3450
+#: builtin.c:3489
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): 쉬프팅한 값이 크면 이상한 결과를 가져올 수 있습니다"
 
-#: builtin.c:3474 mpfr.c:982
+#: builtin.c:3513 mpfr.c:982
 msgid "and: called with less than two arguments"
 msgstr "and: 인자 갯수가 둘 미만입니다"
 
-#: builtin.c:3479
+#: builtin.c:3518
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: %d번째 인자 값은 숫자가 아닙니다"
 
-#: builtin.c:3483
+#: builtin.c:3522
 #, c-format
 msgid "and: argument %d negative value %g is not allowed"
 msgstr "and: %d번째 %g 음수 인자 값은 허용하지 않습니다"
 
-#: builtin.c:3505 mpfr.c:1014
+#: builtin.c:3544 mpfr.c:1014
 msgid "or: called with less than two arguments"
 msgstr "or: 인자 갯수가 둘 미만입니다"
 
-#: builtin.c:3510
+#: builtin.c:3549
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: %d번째 인자 값은 숫자가 아닙니다"
 
-#: builtin.c:3514
+#: builtin.c:3553
 #, c-format
 msgid "or: argument %d negative value %g is not allowed"
 msgstr "or: %d번째 %g 음수 인자 값은 허용하지 않습니다"
 
-#: builtin.c:3535 mpfr.c:1045
+#: builtin.c:3574 mpfr.c:1045
 msgid "xor: called with less than two arguments"
 msgstr "xor: 인자 갯수가 둘 미만입니다"
 
-#: builtin.c:3541
+#: builtin.c:3580
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: %d번째 인자 값은 숫자가 아닙니다"
 
-#: builtin.c:3545
+#: builtin.c:3584
 #, c-format
 msgid "xor: argument %d negative value %g is not allowed"
 msgstr "xor: %d번째 %g 음수 인자 값은 허용하지 않습니다"
 
-#: builtin.c:3567 mpfr.c:804
+#: builtin.c:3606 mpfr.c:804
 msgid "compl: received non-numeric argument"
 msgstr "compl: 숫자가 아닌 인자 값을 받았습니다"
 
-#: builtin.c:3572
+#: builtin.c:3611
 #, c-format
 msgid "compl(%f): negative value is not allowed"
 msgstr "compl(%f): 음수 값은 허용하지 않습니다"
 
-#: builtin.c:3575
+#: builtin.c:3614
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): 소숫점 아래 값은 잘립니다"
 
-#: builtin.c:3759
+#: builtin.c:3798
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: `%s'은(는) 유효한 로캘 분류가 아닙니다"
 
-#: builtin.c:3983 mpfr.c:1203
+#: builtin.c:4022 mpfr.c:1203
 msgid "intdiv: third argument is not an array"
 msgstr "intdiv: 세번째 인자 값이 배열이 아닙니다"
 
-#: builtin.c:3991 mpfr.c:1211
+#: builtin.c:4030 mpfr.c:1211
 msgid "intdiv: received non-numeric first argument"
 msgstr "intdiv: 숫자가 아닌 첫번째 인자 값을 받았습니다"
 
-#: builtin.c:3993 mpfr.c:1213
+#: builtin.c:4032 mpfr.c:1213
 msgid "intdiv: received non-numeric second argument"
 msgstr "intdiv: 숫자가 아닌 두번째 인자 값을 받았습니다"
 
-#: builtin.c:4002 mpfr.c:1252
+#: builtin.c:4041 mpfr.c:1252
 msgid "intdiv: division by zero attempted"
 msgstr "intdiv: 0으로 나누기를 시도했습니다"
 
-#: builtin.c:4041
+#: builtin.c:4080
 msgid "typeof: second argument is not an array"
 msgstr "typeof: 두번째 인자 값이 배열이 아닙니다"
 
-#: builtin.c:4113
+#: builtin.c:4152
 #, c-format
 msgid ""
 "typeof detected invalid flags combination `%s'; please file a bug report."
@@ -1095,12 +1115,12 @@ msgstr ""
 "typeof에서 잘못된 `%s' 플래그 조합을 발견했습니다. 오류 보고서를 제출해주십시"
 "오."
 
-#: builtin.c:4132
+#: builtin.c:4172
 #, c-format
 msgid "typeof: invalid argument type `%s'"
 msgstr "typeof: 잘못된 `%s' 인자 형식"
 
-#: builtin.c:4136
+#: builtin.c:4176
 #, c-format
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof: 알 수 없는 `%s' 인자 형식"
@@ -1986,7 +2006,7 @@ msgstr "현재 컨텍스트에 `%s'을(를) 허용하지 않습니다. 구문 �
 msgid "`return' not allowed in current context; statement ignored"
 msgstr "현재 컨텍스트에 `return'을 허용하지 않습니다. 구문 무시함"
 
-#: debug.c:5743
+#: debug.c:5752
 #, c-format
 msgid "No symbol `%s' in current context"
 msgstr "현재 컨텍스트에 `%s' 심볼이 없습니다"
@@ -2458,104 +2478,104 @@ msgstr "sleep: 인자 값이 음수입니다"
 msgid "sleep: not supported on this platform"
 msgstr "sleep: 이 플랫폼에서 지원하지 않습니다"
 
-#: field.c:284
+#: field.c:281
 msgid "input record too large"
 msgstr "입력 레코드가 너무 큽니다"
 
-#: field.c:400
+#: field.c:397
 msgid "NF set to negative value"
 msgstr "NF 값을 음수 값으로 설정했습니다"
 
-#: field.c:405
+#: field.c:402
 msgid "decrementing NF is not portable to many awk versions"
 msgstr "대부분의 awk 버전에 NF 값 감소 코드를 이식할 수 없습니다"
 
-#: field.c:849
+#: field.c:846
 msgid "accessing fields from an END rule may not be portable"
 msgstr "END 규칙에서의 필드 접근 코드는 이식 불가능합니다"
 
-#: field.c:967 field.c:974
+#: field.c:964 field.c:971
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: 네번째 인자 대입은 gawk 확장 기능입니다"
 
-#: field.c:971
+#: field.c:968
 msgid "split: fourth argument is not an array"
 msgstr "split: 네번째 인자 값이 배열이 아닙니다"
 
-#: field.c:981
+#: field.c:978
 msgid "split: second argument is not an array"
 msgstr "split: 두번째 인자 값이 배열이 아닙니다"
 
-#: field.c:985
+#: field.c:982
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: 두번째 인자와 네번째 인자 값으로 동일한 배열을 사용할 수 없습니다"
 
-#: field.c:990
+#: field.c:987
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: 네번째 인자에 대한 두번째 인자 값으로 하위 배열을 사용할 수 없습니다"
 
-#: field.c:993
+#: field.c:990
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: 두번째 인자에 대한 네번째 인자 값으로 하위 배열을 사용할 수 없습니다"
 
-#: field.c:1027
+#: field.c:1024
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: 세번째 null 문자열 인자 값은 비 표준 확장 기능입니다"
 
-#: field.c:1064
+#: field.c:1061
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: 네번째 인자 값은 배열이 아닙니다"
 
-#: field.c:1069
+#: field.c:1066
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: 두번째 인자 값은 배열이 아닙니다"
 
-#: field.c:1078
+#: field.c:1075
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: 세번째 인자 값은 null 값이 아니어야 합니다"
 
-#: field.c:1082
+#: field.c:1079
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: 두번째 인자와 네번째 인자 값으로 동일한 배열을 사용할 수 없습니다"
 
-#: field.c:1087
+#: field.c:1084
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: 네번째 인자에 대한 두번째 인자 값으로 하위 배열을 사용할 수 없습니"
 "다"
 
-#: field.c:1090
+#: field.c:1087
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: 두번째 인자에 대한 네번째 인자 값으로 하위 배열을 사용할 수 없습니"
 "다"
 
-#: field.c:1140
+#: field.c:1137
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS'는 gawk 확장 기능입니다"
 
-#: field.c:1209
+#: field.c:1206
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr "`*'는 FIELDWIDTHS의 마지막 지시자여야합니다"
 
-#: field.c:1230
+#: field.c:1227
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "%d번째 필드 `%s' 부근에 잘못된 FIELDWIDTHS 값"
 
-#: field.c:1303
+#: field.c:1300
 msgid "null string for `FS' is a gawk extension"
 msgstr "`FS'에 대한 null 문자열 대입은 gawk 확장 기능입니다"
 
-#: field.c:1307
+#: field.c:1304
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "오래된 awk 버전에서는 `FS'의 정규 표현식값 사용을 지원하지 않습니다"
 
-#: field.c:1434
+#: field.c:1431
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT'은 gawk 확장 기능입니다"
 
@@ -2790,12 +2810,12 @@ msgstr "fflush: 표준 출력을 플러싱할 수 없음: %s"
 msgid "fflush: cannot flush standard error: %s"
 msgstr "fflush: 표준 오류를 플러싱할 수 없음: %s"
 
-#: io.c:1417 io.c:1508 main.c:664 main.c:711
+#: io.c:1417 io.c:1508 main.c:665 main.c:712
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "표준 출력으로의 기록 오류(%s)"
 
-#: io.c:1418 io.c:1521 main.c:666
+#: io.c:1418 io.c:1521 main.c:667
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "표준 오류로의 기록 오류(%s)"
@@ -2982,188 +3002,188 @@ msgstr "`RS'의 다중 문자 값은 gawk 확장 기능입니다"
 msgid "IPv6 communication is not supported"
 msgstr "IPv6 통신은 지원하지 않습니다"
 
-#: main.c:335
+#: main.c:336
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr "`POSIXLY_CORRECT' 환경 변수 설정: `--posix' 활성화"
 
-#: main.c:342
+#: main.c:343
 msgid "`--posix' overrides `--traditional'"
 msgstr "`--posix' 옵션은 `--traditional' 옵션에 우선합니다"
 
-#: main.c:353
+#: main.c:354
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr ""
 "`--posix'/`--traditional' 옵션은 `--non-decimal-data' 옵션에 우선합니다"
 
-#: main.c:358
+#: main.c:359
 msgid "`--posix' overrides `--characters-as-bytes'"
 msgstr "`--posix' 옵션은 `--characters-as-bytes' 옵션에 우선합니다"
 
-#: main.c:367
+#: main.c:368
 #, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr "root 계정으로의 %s 실행은 보안 문제를 야기할 수 있습니다"
 
-#: main.c:420
+#: main.c:421
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "표준 출력에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:423
+#: main.c:424
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "표준 출력에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:425
+#: main.c:426
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "표준 오류에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:487
+#: main.c:488
 msgid "no program text at all!"
 msgstr "어떤 프로그램 구문도 없습니다!"
 
-#: main.c:581
+#: main.c:582
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "사용법: %s [<POSIX 또는 GNU 방식 옵션>] -f <프로그램파일> [--] <파일> ...\n"
 
-#: main.c:583
+#: main.c:584
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "사용법: %s [<POSIX 또는 GNU 방식 옵션>] [--] %c<프로그램구문>%c <파일> ...\n"
 
-#: main.c:588
+#: main.c:589
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "POSIX 옵션:\t\tGNU 버전 긴 옵션: (표준)\n"
 
-#: main.c:589
+#: main.c:590
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f <프로그램-파일>\t\t--file=<프로그램-파일>\n"
 
-#: main.c:590
+#: main.c:591
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F <필드-구분자>\t\t\t--field-separator=<필드-구분자>\n"
 
-#: main.c:591
+#: main.c:592
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v <변수>=<값>\t\t--assign=<변수>=<값>\n"
 
-#: main.c:592
+#: main.c:593
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "짧은 옵션:\t\tGNU 버전 긴 옵션: (확장 기능)\n"
 
-#: main.c:593
+#: main.c:594
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr "\t-b\t\t\t--characters-as-bytes\n"
 
-#: main.c:594
+#: main.c:595
 msgid "\t-c\t\t\t--traditional\n"
 msgstr "\t-c\t\t\t--traditional\n"
 
-#: main.c:595
+#: main.c:596
 msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
-#: main.c:596
+#: main.c:597
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d[<파일>]\t\t--dump-variables[=<파일>]\n"
 
-#: main.c:597
+#: main.c:598
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr "\t-D[<파일>]\t\t--debug[=<파일>]\n"
 
-#: main.c:598
+#: main.c:599
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-e '<프로그램-구문>'\t--source='<프로그램-구문>'\n"
 
-#: main.c:599
+#: main.c:600
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-E <파일>\t\t\t--exec=<파일>\n"
 
-#: main.c:600
+#: main.c:601
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:601
+#: main.c:602
 msgid "\t-h\t\t\t--help\n"
 msgstr "\t-h\t\t\t--help\n"
 
-#: main.c:602
+#: main.c:603
 msgid "\t-i includefile\t\t--include=includefile\n"
 msgstr "\t-i <포함파일>\t\t--include=<포함파일>\n"
 
-#: main.c:603
+#: main.c:604
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l <라이브러리>\t\t--load=<라이브러리>\n"
 
 #. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
-#: main.c:608
+#: main.c:609
 #, fuzzy
 msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
-#: main.c:609
+#: main.c:610
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-M\t\t\t--bignum\n"
 
-#: main.c:610
+#: main.c:611
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:611
+#: main.c:612
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:612
+#: main.c:613
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-o[<파일>]\t\t--pretty-print[=<파일>]\n"
 
-#: main.c:613
+#: main.c:614
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:614
+#: main.c:615
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[<파일>]\t\t--profile[=<파일>]\n"
 
-#: main.c:615
+#: main.c:616
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:616
+#: main.c:617
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:617
+#: main.c:618
 msgid "\t-s\t\t\t--no-optimize\n"
 msgstr "\t-s\t\t\t--no-optimize\n"
 
-#: main.c:618
+#: main.c:619
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:619
+#: main.c:620
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:620
+#: main.c:621
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:622
+#: main.c:623
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:625
+#: main.c:626
 msgid "\t-Y\t\t\t--parsedebug\n"
 msgstr "\t-Y\t\t\t--parsedebug\n"
 
-#: main.c:628
+#: main.c:629
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
 msgstr "\t-Z <로캘-이름>\t\t--locale=<로캘-이름>\n"
 
@@ -3172,7 +3192,7 @@ msgstr "\t-Z <로캘-이름>\t\t--locale=<로캘-이름>\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:637
+#: main.c:638
 #, fuzzy
 msgid ""
 "\n"
@@ -3196,7 +3216,7 @@ msgstr ""
 "스택오버플로우같은 사용자 포럼에 오류 정보를 게시하지 마십시오.\n"
 "\n"
 
-#: main.c:645
+#: main.c:646
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3206,7 +3226,7 @@ msgstr ""
 "기본적으로 표준 입력을 읽고 표준 출력에 기록합니다.\n"
 "\n"
 
-#: main.c:649
+#: main.c:650
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3216,7 +3236,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' <파일>\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:681
+#: main.c:682
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3234,7 +3254,7 @@ msgstr ""
 "자유롭게 수정하고 재배포할 수 있습니다.\n"
 "\n"
 
-#: main.c:689
+#: main.c:690
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3247,7 +3267,7 @@ msgstr ""
 "자세한 내용은 GNU 일반 공중 사용 허가서를 참고하십시오.\n"
 "\n"
 
-#: main.c:695
+#: main.c:696
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3255,11 +3275,11 @@ msgstr ""
 "이 프로그램과 함께 GNU 일반 공중 사용 허가서를 받으셔야합니다.\n"
 "사용 허가서가 없을 경우 http://www.gnu.org/licenses/ 주소를 참고하십시오.\n"
 
-#: main.c:736
+#: main.c:737
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft 옵션에 POSIX awk의 탭에 대한 필드 구분자가 없습니다"
 
-#: main.c:1151
+#: main.c:1152
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3268,70 +3288,70 @@ msgstr ""
 "%s: `<변수>=<값>' 형식이 아닌 `-v'의 `%s' 인자값\n"
 "\n"
 
-#: main.c:1177
+#: main.c:1178
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s'은(는) 적절한 변수 이름이 아닙니다"
 
-#: main.c:1180
+#: main.c:1181
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s'은(는) 변수 이름이 아닙니다. `%s=%s' 파일을 살펴보는 중"
 
-#: main.c:1194
+#: main.c:1195
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "`%s' gawk 내장 요소를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1199
+#: main.c:1200
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "`%s' 함수를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1277
+#: main.c:1278
 msgid "floating point exception"
 msgstr "소숫점 예외"
 
-#: main.c:1287
+#: main.c:1288
 msgid "fatal error: internal error"
 msgstr "치명적 오류: 내부 오류"
 
-#: main.c:1307
+#: main.c:1308
 msgid "fatal error: internal error: segfault"
 msgstr "치명적 오류: 내부 오류: 세그먼테이션 오류"
 
-#: main.c:1320
+#: main.c:1321
 msgid "fatal error: internal error: stack overflow"
 msgstr "치명적 오류: 내부 오류: 스택 오버플로우"
 
-#: main.c:1380
+#: main.c:1381
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "파일 서술자 %d번 미리 열지 않음"
 
-#: main.c:1387
+#: main.c:1388
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "파일 서술자 %d번에 대해 /dev/null을 미리 열 수 없습니다"
 
-#: main.c:1601
+#: main.c:1602
 msgid "empty argument to `-e/--source' ignored"
 msgstr "`-e/--source'의 빈 인자 값 대입은 무시합니다"
 
-#: main.c:1662 main.c:1667
+#: main.c:1663 main.c:1668
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "`--profile' 옵션은 `--pretty-print' 옵션에 우선합니다"
 
-#: main.c:1679
+#: main.c:1680
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M 무시함: MPFR/GMP 기능을 넣어 컴파일하지 않았습니다"
 
-#: main.c:1704
+#: main.c:1705
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: `-W %s' 옵션은 인식할 수 없습니다. 무시함\n"
 
-#: main.c:1757
+#: main.c:1758
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: 옵션에 인자 값이 필요합니다 -- %c\n"
@@ -3453,7 +3473,7 @@ msgstr "기록할 `%s'을(를) 열 수 없습니다: %s"
 msgid "sending profile to standard error"
 msgstr "STDERR로 프로파일 보내는 중"
 
-#: profile.c:271
+#: profile.c:275
 #, c-format
 msgid ""
 "\t# %s rule(s)\n"
@@ -3462,7 +3482,7 @@ msgstr ""
 "\t# %s 규칙\n"
 "\n"
 
-#: profile.c:279
+#: profile.c:283
 #, c-format
 msgid ""
 "\t# Rule(s)\n"
@@ -3471,16 +3491,16 @@ msgstr ""
 "\t# 규칙\n"
 "\n"
 
-#: profile.c:367
+#: profile.c:371
 #, c-format
 msgid "internal error: %s with null vname"
 msgstr "내부 오류: null 변수 이름과 %s"
 
-#: profile.c:658
+#: profile.c:662
 msgid "internal error: builtin with null fname"
 msgstr "내부 오류: null 함수 이름 내장"
 
-#: profile.c:1302
+#: profile.c:1317
 #, c-format
 msgid ""
 "%s# Loaded extensions (-l and/or @load)\n"
@@ -3489,7 +3509,7 @@ msgstr ""
 "%s# 불러온 확장 기능 (-l and/or @load)\n"
 "\n"
 
-#: profile.c:1333
+#: profile.c:1348
 #, c-format
 msgid ""
 "\n"
@@ -3500,12 +3520,12 @@ msgstr ""
 "# 포함한 파일 (-i and/or @include)\n"
 "\n"
 
-#: profile.c:1397
+#: profile.c:1412
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# gawk 프로파일, created %s\n"
 
-#: profile.c:1965
+#: profile.c:1980
 #, c-format
 msgid ""
 "\n"
@@ -3514,7 +3534,7 @@ msgstr ""
 "\n"
 "\t# 알파벳 순 함수\n"
 
-#: profile.c:2026
+#: profile.c:2041
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: 알 수 없는 %d 리다이렉션 형식"
@@ -3545,39 +3565,39 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "정규 표현식의 `%.*s' 구성 요소는 `[%.*s]' 이어야 할 것 같습니다"
 
-#: support/dfa.c:938
+#: support/dfa.c:951
 msgid "unbalanced ["
 msgstr "짝이 맞지 않는 [ 괄호"
 
-#: support/dfa.c:1059
+#: support/dfa.c:1072
 msgid "invalid character class"
 msgstr "잘못된 문자 클래스"
 
-#: support/dfa.c:1185
+#: support/dfa.c:1198
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "문자 클래스 표기 방식은 [:space:]가 아닌 [[:space:]]입니다"
 
-#: support/dfa.c:1252
+#: support/dfa.c:1265
 msgid "unfinished \\ escape"
 msgstr "끝나지 않은 \\ 이스케이프 문자"
 
-#: support/dfa.c:1413
+#: support/dfa.c:1426
 msgid "invalid content of \\{\\}"
 msgstr "잘못된 \\{\\} 내용"
 
-#: support/dfa.c:1416
+#: support/dfa.c:1429
 msgid "regular expression too big"
 msgstr "정규 표현식이 너무 깁니다"
 
-#: support/dfa.c:1887
+#: support/dfa.c:1900
 msgid "unbalanced ("
 msgstr "짝이 맞지 않는 ( 괄호"
 
-#: support/dfa.c:2004
+#: support/dfa.c:2017
 msgid "no syntax specified"
 msgstr "구문을 지정하지 않았습니다"
 
-#: support/dfa.c:2015
+#: support/dfa.c:2028
 msgid "unbalanced )"
 msgstr "짝이 맞지 않는 ) 괄호"
 

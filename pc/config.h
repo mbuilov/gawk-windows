@@ -99,6 +99,9 @@
 #define HAVE_ISASCII 1
 #endif
 
+/* Define to 1 if you have the `isblank' function. */
+#undef HAVE_ISBLANK
+
 /* Define to 1 if you have the `iswctype' function. */
 #ifdef __MINGW32__
 #define HAVE_ISWCTYPE 1
@@ -458,7 +461,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 5.0.61"
+#define PACKAGE_STRING "GNU Awk 5.0.62"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -467,7 +470,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "5.0.61"
+#define PACKAGE_VERSION "5.0.62"
 
 /* Define to 1 if *printf supports %a format */
 #define PRINTF_HAS_A_FORMAT 1
@@ -528,7 +531,7 @@
 
 
 /* Version number of package */
-#define VERSION "5.0.61"
+#define VERSION "5.0.62"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

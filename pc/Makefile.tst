@@ -828,7 +828,7 @@ profile3:
 
 profile5:
 	@echo $@
-	@$(AWK) --pretty=_$@ -f "$(srcdir)"/$@.awk 2> _$@.err
+	@AWKPATH="$(srcdir)" $(AWK) --pretty=_$@ -f $@.awk 2> _$@.err
 	@cat _$@.err >> _$@ ; rm -f _$@.err
 	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 

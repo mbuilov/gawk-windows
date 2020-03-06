@@ -43,6 +43,7 @@ noinst_LIBRARIES = libsupport.a
 libsupport_a_SOURCES = \
 	dfa.c \
 	dfa.h \
+	flexmember.h \
 	getopt.c \
 	getopt.h \
 	getopt_int.h \
