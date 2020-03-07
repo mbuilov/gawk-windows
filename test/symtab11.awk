@@ -4,13 +4,13 @@ BEGIN {
 
 	printf("BEGIN -- Symtab is next\n") > "/dev/stdout"
 	for (i in SYMTAB) {
-		printf "[%s]\n", i	# else {printf("[%s]\t(%s)\n",i,SYMTAB[i]);}
+		printf "[%s] = %s\n", i, isarray(SYMTAB[i]) ? "<array>" : SYMTAB[i]	# else {printf("[%s]\t(%s)\n",i,SYMTAB[i]);}
 	}
 	printf("BEGIN-- after Symtab loop\n") > "/dev/stdout"	# never got here
 
 	printf("BEGIN -- Functab is next\n") > "/dev/stdout"
 	for (i in FUNCTAB) {
-		printf "[%s]\n", i	# else {printf("[%s]\t(%s)\n",i,FUNCTAB[i]);}
+		printf "[%s] = %s\n", i, FUNCTAB[i]	# else {printf("[%s]\t(%s)\n",i,FUNCTAB[i]);}
 	}
 	printf("BEGIN-- after Functab loop\n") > "/dev/stdout"	# never got here
 	exit
