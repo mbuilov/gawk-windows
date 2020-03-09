@@ -35,6 +35,7 @@ static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";
 
+static int sort_up_value_type(const void *p1, const void *p2);
 static NODE **null_lookup(NODE *symbol, NODE *subs);
 static NODE **null_dump(NODE *symbol, NODE *subs);
 static const array_funcs_t null_array_func = {
@@ -1075,19 +1076,19 @@ static int
 sort_up_value_string(const void *p1, const void *p2)
 {
 	const NODE *t1, *t2;
+	int ret;
 
 	t1 = *((const NODE *const *) p1 + 1);
 	t2 = *((const NODE *const *) p2 + 1);
 
-	if (t1->type == Node_var_array) {
-		/* return 0 if t2 is a sub-array too, else return 1 */
-		return (t2->type != Node_var_array);
-	}
-	if (t2->type == Node_var_array)
-		return -1;		/* t1 (scalar) < t2 (sub-array) */
+	if (t1->type != Node_val || t2->type != Node_val)
+		return sort_up_value_type(p1, p2);
 
 	/* t1 and t2 both have string values */
-	return cmp_strings(t1, t2);
+	ret = cmp_strings(t1, t2);
+	if (ret != 0)
+		return ret;
+	return sort_up_index_string(p1, p2);
 }
 
 
@@ -1111,12 +1112,8 @@ sort_up_value_number(const void *p1, const void *p2)
 	t1 = *((NODE *const *) p1 + 1);
 	t2 = *((NODE *const *) p2 + 1);
 
-	if (t1->type == Node_var_array) {
-		/* return 0 if t2 is a sub-array too, else return 1 */
-		return (t2->type != Node_var_array);
-	}
-	if (t2->type == Node_var_array)
-		return -1;		/* t1 (scalar) < t2 (sub-array) */
+	if (t1->type != Node_val || t2->type != Node_val)
+		return sort_up_value_type(p1, p2);
 
 	ret = cmp_numbers(t1, t2);
 	if (ret != 0)
@@ -1126,9 +1123,10 @@ sort_up_value_number(const void *p1, const void *p2)
 	 * Use string value to guarantee same sort order on all
 	 * versions of qsort().
 	 */
-	t1 = force_string(t1);
-	t2 = force_string(t2);
-	return cmp_strings(t1, t2);
+	ret = cmp_strings(force_string(t1), force_string(t2));
+	if (ret != 0)
+		return ret;
+	return sort_up_index_string(p1, p2);
 }
 
 
@@ -1141,10 +1139,10 @@ sort_down_value_number(const void *p1, const void *p2)
 }
 
 
-/* sort_up_value_type --- qsort comparison function; ascending value type */
+/* do_sort_up_value_type --- backend comparison on ascending value type */
 
 static int
-sort_up_value_type(const void *p1, const void *p2)
+do_sort_up_value_type(const void *p1, const void *p2)
 {
 	NODE *n1, *n2;
 
@@ -1162,6 +1160,12 @@ sort_up_value_type(const void *p1, const void *p2)
 	/* we want to compare the element values */
 	n1 = *((NODE *const *) p1 + 1);
 	n2 = *((NODE *const *) p2 + 1);
+
+	if (n1->type == Node_var && n2->type == Node_var) {
+		/* compare the values of the variables */
+		n1 = n1->var_value;
+		n2 = n2->var_value;
+	}
 
 	/* 1. Arrays vs. everything else, everything else is less than array */
 	if (n1->type == Node_var_array) {
@@ -1206,6 +1210,17 @@ sort_up_value_type(const void *p1, const void *p2)
 
 	/* 4. Two strings */
 	return cmp_strings(n1, n2);
+}
+
+/* sort_up_value_type --- qsort comparison function; ascending value type */
+
+static int
+sort_up_value_type(const void *p1, const void *p2)
+{
+	int rc = do_sort_up_value_type(p1, p2);
+
+	/* use a tie-breaker if do_sort_up_value_type has no opinion */
+	return rc ? rc : sort_up_index_string(p1, p2);
 }
 
 /* sort_down_value_type --- qsort comparison function; descending value type */

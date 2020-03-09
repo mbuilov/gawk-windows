@@ -17202,11 +17202,18 @@ next, and finally functions loaded from an extension
 
 @item "@@val_str_asc"
 Order by element values in ascending order (rather than by indices).  Scalar values are
-compared as strings.  Subarrays, if present, come out last.
+compared as strings.
+If the string values are identical,
+the index string values are compared instead.
+When comparing non-scalar values,
+@code{"@@val_type_asc"} sort ordering is used, so subarrays, if present,
+come out last.
 
 @item "@@val_num_asc"
 Order by element values in ascending order (rather than by indices).  Scalar values are
-compared as numbers.  Subarrays, if present, come out last.
+compared as numbers.
+Non-scalar values are compared using @code{"@@val_type_asc"} sort ordering,
+so subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
 versions of the C @code{qsort()} function,@footnote{When two elements
@@ -17216,6 +17223,9 @@ Using the string value to provide a unique ordering when the numeric
 values are equal ensures that @command{gawk} behaves consistently
 across different environments.} which @command{gawk} uses internally
 to perform the sorting.
+If the string values are also identical,
+the index string values are compared instead.
+
 
 @item "@@ind_str_desc"
 Like @code{"@@ind_str_asc"}, but the
@@ -17233,12 +17243,19 @@ Subarrays, if present, come out first.
 @item "@@val_str_desc"
 Like @code{"@@val_str_asc"}, but the
 element values, treated as strings, are ordered from high to low.
-Subarrays, if present, come out first.
+If the string values are identical,
+the index string values are compared instead.
+When comparing non-scalar values,
+@code{"@@val_type_desc"} sort ordering is used, so subarrays, if present,
+come out first.
 
 @item "@@val_num_desc"
 Like @code{"@@val_num_asc"}, but the
 element values, treated as numbers, are ordered from high to low.
-Subarrays, if present, come out first.
+If the numeric values are equal, the string values are compared instead.
+If they are also identical, the index string values are compared instead.
+Non-scalar values are compared using @code{"@@val_type_desc"} sort ordering,
+so subarrays, if present, come out first.
 @end table
 
 The array traversal order is determined before the @code{for} loop

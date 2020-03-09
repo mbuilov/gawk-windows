@@ -1,3 +1,17 @@
+2020-03-09         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* array.c (sort_up_value_string): If either arg is not a Node_val,
+	call out to sort_up_value_type instead. If cmp_strings returns zero,
+	fall back to sort_up_index_string as a tie-breaker.
+	(sort_up_value_number): If either arg is not a Node_val, call out to
+	sort_up_value_type instead. If cmp_strings returns zero, fall back
+	to sort_up_index_string as a tie-breaker.
+	(do_sort_up_value_type): Renamed from sort_up_value_type with one
+	change: if both arguments have type Node_var, we compare the
+	var_value NODEs instead.
+	(sort_up_value_type): New wrapper function around do_sort_up_value_type
+	to fall back to sort_up_index_string as a tie-breaker.
+
 2020-03-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* array.c, awk.h, awkgram.y, builtin.c, command.y, debug.c,
