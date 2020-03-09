@@ -141,7 +141,7 @@ wrerror:
 	if ((rp != NULL) ? is_non_fatal_redirect(rp->value, strlen(rp->value)) : is_non_fatal_std(fp))
 		update_ERRNO_int(errno);
 	else
-		fatal(_("%s to \"%s\" failed (%s)"), from,
+		fatal(_("%s to \"%s\" failed: %s"), from,
 			rp != NULL
 				? rp->value
 				: fp == stdout
@@ -924,11 +924,11 @@ check_pos:
 				fw = 0;
 				used_dollar = true;
 				if (argnum <= 0) {
-					msg(_("fatal: arg count with `$' must be > 0"));
+					msg(_("fatal: argument index with `$' must be > 0"));
 					goto out;
 				}
 				if (argnum >= num_args) {
-					msg(_("fatal: arg count %ld greater than total number of supplied arguments"), argnum);
+					msg(_("fatal: argument index %ld greater than total number of supplied arguments"), argnum);
 					goto out;
 				}
 			} else {

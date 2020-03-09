@@ -1989,7 +1989,7 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) malloc(count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot allocate %ld bytes of memory: %s"),
 			file, line, where, var, (long) count, strerror(errno));
 
 	return ret;
@@ -2007,7 +2007,7 @@ ezalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) calloc(1, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot allocate %ld bytes of memory: %s"),
 			file, line, where, var, (long) count, strerror(errno));
 
 	return ret;
@@ -2025,7 +2025,7 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 
 	ret = (void *) realloc(ptr, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't reallocate %ld bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot reallocate %ld bytes of memory: %s"),
 			file, line, where, var, (long) count, strerror(errno));
 
 	return ret;

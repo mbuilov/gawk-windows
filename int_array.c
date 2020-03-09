@@ -236,7 +236,7 @@ int_lookup(NODE *symbol, NODE *subs)
 	/*
 	 * N.B: symbol->table_size is the total # of non-integers (symbol->xarray)
 	 *	and integer elements. Also, symbol->xarray must have at least one
-	 *	item in it, and can not exist if there are no integer elements.
+	 *	item in it, and cannot exist if there are no integer elements.
 	 * 	In that case, symbol->xarray is promoted to 'symbol' (See int_remove).
 	 */
 

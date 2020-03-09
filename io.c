@@ -426,7 +426,7 @@ after_beginfile(IOBUF **curfile)
 			warning(_("command line argument `%s' is a directory: skipped"), fname);
 			return;		/* read next file */
 		}
-		fatal(_("cannot open file `%s' for reading (%s)"),
+		fatal(_("cannot open file `%s' for reading: %s"),
 				fname, strerror(errcode));
 	}
 }
@@ -543,7 +543,7 @@ nextfile(IOBUF **curfile, bool skipping)
 			update_ERRNO_int(errno);
 			(void) iop_close(iop);
 			*curfile = NULL;
-			fatal(_("cannot open file `%s' for reading (%s)"),
+			fatal(_("cannot open file `%s' for reading: %s"),
 					fname, strerror(errcode));
 		}
 		return ++i;	/* run beginfile block */
@@ -672,7 +672,7 @@ iop_close(IOBUF *iop)
 	}
 
 	if (ret == -1)
-		warning(_("close of fd %d (`%s') failed (%s)"), iop->public.fd,
+		warning(_("close of fd %d (`%s') failed: %s"), iop->public.fd,
 				iop->public.name, strerror(errno));
 	/*
 	 * Be careful -- $0 may still reference the buffer even though
@@ -908,7 +908,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			 * popen().
 			 */
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
-				fatal(_("can't open pipe `%s' for output (%s)"),
+				fatal(_("cannot open pipe `%s' for output: %s"),
 						str, strerror(errno));
 			ignore_sigpipe();
 
@@ -923,7 +923,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			}
 			direction = "from";
 			if (gawk_popen(str, rp) == NULL)
-				fatal(_("can't open pipe `%s' for input (%s)"),
+				fatal(_("cannot open pipe `%s' for input: %s"),
 					str, strerror(errno));
 			break;
 		case redirect_input:
@@ -958,7 +958,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
 				} else
-					fatal(_("can't open two way pipe `%s' for input/output (%s)"),
+					fatal(_("cannot open two way pipe `%s' for input/output: %s"),
 							str, strerror(errno));
 			}
 			break;
@@ -1045,10 +1045,10 @@ redirect_string(const char *str, size_t explen, bool not_string,
 				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
 					if (*direction == 'f')
-						fatal(_("can't redirect from `%s' (%s)"),
+						fatal(_("cannot redirect from `%s': %s"),
 					    		str, strerror(errno));
 					else
-						fatal(_("can't redirect to `%s' (%s)"),
+						fatal(_("cannot redirect to `%s': %s"),
 							str, strerror(errno));
 				} else {
 					/* do not free rp, saving it for reuse (save_rp = rp) */
@@ -1166,7 +1166,7 @@ close_one()
 			rp->flag |= RED_USED;
 			errno = 0;
 			if (rp->output.gawk_fclose(rp->output.fp, rp->output.opaque) != 0)
-				warning(_("close of `%s' failed (%s)."),
+				warning(_("close of `%s' failed: %s."),
 					rp->value, strerror(errno));
 			rp->output.fp = NULL;
 			break;
@@ -1339,10 +1339,10 @@ close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 		 */
 		if (do_lint) {
 			if ((rp->flag & RED_PIPE) != 0)
-				lintwarn(_("failure status (%d) on pipe close of `%s' (%s)"),
+				lintwarn(_("failure status (%d) on pipe close of `%s': %s"),
 					 status, rp->value, s);
 			else
-				lintwarn(_("failure status (%d) on file close of `%s' (%s)"),
+				lintwarn(_("failure status (%d) on file close of `%s': %s"),
 					 status, rp->value, s);
 		}
 
@@ -1414,8 +1414,8 @@ non_fatal_flush_std_file(FILE *fp)
 		} else {
 			update_ERRNO_int(errno);
 			warning(fp == stdout
-				? _("error writing standard output (%s)")
-				: _("error writing standard error (%s)"),
+				? _("error writing standard output: %s")
+				: _("error writing standard error: %s"),
 					strerror(errno));
 		}
 		return false;
@@ -1454,13 +1454,13 @@ flush_io()
 					messagefunc = r_warning;
 
 				if ((rp->flag & RED_PIPE) != 0)
-					messagefunc(_("pipe flush of `%s' failed (%s)."),
+					messagefunc(_("pipe flush of `%s' failed: %s."),
 						rp->value, strerror(errno));
 				else if ((rp->flag & RED_TWOWAY) != 0)
-					messagefunc(_("co-process flush of pipe to `%s' failed (%s)."),
+					messagefunc(_("co-process flush of pipe to `%s' failed: %s."),
 						rp->value, strerror(errno));
 				else
-					messagefunc(_("file flush of `%s' failed (%s)."),
+					messagefunc(_("file flush of `%s' failed: %s."),
 						rp->value, strerror(errno));
 				status++;
 			}
@@ -1505,7 +1505,7 @@ close_io(bool *stdio_problem, bool *got_EPIPE)
 			w32_maybe_set_errno();
 #endif
 		if (errno != EPIPE)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+			warning(_("error writing standard output: %s"), strerror(errno));
 		else
 			*got_EPIPE = true;
 
@@ -1518,7 +1518,7 @@ close_io(bool *stdio_problem, bool *got_EPIPE)
 			w32_maybe_set_errno();
 #endif
 		if (errno != EPIPE)
-			warning(_("error writing standard error (%s)"), strerror(errno));
+			warning(_("error writing standard error: %s"), strerror(errno));
 		else
 			*got_EPIPE = true;
 
@@ -2014,19 +2014,19 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 		set_slave_pty_attributes(slave);
 
 		if (close(master) == -1)
-			fatal(_("close of master pty failed (%s)"), strerror(errno));
+			fatal(_("close of master pty failed: %s"), strerror(errno));
 		if (close(1) == -1)
-			fatal(_("close of stdout in child failed (%s)"),
+			fatal(_("close of stdout in child failed: %s"),
 				strerror(errno));
 		if (dup(slave) != 1)
 			fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(0) == -1)
-			fatal(_("close of stdin in child failed (%s)"),
+			fatal(_("close of stdin in child failed: %s"),
 				strerror(errno));
 		if (dup(slave) != 0)
 			fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
 		if (close(slave))
-			fatal(_("close of slave pty failed (%s)"), strerror(errno));
+			fatal(_("close of slave pty failed: %s"), strerror(errno));
 
 		/* stderr does NOT get dup'ed onto child's stdout */
 
@@ -2066,19 +2066,19 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 #endif
 
 		if (close(master) == -1)
-			fatal(_("close of master pty failed (%s)"), strerror(errno));
+			fatal(_("close of master pty failed: %s"), strerror(errno));
 		if (close(1) == -1)
-			fatal(_("close of stdout in child failed (%s)"),
+			fatal(_("close of stdout in child failed: %s"),
 				strerror(errno));
 		if (dup(slave) != 1)
 			fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(0) == -1)
-			fatal(_("close of stdin in child failed (%s)"),
+			fatal(_("close of stdin in child failed: %s"),
 				strerror(errno));
 		if (dup(slave) != 0)
 			fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
 		if (close(slave))
-			fatal(_("close of slave pty failed (%s)"), strerror(errno));
+			fatal(_("close of slave pty failed: %s"), strerror(errno));
 
 		/* stderr does NOT get dup'ed onto child's stdout */
 
@@ -2100,7 +2100,7 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 	if (close(slave) != 0) {
 		close(master);
 		(void) kill(*pid, SIGKILL);
-		fatal(_("close of slave pty failed (%s)"), strerror(errno));
+		fatal(_("close of slave pty failed: %s"), strerror(errno));
 	}
 
 	return true;
@@ -2415,18 +2415,18 @@ use_pipes:
 
 	if (pid == 0) {	/* child */
 		if (close(1) == -1)
-			fatal(_("close of stdout in child failed (%s)"),
+			fatal(_("close of stdout in child failed: %s"),
 				strerror(errno));
 		if (dup(ctop[1]) != 1)
 			fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(0) == -1)
-			fatal(_("close of stdin in child failed (%s)"),
+			fatal(_("close of stdin in child failed: %s"),
 				strerror(errno));
 		if (dup(ptoc[0]) != 0)
 			fatal(_("moving pipe to stdin in child failed (dup: %s)"), strerror(errno));
 		if (   close(ptoc[0]) == -1 || close(ptoc[1]) == -1
 		    || close(ctop[0]) == -1 || close(ctop[1]) == -1)
-			fatal(_("close of pipe failed (%s)"), strerror(errno));
+			fatal(_("close of pipe failed: %s"), strerror(errno));
 		/* stderr does NOT get dup'ed onto child's stdout */
 		set_sigpipe_to_default();
 		execl("/bin/sh", "sh", "-c", str, NULL);
@@ -2615,7 +2615,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	 */
 
 	if (pipe(p) < 0)
-		fatal(_("cannot open pipe `%s' (%s)"), cmd, strerror(errno));
+		fatal(_("cannot open pipe `%s': %s"), cmd, strerror(errno));
 
 #if defined(__EMX__) || defined(__MINGW32__)
 	rp->iop = NULL;
@@ -2659,12 +2659,12 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #else /* NOT __EMX__, NOT __MINGW32__ */
 	if ((pid = fork()) == 0) {
 		if (close(1) == -1)
-			fatal(_("close of stdout in child failed (%s)"),
+			fatal(_("close of stdout in child failed: %s"),
 				strerror(errno));
 		if (dup(p[1]) != 1)
 			fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(p[0]) == -1 || close(p[1]) == -1)
-			fatal(_("close of pipe failed (%s)"), strerror(errno));
+			fatal(_("close of pipe failed: %s"), strerror(errno));
 		set_sigpipe_to_default();
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
@@ -2679,7 +2679,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #if !defined(__EMX__) && !defined(__MINGW32__)
 	if (close(p[1]) == -1) {
 		close(p[0]);
-		fatal(_("close of pipe failed (%s)"), strerror(errno));
+		fatal(_("close of pipe failed: %s"), strerror(errno));
 	}
 #endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");

@@ -458,7 +458,7 @@ find_lines(SRCFILE *s)
 	efree(buf);
 
 	if (n == -1) {
-		d_error(_("can't read source file `%s' (%s)"),
+		d_error(_("cannot read source file `%s': %s"),
 					s->src, strerror(errno));
 		return -1;
 	}
@@ -515,7 +515,7 @@ source_find(char *src)
 		efree(path);
 	}
 
-	d_error(_("cannot find source file named `%s' (%s)"), src, strerror(errno_val));
+	d_error(_("cannot find source file named `%s': %s"), src, strerror(errno_val));
 	return NULL;
 }
 
@@ -533,7 +533,7 @@ print_lines(char *src, int start_line, int nlines)
 	if (s == NULL)
 		return -1;
 	if (s->fd <= INVALID_HANDLE && (s->fd = srcopen(s)) <= INVALID_HANDLE) {
-		d_error(_("can't open source file `%s' for reading (%s)"),
+		d_error(_("cannot open source file `%s' for reading: %s"),
 				src, strerror(errno));
 		return -1;
 	}
@@ -549,7 +549,7 @@ print_lines(char *src, int start_line, int nlines)
 		close(s->fd);
 		s->fd = INVALID_HANDLE;
 		if ((s->fd = srcopen(s)) <= INVALID_HANDLE) {
-			d_error(_("can't open source file `%s' for reading (%s)"),
+			d_error(_("cannot open source file `%s' for reading: %s"),
 					src, strerror(errno));
 			return -1;
 		}
@@ -616,7 +616,7 @@ print_lines(char *src, int start_line, int nlines)
 		len = read(s->fd, p, supposed_len);
 		switch (len) {
 		case -1:
-			d_error(_("can't read source file `%s' (%s)"),
+			d_error(_("cannot read source file `%s': %s"),
 						src, strerror(errno));
 			return -1;
 
@@ -2354,7 +2354,7 @@ set_breakpoint(CMDARG *arg, bool temporary)
 		rp = find_rule(src, ip->source_line);
 		assert(rp != NULL);
 		if ((b = set_breakpoint_next(rp, ip)) == NULL)
-			fprintf(out_fp, _("Can't set breakpoint in file `%s'\n"), src);
+			fprintf(out_fp, _("cannot set breakpoint in file `%s'\n"), src);
 		else {
 			if (cur_frame == 0) {	/* stop next time */
 				b->flags |= BP_IGNORE;
@@ -2387,9 +2387,9 @@ set_breakpoint(CMDARG *arg, bool temporary)
 		else {
 			rp = find_rule(src, lineno);
 			if (rp == NULL)
-				fprintf(out_fp, _("Can't find rule!!!\n"));
+				fprintf(out_fp, _("internal error: cannot find rule\n"));
 			if (rp == NULL || (b = set_breakpoint_at(rp, lineno, false)) == NULL)
-				fprintf(out_fp, _("Can't set breakpoint at `%s':%d\n"),
+				fprintf(out_fp, _("cannot set breakpoint at `%s':%d\n"),
 						src, lineno);
 			if (b != NULL && temporary)
 				b->flags |= BP_TEMP;
@@ -2401,7 +2401,7 @@ func:
 		func = arg->a_node;
 		rp = func->code_ptr;
 		if ((b = set_breakpoint_at(rp, rp->source_line, false)) == NULL)
-			fprintf(out_fp, _("Can't set breakpoint in function `%s'\n"),
+			fprintf(out_fp, _("cannot set breakpoint in function `%s'\n"),
 						func->vname);
 		else if (temporary)
 			b->flags |= BP_TEMP;
@@ -2826,7 +2826,7 @@ debug_prog(INSTRUCTION *pc)
 		int fd;
 		fd = open_readfd(command_file);
 		if (fd == INVALID_HANDLE) {
-			fprintf(stderr, _("can't open source file `%s' for reading (%s)"),
+			fprintf(stderr, _("cannot open source file `%s' for reading: %s"),
 						command_file, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
@@ -3383,7 +3383,7 @@ func:
 				return true;
 			}
 		}
-		fprintf(out_fp, _("Can't find specified location in function `%s'\n"),
+		fprintf(out_fp, _("cannot find specified location in function `%s'\n"),
 				func->vname);
 		/* fall through */
 	default:
@@ -3406,7 +3406,7 @@ func:
 		if (ip == (rp + 1)->lasti)
 			break;
 	}
-	fprintf(out_fp, _("Can't find specified location %d in file `%s'\n"),
+	fprintf(out_fp, _("cannot find specified location %d in file `%s'\n"),
 				lineno, src);
 	return false;
 }
@@ -4176,7 +4176,7 @@ do_dump_instructions(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	if (arg != NULL && arg->type == D_string) {
 		/* dump to a file */
 		if ((fp = fopen(arg->a_string, "w")) == NULL) {
-			d_error(_("could not open `%s' for writing (%s)"),
+			d_error(_("could not open `%s' for writing: %s"),
 					arg->a_string, strerror(errno));
 			return false;
 		}
@@ -4219,7 +4219,7 @@ do_save(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	int i;
 
 	if ((fp = fopen(arg->a_string, "w")) == NULL) {
-		d_error(_("could not open `%s' for writing (%s)"),
+		d_error(_("could not open `%s' for writing: %s"),
 				arg->a_string, strerror(errno));
 		return false;
 	}
@@ -4320,8 +4320,9 @@ prompt_continue(FILE *fp)
 
 	if (os_isatty(fileno(fp)) && input_fd == 0)
 		quit_pager = prompt_yes_no(
-	                _("\t------[Enter] to continue or q [Enter] to quit------"),
-	                _("q")[0], false, fp);
+			// TRANSLATORS: don't translate the 'q' inside the brackets.
+	                _("\t------[Enter] to continue or [q] + [Enter] to quit------"),
+	                'q', false, fp);
 	if (quit_pager)
 		longjmp(pager_quit_tag, 1);
 	pager_lines_printed = 0;
@@ -5191,7 +5192,7 @@ do_source(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 
 	fd = open_readfd(file);
 	if (fd <= INVALID_HANDLE) {
-		d_error(_("can't open source file `%s' for reading (%s)"),
+		d_error(_("cannot open source file `%s' for reading: %s"),
 					file, strerror(errno));
 		return false;
 	}
@@ -5340,7 +5341,7 @@ set_gawk_output(const char *file)
 		setbuf(fp, (char *) NULL);
 		output_is_tty = os_isatty(fileno(fp));
 	} else {
-		d_error(_("could not open `%s' for writing (%s)"),
+		d_error(_("could not open `%s' for writing: %s"),
 					file,
 					errno != 0 ? strerror(errno) : _("reason unknown"));
 		fprintf(out_fp, _("sending output to stdout\n"));

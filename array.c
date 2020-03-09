@@ -779,7 +779,7 @@ do_adump(int nargs)
 	}
 	symbol = POP_PARAM();
 	if (symbol->type != Node_var_array)
-		fatal(_("adump: first argument not an array"));
+		fatal(_("%s: first argument is not an array"), "adump");
 
 	ndump.type = Node_dump_array;
 	ndump.adepth = depth;
@@ -820,39 +820,33 @@ asort_actual(int nargs, sort_context_t ctxt)
 	if (nargs >= 2) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
-			fatal(ctxt == ASORT ?
-				_("asort: second argument not an array") :
-				_("asorti: second argument not an array"));
+			fatal(_("%s: second argument is not an array"),
+				ctxt == ASORT ? "asort" : "asorti");
 		}
 	}
 
 	array = POP_PARAM();
 	if (array->type != Node_var_array) {
-		fatal(ctxt == ASORT ?
-			_("asort: first argument not an array") :
-			_("asorti: first argument not an array"));
+		fatal(_("%s: first argument is not an array"),
+			ctxt == ASORT ? "asort" : "asorti");
 	}
 	else if (array == symbol_table)
-		fatal(ctxt == ASORT ?
-			_("asort: first argument cannot be SYMTAB") :
-			_("asorti: first argument cannot be SYMTAB"));
+		fatal(_("%s: first argument cannot be SYMTAB"),
+			ctxt == ASORT ? "asort" : "asorti");
 	else if (array == func_table)
-		fatal(ctxt == ASORT ?
-			_("asort: first argument cannot be FUNCTAB") :
-			_("asorti: first argument cannot be FUNCTAB"));
+		fatal(_("%s: first argument cannot be FUNCTAB"),
+			ctxt == ASORT ? "asort" : "asorti");
 
 	if (dest != NULL) {
 		for (r = dest->parent_array; r != NULL; r = r->parent_array) {
 			if (r == array)
-				fatal(ctxt == ASORT ?
-					_("asort: cannot use a subarray of first arg for second arg") :
-					_("asorti: cannot use a subarray of first arg for second arg"));
+				fatal(_("%s: cannot use a subarray of first argument for second argument"),
+					ctxt == ASORT ? "asort" : "asorti");
 		}
 		for (r = array->parent_array; r != NULL; r = r->parent_array) {
 			if (r == dest)
-				fatal(ctxt == ASORT ?
-					_("asort: cannot use a subarray of second arg for first arg") :
-					_("asorti: cannot use a subarray of second arg for first arg"));
+				fatal(_("%s: cannot use a subarray of second argument for first argument"),
+					ctxt == ASORT ? "asort" : "asorti");
 		}
 	}
 

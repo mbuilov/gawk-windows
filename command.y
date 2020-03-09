@@ -224,7 +224,7 @@ eval_prologue
 			if (input_from_tty) {
 				dbg_prompt = eval_prompt;
 				fprintf(out_fp,
-		_("Type (g)awk statement(s). End with the command \"end\"\n"));
+		_("Type (g)awk statement(s). End with the command `end'\n"));
 				rl_inhibit_completion = 1;
 			}
 			cmd_idx = -1;
@@ -294,7 +294,7 @@ command
 	  {
 		int idx = find_argument($2);
 		if (idx < 0)
-			yyerror(_("info: invalid option - \"%s\""), $2->a_string);
+			yyerror(_("info: invalid option - `%s'"), $2->a_string);
 		else {
 			efree($2->a_string);
 			$2->a_string = NULL;
@@ -320,12 +320,12 @@ command
 	| D_SOURCE D_STRING
 	  {
 		if (in_cmd_src($2->a_string))
-			yyerror(_("source \"%s\": already sourced."), $2->a_string);
+			yyerror(_("source: `%s': already sourced."), $2->a_string);
 	  }
 	| D_SAVE D_STRING
 	  {
 		if (! input_from_tty)
-			yyerror(_("save \"%s\": command not permitted."), $2->a_string);
+			yyerror(_("save: `%s': command not permitted."), $2->a_string);
 	  }
 	| D_COMMANDS commands_arg
 	  {
@@ -338,7 +338,7 @@ command
 		if (dbg_errcount != 0)
 			;
 		else if (in_commands)
-			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
+			yyerror(_("cannot use command `commands' for breakpoint/watchpoint commands"));
 		else if ($2 == NULL &&  ! (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
 		else if ($2 != NULL && ! (type = has_break_or_watch_point(&num, false)))
@@ -349,7 +349,7 @@ command
 				dbg_prompt = commands_prompt;
 				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
-				fprintf(out_fp, _("End with the command \"end\"\n"));
+				fprintf(out_fp, _("End with the command `end'\n"));
 			}
 		}
 	  }
@@ -372,7 +372,7 @@ command
 	  {
 		int idx = find_argument($2);
 		if (idx < 0)
-			yyerror(_("trace: invalid option - \"%s\""), $2->a_string);
+			yyerror(_("trace: invalid option - `%s'"), $2->a_string);
 		else {
 			efree($2->a_string);
 			$2->a_string = NULL;
@@ -458,12 +458,12 @@ option_args
 	| D_STRING
 	  {
 		if (find_option($1->a_string) < 0)
-			yyerror(_("option: invalid parameter - \"%s\""), $1->a_string);
+			yyerror(_("option: invalid parameter - `%s'"), $1->a_string);
  	  }
 	| D_STRING '=' D_STRING
 	  {
 		if (find_option($1->a_string) < 0)
-			yyerror(_("option: invalid parameter - \"%s\""), $1->a_string);
+			yyerror(_("option: invalid parameter - `%s'"), $1->a_string);
  	  }
 	;
 
@@ -473,7 +473,7 @@ func_name
 		NODE *n;
 		n = lookup($1->a_string);
 		if (n == NULL || n->type != Node_func)
-			yyerror(_("no such function - \"%s\""), $1->a_string);
+			yyerror(_("no such function - `%s'"), $1->a_string);
 		else {
 			$1->type = D_func;
 			efree($1->a_string);
@@ -530,7 +530,7 @@ enable_args
 	  {
 		int idx = find_argument($1);
 		if (idx < 0)
-			yyerror(_("enable: invalid option - \"%s\""), $1->a_string);
+			yyerror(_("enable: invalid option - `%s'"), $1->a_string);
 		else {
 			efree($1->a_string);
 			$1->a_string = NULL;
@@ -1057,7 +1057,7 @@ again:
 				/* force a quit, and let do_quit (in debug.c) exit */
 				if (! seen_eof) {
 					if (errno != 0)	{
-						fprintf(stderr, _("can't read command (%s)\n"), strerror(errno));
+						fprintf(stderr, _("cannot read command: %s\n"), strerror(errno));
 						exit_val = EXIT_FAILURE;
 					} /* else
 						exit_val = EXIT_SUCCESS; */
@@ -1071,7 +1071,7 @@ again:
 					return '\n';	/* end command 'quit' */
 			}
 			if (errno != 0)
-				d_error(_("can't read command (%s)"), strerror(errno));
+				d_error(_("cannot read command: %s"), strerror(errno));
 			if (pop_cmd_src() == 0)
 				goto again;
 			exit(EXIT_FATAL);	/* shouldn't happen */
@@ -1158,7 +1158,7 @@ again:
 			}
 			return cmdtab[cmd_idx].class;
 		} else {
-			yyerror(_("unknown command - \"%.*s\", try help"), toklen, tokstart);
+			yyerror(_("unknown command - `%.*s', try help"), toklen, tokstart);
 			return '\n';
 		}
 	}

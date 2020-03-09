@@ -57,19 +57,19 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: received NULL lib_name"));
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("load_ext: cannot open library `%s' (%s)"), lib_name,
+		fatal(_("load_ext: cannot open library `%s': %s"), lib_name,
 		      dlerror());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
-		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)"),
+		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible': %s"),
 				lib_name, dlerror());
 
 	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
 				dlsym(dl, INIT_FUNC);
 	if (install_func == NULL)
-		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)"),
+		fatal(_("load_ext: library `%s': cannot call function `%s': %s"),
 				lib_name, INIT_FUNC, dlerror());
 
 	if (install_func(& api_impl, NULL /* ext_id */) == 0)
@@ -97,7 +97,7 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 	assert(name_space != NULL);
 	if (name_space[0] == '\0' || strcmp(name_space, awk_namespace) == 0) {
 		if (check_special(name) >= 0)
-			fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name);
+			fatal(_("make_builtin: cannot use gawk built-in `%s' as function name"), name);
 
 		f = lookup(name);
 		install_name = estrdup(name, strlen(name));
@@ -106,9 +106,9 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 			return awk_false;
 
 		if (check_special(name_space) >= 0)
-			fatal(_("make_builtin: can't use gawk built-in `%s' as namespace name"), name_space);
+			fatal(_("make_builtin: cannot use gawk built-in `%s' as namespace name"), name_space);
 		if (check_special(name) >= 0)
-			fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name);
+			fatal(_("make_builtin: cannot use gawk built-in `%s' as function name"), name);
 
 		size_t len = strlen(name_space) + 2 + strlen(name) + 1;
 		char *buf;
@@ -123,7 +123,7 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 		// found it, but it shouldn't be there if we want to install this function
 		if (f->type == Node_func) {
 			/* user-defined function */
-			fatal(_("make_builtin: can't redefine function `%s'"), name);
+			fatal(_("make_builtin: cannot redefine function `%s'"), name);
 		} else if (f->type == Node_ext_func) {
 			/* multiple extension() calls etc. */
 			if (do_lint)
