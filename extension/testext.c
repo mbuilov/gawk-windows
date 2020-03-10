@@ -33,7 +33,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+#include <io.h> /* open() */
+#else
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -49,8 +54,8 @@ int plugin_is_GPL_compatible;
 
 static void fill_in_array(awk_value_t *value);
 
-#ifdef __MINGW32__
-unsigned int
+#if defined(__MINGW32__) || defined(_MSC_VER)
+static unsigned int
 getuid (void)
 {
   /* See pc/getid.c.  */
@@ -82,8 +87,8 @@ valrep2str(const awk_value_t *value)
 	case AWK_REGEX:
 	case AWK_STRNUM:
 	case AWK_STRING:
-		if (value->str_value.len < size)
-			size = value->str_value.len;
+		if (value->str_value.len < (unsigned)size)
+			size = (int)value->str_value.len;
 		sprintf(buf, "\"%.*s\"",
 				size,
 				value->str_value.str);
@@ -124,7 +129,8 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 	awk_flat_array_t *flat_array;
 	size_t count;
 	char *name;
-	int i;
+	size_t i;
+	(void) unused;		/* silence warnings */
 
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -153,7 +159,7 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 		goto out;
 	}
 
-	printf("dump_array_and_delete: incoming size is %lu\n", (unsigned long) count);
+	printf("dump_array_and_delete: incoming size is %llu\n", 0ull + count);
 
 	if (! flatten_array(value2.array_cookie, & flat_array)) {
 		printf("dump_array_and_delete: could not flatten array\n");
@@ -161,9 +167,9 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 	}
 
 	if (flat_array->count != count) {
-		printf("dump_array_and_delete: flat_array->count (%lu) != count (%lu)\n",
-				(unsigned long) flat_array->count,
-				(unsigned long) count);
+		printf("dump_array_and_delete: flat_array->count (%llu) != count (%llu)\n",
+				0ull + flat_array->count,
+				0ull + count);
 		goto out;
 	}
 
@@ -218,7 +224,8 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	awk_flat_array_t *flat_array;
 	awk_array_t environ_array;
 	size_t count;
-	int i;
+	size_t i;
+	(void) unused;		/* silence warnings */
 
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -259,9 +266,9 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 
 	if (flat_array->count != count) {
-		printf("try_modify_environ: flat_array->count (%lu) != count (%lu)\n",
-				(unsigned long) flat_array->count,
-				(unsigned long) count);
+		printf("try_modify_environ: flat_array->count (%llu) != count (%llu)\n",
+				0ull + flat_array->count,
+				0ull + count);
 		goto out;
 	}
 
@@ -305,6 +312,7 @@ var_test(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value, value2;
 	awk_value_t *valp;
+	(void) unused;		/* silence warnings */
 
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -370,6 +378,7 @@ BEGIN {
 static awk_value_t *
 test_errno(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
+	(void) unused;		/* silence warnings */
 	assert(result != NULL);
 	make_number(0.0, result);
 
@@ -409,10 +418,13 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		{ "rumpus", -5.0, },
 	};
 	struct nval sysval[] = {
-		{ "uid", getuid(), },
+		{ "uid", 0/*getuid()*/, },
 		{ "api_major", GAWK_API_MAJOR_VERSION, },
 	};
 	size_t i;
+	(void) unused;		/* silence warnings */
+
+	sysval[0].val = (double)getuid();
 
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -455,7 +467,7 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, sysval[i].name);
 			goto out;
 		}
-		printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val));
+		printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val) ? 1 : 0);
 	}
 
 	make_number(1.0, result);
@@ -480,6 +492,7 @@ test_array_size(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value;
 	size_t count = 0;
+	(void) unused;		/* silence warnings */
 
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -500,7 +513,7 @@ test_array_size(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		goto out;
 	}
 
-	printf("test_array_size: incoming size is %lu\n", (unsigned long) count);
+	printf("test_array_size: incoming size is %llu\n", 0ull + count);
 
 	/* clear array - length(array) should then go to zero in script */
 	if (! clear_array(value.array_cookie)) {
@@ -543,6 +556,7 @@ static awk_value_t *
 test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t array, index, index2, value;
+	(void) unused;		/* silence warnings */
 
 	make_number(0.0, result);	/* default return until full success */
 
@@ -633,7 +647,7 @@ test_array_param(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	awk_value_t new_array;
 	awk_value_t arg0;
 
-	(void) nargs;		/* silence warnings */
+	(void) nargs, (void) unused;		/* silence warnings */
 	make_number(0.0, result);
 
 	if (! get_argument(0, AWK_UNDEFINED, & arg0)) {
@@ -673,6 +687,7 @@ BEGIN {
 static awk_value_t *
 print_do_lint(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
+	(void) unused;		/* silence warnings */
 	assert(result != NULL);
 	make_number(0.0, result);
 
@@ -712,7 +727,7 @@ test_scalar(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	awk_value_t new_value, new_value2;
 	awk_value_t the_scalar;
 
-	(void) nargs;		/* silence warnings */
+	(void) nargs, (void) unused;		/* silence warnings */
 	make_number(0.0, result);
 
 	if (! sym_lookup("the_scalar", AWK_SCALAR, & the_scalar)) {
@@ -759,7 +774,7 @@ test_scalar_reserved(int nargs, awk_value_t *result, struct awk_ext_func *unused
 	awk_value_t new_value;
 	awk_value_t the_scalar;
 
-	(void) nargs;		/* silence warnings */
+	(void) nargs, (void) unused;		/* silence warnings */
 	make_number(0.0, result);
 
 	/* look up a reserved variable - should pass */
@@ -810,9 +825,9 @@ static awk_value_t *
 test_indirect_vars(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value;
-	char *name = "NR";
+	const char name[] = "NR";
 
-	(void) nargs;		/* silence warnings */
+	(void) nargs, (void) unused;		/* silence warnings */
 	assert(result != NULL);
 	make_number(0.0, result);
 
@@ -861,6 +876,7 @@ test_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	int fd;
 	const awk_input_buf_t *ibuf;
 	const awk_output_buf_t *obuf;
+	(void) unused;		/* silence warnings */
 
 	if (nargs != 2) {
 		printf("%s: nargs not right (%d should be 2)\n", "test_get_file", nargs);
@@ -898,6 +914,7 @@ do_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	awk_value_t filename, filetype, fd, res;
 	const awk_input_buf_t *ibuf;
 	const awk_output_buf_t *obuf;
+	(void) unused;		/* silence warnings */
 
 	if (nargs != 4) {
 		printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
@@ -922,7 +939,7 @@ do_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 	clear_array(res.array_cookie);
 
-	if (! get_file(filename.str_value.str, strlen(filename.str_value.str), filetype.str_value.str, fd.num_value, &ibuf, &obuf)) {
+	if (! get_file(filename.str_value.str, strlen(filename.str_value.str), filetype.str_value.str, (fd_t)fd.num_value, &ibuf, &obuf)) {
 		printf("%s: get_file(%s, %s, %d) failed\n", "get_file", filename.str_value.str, filetype.str_value.str, (int)(fd.num_value));
 		return make_number(0.0, result);
 	}
@@ -982,7 +999,7 @@ fill_in_array(awk_value_t *new_array)
 /* create_new_array --- create a named array */
 
 static void
-create_new_array()
+create_new_array(void)
 {
 	awk_value_t value;
 
@@ -1039,6 +1056,7 @@ static void at_exit2(void *data, int exit_status)
 static awk_value_t *
 do_test_function(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
+	(void) nargs, (void) unused;		/* silence warnings */
 	printf("test::test_function() called.\n");
 	fflush(stdout);
 
