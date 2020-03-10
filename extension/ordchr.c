@@ -69,7 +69,7 @@ do_ord(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
 	} else if (do_lint)
-		lintwarn(ext_id, _("ord: called with inappropriate argument(s)"));
+		lintwarn(ext_id, _("ord: first argument is not a string"));
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -96,7 +96,7 @@ do_chr(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		str[0] = ret;
 		str[1] = '\0';
 	} else if (do_lint)
-		lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
+		lintwarn(ext_id, _("chr: first argument is not a number"));
 
 	/* Set the return value */
 	return make_const_string(str, 1, result);

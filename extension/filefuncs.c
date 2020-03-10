@@ -471,9 +471,13 @@ do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(result != NULL);
 
 	/* file is first arg, array to hold results is second */
-	if (   ! get_argument(0, AWK_STRING, & file_param)
-	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
-		warning(ext_id, _("stat: bad parameters"));
+	if (! get_argument(0, AWK_STRING, & file_param)) {
+		warning(ext_id, _("stat: first argument is not a string"));
+		return make_number(-1, result);
+	}
+
+	if (! get_argument(1, AWK_ARRAY, & array_param)) {
+		warning(ext_id, _("stat: second argument is not an array"));
 		return make_number(-1, result);
 	}
 
@@ -622,7 +626,7 @@ fill_stat_element(awk_array_t element_array, const char *name, struct stat *sbuf
 
 	stat_array = create_array();
 	if (stat_array == NULL) {
-		warning(ext_id, _("fill_stat_element: could not create array"));
+		warning(ext_id, _("fill_stat_element: could not create array, out of memory"));
 		fts_errors++;
 		return;
 	}
@@ -841,19 +845,19 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		lintwarn(ext_id, _("fts: called with incorrect number of arguments, expecting 3"));
 
 	if (! get_argument(0, AWK_ARRAY, & pathlist)) {
-		warning(ext_id, _("fts: bad first parameter"));
+		warning(ext_id, _("fts: first parameter is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(1, AWK_NUMBER, & flagval)) {
-		warning(ext_id, _("fts: bad second parameter"));
+		warning(ext_id, _("fts: second parameter is not a number"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(2, AWK_ARRAY, & dest)) {
-		warning(ext_id, _("fts: bad third parameter"));
+		warning(ext_id, _("fts: third parameter is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
@@ -893,10 +897,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 
 	/* clear dest array */
-	if (! clear_array(dest.array_cookie)) {
-		warning(ext_id, _("fts: clear_array() failed\n"));
-		goto out;
-	}
+	assert(clear_array(dest.array_cookie));
 
 	/* let's do it! */
 	if ((hierarchy = fts_open(pathvector, flags, NULL)) != NULL) {

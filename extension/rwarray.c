@@ -116,13 +116,13 @@ do_writea(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* filename is first arg, array to dump is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, _("do_writea: argument 0 is not a string\n"));
+		fprintf(stderr, _("do_writea: first argument is not a string\n"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, _("do_writea: argument 1 is not an array\n"));
+		fprintf(stderr, _("do_writea: second argument is not an array\n"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -289,13 +289,13 @@ do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* directory is first arg, array to read is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, _("do_reada: argument 0 is not a string\n"));
+		fprintf(stderr, _("do_reada: first argument is not a string\n"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, _("do_reada: argument 1 is not an array\n"));
+		fprintf(stderr, _("do_reada: second argument is not an array\n"));
 		errno = EINVAL;
 		goto done1;
 	}
