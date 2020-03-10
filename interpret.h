@@ -1131,17 +1131,20 @@ match_re:
 				ulong_t arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
 
-				assert(the_func != NULL);
+				assert(!builtin_func_is_null(the_func));
 
 				/* call it */
-				if (the_func == (builtin_func_t) do_sub)
+				if (builtin_func_is_nargs_x_fn(the_func, do_sub))
 					r = call_sub(t1->stptr, arg_count);
-				else if (the_func == do_match)
+				else if (builtin_func_is_nargs_fn(the_func, do_match))
 					r = call_match(arg_count);
-				else if (the_func == do_split || the_func == do_patsplit)
+				else if (builtin_func_is_nargs_fn(the_func, do_split) ||
+					builtin_func_is_nargs_fn(the_func, do_patsplit))
+				{
 					r = call_split_func(t1->stptr, arg_count);
+				}
 				else
-					r = the_func(arg_count);
+					r = (*builtin_func_to_nargs_fn(the_func))(arg_count);
 				str_restore(t1, save);
 
 				PUSH(r);
