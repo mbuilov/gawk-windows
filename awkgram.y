@@ -6462,26 +6462,26 @@ lookup_builtin(const char *name)
 	int mid = check_special(name);
 
 	if (mid == -1)
-		return NULL;
+		return BUILTIN_FUNC_NULL;
 
 	switch (tokentab[mid].cls) {
 	case LEX_BUILTIN:
 	case LEX_LENGTH:
 		break;
 	default:
-		return NULL;
+		return BUILTIN_FUNC_NULL;
 	}
 
 	/* And another special case... */
 	if (tokentab[mid].value == Op_sub_builtin)
-		return (builtin_func_t) do_sub;
+		return builtin_func_from_nargs_x_fn(do_sub);
 
 #ifdef HAVE_MPFR
 	if (do_mpfr)
-		return tokentab[mid].ptr2;
+		return builtin_func_from_nargs_fn(tokentab[mid].ptr2);
 #endif
 
-	return tokentab[mid].ptr;
+	return builtin_func_from_nargs_fn(tokentab[mid].ptr);
 }
 
 /* install_builtins --- add built-in functions to FUNCTAB */
