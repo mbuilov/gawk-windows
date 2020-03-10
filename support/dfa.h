@@ -18,9 +18,9 @@
 
 /* Written June, 1988 by Mike Haertel */
 
+#include <stddef.h>
 #include <regex.h>
 #include <stdbool.h>
-#include <stddef.h>
 
 struct localeinfo; /* See localeinfo.h.  */
 
