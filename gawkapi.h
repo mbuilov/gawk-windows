@@ -407,7 +407,7 @@ enum awk_element_flags {
 typedef struct awk_element {
 	/* convenience linked list pointer, not used by gawk */
 	struct awk_element *next;
-	enum awk_element_flags flags;
+	int flags; /* combination of enum awk_element_flags */
 	awk_value_t	index;
 	awk_value_t	value;
 } awk_element_t;
@@ -861,6 +861,7 @@ typedef struct gawk_api {
 
 #if defined(_MSC_VER) && defined(_PREFAST_)
 /* Annotate printf-like format string so compiler will check passed args.  */
+__declspec(noreturn)
 void fatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void nonfatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void warning(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
@@ -951,19 +952,19 @@ void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 #define emalloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_malloc(size)) == 0) \
-			fatal(ext_id, "%s: malloc of %d bytes failed", message, size); \
+			fatal(ext_id, "%s: malloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
 #define ezalloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_calloc(1, size)) == 0) \
-			fatal(ext_id, "%s: calloc of %d bytes failed", message, size); \
+			fatal(ext_id, "%s: calloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
 #define erealloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_realloc(pointer, size)) == 0) \
-			fatal(ext_id, "%s: realloc of %d bytes failed", message, size); \
+			fatal(ext_id, "%s: realloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
 /* Constructor functions */
