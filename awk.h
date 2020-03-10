@@ -177,8 +177,18 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
-/* same thing for awkwarn */
-#define awkwarn (*(set_loc(__FILE__, __LINE__),r_warning))
+#define awkwarn  (*(set_loc(__FILE__, __LINE__),r_warning))
+#define fatal    (*(set_loc(__FILE__, __LINE__),r_fatal))
+
+#if defined(_MSC_VER) && defined(_PREFAST_)
+/* only for analysis */
+#undef lintwarn
+#undef awkwarn
+#undef fatal
+#define lintwarn r_warning
+#define awkwarn r_warning
+#define fatal r_fatal
+#endif /* _MSC_VER && _PREFAST_ */
 
 #ifdef HAVE_MPFR
 #include <gmp.h>
@@ -229,7 +239,11 @@ extern double gawk_strtod();
 #endif /* ATTRIBUTE_UNUSED */
 
 #ifndef ATTRIBUTE_NORETURN
+#ifdef _MSC_VER
+#define ATTRIBUTE_NORETURN __declspec(noreturn)
+#else
 #define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#endif
 #endif /* ATTRIBUTE_NORETURN */
 
 #ifndef ATTRIBUTE_PRINTF
@@ -237,6 +251,28 @@ extern double gawk_strtod();
 #define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
 #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #endif /* ATTRIBUTE_PRINTF */
+
+#ifndef ATTRIBUTE_PRINTF_AT
+#if defined(_MSC_VER) && defined(_PREFAST_)
+#define ATTRIBUTE_PRINTF_AT(fmt) _At_(fmt, _Printf_format_string_)
+#endif
+#endif /* ATTRIBUTE_PRINTF_AT */
+
+#ifndef ATTRIBUTE_PRINTF_AT1
+#if defined(_MSC_VER) && defined(_PREFAST_)
+#define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_AT(fmt)
+#else
+#define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_1
+#endif
+#endif /* ATTRIBUTE_PRINTF_AT1 */
+
+#ifndef ATTRIBUTE_PRINTF_AT2
+#if defined(_MSC_VER) && defined(_PREFAST_)
+#define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_AT(fmt)
+#else
+#define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_2
+#endif
+#endif /* ATTRIBUTE_PRINTF_AT2 */
 
 #ifdef _MSC_VER
 #define PRAGMA_WARNING_PUSH __pragma(warning(push))
@@ -260,10 +296,229 @@ extern double gawk_strtod();
 
 #define AWKNUM	double
 
-enum defrule { BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
+enum defrule { UNKRULE = 0, BEGIN, Rule, END, BEGINFILE, ENDFILE,
 	MAXRULE /* sentinel, not legal */ };
 extern const char *const ruletab[];
 
+/* Note: C data type ranges:
+  char      - at least 8 bits,
+  short     - at least 16 bits,
+  int       - at least 16 bits,
+  long      - at least 32 bits,
+  long long - at least 64 bits,
+  size_t    - unsigned integer, at least 16 bits.
+
+  Try to avoid casts (unsigned long) -> size_t, because
+  size_t is generally smaller than long, though on common
+  platforms sizeof(size_t) >= sizeof(long).
+*/
+
+#if defined _MSC_VER && defined __cplusplus
+/* "long" type is dangerous - its size varies between operating systems and processor architectures:
+  LINUX x86:      sizeof(long) == 32, sizeof(int) == 32
+  LINUX x86_64:   sizeof(long) == 64, sizeof(int) == 32
+  WINDOWS x86:    sizeof(long) == 32, sizeof(int) == 32
+  WINDOWS x86_64: sizeof(long) == 32, sizeof(int) == 32
+  so on Windows, it's impossible for a compiler to detect (LINUX-specific) integer truncation bugs
+   - when implicitly converting long -> int
+
+  Conversions from long_t to int should be explicit.
+  Conversions from ulong_t to unsigned int should be explicit.
+*/
+struct long_t {
+	long l;
+	long_t() {}
+	long_t(int i_) {l = i_;}
+	long_t(long l_) {l = l_;}
+	struct long_t &operator= (const struct long_t &l_) {l =  l_.l; return *this;}
+	struct long_t &operator+=(const struct long_t &l_) {l += l_.l; return *this;}
+	struct long_t &operator-=(const struct long_t &l_) {l -= l_.l; return *this;}
+	struct long_t &operator+=(long l_) {l += l_; return *this;}
+	struct long_t &operator-=(long l_) {l -= l_; return *this;}
+	struct long_t &operator+=(int i_) {l += i_; return *this;}
+	struct long_t &operator-=(int i_) {l -= i_; return *this;}
+	struct long_t &operator++() {++l; return *this;}
+	struct long_t &operator--() {--l; return *this;}
+	struct long_t operator++(int) {long r = l++; return r;}
+	struct long_t operator--(int) {long r = l--; return r;}
+	bool operator> (const struct long_t &l_) const {return l >  l_.l;}
+	bool operator>=(const struct long_t &l_) const {return l >= l_.l;}
+	bool operator< (const struct long_t &l_) const {return l <  l_.l;}
+	bool operator<=(const struct long_t &l_) const {return l <= l_.l;}
+	bool operator==(const struct long_t &l_) const {return l == l_.l;}
+	bool operator!=(const struct long_t &l_) const {return l != l_.l;}
+	bool operator> (long l_) const {return l >  l_;}
+	bool operator>=(long l_) const {return l >= l_;}
+	bool operator< (long l_) const {return l <  l_;}
+	bool operator<=(long l_) const {return l <= l_;}
+	bool operator==(long l_) const {return l == l_;}
+	bool operator!=(long l_) const {return l != l_;}
+	bool operator> (int i_) const {return l >  i_;}
+	bool operator>=(int i_) const {return l >= i_;}
+	bool operator< (int i_) const {return l <  i_;}
+	bool operator<=(int i_) const {return l <= i_;}
+	bool operator==(int i_) const {return l == i_;}
+	bool operator!=(int i_) const {return l != i_;}
+	operator bool() const {return l != 0l;}
+	bool operator!() const {return l == 0l;}
+	long_t operator-() const {return -l;}
+	long_t operator+(const struct long_t &l_) const {return l + l_.l;}
+	long_t operator-(const struct long_t &l_) const {return l - l_.l;}
+	long_t operator+(long l_) const {return l + l_;}
+	long_t operator-(long l_) const {return l - l_;}
+	long_t operator+(int i_) const {return l + i_;}
+	long_t operator-(int i_) const {return l - i_;}
+	operator long () const {return l;}
+	operator long long () const {return l;}
+#ifdef _WIN64
+	explicit operator int () const {return (int) l;}
+#else
+	/* for use long_t as array index */
+	operator int () const {return (int) l;}
+#endif
+	explicit operator unsigned int () const {return (unsigned int) l;}
+	explicit operator unsigned long () const {return (unsigned long) l;}
+private:
+	operator char () const;
+	operator short () const;
+	operator unsigned char () const;
+	operator unsigned short () const;
+	operator unsigned long long () const;
+};
+inline bool operator> (long l_, const struct long_t &l) {return l_ >  l.l;}
+inline bool operator>=(long l_, const struct long_t &l) {return l_ >= l.l;}
+inline bool operator< (long l_, const struct long_t &l) {return l_ <  l.l;}
+inline bool operator<=(long l_, const struct long_t &l) {return l_ <= l.l;}
+inline bool operator==(long l_, const struct long_t &l) {return l_ == l.l;}
+inline bool operator!=(long l_, const struct long_t &l) {return l_ != l.l;}
+struct ulong_t {
+	unsigned long ul;
+	ulong_t() {}
+	ulong_t(unsigned ui_) {ul = ui_;}
+	ulong_t(unsigned long ul_) {ul = ul_;}
+	struct ulong_t &operator= (const struct ulong_t &ul_) {ul =  ul_.ul; return *this;}
+	struct ulong_t &operator+=(const struct ulong_t &ul_) {ul += ul_.ul; return *this;}
+	struct ulong_t &operator-=(const struct ulong_t &ul_) {ul -= ul_.ul; return *this;}
+	struct ulong_t &operator+=(const struct long_t &l_) {ul += l_.l; return *this;}
+	struct ulong_t &operator-=(const struct long_t &l_) {ul -= l_.l; return *this;}
+	struct ulong_t &operator%=(const struct ulong_t &ul_) {ul &= ul_.ul; return *this;}
+	struct ulong_t &operator^=(const struct ulong_t &ul_) {ul ^= ul_.ul; return *this;}
+	struct ulong_t &operator+=(long l_) {ul += l_; return *this;}
+	struct ulong_t &operator-=(long l_) {ul -= l_; return *this;}
+	struct ulong_t &operator+=(int i_) {ul += i_; return *this;}
+	struct ulong_t &operator-=(int i_) {ul -= i_; return *this;}
+	struct ulong_t &operator*=(int i_) {ul *= i_; return *this;}
+	struct ulong_t &operator&=(unsigned u_) {ul &= u_; return *this;}
+	struct ulong_t &operator++() {++ul; return *this;}
+	struct ulong_t &operator--() {--ul; return *this;}
+	struct ulong_t &operator/=(unsigned u_) {ul /= u_; return *this;}
+	struct ulong_t operator++(int) {unsigned long r = ul++; return r;}
+	struct ulong_t operator--(int) {unsigned long r = ul--; return r;}
+	struct ulong_t operator<<(unsigned u_) const {return ul << u_;}
+	struct ulong_t operator>>(unsigned u_) const {return ul >> u_;}
+	bool operator> (const struct ulong_t &ul_) const {return ul >  ul_.ul;}
+	bool operator>=(const struct ulong_t &ul_) const {return ul >= ul_.ul;}
+	bool operator< (const struct ulong_t &ul_) const {return ul <  ul_.ul;}
+	bool operator<=(const struct ulong_t &ul_) const {return ul <= ul_.ul;}
+	bool operator==(const struct ulong_t &ul_) const {return ul == ul_.ul;}
+	bool operator!=(const struct ulong_t &ul_) const {return ul != ul_.ul;}
+	bool operator> (unsigned long ul_) const {return ul >  ul_;}
+	bool operator>=(unsigned long ul_) const {return ul >= ul_;}
+	bool operator< (unsigned long ul_) const {return ul <  ul_;}
+	bool operator<=(unsigned long ul_) const {return ul <= ul_;}
+	bool operator==(unsigned long ul_) const {return ul == ul_;}
+	bool operator!=(unsigned long ul_) const {return ul != ul_;}
+	bool operator> (unsigned ui_) const {return ul >  ui_;}
+	bool operator>=(unsigned ui_) const {return ul >= ui_;}
+	bool operator< (unsigned ui_) const {return ul <  ui_;}
+	bool operator<=(unsigned ui_) const {return ul <= ui_;}
+	bool operator==(unsigned ui_) const {return ul == ui_;}
+	bool operator!=(unsigned ui_) const {return ul != ui_;}
+#ifdef _WIN64
+	bool operator<(size_t sz_) const {return ul < sz_;}
+	bool operator>(size_t sz_) const {return ul > sz_;}
+#endif
+	size_t operator/(size_t sz_) const {return ul/sz_;}
+	operator bool() const {return ul != 0ul;}
+	bool operator!() const {return ul == 0ul;}
+	ulong_t operator~() const {return ~ul;}
+	ulong_t operator/(const struct ulong_t &ul_) const {return ul / ul_.ul;}
+	ulong_t operator+(const struct ulong_t &ul_) const {return ul + ul_.ul;}
+	ulong_t operator-(const struct ulong_t &ul_) const {return ul - ul_.ul;}
+	ulong_t operator|(const struct ulong_t &ul_) const {return ul | ul_.ul;}
+	ulong_t operator%(const struct ulong_t &ul_) const {return ul % ul_.ul;}
+	ulong_t operator+(long l_) const {return ul + l_;}
+	ulong_t operator-(long l_) const {return ul - l_;}
+	ulong_t operator+(int i_) const {return ul + i_;}
+	ulong_t operator-(int i_) const {return ul - i_;}
+	unsigned long long operator*(unsigned long long ull_) const {return ul * ull_;}
+	unsigned long long operator+(unsigned long long ull_) const {return ul + ull_;}
+	unsigned long long operator-(unsigned long long ull_) const {return ul - ull_;}
+	ulong_t operator*(unsigned u_) const {return ul * u_;}
+	ulong_t operator-(unsigned u_) const {return ul - u_;}
+	ulong_t operator+(const struct long_t &l_) const {return ul + l_.l;}
+	ulong_t operator-(const struct long_t &l_) const {return ul - l_.l;}
+	operator unsigned long () const {return ul;}
+	operator unsigned long long () const {return ul;}
+#ifdef _WIN64
+	explicit operator unsigned int () const {return (unsigned) ul;}
+	explicit operator int () const {return (int) ul;}
+	/* for use ulong_t as array index */
+	operator long long () const {return ul;}
+#else
+	operator size_t () const {return (size_t) ul;}
+	/* for use ulong_t as array index */
+	operator int () const {return (int) ul;}
+#endif
+	explicit operator double () const {return (double) ul;}
+	explicit operator long () const {return (long) ul;}
+private:
+	operator char () const;
+	operator short () const;
+	operator unsigned char () const;
+	operator unsigned short () const;
+#ifndef _WIN64
+	operator long long () const;
+#endif
+};
+inline bool operator> (unsigned long ul_, const struct ulong_t &ul) {return ul_ >  ul.ul;}
+inline bool operator>=(unsigned long ul_, const struct ulong_t &ul) {return ul_ >= ul.ul;}
+inline bool operator< (unsigned long ul_, const struct ulong_t &ul) {return ul_ <  ul.ul;}
+inline bool operator<=(unsigned long ul_, const struct ulong_t &ul) {return ul_ <= ul.ul;}
+inline bool operator==(unsigned long ul_, const struct ulong_t &ul) {return ul_ == ul.ul;}
+inline bool operator!=(unsigned long ul_, const struct ulong_t &ul) {return ul_ != ul.ul;}
+inline bool operator==(size_t sz_, const struct ulong_t &ul) {return sz_ == ul.ul;}
+inline bool operator!=(size_t sz_, const struct ulong_t &ul) {return sz_ != ul.ul;}
+inline bool operator> (size_t sz_, const struct ulong_t &ul) {return sz_ >  ul.ul;}
+inline bool operator>=(uint32_t u32_, const struct ulong_t &ul) {return u32_ >= ul.ul;}
+#ifdef _WIN64
+inline bool operator>=(size_t sz_, const struct ulong_t &ul) {return sz_ >= ul.ul;}
+#endif
+inline size_t operator-(size_t sz_, const struct ulong_t &ul) {return sz_ - ul.ul;}
+inline size_t operator+(size_t sz_, const struct ulong_t &ul) {return sz_ + ul.ul;}
+inline size_t operator*(size_t sz_, const struct ulong_t &ul) {return sz_ * ul.ul;}
+inline ulong_t operator+(char c, const struct ulong_t &ul) {return c + ul.ul;}
+#ifdef _WIN64
+inline ulong_t operator*(unsigned u_, const struct ulong_t &ul) {return u_ * ul.ul;}
+#endif
+inline double operator/(double d_, const struct ulong_t &ul) {return d_ / ul.ul;}
+inline size_t operator+=(size_t &sz_, const struct ulong_t &ul) {return sz_ += ul.ul;}
+inline size_t operator-=(size_t &sz_, const struct ulong_t &ul) {return sz_ -= ul.ul;}
+inline uint32_t operator%=(uint32_t &u32_, const struct ulong_t &ul) {return u32_ %= ul.ul;}
+#ifdef _WIN64
+inline size_t operator%=(size_t &sz_, const struct ulong_t &ul) {return sz_ %= ul.ul;}
+#endif
+static inline unsigned long TO_ULONG(const struct ulong_t &ul) {return ul.ul;}
+static inline long TO_LONG(const struct long_t &l) {return l.l;}
+#else /* !(_MSC_VER && __cplusplus) */
+typedef unsigned long ulong_t;
+typedef long long_t;
+#define TO_ULONG(ulw) (ulw)
+#define TO_LONG(lw) (lw)
+#endif /* !(_MSC_VER && __cplusplus) */
+
+/* Printf field width/precision format specifier "%*"/"%.*" requires an integer */
+#define TO_PRINTF_WIDTH(w) ((int)(w))
 
 typedef enum nodevals {
 	/* illegal entry == 0 */
@@ -302,13 +557,13 @@ typedef union bucket_item {
 		union bucket_item *next;
 		char *str;
 		size_t len;
-		size_t code;
+		ulong_t code;
 		struct exp_node *name;
 		struct exp_node *val;
 	} hs;
 	struct {
 		union bucket_item *next;
-		long li[2];
+		long_t li[2];
 		struct exp_node *val[2];
 		size_t cnt;
 	} hi;
@@ -357,12 +612,13 @@ typedef struct {
  * space usage, at the expense of cleanliness.  Alter at own risk.
  */
 typedef struct exp_node {
-	union {
+	union node_sub_ {
 		struct {
 			union {
 				struct exp_node *lptr;
 				struct exp_instruction *li;
-				long ll;
+				long_t lx;
+				ulong_t ulx;
 				const array_funcs_t *lp;
 			} l;
 			union {
@@ -376,16 +632,20 @@ typedef struct exp_node {
 			union {
 				struct exp_node *extra;
 				void (*aptr)(void);
-				long xl;
+				unsigned lvl;
 				void *cmnt;	// used by pretty printer
 			} x;
 			char *name;
 			size_t reserved;
 			struct exp_node *rn;
-			unsigned long cnt;
-			unsigned long reflags;
+			ulong_t cnt;
+			union {
+				size_t sz;
+				ulong_t ulsz;
+				unsigned refl;
 #				define	CONSTANT	1
 #				define	FS_DFLT		2
+			} s;
 		} nodep;
 
 		struct {
@@ -401,16 +661,19 @@ typedef struct exp_node {
 #endif
 			char *sp;
 			size_t slen;
-			long sref;
-			int idx;
+			ulong_t sref;
+			unsigned idx;
 			wchar_t *wsp;
 			size_t wslen;
 			struct exp_node *typre;
 			enum commenttype comtype;
 		} val;
+#ifdef __cplusplus
+		node_sub_() {}
+#endif
 	} sub;
 	NODETYPE type;
-	unsigned int flags;
+	int flags;
 
 /* type = Node_val */
 	/*
@@ -483,6 +746,14 @@ typedef struct exp_node {
 #		define	XARRAY		0x10000
 #		define	NUMCONSTSTR	0x20000	/* have string value for numeric constant */
 #		define  REGEX           0x40000 /* this is a typed regex */
+
+#ifdef __cplusplus
+	struct exp_node &operator=(const struct exp_node &src)
+	{
+		memcpy(this, &src, sizeof(src));
+		return *this;
+	}
+#endif
 } NODE;
 
 #define vname sub.nodep.name
@@ -491,11 +762,10 @@ typedef struct exp_node {
 #define rnode	sub.nodep.r.rptr
 
 /* Node_param_list */
-#define param      vname
 #define dup_ent    sub.nodep.r.rptr
 
 /* Node_param_list, Node_func */
-#define param_cnt  sub.nodep.l.ll
+#define param_cnt  sub.nodep.l.ulx
 
 /* Node_func */
 #define fparms		sub.nodep.rn
@@ -503,7 +773,7 @@ typedef struct exp_node {
 
 /* Node_regex, Node_dynregex */
 #define re_reg	sub.nodep.r.preg
-#define re_flags sub.nodep.reflags
+#define re_flags sub.nodep.s.refl
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
 #define re_cnt	flags
@@ -541,18 +811,18 @@ typedef struct exp_node {
  * set to STFMT_UNUSED, it is an offset into the fmt_list array of distinct
  * CONVFMT and OFMT node pointers.
  */
-#define STFMT_UNUSED	-1
+#define STFMT_UNUSED	((unsigned)-1)
 
 /* Node_arrayfor */
 #define for_list	sub.nodep.r.av
-#define for_list_size	sub.nodep.reflags
-#define cur_idx		sub.nodep.l.ll
+#define for_list_size	sub.nodep.s.ulsz
+#define cur_list_idx	sub.nodep.l.ulx
 #define for_array 	sub.nodep.rn
 
 /* Node_frame: */
 #define stack        sub.nodep.r.av
 #define func_node    sub.nodep.x.extra
-#define prev_frame_size	sub.nodep.reflags
+#define prev_frame_size	sub.nodep.s.sz
 #define reti         sub.nodep.l.li
 
 /* Node_var: */
@@ -564,8 +834,8 @@ typedef struct exp_node {
 #define buckets		sub.nodep.r.bv
 #define nodes		sub.nodep.r.av
 #define array_funcs	sub.nodep.l.lp
-#define array_base	sub.nodep.l.ll
-#define table_size	sub.nodep.reflags
+#define array_base	sub.nodep.l.ulx
+#define table_size	sub.nodep.s.ulsz
 #define array_size	sub.nodep.cnt
 #define array_capacity	sub.nodep.reserved
 #define xarray		sub.nodep.rn
@@ -587,8 +857,8 @@ typedef struct exp_node {
 #define prev_array rnode
 
 /* Node_array_print */
-#define adepth     sub.nodep.l.ll
-#define alevel     sub.nodep.x.xl
+#define adepth     sub.nodep.l.lx
+#define alevel     sub.nodep.x.lvl
 
 /* Op_comment	*/
 #define comment_type	sub.val.comtype
@@ -768,32 +1038,58 @@ enum redirval {
 
 struct break_point;
 
+typedef ulong_t nargs_t;
+
 typedef struct exp_instruction {
 	struct exp_instruction *nexti;
-	union {
+	union exp_instruction_d_ {
 		NODE *dn;
 		struct exp_instruction *di;
-		NODE *(*fptr)(int);
+		NODE *(*fptr)(nargs_t nargs);
 		awk_value_t *(*efptr)(int num_actual_args,
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
-		long dl;
+		LINTTYPE dlt;
+		ulong_t du;
+		unsigned dui;
+		OPCODE dc;
+		enum redirval dt;
+		int df;
 		char *name;
+		const char *sname;
+#ifdef __cplusplus
+		exp_instruction_d_() {}
+#endif
 	} d;
 
-	union {
-		long  xl;
+	union exp_instruction_x_ {
+		bool xb;
+		ulong_t xul;
+		unsigned ln;
+		enum defrule xr;
 		NODE *xn;
 		void (*aptr)(void);
 		struct exp_instruction *xi;
 		struct break_point *bpt;
 		awk_ext_func_t *exf;
+#ifdef __cplusplus
+		exp_instruction_x_() {}
+#endif
 	} x;
 
 	struct exp_instruction *comment;
-	short source_line;
-	short pool_size;	// memory management in symbol.c
+#define IBAD_SRC_LINE ((unsigned short)-1)
+	unsigned short source_line;
+	unsigned short pool_size;	// memory management in symbol.c
 	OPCODE opcode;
+
+#ifdef __cplusplus
+	struct exp_instruction &operator=(const struct exp_instruction &src)
+	{
+		memcpy(this, &src, sizeof(src));
+		return *this;
+	}
+#endif
 } INSTRUCTION;
 
 #define func_name       d.name
@@ -801,9 +1097,9 @@ typedef struct exp_instruction {
 #define memory          d.dn
 #define builtin         d.fptr
 #define extfunc         d.efptr
-#define builtin_idx     d.dl
+#define builtin_idx     d.dui
 
-#define expr_count      x.xl
+#define expr_count      x.xul
 
 #define c_function	x.exf
 
@@ -812,7 +1108,7 @@ typedef struct exp_instruction {
 #define target_break    x.xi
 
 /* Op_sub_builtin */
-#define sub_flags       d.dl
+#define sub_flags       d.df
 #define GSUB            0x01	/* builtin is gsub */
 #define GENSUB          0x02	/* builtin is gensub */
 #define LITERAL         0x04	/* target is a literal string */
@@ -835,22 +1131,22 @@ typedef struct exp_instruction {
 #define target_beginfile	d.di
 
 /* Op_get_record */
-#define has_endfile		x.xl
+#define has_endfile		x.xb
 
 /* Op_token */
 #define lextok          d.name
-#define param_count     x.xl
+#define param_count     x.xul
 
 /* Op_rule */
-#define in_rule         x.xl
-#define source_file     d.name
+#define in_rule         x.xr
+#define source_file     d.sname
 
  /* Op_K_case, Op_K_default */
 #define case_stmt       x.xi
 #define case_exp        d.di
 #define stmt_start      case_exp
 #define stmt_end        case_stmt
-#define match_exp       x.xl
+#define match_exp       x.xb
 
 #define target_stmt     x.xi
 
@@ -859,16 +1155,16 @@ typedef struct exp_instruction {
 #define switch_start    d.di
 
 /* Op_K_getline, Op_K_getline_redir */
-#define into_var        x.xl
+#define into_var        x.xb
 
 /* Op_K_getline_redir, Op_K_print, Op_K_print_rec, Op_K_printf */
-#define redir_type      d.dl
+#define redir_type      d.dt
 
 /* Op_arrayfor_incr	*/
 #define array_var       x.xn
 
 /* Op_line_range */
-#define triggered       x.xl
+#define triggered       x.xb
 
 /* Op_cond_pair */
 #define line_range      x.xi
@@ -877,21 +1173,21 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_subscript */
-#define sub_count       d.dl
+#define sub_count       d.du
 
 /* Op_push_lhs, Op_subscript_lhs, Op_field_spec_lhs */
-#define do_reference    x.xl
+#define do_reference    x.xb
 
 /* Op_list, Op_rule, Op_func */
 #define lasti           d.di
 #define firsti          x.xi
 
 /* Op_rule, Op_func */
-#define last_line       x.xl
+#define last_line       x.ln
 #define first_line      source_line
 
 /* Op_lint */
-#define lint_type       d.dl
+#define lint_type       d.dlt
 
 /* Op_field_spec_lhs */
 #define target_assign	d.di
@@ -906,10 +1202,10 @@ typedef struct exp_instruction {
 #define field_assign    x.aptr
 
 /* Op_field_assign, Op_var_assign */
-#define assign_ctxt	d.dl
+#define assign_ctxt	d.dc
 
 /* Op_concat */
-#define concat_flag     d.dl
+#define concat_flag     d.df
 #define CSUBSEP		1
 #define CSVAR		2
 
@@ -918,7 +1214,7 @@ typedef struct exp_instruction {
 
 /*------------------ pretty printing/profiling --------*/
 /* Op_exec_count */
-#define exec_count      d.dl
+#define exec_count      d.du
 
 /* Op_K_while */
 #define while_body      d.di
@@ -948,7 +1244,7 @@ typedef struct exp_instruction {
 #define initval         x.xn
 
 typedef struct iobuf {
-	awk_input_buf_t public;	/* exposed to extensions */
+	awk_input_buf_t publ;	/* exposed to extensions */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -971,6 +1267,9 @@ typedef struct iobuf {
 
 typedef void (*Func_ptr)(void);
 
+typedef int pid_t;
+#define BAD_PID -1
+
 /* structure used to dynamically maintain a linked-list of open files/pipes */
 struct redirect {
 	unsigned int flag;
@@ -989,7 +1288,7 @@ struct redirect {
 	char *value;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;
-	int pid;
+	pid_t pid;
 	int status;
 	struct redirect *prev;
 	struct redirect *next;
@@ -1006,6 +1305,14 @@ enum binmode_values {
 	BINMODE_BOTH = 3	/* no translation for either */
 };
 
+enum srctype {
+	SRC_CMDLINE = 1,
+	SRC_STDIN,
+	SRC_FILE,
+	SRC_INC,
+	SRC_EXTLIB
+};
+
 /*
  * structure for our source, either a command line string or a source file.
  */
@@ -1014,23 +1321,17 @@ typedef struct srcfile {
 	struct srcfile *next;
 	struct srcfile *prev;
 
-	enum srctype {
-		SRC_CMDLINE = 1,
-		SRC_STDIN,
-		SRC_FILE,
-		SRC_INC,
-		SRC_EXTLIB
-	} stype;
+	enum srctype stype;
 	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
 	struct stat sbuf;
-	int srclines;	/* no of lines in source */
+	unsigned srclines;	/* no of lines in source */
 	size_t bufsize;
 	char *buf;
-	int *line_offset;	/* offset to the beginning of each line */
-	int fd;
-	int maxlen;	/* size of the longest line */
+	unsigned *line_offset;	/* offset to the beginning of each line */
+	fd_t fd;
+	unsigned maxlen;	/* size of the longest line */
 
 	void (*fini_func)(void);	/* dynamic extension of type SRC_EXTLIB */
 
@@ -1040,17 +1341,19 @@ typedef struct srcfile {
 	char *lexptr_begin;
 	int lasttok;
 	INSTRUCTION *comment;	/* comment on @load line */
-	const char *namespace;
+	const char *namespc;
 } SRCFILE;
+
+struct instruction_mem_pool {
+	struct instruction_block *block_list;
+	INSTRUCTION *free_space;	// free location in active block
+	INSTRUCTION *free_list;
+};
 
 // structure for INSTRUCTION pool, needed mainly for debugger
 typedef struct instruction_pool {
 #define MAX_INSTRUCTION_ALLOC	4	// we don't call bcalloc with more than this
-	struct instruction_mem_pool {
-		struct instruction_block *block_list;
-		INSTRUCTION *free_space;	// free location in active block
-		INSTRUCTION *free_list;
-	} pool[MAX_INSTRUCTION_ALLOC];
+	struct instruction_mem_pool pool[MAX_INSTRUCTION_ALLOC];
 } INSTRUCTION_POOL;
 
 /* structure for execution context */
@@ -1059,8 +1362,8 @@ typedef struct context {
 	NODE symbols;
 	INSTRUCTION rule_list;
 	SRCFILE srcfiles;
-	int sourceline;
-	char *source;
+	unsigned sourceline;
+	const char *source;
 	void (*install_func)(NODE *);
 	struct context *prev;
 } AWK_CONTEXT;
@@ -1080,9 +1383,9 @@ struct block_header {
 	struct block_item *freep;
 	size_t size;
 	const char *name;
-	long highwater;
+	size_t highwater;
 #ifdef MEMDEBUG
-	long active;
+	size_t active;
 #endif
 };
 
@@ -1094,36 +1397,30 @@ enum block_id {
 	BLOCK_MAX	/* count */
 };
 
-typedef int (*Func_pre_exec)(INSTRUCTION **);
+typedef bool (*Func_pre_exec)(INSTRUCTION **);
 typedef void (*Func_post_exec)(INSTRUCTION *);
 
-#ifndef LONG_MAX
-#define LONG_MAX ((long)(~(1L << (sizeof (long) * 8 - 1))))
-#endif
-#ifndef ULONG_MAX
-#define ULONG_MAX (~(unsigned long)0)
-#endif
-#ifndef LONG_MIN
-#define LONG_MIN ((long)(-LONG_MAX - 1L))
-#endif
-#define UNLIMITED    LONG_MAX
+typedef size_t field_num_t;
+
+#define BAD_NF     ((field_num_t)-1)
+#define UNLIMITED  ((field_num_t)-2)
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
-extern long NF;
-extern long NR;
-extern long FNR;
+extern field_num_t NF;
+extern field_num_t NR;
+extern field_num_t FNR;
 extern int BINMODE;
 extern bool IGNORECASE;
 extern bool RS_is_null;
 extern char *OFS;
-extern int OFSlen;
+extern unsigned OFSlen;
 extern char *ORS;
-extern int ORSlen;
+extern unsigned ORSlen;
 extern char *OFMT;
-extern char *CONVFMT;
-extern int CONVFMTidx;
-extern int OFMTidx;
+extern const char *CONVFMT;
+extern unsigned CONVFMTidx;
+extern unsigned OFMTidx;
 #ifdef HAVE_MPFR
 extern int MPFR_round_mode;
 #endif
@@ -1137,13 +1434,13 @@ extern NODE *PREC_node, *ROUNDMODE_node;
 extern NODE *Nnull_string;
 extern NODE *Null_field;
 extern NODE **fields_arr;
-extern int sourceline;
-extern char *source;
-extern int errcount;
+extern unsigned sourceline;
+extern const char *source;
+extern unsigned errcount;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
 extern NODE *(*make_number)(double);	/* double instead of AWKNUM on purpose */
 extern NODE *(*str2number)(NODE *);
-extern NODE *(*format_val)(const char *, int, NODE *);
+extern NODE *(*format_val)(const char *, unsigned, NODE *);
 extern int (*cmp_numbers)(const NODE *, const NODE *);
 
 /* built-in array types */
@@ -1230,8 +1527,8 @@ extern const char *myname;
 extern const char def_strftime_format[];
 
 extern char quote;
-extern char *defpath;
-extern char *deflibpath;
+extern const char *defpath;
+extern const char *deflibpath;
 extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
@@ -1255,6 +1552,7 @@ extern STACK_ITEM *stack_top;
 #define decr_sp()		(stack_ptr--)
 #define incr_sp()		((stack_ptr < stack_top) ? ++stack_ptr : grow_stack())
 #define stack_adj(n)		(stack_ptr += (n))
+#define stack_dec(n)		(stack_ptr -= (n))
 #define stack_empty()		(stack_ptr < stack_bottom)
 
 #define POP()			(decr_sp()->rptr)
@@ -1283,8 +1581,8 @@ extern void r_unref(NODE *tmp);
 static inline void
 DEREF(NODE *r)
 {
-	assert(r->valref > 0);
-	if (--r->valref == 0)
+	assert(r->valref);
+	if (!--r->valref)
 		r_unref(r);
 }
 
@@ -1341,6 +1639,8 @@ DEREF(NODE *r)
 #define iszero(n)		((n)->numbr == 0.0)
 #endif
 
+#define get_number_fn(n) (field_num_t) get_number_ui(n)
+
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
 #define get_lhs(n, r)	 (n)->type == Node_var && ! var_uninitialized(n) ? \
@@ -1348,9 +1648,9 @@ DEREF(NODE *r)
 
 #ifdef MEMDEBUG
 
-extern void *r_getblock(int id);
-extern void r_freeblock(void *, int id);
-#define getblock(p, id, ty)	(void) (p = r_getblock(id))
+extern void *r_getblock(enum block_id id);
+extern void r_freeblock(void *, enum block_id id);
+#define getblock(p, id, ty)	(void) (p = (ty) r_getblock(id))
 #define freeblock(p, id)	(void) (r_freeblock(p, id))
 
 #else /* MEMDEBUG */
@@ -1385,13 +1685,11 @@ extern void r_freeblock(void *, int id);
 
 #define efree(p)	free(p)
 
-#define fatal		(*(set_loc(__FILE__, __LINE__), r_fatal))
-
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;
 
 #define assoc_length(a)	((a)->table_size)
-#define assoc_empty(a)	(assoc_length(a) == 0)
+#define assoc_empty(a)	(!assoc_length(a))
 #define assoc_lookup(a, s)	((a)->alookup(a, s))
 
 /* assoc_clear --- flush all the values in symbol[] */
@@ -1425,90 +1723,150 @@ extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
 extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
-extern NODE *concat_exp(int nargs, bool do_subsep);
+extern NODE *concat_exp(nargs_t nargs, bool do_subsep);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
 extern NODE **assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt);
 extern void assoc_info(NODE *subs, NODE *val, NODE *p, const char *aname);
-extern void do_delete(NODE *symbol, int nsubs);
+extern void do_delete(NODE *symbol, ulong_t nsubs);
 extern void do_delete_loop(NODE *symbol, NODE **lhs);
-extern NODE *do_adump(int nargs);
-extern NODE *do_aoption(int nargs);
-extern NODE *do_asort(int nargs);
-extern NODE *do_asorti(int nargs);
-extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
+extern NODE *do_adump(nargs_t nargs);
+extern NODE *do_aoption(nargs_t nargs);
+extern NODE *do_asort(nargs_t nargs);
+extern NODE *do_asorti(nargs_t nargs);
+extern ulong_t (*hash)(const char *s, size_t len, ulong_t hsize, ulong_t *code);
 extern void init_env_array(NODE *env_node);
 extern void init_argv_array(NODE *argv_node, NODE *shadow_node);
 /* awkgram.c */
-extern NODE *variable(int location, char *name, NODETYPE type);
-extern int parse_program(INSTRUCTION **pcode, bool from_eval);
+extern NODE *variable(unsigned location, char *name, NODETYPE type);
+extern bool parse_program(INSTRUCTION **pcode, bool from_eval);
 extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
-extern const char *getfname(NODE *(*)(int), bool prepend_awk);
-extern NODE *stopme(int nargs);
+extern const char *getfname(NODE *(*)(nargs_t), bool prepend_awk);
+extern NODE *stopme(nargs_t nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
-extern SRCFILE *add_srcfile(enum srctype stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);
+extern SRCFILE *add_srcfile(enum srctype stype, const char *src, SRCFILE *curr, bool *already_included, int *errcode);
 extern void free_srcfile(SRCFILE *thisfile);
-extern int files_are_same(char *path, SRCFILE *src);
+extern int files_are_same(const char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
-typedef NODE *(*builtin_func_t)(int);	/* function that implements a built-in */
+/* function that implements a built-in */
+#ifdef __cplusplus
+typedef union {
+	NODE *(*nargs_fn)(nargs_t nargs);
+	NODE *(*nargs_x_fn)(nargs_t nargs, int i);
+} builtin_func_t;
+#define builtin_func_is_null(f)             ((f).nargs_fn == NULL)
+#define builtin_func_is_nargs_fn(f, fn)     ((f).nargs_fn == (fn))
+#define builtin_func_is_nargs_x_fn(f, x_fn) ((f).nargs_x_fn == (x_fn))
+#define builtin_func_to_nargs_fn(f)         ((f).nargs_fn)
+#define builtin_func_to_nargs_x_fn(f)       ((f).nargs_x_fn)
+static inline builtin_func_t builtin_func_from_nargs_fn(NODE *(*nargs_fn)(nargs_t))
+{
+	builtin_func_t f;
+	f.nargs_fn = nargs_fn;
+	return f;
+}
+static inline builtin_func_t builtin_func_from_nargs_x_fn(NODE *(*nargs_x_fn)(nargs_t, int))
+{
+	builtin_func_t f;
+	f.nargs_x_fn = nargs_x_fn;
+	return f;
+}
+static inline builtin_func_t builtin_func_null_(void)
+{
+	builtin_func_t f = { NULL };
+	return f;
+}
+#define BUILTIN_FUNC_NULL builtin_func_null_()
+#else /* !__cplusplus */
+typedef void *(*builtin_func_t)(nargs_t nargs);
+static inline bool builtin_func_is_null(builtin_func_t f)
+{
+	return f == NULL;
+}
+static inline bool builtin_func_is_nargs_fn(builtin_func_t f, NODE *(*nargs_fn)(nargs_t))
+{
+	return (NODE*(*)(nargs_t))f == nargs_fn;
+}
+static inline bool builtin_func_is_nargs_x_fn(builtin_func_t f, NODE *(*nargs_x_fn)(nargs_t, int))
+{
+	return (NODE*(*)(nargs_t, int))f == nargs_x_fn;
+}
+static inline NODE *(*builtin_func_to_nargs_fn(builtin_func_t f))(nargs_t)
+{
+	return (NODE*(*)(nargs_t))f;
+}
+static inline NODE *(*builtin_func_to_nargs_x_fn(builtin_func_t f))(nargs_t, int)
+{
+	return (NODE*(*)(nargs_t, int))f;
+}
+static inline builtin_func_t builtin_func_from_nargs_fn(NODE *(*nargs_fn)(nargs_t))
+{
+	return (void*(*)(nargs_t))nargs_fn;
+}
+static inline builtin_func_t builtin_func_from_nargs_x_fn(NODE *(*nargs_x_fn)(nargs_t, int))
+{
+	return (void*(*)(nargs_t))nargs_x_fn;
+}
+#define BUILTIN_FUNC_NULL ((builtin_func_t)NULL)
+#endif /* !__cplusplus */
 extern builtin_func_t lookup_builtin(const char *name);
 extern void install_builtins(void);
 extern bool is_alpha(int c);
 extern bool is_alnum(int c);
 extern bool is_letter(int c);
 extern bool is_identchar(int c);
-extern NODE *make_regnode(int type, NODE *exp);
-extern bool validate_qualified_name(char *token);
+extern NODE *make_regnode(NODETYPE type, NODE *exp);
+extern bool validate_qualified_name(const char *token);
 /* builtin.c */
 extern double double_to_int(double d);
-extern NODE *do_exp(int nargs);
-extern NODE *do_fflush(int nargs);
-extern NODE *do_index(int nargs);
-extern NODE *do_int(int nargs);
-extern NODE *do_isarray(int nargs);
-extern NODE *do_length(int nargs);
-extern NODE *do_log(int nargs);
-extern NODE *do_mktime(int nargs);
-extern NODE *do_sprintf(int nargs);
-extern void do_printf(int nargs, int redirtype);
+extern NODE *do_exp(nargs_t nargs);
+extern NODE *do_fflush(nargs_t nargs);
+extern NODE *do_index(nargs_t nargs);
+extern NODE *do_int(nargs_t nargs);
+extern NODE *do_isarray(nargs_t nargs);
+extern NODE *do_length(nargs_t nargs);
+extern NODE *do_log(nargs_t nargs);
+extern NODE *do_mktime(nargs_t nargs);
+extern NODE *do_sprintf(nargs_t nargs);
+extern void do_printf(nargs_t nargs, enum redirval redirtype);
 extern void print_simple(NODE *tree, FILE *fp);
-extern NODE *do_sqrt(int nargs);
-extern NODE *do_substr(int nargs);
-extern NODE *do_strftime(int nargs);
-extern NODE *do_systime(int nargs);
-extern NODE *do_system(int nargs);
-extern void do_print(int nargs, int redirtype);
-extern void do_print_rec(int args, int redirtype);
-extern NODE *do_tolower(int nargs);
-extern NODE *do_toupper(int nargs);
-extern NODE *do_atan2(int nargs);
-extern NODE *do_sin(int nargs);
-extern NODE *do_cos(int nargs);
-extern NODE *do_rand(int nargs);
-extern NODE *do_srand(int nargs);
-extern NODE *do_match(int nargs);
-extern NODE *do_sub(int nargs, unsigned int flags);
-extern NODE *call_sub(const char *name, int nargs);
-extern NODE *call_match(int nargs);
-extern NODE *call_split_func(const char *name, int nargs);
-extern NODE *format_tree(const char *, size_t, NODE **, long);
-extern NODE *do_lshift(int nargs);
-extern NODE *do_rshift(int nargs);
-extern NODE *do_and(int nargs);
-extern NODE *do_or(int nargs);
-extern NODE *do_xor(int nargs);
-extern NODE *do_compl(int nargs);
-extern NODE *do_strtonum(int nargs);
+extern NODE *do_sqrt(nargs_t nargs);
+extern NODE *do_substr(nargs_t nargs);
+extern NODE *do_strftime(nargs_t nargs);
+extern NODE *do_systime(nargs_t nargs);
+extern NODE *do_system(nargs_t nargs);
+extern void do_print(nargs_t nargs, enum redirval redirtype);
+extern void do_print_rec(nargs_t nargs, enum redirval redirtype);
+extern NODE *do_tolower(nargs_t nargs);
+extern NODE *do_toupper(nargs_t nargs);
+extern NODE *do_atan2(nargs_t nargs);
+extern NODE *do_sin(nargs_t nargs);
+extern NODE *do_cos(nargs_t nargs);
+extern NODE *do_rand(nargs_t nargs);
+extern NODE *do_srand(nargs_t nargs);
+extern NODE *do_match(nargs_t nargs);
+extern NODE *do_sub(nargs_t nargs, int flags);
+extern NODE *call_sub(const char *name, nargs_t nargs);
+extern NODE *call_match(nargs_t nargs);
+extern NODE *call_split_func(const char *name, nargs_t nargs);
+extern NODE *format_tree(const char *, size_t, NODE **, ulong_t);
+extern NODE *do_lshift(nargs_t nargs);
+extern NODE *do_rshift(nargs_t nargs);
+extern NODE *do_and(nargs_t nargs);
+extern NODE *do_or(nargs_t nargs);
+extern NODE *do_xor(nargs_t nargs);
+extern NODE *do_compl(nargs_t nargs);
+extern NODE *do_strtonum(nargs_t nargs);
 extern AWKNUM nondec2awknum(char *str, size_t len, char **endptr);
-extern NODE *do_dcgettext(int nargs);
-extern NODE *do_dcngettext(int nargs);
-extern NODE *do_bindtextdomain(int nargs);
-extern NODE *do_intdiv(int nargs);
-extern NODE *do_typeof(int nargs);
+extern NODE *do_dcgettext(nargs_t nargs);
+extern NODE *do_dcngettext(nargs_t nargs);
+extern NODE *do_bindtextdomain(nargs_t nargs);
+extern NODE *do_intdiv(nargs_t nargs);
+extern NODE *do_typeof(nargs_t nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 extern int sanitize_exit_status(int status);
@@ -1546,29 +1904,29 @@ extern const char *op2str(OPCODE type);
 extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
-extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
+extern bool register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
 /* ext.c */
-extern NODE *do_ext(int nargs);
+extern NODE *do_ext(nargs_t nargs);
 void load_ext(const char *lib_name);	/* temporary */
 extern void close_extensions(void);
 extern bool is_valid_identifier(const char *name);
 #ifdef DYNAMIC
 extern awk_bool_t make_builtin(const char *name_space, const awk_ext_func_t *);
-extern NODE *get_argument(int);
-extern NODE *get_actual_argument(NODE *, int, bool);
+extern NODE *get_argument(size_t);
+extern NODE *get_actual_argument(NODE *, size_t, bool);
 #define get_scalar_argument(n, i)  get_actual_argument((n), (i), false)
 #define get_array_argument(n, i)   get_actual_argument((n), (i), true)
 #endif
 /* field.c */
 extern void init_fields(void);
-extern void set_record(const char *buf, int cnt, const awk_fieldwidth_info_t *);
+extern void set_record(const char *buf, size_t cnt, const awk_fieldwidth_info_t *);
 extern void reset_record(void);
 extern void rebuild_record(void);
 extern void set_NF(void);
-extern NODE **get_field(long num, Func_ptr *assign);
-extern NODE *do_split(int nargs);
-extern NODE *do_patsplit(int nargs);
+extern NODE **get_field(field_num_t num, Func_ptr *assign);
+extern NODE *do_split(nargs_t nargs);
+extern NODE *do_patsplit(nargs_t nargs);
 extern void set_FS(void);
 extern void set_RS(void);
 extern void set_FIELDWIDTHS(void);
@@ -1595,17 +1953,17 @@ extern void print_ext_versions(void);
 extern void free_api_string_copies(void);
 
 /* gawkmisc.c */
-extern char *gawk_name(const char *filespec);
+extern const char *gawk_name(const char *filespec);
 extern void os_arg_fixup(int *argcp, char ***argvp);
-extern int os_devopen(const char *name, int flag);
-extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
-extern int os_isatty(int fd);
-extern int os_isdir(int fd);
+extern fd_t os_devopen(const char *name, int flag);
+extern void os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir);
+extern int os_isatty(fd_t fd);
+extern int os_isdir(fd_t fd);
 extern int os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
 extern int os_is_setuid(void);
-extern int os_setbinmode(int fd, int mode);
-extern void os_restore_mode(int fd);
-extern size_t optimal_bufsize(int fd, struct stat *sbuf);
+extern int os_setbinmode(fd_t fd, int mode);
+extern void os_restore_mode(fd_t fd);
+extern size_t optimal_bufsize(fd_t fd, struct stat *sbuf);
 extern int ispath(const char *file);
 extern int isdirpunct(int c);
 #ifdef _MSC_VER
@@ -1624,37 +1982,38 @@ extern void register_two_way_processor(awk_two_way_processor_t *processor);
 extern void set_FNR(void);
 extern void set_NR(void);
 
-extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal);
+extern struct redirect *redirect(NODE *redir_exp, enum redirval redirtype, int *errflg, bool failure_fatal);
 extern struct redirect *redirect_string(const char *redir_exp_str,
-		size_t redir_exp_len, bool not_string_flag, int redirtype,
-		int *errflg, int extfd, bool failure_fatal);
-extern NODE *do_close(int nargs);
+		size_t redir_exp_len, bool not_string_flag, enum redirval redirtype,
+		int *errflg, fd_t extfd, bool failure_fatal);
+extern NODE *do_close(nargs_t nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem, bool *got_EPIPE);
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 extern int close_rp(struct redirect *rp, two_way_close_type how);
 extern int devopen_simple(const char *name, const char *mode, bool try_real_open);
-extern int devopen(const char *name, const char *mode);
-extern int srcopen(SRCFILE *s);
-extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
-extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
-extern NODE *do_getline(int intovar, IOBUF *iop);
-extern struct redirect *getredirect(const char *str, int len);
+extern fd_t devopen(const char *name, const char *mode);
+extern fd_t srcopen(SRCFILE *s);
+extern char *find_source(const char *src, struct stat *stb, int *errcode, bool is_extlib);
+extern NODE *do_getline_redir(bool intovar, enum redirval redirtype);
+extern NODE *do_getline(bool intovar, IOBUF *iop);
+extern struct redirect *getredirect(const char *str, size_t len);
 extern bool inrec(IOBUF *iop, int *errcode);
-extern int nextfile(IOBUF **curfile, bool skipping);
+extern long_t nextfile(IOBUF **curfile, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
 extern bool is_non_fatal_redirect(const char *str, size_t len);
 extern void ignore_sigpipe(void);
 extern void set_sigpipe_to_default(void);
 extern bool non_fatal_flush_std_file(FILE *fp);
+extern ssize_t read_wrap(fd_t fd, void *buf, size_t size);
 
 /* main.c */
-extern int arg_assign(char *arg, bool initing);
-extern int is_std_var(const char *var);
-extern int is_off_limits_var(const char *var);
+extern bool arg_assign(char *arg, bool initing);
+extern bool is_std_var(const char *var);
+extern bool is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values(void);
-extern long getenv_long(const char *name);
+extern long_t getenv_long(const char *name);
 extern void after_beginfile(IOBUF **curfile);
 extern void set_current_namespace(const char *new_namespace);
 
@@ -1666,24 +2025,24 @@ extern void mpfr_unset(NODE *n);
 extern int mpg_cmp(const NODE *, const NODE *);
 extern int format_ieee(mpfr_ptr, int);
 extern NODE *mpg_update_var(NODE *);
-extern long mpg_set_var(NODE *);
-extern NODE *do_mpfr_and(int);
-extern NODE *do_mpfr_atan2(int);
-extern NODE *do_mpfr_compl(int);
-extern NODE *do_mpfr_cos(int);
-extern NODE *do_mpfr_exp(int);
-extern NODE *do_mpfr_int(int);
-extern NODE *do_mpfr_intdiv(int);
-extern NODE *do_mpfr_log(int);
-extern NODE *do_mpfr_lshift(int);
-extern NODE *do_mpfr_or(int);
-extern NODE *do_mpfr_rand(int);
-extern NODE *do_mpfr_rshift(int);
-extern NODE *do_mpfr_sin(int);
-extern NODE *do_mpfr_sqrt(int);
-extern NODE *do_mpfr_srand(int);
-extern NODE *do_mpfr_strtonum(int);
-extern NODE *do_mpfr_xor(int);
+extern field_num_t mpg_set_var(NODE *);
+extern NODE *do_mpfr_and(nargs_t nargs);
+extern NODE *do_mpfr_atan2(nargs_t nargs);
+extern NODE *do_mpfr_compl(nargs_t nargs);
+extern NODE *do_mpfr_cos(nargs_t nargs);
+extern NODE *do_mpfr_exp(nargs_t nargs);
+extern NODE *do_mpfr_int(nargs_t nargs);
+extern NODE *do_mpfr_intdiv(nargs_t nargs);
+extern NODE *do_mpfr_log(nargs_t nargs);
+extern NODE *do_mpfr_lshift(nargs_t nargs);
+extern NODE *do_mpfr_or(nargs_t nargs);
+extern NODE *do_mpfr_rand(nargs_t nargs);
+extern NODE *do_mpfr_rshift(nargs_t nargs);
+extern NODE *do_mpfr_sin(nargs_t nargs);
+extern NODE *do_mpfr_sqrt(nargs_t nargs);
+extern NODE *do_mpfr_srand(nargs_t nargs);
+extern NODE *do_mpfr_strtonum(nargs_t nargs);
+extern NODE *do_mpfr_xor(nargs_t nargs);
 extern void init_mpfr(mpfr_prec_t, const char *);
 extern void cleanup_mpfr(void);
 extern NODE *mpg_node(unsigned int);
@@ -1691,16 +2050,17 @@ extern const char *mpg_fmt(const char *, ...);
 extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
 /* msg.c */
-extern void gawk_exit(int status);
+ATTRIBUTE_NORETURN extern void gawk_exit(int status);
 ATTRIBUTE_NORETURN extern void final_exit(int status);
 ATTRIBUTE_PRINTF(3, 0) extern void err(bool isfatal, const char *s, const char *emsg, va_list argp);
-ATTRIBUTE_PRINTF_1 extern void msg (const char *mesg, ...);
-ATTRIBUTE_PRINTF_1 extern void error (const char *mesg, ...);
-ATTRIBUTE_PRINTF_1 extern void r_warning (const char *mesg, ...);
-extern void set_loc (const char *file, int line);
-ATTRIBUTE_PRINTF_1 extern void r_fatal (const char *mesg, ...);
+ATTRIBUTE_PRINTF_AT1(mesg) extern void msg (const char *mesg, ...);
+ATTRIBUTE_PRINTF_AT1(mesg) extern void error (const char *mesg, ...);
+ATTRIBUTE_PRINTF_AT1(mesg) extern void r_warning (const char *mesg, ...);
+extern void set_loc (const char *file, unsigned line);
+ATTRIBUTE_NORETURN
+ATTRIBUTE_PRINTF_AT1(mesg) extern void r_fatal (const char *mesg, ...);
 #if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))
-ATTRIBUTE_PRINTF_1 extern void (*lintfunc)(const char *mesg, ...);
+extern void (*lintfunc)(const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #else
 extern void (*lintfunc)(const char *mesg, ...);
 #endif
@@ -1716,11 +2076,11 @@ extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 		size_t namelen, int delim, bool breaklines);
 /* node.c */
 extern NODE *r_force_number(NODE *n);
-extern NODE *r_format_val(const char *format, int index, NODE *s);
+extern NODE *r_format_val(const char *format, unsigned index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern NODE *make_typed_regex(const char *re, size_t len);
-extern void *more_blocks(int id);
+extern void *more_blocks(enum block_id id);
 extern int parse_escape(const char **string_ptr);
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
@@ -1739,14 +2099,14 @@ extern bool out_of_range(NODE *n);
 extern char *format_nan_inf(NODE *n, char format);
 /* re.c */
 extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
-extern int research(Regexp *rp, char *str, int start, size_t len, int flags);
+extern regoff_t research(Regexp *rp, char *str, int start, size_t len, int flags);
 extern void refree(Regexp *rp);
 extern void reg_error(const char *s);
 extern Regexp *re_update(NODE *t);
 extern void resyntax(int syntax);
 extern void resetup(void);
-extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int get_numbase(const char *str, size_t len, bool use_locale);
+extern bool reisstring(const char *text, size_t len, Regexp *re, const char *buf);
+extern unsigned get_numbase(const char *str, size_t len, bool use_locale);
 extern bool using_utf8(void);
 
 /* symbol.c */
@@ -1760,17 +2120,17 @@ extern void destroy_symbol(NODE *r);
 extern void release_symbols(NODE *symlist, int keep_globals);
 extern void append_symbol(NODE *r);
 extern NODE *lookup(const char *name);
-extern NODE *make_params(char **pnames, int pcount);
+extern NODE *make_params(char **pnames, ulong_t pcount);
 extern void install_params(NODE *func);
 extern void remove_params(NODE *func);
 extern void release_all_vars(void);
 extern int foreach_func(NODE **table, int (*)(INSTRUCTION *, void *), void *);
-extern INSTRUCTION *bcalloc(OPCODE op, int size, int srcline);
+extern INSTRUCTION *bcalloc(OPCODE op, unsigned size, unsigned srcline);
 extern void bcfree(INSTRUCTION *);
 extern AWK_CONTEXT *new_context(void);
 extern void push_context(AWK_CONTEXT *ctxt);
 extern void pop_context(void);
-extern int in_main_context(void);
+extern bool in_main_context(void);
 extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list(void);
 extern NODE **function_list(bool sort);
@@ -1922,7 +2282,7 @@ dupnode(NODE *n)
  */
 
 static inline NODE *
-force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
+force_string_fmt(NODE *s, const char *fmtstr, unsigned fmtidx)
 {
 	if ((s->flags & STRCUR) != 0
 		&& (s->stfmt == STFMT_UNUSED || (s->stfmt == fmtidx
@@ -1949,7 +2309,8 @@ force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
 static inline void
 unref(NODE *r)
 {
-	if (r != NULL && --r->valref <= 0)
+	assert(r == NULL || r->valref);
+	if (r != NULL && !--r->valref)
 		r_unref(r);
 }
 
@@ -2015,8 +2376,8 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) malloc(count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
-			file, line, where, var, (long) count, strerror(errno));
+		fatal(_("%s:%d:%s: %s: can't allocate %llu bytes of memory (%s)"),
+			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;
 }
@@ -2033,8 +2394,8 @@ ezalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) calloc(1, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
-			file, line, where, var, (long) count, strerror(errno));
+		fatal(_("%s:%d:%s: %s: can't allocate %llu bytes of memory (%s)"),
+			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;
 }
@@ -2051,8 +2412,8 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 
 	ret = (void *) realloc(ptr, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't reallocate %ld bytes of memory (%s)"),
-			file, line, where, var, (long) count, strerror(errno));
+		fatal(_("%s:%d:%s: %s: can't reallocate %llu bytes of memory (%s)"),
+			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;
 }
@@ -2060,13 +2421,13 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 /* make_number_node --- make node with the given flags */
 
 static inline NODE *
-make_number_node(unsigned int flags)
+make_number_node(int flags)
 {
 	NODE *r;
 	getnode(r);
 	memset(r, 0, sizeof(*r));
 	r->type = Node_val;
-	r->valref = 1;
+	r->valref = 1ul;
 	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
 	return r;
 }
