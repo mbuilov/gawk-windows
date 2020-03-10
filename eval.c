@@ -1713,7 +1713,7 @@ pop_exec_state(enum defrule *rule, const char **src, size_t *sz)
 
 /* register_exec_hook --- add exec hooks in the interpreter. */
 
-int
+bool
 register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 {
 	unsigned pos = 0;
