@@ -835,7 +835,7 @@ pop_context(void)
 
 /* in_main_context --- are we in the main context ? */
 
-int
+bool
 in_main_context(void)
 {
 	assert(ctxt_level > 0);
