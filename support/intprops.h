@@ -508,9 +508,9 @@
    overflow problems.  *R's type is T, with extrema TMIN and TMAX.
    T must be a signed integer type.  Return 1 if the result overflows.  */
 #define _GL_INT_OP_CALC(a, b, r, op, overflow, ut, t, tmin, tmax) \
-  (overflow (a, b, tmin, tmax) \
-   ? (*(t*)(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 1) \
-   : (*(t*)(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 0))
+  (*(t*)(sizeof (t) == sizeof (*r) ? r : NULL) = \
+    _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), \
+   overflow (a, b, tmin, tmax) ? 1 : 0)
 
 /* Return the low-order bits of A <op> B, where the operation is given
    by OP.  Use the unsigned type UT for calculation to avoid undefined
