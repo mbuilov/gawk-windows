@@ -401,7 +401,7 @@ struct ulong_t {
 	struct ulong_t &operator-=(const struct ulong_t &ul_) {ul -= ul_.ul; return *this;}
 	struct ulong_t &operator+=(const struct long_t &l_) {ul += l_.l; return *this;}
 	struct ulong_t &operator-=(const struct long_t &l_) {ul -= l_.l; return *this;}
-	struct ulong_t &operator%=(const struct ulong_t &ul_) {ul &= ul_.ul; return *this;}
+	struct ulong_t &operator%=(const struct ulong_t &ul_) {ul %= ul_.ul; return *this;}
 	struct ulong_t &operator^=(const struct ulong_t &ul_) {ul ^= ul_.ul; return *this;}
 	struct ulong_t &operator+=(long l_) {ul += l_; return *this;}
 	struct ulong_t &operator-=(long l_) {ul -= l_; return *this;}
