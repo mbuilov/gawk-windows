@@ -499,10 +499,10 @@ using_utf8(void)
 
 /* reisstring --- return true if the RE match is a simple string match */
 
-int
+bool
 reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 {
-	int res;
+	bool res;
 	const char *matched;
 
 	/* simple checking for meta characters in re */
