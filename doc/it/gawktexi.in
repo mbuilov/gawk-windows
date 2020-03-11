@@ -17912,21 +17912,31 @@ e infine le funzioni caricate da un'estensione
 @item "@@val_str_asc"
 Ordinare secondo il valore degli elementi in ordine crescente (invece che in
 base agli indici).  I valori scalari sono confrontati come stringhe.
-I sottovettori, se presenti, vengono per ultimi.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+Quando si confrontano valori di tipo non-scalare si usa il criterio di
+ordinamento @code{"@@val_type_asc"} e per questo i sottovettori, se
+presenti, vengono per ultimi.
 
 @item "@@val_num_asc"
 Ordinare secondo il valore degli elementi in ordine crescente (invece che in
 base agli indici).  I valori scalari sono confrontati come numeri.
-I sottovettori, se presenti, vengono per ultimi.
-Quando i valori numerici coincidono, vengono usati i valori di tipo stringa
-per stabilire un ordinamento: ci@`o garantisce risultati coerenti tra differenti
-versioni della funzione C @code{qsort()},@footnote{Quando due elementi
+I valori non-scalari sono confrontati usando il criterio di ordinamento
+@code{"@@val_type_asc"} e per questo i sottovettori, se presenti,
+vengono per ultimi.
+Quando i valori numerici coincidono, vengono confrontati i valori di
+tipo stringa per stabilire un ordinamento: ci@`o garantisce risultati
+coerenti tra differenti versioni della funzione C
+@code{qsort()},@footnote{Quando due elementi
 risultano uguali, la funzione C @code{qsort()} non garantisce
 che dopo l'ordinamento venga rispettato il loro ordine relativo originale.
 Usando il valore di stringa per stabilire un ordinamento univoco quando i
 valori numerici sono uguali assicura che il comportamento di @command{gawk}
 sia coerente in differenti ambienti.} che @command{gawk} usa internamente
 per effettuare l'ordinamento.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+
 
 @item "@@ind_str_desc"
 Ordinare come fa @code{"@@ind_str_asc"}, ma gli
@@ -17944,12 +17954,21 @@ I sottovettori, se presenti, vengono per primi.
 @item "@@val_str_desc"
 Ordinare come fa @code{"@@val_str_asc"}, ma i valori degli
 elementi, trattati come stringhe, sono ordinati dal pi@`u alto al pi@`u basso.
-I sottovettori, se presenti, vengono per primi.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+Quando si confrontano valori di tipo non-scalare si usa il criterio di
+ordinamento @code{"@@val_type_desc"} e per questo i sottovettori, se
+presenti, vengono per primi.
 
 @item "@@val_num_desc"
 Ordinare come fa @code{"@@val_num_asc"}, ma i valori degli
 elementi, trattati come numeri, sono ordinati dal pi@`u alto al pi@`u basso.
-I sottovettori, se presenti, vengono per primi.
+Quando i valori numerici coincidono, vengono confrontati i valori di
+tipo stringa.  Se anche questi sono identici, veogno confrontati i valori
+della stringa di indice.
+I valori non-scalari sono confrontati usando il criterio di ordinamento
+@code{"@@val_type_desc"} e per questo i sottovettori, se presenti,
+vengono per primi.
 @end table
 
 L'ordine in cui il vettore @`e visitato viene determinato prima di iniziare
