@@ -645,7 +645,7 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 
 	/* ditto */
 	fprintf(fp, _("Examples:\n\t%s '{ sum += $1 }; END { print sum }' file\n\
-\tgawk -F: '{ print $1 }' /etc/passwd\n"), myname);
+\t%s -F: '{ print $1 }' /etc/passwd\n"), myname, myname);
 
 	fflush(fp);
 

@@ -845,19 +845,19 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		lintwarn(ext_id, _("fts: called with incorrect number of arguments, expecting 3"));
 
 	if (! get_argument(0, AWK_ARRAY, & pathlist)) {
-		warning(ext_id, _("fts: first parameter is not an array"));
+		warning(ext_id, _("fts: first argument is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(1, AWK_NUMBER, & flagval)) {
-		warning(ext_id, _("fts: second parameter is not a number"));
+		warning(ext_id, _("fts: second argument is not a number"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(2, AWK_ARRAY, & dest)) {
-		warning(ext_id, _("fts: third parameter is not an array"));
+		warning(ext_id, _("fts: third argument is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
