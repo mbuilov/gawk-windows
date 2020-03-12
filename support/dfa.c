@@ -22,10 +22,6 @@
 
 #include <config.h>
 
-#include "dfa.h"
-
-#include "flexmember.h"
-
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
@@ -33,6 +29,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+
+#include "dfa.h"
+#include "flexmember.h"
 
 /* Another name for ptrdiff_t, for sizes of objects and nonnegative
    indexes into objects.  It is signed to help catch integer overflow.
