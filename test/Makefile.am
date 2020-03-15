@@ -1521,13 +1521,14 @@ EXPECTED_FAIL_MINGW = \
 # List of tests that fail on z/OS
 EXPECTED_FAIL_ZOS = \
 	aasort aasorti arraysort asort asorti backbigs1 backsmalls1 \
-	backsmalls2 charasbytes concat4 dfamb1 double1 double2 fmttest \
-	forcenum gsubtst5 ignrcas2 lc_num1 localenl mbfw1 mbprintf1 \
-	mbprintf2 mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 numrange \
-	printhuge profile5 regrange reint2 rri1 sigpipe1 sortfor sortu \
-	subamp subi18n symtab1 symtab8 timeout wideidx wideidx2 \
-	widesub widesub2 widesub3 widesub4 \
-	beginfile1 beginfile2 clos1way6 errno getlndir nofile nonfatal2 space
+	backsmalls2 beginfile1 beginfile2 charasbytes clos1way6 concat4 \
+	dfamb1 double1 double2 errno fmttest forcenum getlndir gsubtst5 \
+	ignrcas2 lc_num1 localenl localenl mbfw1 mbprintf1 mbprintf2 \
+	mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 mtchi18n nlstringtest \
+	nofile nonfatal2 numrange printhuge profile5 profile5 rebt8b2 \
+	regrange reint2 rri1 sigpipe1 sort1 sortfor sortu space sprintfc \
+	subamp subi18n symtab1 symtab11 symtab8 timeout wideidx wideidx2 \
+	widesub widesub2 widesub3 widesub4
 
 ZOS_FAIL = @ZOS_FAIL@
 
@@ -2448,6 +2449,14 @@ diffout:
 		fi ; \
 		fi ; \
 	done | more
+
+# make things easier for z/OS
+zos-diffout:
+	@for i in $(EXPECTED_FAIL_ZOS); do \
+		if [ -f _$$i ]; then $(RM) -f _$$i ; \
+		else echo $$i apparently passed! please check ; fi ; done
+	@echo checking for new failures ...
+	@$(MAKE) diffout
 
 # convenient way to scan valgrind results for errors
 valgrind-scan:

@@ -202,7 +202,7 @@ $(srcdir)/pc/Makefile.tst: test/Makefile.in pc/Makefile.tst.prologue pc/GenMakef
 efence: gawk
 	$(CC) $(AM_LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LDADD) $(LIBS) -lefence
 
-diffout valgrind-scan:
+diffout valgrind-scan zos-diffout:
 	@cd test && $(MAKE) $(AM_MAKEFLAGS) $@
 
 valgrind:
