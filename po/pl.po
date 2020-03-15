@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.0b\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2014-03-22 17:49+0100\n"
 "Last-Translator: Wojciech Polak <polak@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -2099,17 +2099,17 @@ msgstr "fts: wywołano z nieprawidłową ilością argumentów, powinny być 3"
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort: pierwszy argument nie jest tablicą"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split: drugi argument nie jest tablicą"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match: otrzymano trzeci argument, który nie jest tablicą"
 
 #: extension/filefuncs.c:867
@@ -2275,23 +2275,23 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr ""
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "do_writea: argument 0 nie jest tekstem\n"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "do_writea: argument 1 nie jest tablicą\n"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
+#, fuzzy
+msgid "write_array: could not flatten array"
 msgstr "write_array: nie można spłaszczyć tablicy\n"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+#, fuzzy
+msgid "write_array: could not release flattened array"
 msgstr "write_array: nie można było zwolnić spłaszczonej tablicy\n"
 
 #: extension/rwarray.c:255
@@ -2300,23 +2300,23 @@ msgid "array value has unknown type %d"
 msgstr "nieznany typ węzła %d"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "do_reada: argument 0 nie jest tekstem\n"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "do_reada: argument 1 nie jest tablicą\n"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+#, fuzzy
+msgid "do_reada: clear_array failed"
 msgstr "do_reada: clear_array nie powiodła się\n"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+#, fuzzy
+msgid "read_array: set_array_element failed"
 msgstr "read_array: set_array_element nie powiodła się\n"
 
 #: extension/rwarray.c:489
@@ -2325,23 +2325,23 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr ""
 
 #: extension/rwarray0.c:114
-#, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "do_writea: argument 0 nie jest tekstem\n"
 
 #: extension/rwarray0.c:120
-#, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "do_writea: argument 1 nie jest tablicą\n"
 
 #: extension/rwarray0.c:267
-#, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "do_reada: argument 0 nie jest tekstem\n"
 
 #: extension/rwarray0.c:273
-#, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "do_reada: argument 1 nie jest tablicą\n"
 
 #: extension/time.c:141
@@ -3129,7 +3129,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "Przykłady:\n"
 "\tgawk '{ suma += $1 }; END { print suma }' plik\n"
@@ -3502,41 +3502,41 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "komponent regexp `%.*s' powinien być prawdopodobnie `[%.*s]'"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr "[ nie do pary"
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 msgid "invalid character class"
 msgstr "nieprawidłowa klasa znaku"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "składnia klasy znaku to [[:space:]], a nie [:space:]"
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr "niedokończona sekwencja ucieczki \\"
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 #, fuzzy
 msgid "invalid content of \\{\\}"
 msgstr "Nieprawidłowa zawartość \\{\\}"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 #, fuzzy
 msgid "regular expression too big"
 msgstr "Wyrażenie regularne jest zbyt duże"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr "( nie do pary"
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr "nie podano składni"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr ") nie do pary"
 
@@ -3678,6 +3678,14 @@ msgstr "funkcja `%s': nie można użyć nazwy funkcji jako nazwy parametru"
 #, fuzzy
 msgid "cannot pop main context"
 msgstr "nie można zdjąć głównego kontekstu"
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort: pierwszy argument nie jest tablicą"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match: otrzymano trzeci argument, który nie jest tablicą"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump: pierwszy argument nie jest tablicą"

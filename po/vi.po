@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.0e\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2018-01-30 08:07+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
@@ -2137,17 +2137,17 @@ msgstr "fts: được gọi với số lượng đối số không đúng, cần
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort: đối số thứ nhất không phải là một mảng"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
 #: extension/filefuncs.c:867
@@ -2310,23 +2310,23 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr "revoutput: không thể khởi tạo biến REVOUT"
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "do_writea: đối số 0 không phải là một chuỗi\n"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "do_writea: đối số 1 không phải là một mảng\n"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
+#, fuzzy
+msgid "write_array: could not flatten array"
 msgstr "write_array: không thể làm phẳng mảng\n"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+#, fuzzy
+msgid "write_array: could not release flattened array"
 msgstr "write_array: không thể giải phóng mảng được làm phẳng\n"
 
 #: extension/rwarray.c:255
@@ -2335,23 +2335,23 @@ msgid "array value has unknown type %d"
 msgstr "giá trị mảng có kiểu chưa biết %d"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "do_reada: đối số 0 không phải là một chuỗi\n"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "do_reada: đối số 1 không phải là một mảng\n"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+#, fuzzy
+msgid "do_reada: clear_array failed"
 msgstr "do_reada: clear_array gặp lỗi\n"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+#, fuzzy
+msgid "read_array: set_array_element failed"
 msgstr "read_array: set_array_element gặp lỗi\n"
 
 #: extension/rwarray.c:489
@@ -2360,23 +2360,23 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr "coi giá trị đã được phục hồi với kiểu chưa biết mã %d như là một chuỗi"
 
 #: extension/rwarray0.c:114
-#, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "do_writea: đối số 0 không phải là một chuỗi\n"
 
 #: extension/rwarray0.c:120
-#, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "do_writea: đối số 1 không phải là một mảng\n"
 
 #: extension/rwarray0.c:267
-#, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "do_reada: đối số 0 không phải là một chuỗi\n"
 
 #: extension/rwarray0.c:273
-#, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "do_reada: đối số 1 không phải là một mảng\n"
 
 #: extension/time.c:141
@@ -3179,7 +3179,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "Ví dụ:\n"
 "\tgawk \"{ sum += $1 }; END { print sum }\" tập_tin\n"
@@ -3549,39 +3549,39 @@ msgstr ""
 "thành phần của biểu thức chính qui (regexp) “%.*s” gần như chắc chắn nên là "
 "“[%.*s]”"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr "thiếu dấu ngoặc vuông mở ["
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 msgid "invalid character class"
 msgstr "sai lớp ký tự"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "cú pháp lớp ký tự là [[:dấu_cách:]], không phải [:dấu_cách:]"
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr "chưa kết thúc dãy thoát \\"
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 msgid "invalid content of \\{\\}"
 msgstr "nội dung của “\\{\\}” không hợp lệ"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 msgid "regular expression too big"
 msgstr "biểu thức chính quy quá lớn"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr "thiếu dấu ("
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr "chưa chỉ rõ cú pháp"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr "thiếu dấu )"
 
@@ -3722,6 +3722,14 @@ msgstr "hàm “%s”: không thể dùng hàm “%s” như là tên tham số"
 #, fuzzy
 msgid "cannot pop main context"
 msgstr "không thể pop (lấy ra) ngữ cảnh chính"
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort: đối số thứ nhất không phải là một mảng"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump: đối số thứ nhất không phải là một mảng"

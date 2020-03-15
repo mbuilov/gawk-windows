@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Awk 5.1.0, API: 3.0\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2020-01-24 14:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -2139,17 +2139,17 @@ msgstr "fts: chiamata con numero di argomenti errato, 3 previsti"
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort: il primo argomento non è un vettore"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split: il secondo argomento non è un vettore"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match: il terzo argomento non è un vettore"
 
 #: extension/filefuncs.c:867
@@ -2311,23 +2311,23 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr "revoutput: non riesco a inizializzare la variabile REVOUT"
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "do_writea: argomento 0 non è una stringa\n"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "do_writea: l'argomento 1 non è un vettore\n"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
+#, fuzzy
+msgid "write_array: could not flatten array"
 msgstr "write_array: non sono riuscito a appiattire un vettore\n"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+#, fuzzy
+msgid "write_array: could not release flattened array"
 msgstr "write_array: non sono riuscito a rilasciare un vettore appiattito\n"
 
 #: extension/rwarray.c:255
@@ -2336,23 +2336,23 @@ msgid "array value has unknown type %d"
 msgstr "valore di vettore di tipo sconosciuto %d"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "do_reada: argomento 0 non è una stringa\n"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "do_reada: l'argomento 1 non è un vettore\n"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+#, fuzzy
+msgid "do_reada: clear_array failed"
 msgstr "do_reada: clear_array non riuscita\n"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+#, fuzzy
+msgid "read_array: set_array_element failed"
 msgstr "read_array: set_array_element non riuscita\n"
 
 #: extension/rwarray.c:489
@@ -2362,23 +2362,23 @@ msgstr ""
 "valore recuperato, con codice di tipo sconosciuto %d, trattato come stringa"
 
 #: extension/rwarray0.c:114
-#, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "do_writea: argomento 0 non è una stringa\n"
 
 #: extension/rwarray0.c:120
-#, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "do_writea: l'argomento 1 non è un vettore\n"
 
 #: extension/rwarray0.c:267
-#, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "do_reada: argomento 0 non è una stringa\n"
 
 #: extension/rwarray0.c:273
-#, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "do_reada: l'argomento 1 non è un vettore\n"
 
 #: extension/time.c:141
@@ -3158,7 +3158,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "Esempi:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3533,39 +3533,39 @@ msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
 "componente di espressione `%.*s' dovrebbe probabilmente essere `[%.*s]'"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr "[ non chiusa"
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 msgid "invalid character class"
 msgstr "character class non valida"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "sintassi character class è [[:spazio:]], non [:spazio:]"
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr "sequenza escape \\ non completa"
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 msgid "invalid content of \\{\\}"
 msgstr "contenuto di \\{\\} non valido"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 msgid "regular expression too big"
 msgstr "espressione regolare troppo complessa"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr "( non chiusa"
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr "nessuna sintassi specificata"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr ") non aperta"
 
@@ -3707,6 +3707,14 @@ msgstr ""
 #, fuzzy
 msgid "cannot pop main context"
 msgstr "non posso salire più in alto nello stack"
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort: il primo argomento non è un vettore"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match: il terzo argomento non è un vettore"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump: il primo argomento non è un vettore"

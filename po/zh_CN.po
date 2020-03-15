@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2019-03-19 17:46+0100\n"
 "Last-Translator: Tianze Wang <zwpwjwtz@126.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -2059,17 +2059,17 @@ msgstr "fts：调用时的参数个数有误，应为 3 个"
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort：第一个参数不是数组"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split：第二个参数不是数组"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match：第三个参数不是数组"
 
 #: extension/filefuncs.c:867
@@ -2228,23 +2228,23 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr "revoutput：无法初始化 REVOUT 变量"
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "do_writea：参数 0 不是字符串\n"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "do_writea：参数 1 不是数组\n"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
+#, fuzzy
+msgid "write_array: could not flatten array"
 msgstr "write_array：无法展开数组\n"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+#, fuzzy
+msgid "write_array: could not release flattened array"
 msgstr "write_array：无法释放展开的数组\n"
 
 #: extension/rwarray.c:255
@@ -2253,23 +2253,23 @@ msgid "array value has unknown type %d"
 msgstr "数组的值的类型未知：%d"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "do_reada：参数 0 不是字符串\n"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "do_reada：参数 1 不是字数组\n"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+#, fuzzy
+msgid "do_reada: clear_array failed"
 msgstr "do_reada：clear_array 失败\n"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+#, fuzzy
+msgid "read_array: set_array_element failed"
 msgstr "read_array：set_array_element 失败\n"
 
 #: extension/rwarray.c:489
@@ -2278,23 +2278,23 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr "将未知类型（%d）的恢复值当作字符串来处理"
 
 #: extension/rwarray0.c:114
-#, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "do_writea：参数 0 不是字符串\n"
 
 #: extension/rwarray0.c:120
-#, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "do_writea：参数 1 不是数组\n"
 
 #: extension/rwarray0.c:267
-#, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "do_reada：参数 0 不是字符串\n"
 
 #: extension/rwarray0.c:273
-#, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "do_reada：参数 1 不是字数组\n"
 
 #: extension/time.c:141
@@ -3038,7 +3038,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "范例:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3397,39 +3397,39 @@ msgstr "正则表达式中的转义序列“\\%c”不是有效的操作符"
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "正则表达式成分“%.*s”可能应为“[%.*s]”"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr "[ 不配对"
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 msgid "invalid character class"
 msgstr "无效的字符类型名"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "字符类型的语法为 [[:space:]]，而不是 [:space:]"
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr "不完整的 \\ 转义"
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 msgid "invalid content of \\{\\}"
 msgstr "\\{\\} 中内容无效"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 msgid "regular expression too big"
 msgstr "正则表达式过大"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr "( 不配对"
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr "未指定语法"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr ") 不配对"
 
@@ -3570,6 +3570,14 @@ msgstr "函数“%s”：无法将函数名“%s”作为参数名"
 #, fuzzy
 msgid "cannot pop main context"
 msgstr "无法弹出 main 的上下文"
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort：第一个参数不是数组"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match：第三个参数不是数组"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump：第一个参数不是数组"

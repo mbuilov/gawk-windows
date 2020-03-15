@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.0b\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2014-11-07 12:26+0000\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -2080,17 +2080,17 @@ msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort: 第一引数が配列ではありません"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split: 第二引数が配列ではありません"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match: 第三引数が配列ではありません"
 
 #: extension/filefuncs.c:867
@@ -2252,23 +2252,22 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr ""
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "exp: 引数 %g が範囲外です"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "split: 第四引数が配列ではありません"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
-msgstr ""
+#, fuzzy
+msgid "write_array: could not flatten array"
+msgstr "split: 第四引数が配列ではありません"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+msgid "write_array: could not release flattened array"
 msgstr ""
 
 #: extension/rwarray.c:255
@@ -2277,23 +2276,21 @@ msgid "array value has unknown type %d"
 msgstr "不明なノード型 %d です"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "exp: 引数 %g が範囲外です"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "adump: 引数が配列ではありません"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+msgid "do_reada: clear_array failed"
 msgstr ""
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+msgid "read_array: set_array_element failed"
 msgstr ""
 
 #: extension/rwarray.c:489
@@ -2302,23 +2299,23 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr ""
 
 #: extension/rwarray0.c:114
-#, fuzzy, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "exp: 引数 %g が範囲外です"
 
 #: extension/rwarray0.c:120
-#, fuzzy, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "split: 第四引数が配列ではありません"
 
 #: extension/rwarray0.c:267
-#, fuzzy, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "exp: 引数 %g が範囲外です"
 
 #: extension/rwarray0.c:273
-#, fuzzy, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "adump: 引数が配列ではありません"
 
 #: extension/time.c:141
@@ -3088,7 +3085,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "使用例:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3459,42 +3456,42 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "正規表現の要素 `%.*s' はおそらく `[%.*s]' であるべきです"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr ""
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 #, fuzzy
 msgid "invalid character class"
 msgstr "無効な文字クラス名です"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr ""
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr ""
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 #, fuzzy
 msgid "invalid content of \\{\\}"
 msgstr "\\{\\} の中身が無効です"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 #, fuzzy
 msgid "regular expression too big"
 msgstr "正規表現が大きすぎます"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr ""
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr ""
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr ""
 
@@ -3635,6 +3632,14 @@ msgstr "関数 `%s': 関数名を仮引数名として使用出来ません"
 #: symbol.c:821
 msgid "cannot pop main context"
 msgstr ""
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort: 第一引数が配列ではありません"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match: 第三引数が配列ではありません"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump: 第一引数が配列ではありません"

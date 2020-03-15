@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-10 10:01+0200\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
 "PO-Revision-Date: 2019-03-04 16:44+0900\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <translation-team-ko@googlegroups.com>\n"
@@ -2106,17 +2106,17 @@ msgstr "fts: 인자가 3개 필요하나, 잘못된 인자 갯수로 호출했�
 
 #: extension/filefuncs.c:848
 #, fuzzy
-msgid "fts: first parameter is not an array"
+msgid "fts: first argument is not an array"
 msgstr "asort: 첫번째 인자는 배열이 아닙니다"
 
 #: extension/filefuncs.c:854
 #, fuzzy
-msgid "fts: second parameter is not a number"
+msgid "fts: second argument is not a number"
 msgstr "split: 두번째 인자 값이 배열이 아닙니다"
 
 #: extension/filefuncs.c:860
 #, fuzzy
-msgid "fts: third parameter is not an array"
+msgid "fts: third argument is not an array"
 msgstr "match: 세번째 인자 값이 배열이 아닙니다"
 
 #: extension/filefuncs.c:867
@@ -2278,23 +2278,23 @@ msgid "revoutput: could not initialize REVOUT variable"
 msgstr "revoutput: REVOUT 변수를 초기화할 수 없습니다"
 
 #: extension/rwarray.c:119
-#, fuzzy, c-format
-msgid "do_writea: first argument is not a string\n"
+#, fuzzy
+msgid "do_writea: first argument is not a string"
 msgstr "do_writea: 0번 인자 값은 문자열이 아닙니다\n"
 
 #: extension/rwarray.c:125
-#, fuzzy, c-format
-msgid "do_writea: second argument is not an array\n"
+#, fuzzy
+msgid "do_writea: second argument is not an array"
 msgstr "do_writea: 1번 인자 값은 배열이 아닙니다\n"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, c-format
-msgid "write_array: could not flatten array\n"
+#, fuzzy
+msgid "write_array: could not flatten array"
 msgstr "write_array: 배열 평활화 불가\n"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, c-format
-msgid "write_array: could not release flattened array\n"
+#, fuzzy
+msgid "write_array: could not release flattened array"
 msgstr "write_array: 평활화 배열을 릴리스할 수 없음\n"
 
 #: extension/rwarray.c:255
@@ -2303,23 +2303,23 @@ msgid "array value has unknown type %d"
 msgstr "배열 값에 알 수 없는 %d 형식 값이 있습니다"
 
 #: extension/rwarray.c:292
-#, fuzzy, c-format
-msgid "do_reada: first argument is not a string\n"
+#, fuzzy
+msgid "do_reada: first argument is not a string"
 msgstr "do_reada: 0번 인자 값은 문자열 이 아닙니다\n"
 
 #: extension/rwarray.c:298
-#, fuzzy, c-format
-msgid "do_reada: second argument is not an array\n"
+#, fuzzy
+msgid "do_reada: second argument is not an array"
 msgstr "do_reada: 1번 인자 값은 배열이 아닙니다\n"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, c-format
-msgid "do_reada: clear_array failed\n"
+#, fuzzy
+msgid "do_reada: clear_array failed"
 msgstr "do_reada: clear_array 처리 실패\n"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, c-format
-msgid "read_array: set_array_element failed\n"
+#, fuzzy
+msgid "read_array: set_array_element failed"
 msgstr "read_array: set_array_element 처리 실패\n"
 
 #: extension/rwarray.c:489
@@ -2328,23 +2328,23 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr "복원한 알 수 없는 %d 형식 코드 값을 문자열로 취급합니다"
 
 #: extension/rwarray0.c:114
-#, c-format
-msgid "do_writea: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_writea: argument 0 is not a string"
 msgstr "do_writea: 0번 인자 값은 문자열이 아닙니다\n"
 
 #: extension/rwarray0.c:120
-#, c-format
-msgid "do_writea: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_writea: argument 1 is not an array"
 msgstr "do_writea: 1번 인자 값은 배열이 아닙니다\n"
 
 #: extension/rwarray0.c:267
-#, c-format
-msgid "do_reada: argument 0 is not a string\n"
+#, fuzzy
+msgid "do_reada: argument 0 is not a string"
 msgstr "do_reada: 0번 인자 값은 문자열 이 아닙니다\n"
 
 #: extension/rwarray0.c:273
-#, c-format
-msgid "do_reada: argument 1 is not an array\n"
+#, fuzzy
+msgid "do_reada: argument 1 is not an array"
 msgstr "do_reada: 1번 인자 값은 배열이 아닙니다\n"
 
 #: extension/time.c:141
@@ -3113,7 +3113,7 @@ msgstr ""
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "예제:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' <파일>\n"
@@ -3478,39 +3478,39 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "정규 표현식의 `%.*s' 구성 요소는 `[%.*s]' 이어야 할 것 같습니다"
 
-#: support/dfa.c:951
+#: support/dfa.c:950
 msgid "unbalanced ["
 msgstr "짝이 맞지 않는 [ 괄호"
 
-#: support/dfa.c:1072
+#: support/dfa.c:1071
 msgid "invalid character class"
 msgstr "잘못된 문자 클래스"
 
-#: support/dfa.c:1198
+#: support/dfa.c:1197
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "문자 클래스 표기 방식은 [:space:]가 아닌 [[:space:]]입니다"
 
-#: support/dfa.c:1265
+#: support/dfa.c:1264
 msgid "unfinished \\ escape"
 msgstr "끝나지 않은 \\ 이스케이프 문자"
 
-#: support/dfa.c:1426
+#: support/dfa.c:1425
 msgid "invalid content of \\{\\}"
 msgstr "잘못된 \\{\\} 내용"
 
-#: support/dfa.c:1429
+#: support/dfa.c:1428
 msgid "regular expression too big"
 msgstr "정규 표현식이 너무 깁니다"
 
-#: support/dfa.c:1900
+#: support/dfa.c:1899
 msgid "unbalanced ("
 msgstr "짝이 맞지 않는 ( 괄호"
 
-#: support/dfa.c:2017
+#: support/dfa.c:2016
 msgid "no syntax specified"
 msgstr "구문을 지정하지 않았습니다"
 
-#: support/dfa.c:2028
+#: support/dfa.c:2027
 msgid "unbalanced )"
 msgstr "짝이 맞지 않는 ) 괄호"
 
@@ -3653,6 +3653,14 @@ msgstr "`%s' 함수: `%s' 함수를 매개변수 이름으로 사용할 수 없�
 #, fuzzy
 msgid "cannot pop main context"
 msgstr "주 컨텍스트를 빠져나올 수 없습니다"
+
+#, fuzzy
+#~ msgid "fts: first parameter is not an array"
+#~ msgstr "asort: 첫번째 인자는 배열이 아닙니다"
+
+#, fuzzy
+#~ msgid "fts: third parameter is not an array"
+#~ msgstr "match: 세번째 인자 값이 배열이 아닙니다"
 
 #~ msgid "adump: first argument not an array"
 #~ msgstr "adump: 첫번째 인자는 배열이 아닙니다"
