@@ -18,7 +18,11 @@
 BEGIN {FILE1="test1"; FILE2="test2"; 
        print "1\n" > FILE1; close(FILE1);
        print "2\n" > FILE2; close(FILE2); 
-       cmd1="cat " FILE1; cmd2="cat " FILE2;
+       if (PROCINFO["platform"] == "windows") {
+         cmd1="type " FILE1; cmd2="type " FILE2;
+       } else {
+         cmd1="cat " FILE1; cmd2="cat " FILE2;
+       }
        #end of preparing commands which give easily-predictable output
 
        while( (cmd1 | getline)==1) { #terminates as file has only 1 line
