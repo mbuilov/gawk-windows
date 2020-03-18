@@ -61,7 +61,10 @@ BEGIN {
     while (("echo" | getline) == 1)
 	;
     RS = ""
-    "echo \"a\n\nb\"" | getline y
+    if (PROCINFO["platform"] == "windows")
+        "echo.a&echo.&echo.b" | getline y
+    else
+        "echo \"a\n\nb\"" | getline y
     printf "y = <%s>\n", y	# ADR
     printf "x = <%s>\n", x	# ADR
 }
