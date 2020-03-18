@@ -23,7 +23,10 @@ BEGIN	{
 			# The command i typed on the shell was "gawk -f <this_prog> -"
 
 			#com = "cal 01 1997"
-			com = ("cat " SRCDIR "/pipeio2.in")
+			if (PROCINFO["platform"] == "windows")
+				com = ("type " SRCDIR "\\pipeio2.in")
+			else
+				com = ("cat " SRCDIR "/pipeio2.in")
 
 			# Don't use empty lines, because Windows ECHO does
 			# something different when invoked without arguments
@@ -31,7 +34,10 @@ BEGIN	{
 
 #				com_tr = "echo " fnam " | tr [0-9]. ..........."
 #				com_tr = "echo " fnam " | sed 's/[0-9]/./g'"
-				com_tr = "echo " fnam " | sed \"s/[0-9]/./g\""
+				if (PROCINFO["platform"] == "windows")
+					com_tr = "(^(echo " fnam "^)) | pipeio2.bat"
+				else
+					com_tr = "echo " fnam " | sed \"s/[0-9]/./g\""
 				# print "\'" com_tr "\'"
 				print "'" com_tr "'"
 
