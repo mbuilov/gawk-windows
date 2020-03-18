@@ -53,8 +53,14 @@
 # 
 BEGIN {
     RS = ""
-    "echo 'foo\n\nbaz'" | getline ; print
-    "echo 'foo\n\nbaz'" | getline ; print
-    "echo 'bar\n\nbaz'" | getline ; print
+    if (PROCINFO["platform"] == "windows") {
+        "echo.foo&echo.&echo.baz" | getline ; print
+        "echo.foo&echo.&echo.baz" | getline ; print
+        "echo.bar&echo.&echo.baz" | getline ; print
+    } else {
+        "echo 'foo\n\nbaz'" | getline ; print
+        "echo 'foo\n\nbaz'" | getline ; print
+        "echo 'bar\n\nbaz'" | getline ; print
+    }
     printf "x = <%s>\n", x
 }
