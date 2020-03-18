@@ -31,5 +31,8 @@ BEGIN {
     system("echo 1 > f")
     while ((getline a[++c] < "f") > 0) {}
     print c
-    system("rm -f f")
+    if (PROCINFO["platform"] == "windows")
+        system("del /q f")
+    else
+        system("rm -f f")
 }
