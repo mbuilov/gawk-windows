@@ -46,8 +46,14 @@
 #!/usr/bin/gawk -f
 
 BEGIN {
-	printf "" | "cat"             # [a]
-	getline line < "/dev/null"    # [b]
-	"true" | getline line         # [c]
+	if (PROCINFO["platform"] == "windows") {
+		printf "" | "find /v \"\""    # [a]
+		getline line < "/dev/null"    # [b]
+		"rem." | getline line         # [c]
+	} else {
+		printf "" | "cat"             # [a]
+		getline line < "/dev/null"    # [b]
+		"true" | getline line         # [c]
+	}
 }
 # ================================================================================
