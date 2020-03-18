@@ -69,5 +69,8 @@
 # 
 BEGIN {
 	RS = ""
-	"echo x | tr -d '\\12'" | getline
+	if (PROCINFO["platform"] == "windows")
+		"<NUL set /p\"=x\"" | getline
+	else
+		"echo x | tr -d '\\12'" | getline
 }
