@@ -3551,8 +3551,8 @@ diffout:
 # make things easier for z/OS
 zos-diffout:
 	@for i in $(EXPECTED_FAIL_ZOS); do \
-		if [ -f _$$i ]; then $(RM) -f _$$i ; \
-		else echo $$i apparently passed! please check ; fi ; done
+		if [ -f _$$i ]; then mv -f _$$i X_$$i ; fi ; \
+		if [ ! -f X_$$i ]; then echo $$i apparently passed! please check ; fi ; done
 	@echo checking for new failures ...
 	@-$(MAKE) diffout
 
