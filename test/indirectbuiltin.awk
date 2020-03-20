@@ -371,7 +371,12 @@ BEGIN {
 	print_result("i/o", fun, b1, i1)
 
 	fun = "system"
-	b1 = system("rm x1.out")
-	i1 = @fun("rm x2.out")
+	if (PROCINFO["platform"] == "windows") {
+		b1 = system("del /q x1.out")
+		i1 = @fun("del /q x2.out")
+	} else {
+		b1 = system("rm x1.out")
+		i1 = @fun("rm x2.out")
+	}
 	print_result("i/o", fun, b1, i1)
 }
