@@ -1,18 +1,17 @@
 # Dutch translations for GNU gawk.
-# Copyright (C) 2019 Free Software Foundation, Inc.
+# Copyright (C) 2020 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gawk package.
 #
 # “Flierefluiten!!”
 #
 # Erwin Poeze <erwin.poeze@gmail.com>, 2009.
-# Benno Schulenberg <benno@vertaalt.nl>, 2005, 2007, 2010, 2011, 2012, 2013.
-# Benno Schulenberg <benno@vertaalt.nl>, 2014, 2015, 2016, 2019.
+# Benno Schulenberg <benno@vertaalt.nl>, 2005, 2007, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.2.63\n"
+"Project-Id-Version: gawk 5.0.64\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-20 11:03+0200\n"
-"PO-Revision-Date: 2019-03-04 10:51+0100\n"
+"POT-Creation-Date: 2020-03-15 15:25+0200\n"
+"PO-Revision-Date: 2020-03-20 12:56+0100\n"
 "Last-Translator: Benno Schulenberg <vertaling@coevern.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -20,7 +19,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Lokalize 1.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: array.c:248
@@ -60,38 +58,34 @@ msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "scalair '%s[\"%.*s\"]' wordt gebruikt als array"
 
 #: array.c:783 array.c:831
-#, fuzzy, c-format
+#, c-format
 msgid "%s: first argument is not an array"
-msgstr "asort: eerste argument is geen array"
+msgstr "%s: eerste argument is geen array"
 
 #: array.c:824
-#, fuzzy, c-format
+#, c-format
 msgid "%s: second argument is not an array"
-msgstr "split: tweede argument is geen array"
+msgstr "%s: tweede argument is geen array"
 
 #: array.c:835
-#, fuzzy, c-format
+#, c-format
 msgid "%s: first argument cannot be SYMTAB"
-msgstr "asort: eerste argument is geen array"
+msgstr "%s: eerste argument kan niet SYMTAB zijn"
 
 #: array.c:838
-#, fuzzy, c-format
+#, c-format
 msgid "%s: first argument cannot be FUNCTAB"
-msgstr "asort: eerste argument is geen array"
+msgstr "%s: eerste argument kan niet FUNCTAB zijn"
 
 #: array.c:844
-#, fuzzy, c-format
+#, c-format
 msgid "%s: cannot use a subarray of first argument for second argument"
-msgstr ""
-"asort: een subarray van het eerste argument kan niet als tweede argument "
-"gebruikt worden"
+msgstr "%s een subarray van het eerste argument kan niet als tweede argument gebruikt worden"
 
 #: array.c:849
-#, fuzzy, c-format
+#, c-format
 msgid "%s: cannot use a subarray of second argument for first argument"
-msgstr ""
-"asort: een subarray van het tweede argument kan niet als eerste argument "
-"gebruikt worden"
+msgstr "%s: een subarray van het tweede argument kan niet als eerste argument gebruikt worden"
 
 #: array.c:1355
 #, c-format
@@ -163,8 +157,7 @@ msgstr "'return' wordt gebruikt buiten functiecontext"
 
 #: awkgram.y:1169
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr ""
-"kale 'print' in BEGIN- of END-regel moet vermoedelijk 'print \"\"' zijn"
+msgstr "kale 'print' in BEGIN- of END-regel moet vermoedelijk 'print \"\"' zijn"
 
 #: awkgram.y:1239 awkgram.y:1288
 msgid "`delete' is not allowed with SYMTAB"
@@ -224,10 +217,9 @@ msgid "indirect function calls are a gawk extension"
 msgstr "indirecte functieaanroepen zijn een gawk-uitbreiding"
 
 #: awkgram.y:2010
-#, fuzzy, c-format
+#, c-format
 msgid "cannot use special variable `%s' for indirect function call"
-msgstr ""
-"kan speciale variabele '%s' niet voor indirecte functieaanroep gebruiken"
+msgstr "kan speciale variabele '%s' niet voor indirecte functieaanroep gebruiken"
 
 #: awkgram.y:2043
 #, c-format
@@ -251,28 +243,26 @@ msgid "unexpected newline or end of string"
 msgstr "onverwacht regeleinde of einde van string"
 
 #: awkgram.y:2573
-msgid ""
-"source files / command-line arguments must contain complete functions or "
-"rules"
+msgid "source files / command-line arguments must contain complete functions or rules"
 msgstr ""
 
 #: awkgram.y:2855 awkgram.y:2933 awkgram.y:3171 debug.c:536 debug.c:552
 #: debug.c:2829 debug.c:5195
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open source file `%s' for reading: %s"
-msgstr "kan bronbestand '%s' niet openen om te lezen (%s)"
+msgstr "kan bronbestand '%s' niet openen om te lezen: %s"
 
 #: awkgram.y:2856 awkgram.y:2993
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open shared library `%s' for reading: %s"
-msgstr "kan gedeelde bibliotheek '%s' niet openen om te lezen (%s)"
+msgstr "kan gedeelde bibliotheek '%s' niet openen om te lezen: %s"
 
 #: awkgram.y:2858 awkgram.y:2934 awkgram.y:2994 builtin.c:150 debug.c:5346
 msgid "reason unknown"
 msgstr "reden onbekend"
 
 #: awkgram.y:2867 awkgram.y:2891
-#, fuzzy, c-format
+#, c-format
 msgid "cannot include `%s' and use it as a program file"
 msgstr "kan '%s' niet invoegen en als programmabestand gebruiken"
 
@@ -307,9 +297,9 @@ msgid "empty program text on command line"
 msgstr "lege programmatekst op opdrachtregel"
 
 #: awkgram.y:3239 debug.c:461 debug.c:619
-#, fuzzy, c-format
+#, c-format
 msgid "cannot read source file `%s': %s"
-msgstr "kan bronbestand '%s' niet lezen (%s)"
+msgstr "kan bronbestand '%s' niet lezen: %s"
 
 #: awkgram.y:3250
 #, c-format
@@ -317,9 +307,9 @@ msgid "source file `%s' is empty"
 msgstr "bronbestand '%s' is leeg"
 
 #: awkgram.y:3310
-#, fuzzy, c-format
+#, c-format
 msgid "error: invalid character '\\%03o' in source code"
-msgstr "PEBKAC-fout: ongeldig teken '\\%03o' in brontekst"
+msgstr "fout: ongeldig teken '\\%03o' in brontekst"
 
 #: awkgram.y:3537
 msgid "source file does not end in newline"
@@ -360,14 +350,14 @@ msgid "multidimensional arrays are a gawk extension"
 msgstr "meerdimensionale arrays zijn een gawk-uitbreiding"
 
 #: awkgram.y:3891 awkgram.y:3902
-#, fuzzy, c-format
+#, c-format
 msgid "POSIX does not allow operator `%s'"
-msgstr "POSIX staat operator '**' niet toe"
+msgstr "POSIX staat operator '%s' niet toe"
 
 #: awkgram.y:3893 awkgram.y:3904 awkgram.y:3939 awkgram.y:3947
-#, fuzzy, c-format
+#, c-format
 msgid "operator `%s' is not supported in old awk"
-msgstr "oude 'awk' kent de operator '^' niet"
+msgstr "operator '%s' wordt niet ondersteund in oude 'awk'"
 
 #: awkgram.y:4044 awkgram.y:4066 command.y:1187
 msgid "unterminated string"
@@ -375,11 +365,11 @@ msgstr "onafgesloten string"
 
 #: awkgram.y:4054 main.c:1218
 msgid "POSIX does not allow physical newlines in string values"
-msgstr "POSIX staat geen nieuweregeltekens toe in tekenreeksen"
+msgstr "POSIX staat geen fysieke nieuweregeltekens toe in strings"
 
 #: awkgram.y:4056 node.c:453
 msgid "backslash string continuation is not portable"
-msgstr "een backslash-regelvoortzetting is niet overdraagbaar"
+msgstr "string-voortzetting via backslash is niet overdraagbaar"
 
 #: awkgram.y:4294
 #, c-format
@@ -411,7 +401,7 @@ msgid "%d is invalid as number of arguments for %s"
 msgstr "%d is een ongeldig aantal argumenten voor %s"
 
 #: awkgram.y:4604
-#, fuzzy, c-format
+#, c-format
 msgid "%s: string literal as last argument of substitute has no effect"
 msgstr "%s: een stringwaarde als laatste vervangingsargument heeft geen effect"
 
@@ -438,9 +428,7 @@ msgstr "dcngettext(_\"...\") is onjuist: verwijder het liggende streepje"
 
 #: awkgram.y:4819
 msgid "index: regexp constant as second argument is not allowed"
-msgstr ""
-"index: een reguliere-expressie-constante als tweede argument is niet "
-"toegestaan"
+msgstr "index: een reguliere-expressie-constante als tweede argument is niet toegestaan"
 
 #: awkgram.y:4872
 #, c-format
@@ -457,9 +445,9 @@ msgid "sending variable list to standard error"
 msgstr "variabelenlijst gaat naar standaardfoutuitvoer"
 
 #: awkgram.y:4930
-#, fuzzy, c-format
+#, c-format
 msgid "%s: close failed: %s"
-msgstr "%s: sluiten is mislukt (%s)"
+msgstr "%s: sluiten is mislukt: %s"
 
 #: awkgram.y:4955
 msgid "shadow_funcs() called twice!"
@@ -475,15 +463,14 @@ msgid "function name `%s' previously defined"
 msgstr "functienaam '%s' is al eerder gedefinieerd"
 
 #: awkgram.y:5091
-#, fuzzy, c-format
+#, c-format
 msgid "function `%s': cannot use function name as parameter name"
 msgstr "functie '%s': kan functienaam niet als parameternaam gebruiken"
 
 #: awkgram.y:5094
-#, fuzzy, c-format
+#, c-format
 msgid "function `%s': cannot use special variable `%s' as a function parameter"
-msgstr ""
-"functie '%s': kan speciale variabele '%s' niet als functieparameter gebruiken"
+msgstr "functie '%s': kan speciale variabele '%s' niet als functieparameter gebruiken"
 
 #: awkgram.y:5098
 #, c-format
@@ -529,11 +516,8 @@ msgid "division by zero attempted in `%%'"
 msgstr "deling door nul in '%%'"
 
 #: awkgram.y:5802
-msgid ""
-"cannot assign a value to the result of a field post-increment expression"
-msgstr ""
-"kan geen waarde toewijzen aan het resultaat van een post-increment-expressie "
-"van een veld"
+msgid "cannot assign a value to the result of a field post-increment expression"
+msgstr "kan geen waarde toewijzen aan het resultaat van een post-increment-expressie van een veld"
 
 #: awkgram.y:5805
 #, c-format
@@ -557,8 +541,7 @@ msgstr ""
 
 #: awkgram.y:6715
 #, c-format
-msgid ""
-"identifier `%s': namespace separator can only appear once in a qualified name"
+msgid "identifier `%s': namespace separator can only appear once in a qualified name"
 msgstr ""
 
 #: awkgram.y:6764 awkgram.y:6815
@@ -568,15 +551,12 @@ msgstr ""
 
 #: awkgram.y:6771 awkgram.y:6781
 #, c-format
-msgid ""
-"using reserved identifier `%s' as second component of a qualified name is "
-"not allowed"
+msgid "using reserved identifier `%s' as second component of a qualified name is not allowed"
 msgstr ""
 
 #: awkgram.y:6799
-#, fuzzy
 msgid "@namespace is a gawk extension"
-msgstr "'@include' is een gawk-uitbreiding"
+msgstr "'@namespace' is een gawk-uitbreiding"
 
 #: awkgram.y:6806
 #, c-format
@@ -584,18 +564,17 @@ msgid "namespace name `%s' must meet identifier naming rules"
 msgstr ""
 
 #: builtin.c:144
-#, fuzzy, c-format
+#, c-format
 msgid "%s to \"%s\" failed: %s"
-msgstr "%s naar \"%s\" is mislukt (%s)"
+msgstr "%s naar \"%s\" is mislukt: %s"
 
 #: builtin.c:148
 msgid "standard output"
 msgstr "standaarduitvoer"
 
 #: builtin.c:149
-#, fuzzy
 msgid "standard error"
-msgstr "standaarduitvoer"
+msgstr "standaardfoutuitvoer"
 
 #: builtin.c:163 builtin.c:493 builtin.c:583 builtin.c:1797 builtin.c:2519
 #: builtin.c:2535 builtin.c:2649 builtin.c:3606 mpfr.c:707
@@ -609,47 +588,39 @@ msgid "exp: argument %g is out of range"
 msgstr "exp: argument %g ligt buiten toegestane bereik"
 
 #: builtin.c:246
-#, fuzzy, c-format
+#, c-format
 msgid "fflush: cannot flush: pipe `%.*s' opened for reading, not writing"
-msgstr ""
-"fflush: kan pijp niet leegmaken: '%s' is geopend om te lezen, niet om te "
-"schrijven"
+msgstr "fflush: kan pijp niet leegmaken: '%.*s' is geopend om te lezen, niet om te schrijven"
 
 #: builtin.c:249
-#, fuzzy, c-format
+#, c-format
 msgid "fflush: cannot flush: file `%.*s' opened for reading, not writing"
-msgstr ""
-"fflush: kan bestand niet leegmaken: '%s' is geopend om te lezen, niet om te "
-"schrijven"
+msgstr "fflush: kan buffer niet leegmaken: bestand '%.*s' is geopend om te lezen, niet om te schrijven"
 
 #: builtin.c:260
-#, fuzzy, c-format
+#, c-format
 msgid "fflush: cannot flush file `%.*s': %s"
-msgstr ""
-"fflush: kan bestand niet leegmaken: '%s' is geopend om te lezen, niet om te "
-"schrijven"
+msgstr "fflush: kan buffer voor bestand '%.*s' niet leegmaken: %s"
 
 #: builtin.c:265
-#, fuzzy, c-format
+#, c-format
 msgid "fflush: cannot flush: two-way pipe `%.*s' has closed write end"
-msgstr ""
-"fflush: kan pijp niet leegmaken: tweewegpijp '%s' heeft de schrijfkant "
-"gesloten"
+msgstr "fflush: kan pijp niet leegmaken: tweewegpijp '%.*s' heeft de schrijfkant gesloten"
 
 #: builtin.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "fflush: `%.*s' is not an open file, pipe or co-process"
-msgstr "fflush: '%s' is geen open bestand, pijp, of co-proces"
+msgstr "fflush: '%.*s' is geen open bestand, pijp, of co-proces"
 
 #: builtin.c:378 builtin.c:2034
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received non-string first argument"
-msgstr "index: eerste argument is geen string"
+msgstr "%s: eerste argument is geen string"
 
 #: builtin.c:380
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received non-string second argument"
-msgstr "index: tweede argument is geen string"
+msgstr "%s: tweede argument is geen string"
 
 #: builtin.c:532
 msgid "length: received array argument"
@@ -660,14 +631,14 @@ msgid "`length(array)' is a gawk extension"
 msgstr "'length(array)' is een gawk-uitbreiding"
 
 #: builtin.c:554 builtin.c:2124 builtin.c:2182 builtin.c:2434 builtin.c:2465
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received non-string argument"
-msgstr "system: argument is geen string"
+msgstr "%s: argument is geen string"
 
 #: builtin.c:586 builtin.c:1801
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received negative argument %g"
-msgstr "log: argument %g is negatief"
+msgstr "%s: argument %g is negatief"
 
 #: builtin.c:786 builtin.c:791 builtin.c:944
 msgid "fatal: must use `count$' on all formats or none"
@@ -693,15 +664,13 @@ msgid "fatal: `$' is not permitted in awk formats"
 msgstr "fataal: '$' is niet toegestaan in awk-opmaak"
 
 #: builtin.c:927
-#, fuzzy
 msgid "fatal: argument index with `$' must be > 0"
-msgstr "fataal: het aantal argumenten met '$' moet > 0 zijn"
+msgstr "fataal: argumentindex bij '$' moet > 0 zijn"
 
 #: builtin.c:931
-#, fuzzy, c-format
-msgid ""
-"fatal: argument index %ld greater than total number of supplied arguments"
-msgstr "fataal: argumentental %ld is groter dan het gegeven aantal argumenten"
+#, c-format
+msgid "fatal: argument index %ld greater than total number of supplied arguments"
+msgstr "fataal: argumentindex %ld is groter dan het gegeven aantal argumenten"
 
 #: builtin.c:935
 msgid "fatal: `$' not permitted after period in format"
@@ -751,20 +720,19 @@ msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr "[s]printf: waarde %g ligt buiten toegestaan bereik voor opmaak '%%%c'"
 
 #: builtin.c:1505
-#, fuzzy, c-format
+#, c-format
 msgid "[s]printf: value %s is out of range for `%%%c' format"
-msgstr "[s]printf: waarde %g ligt buiten toegestaan bereik voor opmaak '%%%c'"
+msgstr "[s]printf: waarde %s ligt buiten toegestaan bereik voor opmaak '%%%c'"
 
 #: builtin.c:1530
 #, c-format
 msgid "%%%c format is POSIX standard but not portable to other awks"
-msgstr ""
+msgstr "'%%%c'-opmaak is POSIX maar niet overdraagbaar naar andere awks"
 
 #: builtin.c:1630
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
-"onbekend opmaakteken '%c' wordt genegeerd: geen argument is geconverteerd"
+msgstr "onbekend opmaakteken '%c' wordt genegeerd: geen argument is geconverteerd"
 
 #: builtin.c:1635
 msgid "fatal: not enough arguments to satisfy format string"
@@ -812,8 +780,7 @@ msgstr "substr: lengte %g is geen integer; wordt afgekapt"
 #: builtin.c:1853
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
-msgstr ""
-"substr: lengte %g is te groot voor stringindexering; wordt verkort tot %g"
+msgstr "substr: lengte %g is te groot voor stringindexering; wordt verkort tot %g"
 
 #: builtin.c:1865
 #, c-format
@@ -836,20 +803,17 @@ msgstr "substr: startindex %g ligt voorbij het einde van de string"
 
 #: builtin.c:1915
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr ""
-"substr: lengte %g bij startindex %g is groter dan de lengte van het eerste "
-"argument (%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr "substr: lengte %g bij startindex %g is groter dan de lengte van het eerste argument (%lu)"
 
 #: builtin.c:1988
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: opmaakwaarde in PROCINFO[\"strftime\"] is numeriek"
 
 #: builtin.c:2008 builtin.c:2500 builtin.c:3438 builtin.c:3477 builtin.c:4032
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received non-numeric second argument"
-msgstr "or: tweede argument is geen getal"
+msgstr "%s: tweede argument is geen getal"
 
 #: builtin.c:2018
 msgid "strftime: second argument less than 0 or too big for time_t"
@@ -881,9 +845,9 @@ msgid "reference to uninitialized field `$%d'"
 msgstr "verwijzing naar ongeïnitialiseerd veld '$%d'"
 
 #: builtin.c:2498 builtin.c:3436 builtin.c:3475 builtin.c:4030
-#, fuzzy, c-format
+#, c-format
 msgid "%s: received non-numeric first argument"
-msgstr "or: eerste argument is geen getal"
+msgstr "%s: eerste argument is geen getal"
 
 #: builtin.c:2680
 msgid "match: third argument is not an array"
@@ -906,9 +870,9 @@ msgid "indirect call to %s requires at least two arguments"
 msgstr "indirecte aanroep van %s vereist minstens twee argumenten"
 
 #: builtin.c:3444
-#, fuzzy, c-format
+#, c-format
 msgid "lshift(%f, %f): negative values are not allowed"
-msgstr "lshift(%f, %f): negatieve waarden geven rare resultaten"
+msgstr "lshift(%f, %f): negatieve waarden zijn niet toegestaan"
 
 #: builtin.c:3448
 #, c-format
@@ -921,9 +885,9 @@ msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): te grote opschuifwaarden geven rare resultaten"
 
 #: builtin.c:3483
-#, fuzzy, c-format
+#, c-format
 msgid "rshift(%f, %f): negative values are not allowed"
-msgstr "rshift(%f, %f): negatieve waarden geven rare resultaten"
+msgstr "rshift(%f, %f): negatieve waarden zijn niet toegestaan"
 
 #: builtin.c:3487
 #, c-format
@@ -936,24 +900,24 @@ msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): te grote opschuifwaarden geven rare resultaten"
 
 #: builtin.c:3513 builtin.c:3544 builtin.c:3574
-#, fuzzy, c-format
+#, c-format
 msgid "%s: called with less than two arguments"
-msgstr "or: aangeroepen met minder dan twee argumenten"
+msgstr "%s: aangeroepen met minder dan twee argumenten"
 
 #: builtin.c:3518 builtin.c:3549 builtin.c:3580
-#, fuzzy, c-format
+#, c-format
 msgid "%s: argument %d is non-numeric"
-msgstr "or: argument %d is niet-numeriek"
+msgstr "%s: argument %d is niet-numeriek"
 
 #: builtin.c:3522 builtin.c:3553 builtin.c:3584
-#, fuzzy, c-format
+#, c-format
 msgid "%s: argument %d negative value %g is not allowed"
-msgstr "%s: negatieve waarde %2$Rg van argument #%1$d geeft rare resultaten"
+msgstr "%1$s: negatieve waarde %3$g van argument %2$d is niet toegestaan"
 
 #: builtin.c:3611
-#, fuzzy, c-format
+#, c-format
 msgid "compl(%f): negative value is not allowed"
-msgstr "compl(%f): negatieve waarden geven rare resultaten"
+msgstr "compl(%f): negatieve waarde is niet toegestaan"
 
 #: builtin.c:3614
 #, c-format
@@ -966,35 +930,32 @@ msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: '%s' is geen geldige taalregio-deelcategorie"
 
 #: builtin.c:4022 mpfr.c:1203
-#, fuzzy
 msgid "intdiv: third argument is not an array"
-msgstr "match: derde argument is geen array"
+msgstr "intdiv: derde argument is geen array"
 
 #: builtin.c:4041 mpfr.c:1252
 #, fuzzy
 msgid "intdiv: division by zero attempted"
-msgstr "deling door nul"
+msgstr "intdiv: deling door nul"
 
 #: builtin.c:4080
-#, fuzzy
 msgid "typeof: second argument is not an array"
-msgstr "split: tweede argument is geen array"
+msgstr "typeof: tweede argument is geen array"
 
 #: builtin.c:4152
 #, c-format
-msgid ""
-"typeof detected invalid flags combination `%s'; please file a bug report."
+msgid "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr ""
 
 #: builtin.c:4172
-#, fuzzy, c-format
+#, c-format
 msgid "typeof: invalid argument type `%s'"
-msgstr "option: ongeldige parameter -- \"%s\""
+msgstr "typeof: ongeldig argumenttype '%s'"
 
 #: builtin.c:4176
 #, c-format
 msgid "typeof: unknown argument type `%s'"
-msgstr ""
+msgstr "typeof: onbekend argumenttype '%s'"
 
 #: cint_array.c:1268 cint_array.c:1296
 #, c-format
@@ -1002,9 +963,9 @@ msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
 msgstr ""
 
 #: command.y:227
-#, fuzzy, c-format
+#, c-format
 msgid "Type (g)awk statement(s). End with the command `end'\n"
-msgstr "Typ (g)awk statement(s).  Eindig met het commando \"end\".\n"
+msgstr "Typ (g)awk statement(s).  Eindig met het commando 'end'.\n"
 
 #: command.y:291
 #, c-format
@@ -1012,25 +973,23 @@ msgid "invalid frame number: %d"
 msgstr "ongeldig framenummer: %d"
 
 #: command.y:297
-#, fuzzy, c-format
+#, c-format
 msgid "info: invalid option - `%s'"
-msgstr "info: ongeldige optie -- \"%s\""
+msgstr "info: ongeldige optie -- '%s'"
 
 #: command.y:323
-#, fuzzy, c-format
+#, c-format
 msgid "source: `%s': already sourced."
-msgstr "source \"%s\": is reeds ingelezen."
+msgstr "source: '%s': is reeds ingelezen."
 
 #: command.y:328
-#, fuzzy, c-format
+#, c-format
 msgid "save: `%s': command not permitted."
-msgstr "save \"%s\": commando niet toegestaan."
+msgstr "save: '%s': commando is niet toegestaan."
 
 #: command.y:341
-#, fuzzy
 msgid "cannot use command `commands' for breakpoint/watchpoint commands"
-msgstr ""
-"Kan commando 'commands' niet voor breekpunt-/kijkpunt-commando's gebruiken"
+msgstr "Kan commando 'commands' niet vóór breekpunt-/kijkpunt-commando's gebruiken"
 
 #: command.y:343
 msgid "no breakpoint/watchpoint has been set yet"
@@ -1046,7 +1005,7 @@ msgid "Type commands for when %s %d is hit, one per line.\n"
 msgstr "Typ de commando's voor wanneer %s %d getroffen wordt, één per regel.\n"
 
 #: command.y:352
-#, fuzzy, c-format
+#, c-format
 msgid "End with the command `end'\n"
 msgstr "Eindig met het commando 'end'.\n"
 
@@ -1059,9 +1018,9 @@ msgid "`silent' valid only in command `commands'"
 msgstr "'silent' is alleen geldig bij het commando 'commands'"
 
 #: command.y:375
-#, fuzzy, c-format
+#, c-format
 msgid "trace: invalid option - `%s'"
-msgstr "trace: ongeldige optie -- \"%s\""
+msgstr "trace: ongeldige optie -- '%s'"
 
 #: command.y:389
 msgid "condition: invalid breakpoint/watchpoint number"
@@ -1072,19 +1031,19 @@ msgid "argument not a string"
 msgstr "argument is geen string"
 
 #: command.y:461 command.y:466
-#, fuzzy, c-format
+#, c-format
 msgid "option: invalid parameter - `%s'"
-msgstr "option: ongeldige parameter -- \"%s\""
+msgstr "option: ongeldige parameter -- '%s'"
 
 #: command.y:476
-#, fuzzy, c-format
+#, c-format
 msgid "no such function - `%s'"
-msgstr "functie \"%s\" bestaat niet"
+msgstr "functie '%s' bestaat niet"
 
 #: command.y:533
-#, fuzzy, c-format
+#, c-format
 msgid "enable: invalid option - `%s'"
-msgstr "enable: ongeldige optie -- \"%s\""
+msgstr "enable: ongeldige optie -- '%s'"
 
 #: command.y:599
 #, c-format
@@ -1104,39 +1063,24 @@ msgid "non-zero integer value"
 msgstr "niet-nul geheel getal"
 
 #: command.y:819
-msgid ""
-"backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
-"frames."
-msgstr ""
-"backtrace [N] - een trace weergeven van alle of N binnenste frames (of "
-"buitenste als N < 0)"
+msgid "backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "backtrace [N] - een trace weergeven van alle of N binnenste frames (of buitenste als N < 0)"
 
 #: command.y:821
-msgid ""
-"break [[filename:]N|function] - set breakpoint at the specified location."
-msgstr ""
-"break [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - breekpunt zetten op gegeven "
-"positie"
+msgid "break [[filename:]N|function] - set breakpoint at the specified location."
+msgstr "break [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - breekpunt zetten op gegeven positie"
 
 #: command.y:823
 msgid "clear [[filename:]N|function] - delete breakpoints previously set."
-msgstr ""
-"clear [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - eerder gezet breekpunt "
-"verwijderen"
+msgstr "clear [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - eerder gezet breekpunt verwijderen"
 
 #: command.y:825
-msgid ""
-"commands [num] - starts a list of commands to be executed at a "
-"breakpoint(watchpoint) hit."
-msgstr ""
-"commands [NUMMER] - een lijst van commando's beginnen die uitgevoerd moeten "
-"worden wanneer een breekpunt/kijkpunt getroffen wordt"
+msgid "commands [num] - starts a list of commands to be executed at a breakpoint(watchpoint) hit."
+msgstr "commands [NUMMER] - een lijst van commando's beginnen die uitgevoerd moeten worden wanneer een breekpunt/kijkpunt getroffen wordt"
 
 #: command.y:827
 msgid "condition num [expr] - set or clear breakpoint or watchpoint condition."
-msgstr ""
-"condition NUMMER [EXPRESSIE] - de conditie van een breekpunt/kijkpunt zetten "
-"of wissen"
+msgstr "condition NUMMER [EXPRESSIE] - de conditie van een breekpunt/kijkpunt zetten of wissen"
 
 #: command.y:829
 msgid "continue [COUNT] - continue program being debugged."
@@ -1152,9 +1096,7 @@ msgstr "disable [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten uitschakelen"
 
 #: command.y:835
 msgid "display [var] - print value of variable each time the program stops."
-msgstr ""
-"display [VAR] - waarde van variabele weergeven elke keer dat het programma "
-"stopt"
+msgstr "display [VAR] - waarde van variabele weergeven elke keer dat het programma stopt"
 
 #: command.y:837
 msgid "down [N] - move N frames down the stack."
@@ -1162,14 +1104,11 @@ msgstr "down [AANTAL] - dit aantal frames naar beneden in de stack gaan"
 
 #: command.y:839
 msgid "dump [filename] - dump instructions to file or stdout."
-msgstr ""
-"dump [BESTANDSNAAM] - instructies dumpen op standaarduitvoer (of naar "
-"bestand)"
+msgstr "dump [BESTANDSNAAM] - instructies dumpen op standaarduitvoer (of naar bestand)"
 
 #: command.y:841
 msgid "enable [once|del] [breakpoints] [range] - enable specified breakpoints."
-msgstr ""
-"enable [once|del] [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten inschakelen"
+msgstr "enable [once|del] [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten inschakelen"
 
 #: command.y:843
 msgid "end - end a list of commands or awk statements."
@@ -1193,41 +1132,27 @@ msgstr "frame [NUMMER] - stack-frame met dit nummer selecteren en weergeven"
 
 #: command.y:853
 msgid "help [command] - print list of commands or explanation of command."
-msgstr ""
-"help [COMMANDO] - lijst van beschikbare commando's (of uitleg van commando) "
-"tonen"
+msgstr "help [COMMANDO] - lijst van beschikbare commando's (of uitleg van commando) tonen"
 
 #: command.y:855
 msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
-msgstr ""
-"ignore NUMMER AANTAL - het aantal keren dat dit breekpuntnummer genegeerd "
-"moet worden"
+msgstr "ignore NUMMER AANTAL - het aantal keren dat dit breekpuntnummer genegeerd moet worden"
 
 #: command.y:857
-msgid ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
-msgstr ""
-"info THEMA - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch"
+msgid "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
+msgstr "info THEMA - source|sources|variables|functions|break|frame|args|locals|display|watch"
 
 #: command.y:859
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
-msgstr ""
-"list [-|+|[BESTANDSNAAM:]REGELNUMMER|FUNCTIE|BEREIK] - aangegeven regels "
-"tonen"
+msgstr "list [-|+|[BESTANDSNAAM:]REGELNUMMER|FUNCTIE|BEREIK] - aangegeven regels tonen"
 
 #: command.y:861
 msgid "next [COUNT] - step program, proceeding through subroutine calls."
-msgstr ""
-"next [AANTAL] - programma uitvoeren tot de volgende bronregel bereikt is"
+msgstr "next [AANTAL] - programma uitvoeren tot de volgende bronregel bereikt is"
 
 #: command.y:863
-msgid ""
-"nexti [COUNT] - step one instruction, but proceed through subroutine calls."
-msgstr ""
-"nexti [AANTAL] - één instructie (of dit aantal) uitvoeren, waarbij een "
-"functie-aanroep als één telt"
+msgid "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
+msgstr "nexti [AANTAL] - één instructie (of dit aantal) uitvoeren, waarbij een functie-aanroep als één telt"
 
 #: command.y:865
 msgid "option [name[=value]] - set or display debugger option(s)."
@@ -1262,11 +1187,8 @@ msgid "set var = value - assign value to a scalar variable."
 msgstr "set VAR = WAARDE - een waarde aan een scalaire variabele toekennen"
 
 #: command.y:883
-msgid ""
-"silent - suspends usual message when stopped at a breakpoint/watchpoint."
-msgstr ""
-"silent - de gewone meldingen bij het stoppen bij een breekpunt/kijkpunt "
-"onderdrukken"
+msgid "silent - suspends usual message when stopped at a breakpoint/watchpoint."
+msgstr "silent - de gewone meldingen bij het stoppen bij een breekpunt/kijkpunt onderdrukken"
 
 #: command.y:885
 msgid "source file - execute commands from file."
@@ -1274,8 +1196,7 @@ msgstr "source BESTANDSNAAM - commando's uit dit bestand uitvoeren"
 
 #: command.y:887
 msgid "step [COUNT] - step program until it reaches a different source line."
-msgstr ""
-"step [AANTAL] - programma uitvoeren tot een andere bronregel bereikt is"
+msgstr "step [AANTAL] - programma uitvoeren tot een andere bronregel bereikt is"
 
 #: command.y:889
 msgid "stepi [COUNT] - step one instruction exactly."
@@ -1283,8 +1204,7 @@ msgstr "stepi [AANTAL] - precies één (of dit aantal) instructies uitvoeren"
 
 #: command.y:891
 msgid "tbreak [[filename:]N|function] - set a temporary breakpoint."
-msgstr ""
-"tbreak [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - een tijdelijk breekpunt zetten"
+msgstr "tbreak [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - een tijdelijk breekpunt zetten"
 
 #: command.y:893
 msgid "trace on|off - print instruction before executing."
@@ -1292,16 +1212,11 @@ msgstr "trace on|off - instructie weergeven alvorens deze uit te voeren"
 
 #: command.y:895
 msgid "undisplay [N] - remove variable(s) from automatic display list."
-msgstr ""
-"undisplay [AANTAL] - variabele(n) van automatische weergavelijst verwijderen"
+msgstr "undisplay [AANTAL] - variabele(n) van automatische weergavelijst verwijderen"
 
 #: command.y:897
-msgid ""
-"until [[filename:]N|function] - execute until program reaches a different "
-"line or line N within current frame."
-msgstr ""
-"until [[BESTANDSNAAM:]N|FUNCTIE] - programma uitvoeren totdat deze een "
-"andere regel bereikt of regel N binnen het huidige frame"
+msgid "until [[filename:]N|function] - execute until program reaches a different line or line N within current frame."
+msgstr "until [[BESTANDSNAAM:]N|FUNCTIE] - programma uitvoeren totdat deze een andere regel bereikt of regel N binnen het huidige frame"
 
 #: command.y:899
 msgid "unwatch [N] - remove variable(s) from watch list."
@@ -1316,12 +1231,8 @@ msgid "watch var - set a watchpoint for a variable."
 msgstr "watch VAR - een kijkpunt voor een variabele zetten"
 
 #: command.y:905
-msgid ""
-"where [N] - (same as backtrace) print trace of all or N innermost (outermost "
-"if N < 0) frames."
-msgstr ""
-"where[N] - (zelfde als backtrace) een trace weergeven van alle of N "
-"binnenste frames (of buitenste als N < 0)"
+msgid "where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "where[N] - (zelfde als backtrace) een trace weergeven van alle of N binnenste frames (of buitenste als N < 0)"
 
 #: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
@@ -1329,23 +1240,23 @@ msgid "error: "
 msgstr "fout: "
 
 #: command.y:1060
-#, fuzzy, c-format
+#, c-format
 msgid "cannot read command: %s\n"
-msgstr "kan commando niet lezen (%s)\n"
+msgstr "kan commando niet lezen: %s\n"
 
 #: command.y:1074
-#, fuzzy, c-format
+#, c-format
 msgid "cannot read command: %s"
-msgstr "kan commando niet lezen (%s)"
+msgstr "kan commando niet lezen: %s"
 
 #: command.y:1125
 msgid "invalid character in command"
 msgstr "ongeldig teken in commando"
 
 #: command.y:1161
-#, fuzzy, c-format
+#, c-format
 msgid "unknown command - `%.*s', try help"
-msgstr "onbekend commando - \"%.*s\", probeer help"
+msgstr "onbekend commando -- '%.*s'; probeer help"
 
 #: command.y:1231
 #, c-format
@@ -1403,15 +1314,14 @@ msgid "no current source file."
 msgstr "geen huidig bronbestand"
 
 #: debug.c:518
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find source file named `%s': %s"
-msgstr "kan geen bronbestand met naam '%s' vinden (%s)"
+msgstr "kan geen bronbestand met naam '%s' vinden: %s"
 
 #: debug.c:542
 #, c-format
 msgid "WARNING: source file `%s' modified since program compilation.\n"
-msgstr ""
-"Waarschuwing: bronbestand '%s' is gewijzigd sinds programmacompilatie.\n"
+msgstr "Waarschuwing: bronbestand '%s' is gewijzigd sinds programmacompilatie.\n"
 
 #: debug.c:564
 #, c-format
@@ -1551,14 +1461,14 @@ msgid "array `%s' is empty\n"
 msgstr "array '%s' is leeg\n"
 
 #: debug.c:1132 debug.c:1184
-#, fuzzy, c-format
+#, c-format
 msgid "[\"%.*s\"] not in array `%s'\n"
-msgstr "[\"%s\"] niet in array '%s'\n"
+msgstr "[\"%.*s\"] niet in array '%s'\n"
 
 #: debug.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "`%s[\"%.*s\"]' is not an array\n"
-msgstr "'%s[\"%s\"]' is geen array\n"
+msgstr "'%s[\"%.*s\"]' is geen array\n"
 
 #: debug.c:1249 debug.c:5104
 #, c-format
@@ -1566,14 +1476,14 @@ msgid "`%s' is not a scalar variable"
 msgstr "'%s' is geen scalaire variabele"
 
 #: debug.c:1272 debug.c:5134
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
-msgstr "array '%s[\"%s\"]' wordt gebruikt in een scalaire context"
+msgstr "array '%s[\"%.*s\"]' wordt gebruikt in een scalaire context"
 
 #: debug.c:1295 debug.c:5145
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as array"
-msgstr "scalair '%s[\"%s\"]' wordt gebruikt als array"
+msgstr "scalair '%s[\"%.*s\"]' wordt gebruikt als array"
 
 #: debug.c:1438
 #, c-format
@@ -1596,9 +1506,9 @@ msgid "No watch item numbered %ld"
 msgstr "Er is geen kijk-item met nummer %ld"
 
 #: debug.c:1543
-#, fuzzy, c-format
+#, c-format
 msgid "%d: [\"%.*s\"] not in array `%s'\n"
-msgstr "%d: [\"%s\"] niet in array '%s'\n"
+msgstr "%d: [\"%.*s\"] niet in array '%s'\n"
 
 #: debug.c:1782
 msgid "attempt to use scalar value as array"
@@ -1641,9 +1551,7 @@ msgstr "ongeldig framenummer"
 #: debug.c:2217
 #, c-format
 msgid "Note: breakpoint %d (enabled, ignore next %ld hits), also set at %s:%d"
-msgstr ""
-"Opmerking: breekpunt %d (ingeschakeld, volgende %ld passages genegeerd), ook "
-"gezet op %s:%d"
+msgstr "Opmerking: breekpunt %d (ingeschakeld, volgende %ld passages genegeerd), ook gezet op %s:%d"
 
 #: debug.c:2224
 #, c-format
@@ -1653,9 +1561,7 @@ msgstr "Opmerking: breekpunt %d (ingeschakeld), ook gezet op %s:%d"
 #: debug.c:2231
 #, c-format
 msgid "Note: breakpoint %d (disabled, ignore next %ld hits), also set at %s:%d"
-msgstr ""
-"Opmerking: breekpunt %d (uitgeschakeld, volgende %ld passages genegeerd), "
-"ook gezet op %s:%d"
+msgstr "Opmerking: breekpunt %d (uitgeschakeld, volgende %ld passages genegeerd), ook gezet op %s:%d"
 
 #: debug.c:2238
 #, c-format
@@ -1668,9 +1574,9 @@ msgid "Breakpoint %d set at file `%s', line %d\n"
 msgstr "Breekpunt %d is gezet in bestand '%s', op regel %d\n"
 
 #: debug.c:2357
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set breakpoint in file `%s'\n"
-msgstr "Kan geen breekpunt zetten in bestand '%s'\n"
+msgstr "kan geen breekpunt zetten in bestand '%s'\n"
 
 #: debug.c:2386 debug.c:2509 debug.c:3367
 #, c-format
@@ -1678,19 +1584,19 @@ msgid "line number %d in file `%s' out of range"
 msgstr "regelnummer %d in bestand '%s' valt buiten bereik"
 
 #: debug.c:2390
-#, fuzzy, c-format
+#, c-format
 msgid "internal error: cannot find rule\n"
-msgstr "**interne fout**: %s met lege 'vname'"
+msgstr "**interne fout**: kan regel niet vinden\n"
 
 #: debug.c:2392
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set breakpoint at `%s':%d\n"
-msgstr "Kan geen breekpunt zetten op '%s':%d\n"
+msgstr "kan geen breekpunt zetten op '%s':%d\n"
 
 #: debug.c:2404
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set breakpoint in function `%s'\n"
-msgstr "Kan geen breekpunt zetten in functie '%s'\n"
+msgstr "kan geen breekpunt zetten in functie '%s'\n"
 
 #: debug.c:2420
 #, c-format
@@ -1761,8 +1667,7 @@ msgstr "fout: kan niet herstarten; operatie is niet toegestaan\n"
 #: debug.c:2959
 #, c-format
 msgid "error (%s): cannot restart, ignoring rest of the commands\n"
-msgstr ""
-"fout(%s): kan niet herstarten; de resterende commando's worden genegeerd\n"
+msgstr "fout(%s): kan niet herstarten; de resterende commando's worden genegeerd\n"
 
 #: debug.c:2967
 #, c-format
@@ -1770,14 +1675,14 @@ msgid "Starting program: \n"
 msgstr "Starten van programma: \n"
 
 #: debug.c:2977
-#, fuzzy, c-format
+#, c-format
 msgid "Program exited abnormally with exit value: %d\n"
-msgstr "Programma verliet %s met afsluitwaarde %d\n"
+msgstr "Programma is abnormaal afgesloten, met afsluitwaarde %d\n"
 
 #: debug.c:2978
-#, fuzzy, c-format
+#, c-format
 msgid "Program exited normally with exit value: %d\n"
-msgstr "Programma verliet %s met afsluitwaarde %d\n"
+msgstr "Programma is normaal afgesloten, met afsluitwaarde %d\n"
 
 #: debug.c:2992
 msgid "The program is running. Exit anyway (y/n)? "
@@ -1814,9 +1719,9 @@ msgid "'return' not meaningful in the outermost frame main()\n"
 msgstr "'return' is niet zinvol in het buitenste frame van main()\n"
 
 #: debug.c:3386
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find specified location in function `%s'\n"
-msgstr "Kan gegeven locatie in functie '%s' niet vinden\n"
+msgstr "kan gegeven locatie in functie '%s' niet vinden\n"
 
 #: debug.c:3394
 #, c-format
@@ -1824,9 +1729,9 @@ msgid "invalid source line %d in file `%s'"
 msgstr "ongeldige bronregel %d in bestand '%s'"
 
 #: debug.c:3409
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find specified location %d in file `%s'\n"
-msgstr "Kan gegeven locatie %d in bestand '%s' niet vinden\n"
+msgstr "kan gegeven locatie %d in bestand '%s' niet vinden\n"
 
 #: debug.c:3441
 #, c-format
@@ -1855,15 +1760,13 @@ msgstr "'until' is niet zinvol met een niet-lokale sprong '%s'\n"
 
 #. TRANSLATORS: don't translate the 'q' inside the brackets.
 #: debug.c:4324
-#, fuzzy
 msgid "\t------[Enter] to continue or [q] + [Enter] to quit------"
-msgstr ""
-"\t------[Enter] om verder te gaan, of [q] [Enter] om af te sluiten------"
+msgstr "\t------[Enter] om verder te gaan, of [q] [Enter] om af te sluiten------"
 
 #: debug.c:5141
-#, fuzzy, c-format
+#, c-format
 msgid "[\"%.*s\"] not in array `%s'"
-msgstr "[\"%s\"] niet in array '%s'"
+msgstr "[\"%.*s\"] niet in array '%s'"
 
 #: debug.c:5347
 #, c-format
@@ -2000,44 +1903,41 @@ msgid "load_ext: received NULL lib_name"
 msgstr "load_ext: lege bibliotheeknaam ontvangen"
 
 #: ext.c:60
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: cannot open library `%s': %s"
-msgstr "load_ext: kan bibliotheek '%s' niet openen (%s)\n"
+msgstr "load_ext: kan bibliotheek '%s' niet openen: %s"
 
 #: ext.c:66
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s': does not define `plugin_is_GPL_compatible': %s"
-msgstr ""
-"load_ext: bibliotheek '%s' definieert 'plugin_is_GPL_compatible' niet (%s)\n"
+msgstr "load_ext: bibliotheek '%s' definieert 'plugin_is_GPL_compatible' niet: %s"
 
 #: ext.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s': cannot call function `%s': %s"
-msgstr "load_ext: bibliotheek '%s' kan functie '%s' niet aanroepen (%s)\n"
+msgstr "load_ext: bibliotheek '%s' kan functie '%s' niet aanroepen: %s"
 
 #: ext.c:76
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s' initialization routine `%s' failed"
-msgstr "load_ext: bibliotheek '%s': initialisatiefunctie '%s' is mislukt\n"
+msgstr "load_ext: bibliotheek '%s': initialisatiefunctie '%s' is mislukt"
 
 #: ext.c:92
 msgid "make_builtin: missing function name"
 msgstr "make_builtin: ontbrekende functienaam"
 
 #: ext.c:100 ext.c:111
-#, fuzzy, c-format
+#, c-format
 msgid "make_builtin: cannot use gawk built-in `%s' as function name"
-msgstr ""
-"make_builtin: kan in gawk ingebouwde '%s' niet als functienaam gebruiken"
+msgstr "make_builtin: kan in gawk ingebouwde '%s' niet als functienaam gebruiken"
 
 #: ext.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "make_builtin: cannot use gawk built-in `%s' as namespace name"
-msgstr ""
-"make_builtin: kan in gawk ingebouwde '%s' niet als functienaam gebruiken"
+msgstr "make_builtin: kan in gawk ingebouwde '%s' niet als naamsruimte gebruiken"
 
 #: ext.c:126
-#, fuzzy, c-format
+#, c-format
 msgid "make_builtin: cannot redefine function `%s'"
 msgstr "make_builtin: kan functie '%s' niet herdefiniëren"
 
@@ -2067,9 +1967,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "functie '%s': argument #%d: een array wordt gebruikt als scalair"
 
 #: ext.c:232
-#, fuzzy
 msgid "dynamic loading of libraries is not supported"
-msgstr "het dynamisch laden van de bibliotheek wordt niet ondersteund"
+msgstr "het dynamisch laden van bibliotheken wordt niet ondersteund"
 
 #: extension/filefuncs.c:442
 #, c-format
@@ -2077,14 +1976,12 @@ msgid "stat: unable to read symbolic link `%s'"
 msgstr "stat: kan symbolische koppeling '%s' niet lezen"
 
 #: extension/filefuncs.c:475
-#, fuzzy
 msgid "stat: first argument is not a string"
-msgstr "do_writea: argument 0 is geen string\n"
+msgstr "stat: eerste argument is geen string"
 
 #: extension/filefuncs.c:480
-#, fuzzy
 msgid "stat: second argument is not an array"
-msgstr "split: tweede argument is geen array"
+msgstr "stat: tweede argument is geen array"
 
 #: extension/filefuncs.c:524
 msgid "stat: bad parameters"
@@ -2100,9 +1997,8 @@ msgid "fts is not supported on this system"
 msgstr "'fts' wordt op dit systeem niet ondersteund"
 
 #: extension/filefuncs.c:629
-#, fuzzy
 msgid "fill_stat_element: could not create array, out of memory"
-msgstr "fill_stat_element: kan array niet aanmaken"
+msgstr "fill_stat_element: kan array niet aanmaken -- onvoldoende geheugen"
 
 #: extension/filefuncs.c:638
 msgid "fill_stat_element: could not set element"
@@ -2127,23 +2023,19 @@ msgstr "fts-verwerking: kan element niet instellen"
 
 #: extension/filefuncs.c:845
 msgid "fts: called with incorrect number of arguments, expecting 3"
-msgstr ""
-"fts: aangeroepen met onjuist aantal argumenten; drie worden er verwacht"
+msgstr "fts: aangeroepen met onjuist aantal argumenten; drie worden er verwacht"
 
 #: extension/filefuncs.c:848
-#, fuzzy
 msgid "fts: first argument is not an array"
-msgstr "asort: eerste argument is geen array"
+msgstr "fts: eerste argument is geen array"
 
 #: extension/filefuncs.c:854
-#, fuzzy
 msgid "fts: second argument is not a number"
-msgstr "split: tweede argument is geen array"
+msgstr "fts: tweede argument is geen getal"
 
 #: extension/filefuncs.c:860
-#, fuzzy
 msgid "fts: third argument is not an array"
-msgstr "match: derde argument is geen array"
+msgstr "fts: derde argument is geen array"
 
 #: extension/filefuncs.c:867
 msgid "fts: could not flatten array\n"
@@ -2187,113 +2079,103 @@ msgid "fork: PROCINFO is not an array!"
 msgstr "fork: PROCINFO is geen array!"
 
 #: extension/inplace.c:131
-#, fuzzy
 msgid "inplace::begin: in-place editing already active"
-msgstr "inplace_begin(): in-situ-bewerken is al actief"
+msgstr "inplace::begin: in-situ-bewerken is al actief"
 
 #: extension/inplace.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: expects 2 arguments but called with %d"
-msgstr "inplace_begin(): verwachtte twee argumenten maar is aangeroepen met %d"
+msgstr "inplace::begin: verwachtte twee argumenten maar is aangeroepen met %d"
 
 #: extension/inplace.c:137
-#, fuzzy
 msgid "inplace::begin: cannot retrieve 1st argument as a string filename"
-msgstr ""
-"inplace_begin(): kan eerste argument niet als bestandsnaamstring oppakken"
+msgstr "inplace::begin: kan eerste argument niet als bestandsnaamstring oppakken"
 
 #: extension/inplace.c:145
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: disabling in-place editing for invalid FILENAME `%s'"
-msgstr ""
-"inplace_begin(): in-situ-bewerken wordt uitgeschakeld voor ongeldige "
-"bestandsnaam '%s'"
+msgstr "inplace::begin: in-situ-bewerken wordt uitgeschakeld voor ongeldige bestandsnaam '%s'"
 
 #: extension/inplace.c:152
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: Cannot stat `%s' (%s)"
-msgstr "inplace_begin(): Kan status van '%s' niet bepalen (%s)"
+msgstr "inplace::begin: kan status van '%s' niet bepalen (%s)"
 
 #: extension/inplace.c:159
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: `%s' is not a regular file"
-msgstr "inplace_begin(): '%s' is geen normaal bestand"
+msgstr "inplace::begin: '%s' is geen normaal bestand"
 
 #: extension/inplace.c:170
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: mkstemp(`%s') failed (%s)"
-msgstr "inplace_begin(): mkstemp('%s') is mislukt (%s)"
+msgstr "inplace::begin: mkstemp('%s') is mislukt (%s)"
 
 #: extension/inplace.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: chmod failed (%s)"
-msgstr "inplace_begin(): chmod is mislukt (%s)"
+msgstr "inplace::begin: chmod is mislukt (%s)"
 
 #: extension/inplace.c:189
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: dup(stdout) failed (%s)"
-msgstr "inplace_begin(): dup(stdout) is mislukt (%s)"
+msgstr "inplace::begin: dup(stdout) is mislukt (%s)"
 
 #: extension/inplace.c:192
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: dup2(%d, stdout) failed (%s)"
-msgstr "inplace_begin(): dup2(%d, stdout) is mislukt (%s)"
+msgstr "inplace::begin: dup2(%d, stdout) is mislukt (%s)"
 
 #: extension/inplace.c:195
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: close(%d) failed (%s)"
-msgstr "inplace_begin(): close(%d) is mislukt (%s)"
+msgstr "inplace::begin: close(%d) is mislukt (%s)"
 
 #: extension/inplace.c:211
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: expects 2 arguments but called with %d"
-msgstr "inplace_begin(): verwachtte twee argumenten maar is aangeroepen met %d"
+msgstr "inplace::end: verwachtte twee argumenten maar is aangeroepen met %d"
 
 #: extension/inplace.c:214
-#, fuzzy
 msgid "inplace::end: cannot retrieve 1st argument as a string filename"
-msgstr ""
-"inplace_end(): kan eerste argument niet als bestandsnaamstring oppakken"
+msgstr "inplace::end: kan eerste argument niet als bestandsnaamstring oppakken"
 
 #: extension/inplace.c:221
-#, fuzzy
 msgid "inplace::end: in-place editing not active"
-msgstr "inplace_end(): in-situ-bewerken is niet actief"
+msgstr "inplace::end: in-situ-bewerken is niet actief"
 
 #: extension/inplace.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: dup2(%d, stdout) failed (%s)"
-msgstr "inplace_end(): dup2(%d, stdout) is mislukt (%s)"
+msgstr "inplace::end: dup2(%d, stdout) is mislukt (%s)"
 
 #: extension/inplace.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: close(%d) failed (%s)"
-msgstr "inplace_end(): close(%d) is mislukt (%s)"
+msgstr "inplace::end: close(%d) is mislukt (%s)"
 
 #: extension/inplace.c:234
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: fsetpos(stdout) failed (%s)"
-msgstr "inplace_end(): fsetpos(stdout) is mislukt (%s)"
+msgstr "inplace::end: fsetpos(stdout) is mislukt (%s)"
 
 #: extension/inplace.c:247
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: link(`%s', `%s') failed (%s)"
-msgstr "inplace_end(): link('%s', '%s') is mislukt (%s)"
+msgstr "inplace::end: link('%s', '%s') is mislukt (%s)"
 
 #: extension/inplace.c:257
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: rename(`%s', `%s') failed (%s)"
-msgstr "inplace_end(): rename('%s', '%s') is mislukt (%s)"
+msgstr "inplace::end: rename('%s', '%s') is mislukt (%s)"
 
 #: extension/ordchr.c:72
-#, fuzzy
 msgid "ord: first argument is not a string"
-msgstr "do_reada: argument 0 is geen string\n"
+msgstr "ord: eerste argument is geen string"
 
 #: extension/ordchr.c:99
-#, fuzzy
 msgid "chr: first argument is not a number"
-msgstr "asort: eerste argument is geen array"
+msgstr "chr: eerste argument is geen getal"
 
 #: extension/readdir.c:273
 #, c-format
@@ -2301,58 +2183,49 @@ msgid "dir_take_control_of: opendir/fdopendir failed: %s"
 msgstr "dir_take_control_of(): opendir()/fdopendir() is mislukt: %s"
 
 #: extension/readfile.c:131
-#, fuzzy
 msgid "readfile: called with wrong kind of argument"
-msgstr "readfile: aangeroepen zonder argumenten"
+msgstr "readfile: aangeroepen met verkeerd soort argument"
 
 #: extension/revoutput.c:127
 msgid "revoutput: could not initialize REVOUT variable"
 msgstr "revoutput: kan variabele REVOUT niet initialiseren"
 
 #: extension/rwarray.c:119
-#, fuzzy
 msgid "do_writea: first argument is not a string"
-msgstr "do_writea: argument 0 is geen string\n"
+msgstr "do_writea: eerste argument is geen string"
 
 #: extension/rwarray.c:125
-#, fuzzy
 msgid "do_writea: second argument is not an array"
-msgstr "do_writea: argument 1 is geen array\n"
+msgstr "do_writea: tweede argument is geen array"
 
 #: extension/rwarray.c:172 extension/rwarray0.c:167
-#, fuzzy
 msgid "write_array: could not flatten array"
-msgstr "write_array: kan array niet pletten\n"
+msgstr "write_array: kan array niet pletten"
 
 #: extension/rwarray.c:188 extension/rwarray0.c:181
-#, fuzzy
 msgid "write_array: could not release flattened array"
-msgstr "write_array: kan geplet array niet vrijgeven\n"
+msgstr "write_array: kan geplet array niet vrijgeven"
 
 #: extension/rwarray.c:255
-#, fuzzy, c-format
+#, c-format
 msgid "array value has unknown type %d"
-msgstr "onbekend knooptype %d"
+msgstr "arraywaarde heeft onbekend type %d"
 
 #: extension/rwarray.c:292
-#, fuzzy
 msgid "do_reada: first argument is not a string"
-msgstr "do_reada: argument 0 is geen string\n"
+msgstr "do_reada: eerste argument is geen string"
 
 #: extension/rwarray.c:298
-#, fuzzy
 msgid "do_reada: second argument is not an array"
-msgstr "do_reada: argument 1 is geen array\n"
+msgstr "do_reada: tweede argument is geen array"
 
 #: extension/rwarray.c:342 extension/rwarray0.c:317
-#, fuzzy
 msgid "do_reada: clear_array failed"
-msgstr "do_reada: clear_array() is mislukt\n"
+msgstr "do_reada: clear_array() is mislukt"
 
 #: extension/rwarray.c:379 extension/rwarray0.c:353
-#, fuzzy
 msgid "read_array: set_array_element failed"
-msgstr "read_array: set_array_element() is mislukt\n"
+msgstr "read_array: set_array_element() is mislukt"
 
 #: extension/rwarray.c:489
 #, c-format
@@ -2360,24 +2233,20 @@ msgid "treating recovered value with unknown type code %d as a string"
 msgstr ""
 
 #: extension/rwarray0.c:114
-#, fuzzy
 msgid "do_writea: argument 0 is not a string"
-msgstr "do_writea: argument 0 is geen string\n"
+msgstr "do_writea: argument 0 is geen string"
 
 #: extension/rwarray0.c:120
-#, fuzzy
 msgid "do_writea: argument 1 is not an array"
-msgstr "do_writea: argument 1 is geen array\n"
+msgstr "do_writea: argument 1 is geen array"
 
 #: extension/rwarray0.c:267
-#, fuzzy
 msgid "do_reada: argument 0 is not a string"
-msgstr "do_reada: argument 0 is geen string\n"
+msgstr "do_reada: argument 0 is geen string"
 
 #: extension/rwarray0.c:273
-#, fuzzy
 msgid "do_reada: argument 1 is not an array"
-msgstr "do_reada: argument 1 is geen array\n"
+msgstr "do_reada: argument 1 is geen array"
 
 #: extension/time.c:141
 msgid "gettimeofday: not supported on this platform"
@@ -2425,26 +2294,19 @@ msgstr "split: tweede argument is geen array"
 
 #: field.c:982
 msgid "split: cannot use the same array for second and fourth args"
-msgstr ""
-"split: hetzelfde array kan niet zowel als tweede als als vierde argument "
-"gebruikt worden"
+msgstr "split: hetzelfde array kan niet zowel als tweede als als vierde argument gebruikt worden"
 
 #: field.c:987
 msgid "split: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"split: een subarray van het tweede argument kan niet als vierde argument "
-"gebruikt worden"
+msgstr "split: een subarray van het tweede argument kan niet als vierde argument gebruikt worden"
 
 #: field.c:990
 msgid "split: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"split: een subarray van het vierde argument kan niet als tweede argument "
-"gebruikt worden"
+msgstr "split: een subarray van het vierde argument kan niet als tweede argument gebruikt worden"
 
 #: field.c:1024
-#, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
-msgstr "split: lege string als derde argument is een gawk-uitbreiding"
+msgstr "split: lege string als derde argument is geen standaard-uitbreiding"
 
 #: field.c:1061
 msgid "patsplit: fourth argument is not an array"
@@ -2460,21 +2322,15 @@ msgstr "patsplit: derde argument moet niet-nil zijn"
 
 #: field.c:1079
 msgid "patsplit: cannot use the same array for second and fourth args"
-msgstr ""
-"patsplit: hetzelfde array kan niet zowel als tweede als als vierde argument "
-"gebruikt worden"
+msgstr "patsplit: hetzelfde array kan niet zowel als tweede als als vierde argument gebruikt worden"
 
 #: field.c:1084
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"patsplit: een subarray van het tweede argument kan niet als vierde argument "
-"gebruikt worden"
+msgstr "patsplit: een subarray van het tweede argument kan niet als vierde argument gebruikt worden"
 
 #: field.c:1087
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"patsplit: een subarray van het vierde argument kan niet als tweede argument "
-"gebruikt worden"
+msgstr "patsplit: een subarray van het vierde argument kan niet als tweede argument gebruikt worden"
 
 #: field.c:1137
 msgid "`FIELDWIDTHS' is a gawk extension"
@@ -2485,9 +2341,9 @@ msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
 #: field.c:1227
-#, fuzzy, c-format
+#, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
-msgstr "ongeldige waarde voor FIELDWIDTHS, nabij '%s'"
+msgstr "ongeldige waarde voor FIELDWIDTHS, voor veld %d, nabij '%s'"
 
 #: field.c:1300
 msgid "null string for `FS' is a gawk extension"
@@ -2506,30 +2362,25 @@ msgid "awk_value_to_node: received null retval"
 msgstr "awk_value_to_node(): lege returnwaarde ontvangen"
 
 #: gawkapi.c:178 gawkapi.c:189
-#, fuzzy
 msgid "awk_value_to_node: not in MPFR mode"
-msgstr "awk_value_to_node(): lege returnwaarde ontvangen"
+msgstr "awk_value_to_node(): niet in MPFR-modus"
 
 #: gawkapi.c:183 gawkapi.c:194
-#, fuzzy
 msgid "awk_value_to_node: MPFR not supported"
-msgstr "awk_value_to_node(): lege returnwaarde ontvangen"
+msgstr "awk_value_to_node(): MPFR wordt niet ondersteund"
 
 #: gawkapi.c:198
-#, fuzzy, c-format
+#, c-format
 msgid "awk_value_to_node: invalid number type `%d'"
-msgstr "awk_value_to_node(): lege returnwaarde ontvangen"
+msgstr "awk_value_to_node(): ongeldig getaltype '%d'"
 
 #: gawkapi.c:385
-#, fuzzy
 msgid "add_ext_func: received NULL name_space parameter"
-msgstr "load_ext: lege bibliotheeknaam ontvangen"
+msgstr "add_ext_func: NULL als naamsruimte-parameter ontvangen"
 
 #: gawkapi.c:523
 #, c-format
-msgid ""
-"node_to_awk_value: detected invalid numeric flags combination `%s'; please "
-"file a bug report."
+msgid "node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."
 msgstr ""
 
 #: gawkapi.c:551
@@ -2542,9 +2393,7 @@ msgstr "node_to_awk_value(): lege waarde ontvangen"
 
 #: gawkapi.c:610 gawkapi.c:644 gawkapi.c:671 gawkapi.c:704
 #, c-format
-msgid ""
-"node_to_awk_value detected invalid flags combination `%s'; please file a bug "
-"report."
+msgid "node_to_awk_value detected invalid flags combination `%s'; please file a bug report."
 msgstr ""
 
 #: gawkapi.c:1082
@@ -2556,28 +2405,27 @@ msgid "remove_element: received null subscript"
 msgstr "remove_element(): lege index ontvangen"
 
 #: gawkapi.c:1217
-#, fuzzy, c-format
+#, c-format
 msgid "api_flatten_array_typed: could not convert index %d to %s"
-msgstr "api_flatten_array(): kan index %d niet converteren\n"
+msgstr "api_flatten_array_typed(): kan index %d niet naar %s converteren"
 
 #: gawkapi.c:1222
-#, fuzzy, c-format
+#, c-format
 msgid "api_flatten_array_typed: could not convert value %d to %s"
-msgstr "api_flatten_array(): kan waarde %d niet converteren\n"
+msgstr "api_flatten_array_typed(): kan waarde %d niet naar %s converteren"
 
 #: gawkapi.c:1318 gawkapi.c:1334
 msgid "api_get_mpfr: MPFR not supported"
-msgstr ""
+msgstr "api_get_mpfr(): MPFR wordt niet ondersteund"
 
 #: gawkapi.c:1365
-#, fuzzy
 msgid "cannot find end of BEGINFILE rule"
-msgstr "'next' kan niet aangeroepen worden in een BEGIN-regel"
+msgstr "kan einde van BEGINFILE-regel niet vinden"
 
 #: gawkapi.c:1419
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open unrecognized file type `%s' for `%s'"
-msgstr "kan bronbestand '%s' niet openen om te lezen (%s)"
+msgstr "kan onbekende bestandssoort '%s' niet openen voor '%s'"
 
 #: io.c:426
 #, c-format
@@ -2585,23 +2433,23 @@ msgid "command line argument `%s' is a directory: skipped"
 msgstr "opdrachtregelargument '%s' is een map -- overgeslagen"
 
 #: io.c:429 io.c:546
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open file `%s' for reading: %s"
-msgstr "kan bestand '%s' niet openen om te lezen (%s)"
+msgstr "kan bestand '%s' niet openen om te lezen: %s"
 
 #: io.c:675
-#, fuzzy, c-format
+#, c-format
 msgid "close of fd %d (`%s') failed: %s"
-msgstr "sluiten van bestandsdescriptor %d ('%s') is mislukt (%s)"
+msgstr "sluiten van bestandsdescriptor %d ('%s') is mislukt: %s"
 
 #: io.c:753
 msgid "redirection not allowed in sandbox mode"
 msgstr "omleiding is niet toegestaan in sandbox-modus"
 
 #: io.c:787
-#, fuzzy, c-format
+#, c-format
 msgid "expression in `%s' redirection is a number"
-msgstr "expressie in omleiding '%s' heeft alleen een getal als waarde"
+msgstr "expressie in omleiding '%s' is een getal"
 
 #: io.c:791
 #, c-format
@@ -2609,12 +2457,9 @@ msgid "expression for `%s' redirection has null string value"
 msgstr "expressie voor omleiding '%s' heeft een lege string als waarde"
 
 #: io.c:796
-#, fuzzy, c-format
-msgid ""
-"filename `%.*s' for `%s' redirection may be result of logical expression"
-msgstr ""
-"bestandsnaam '%s' voor omleiding '%s' kan het resultaat zijn van een "
-"logische expressie"
+#, c-format
+msgid "filename `%.*s' for `%s' redirection may be result of logical expression"
+msgstr "bestandsnaam '%.*s' voor omleiding '%s' kan het resultaat zijn van een logische expressie"
 
 #: io.c:844
 #, c-format
@@ -2627,46 +2472,43 @@ msgid "get_file cannot create pipe `%s' with fd %d"
 msgstr ""
 
 #: io.c:911
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open pipe `%s' for output: %s"
-msgstr "kan pijp '%s' niet openen voor uitvoer (%s)"
+msgstr "kan pijp '%s' niet openen voor uitvoer: %s"
 
 #: io.c:926
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open pipe `%s' for input: %s"
-msgstr "kan pijp '%s' niet openen voor invoer (%s)"
+msgstr "kan pijp '%s' niet openen voor invoer: %s"
 
 #: io.c:950
 #, fuzzy, c-format
-msgid ""
-"get_file socket creation not supported on this platform for `%s' with fd %d"
+msgid "get_file socket creation not supported on this platform for `%s' with fd %d"
 msgstr "gettimeofday: wordt op dit platform niet ondersteund"
 
 #: io.c:961
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open two way pipe `%s' for input/output: %s"
-msgstr "kan tweerichtings-pijp '%s' niet openen voor in- en uitvoer (%s)"
+msgstr "kan tweerichtings-pijp '%s' niet openen voor in- en uitvoer: %s"
 
 #: io.c:1048
-#, fuzzy, c-format
+#, c-format
 msgid "cannot redirect from `%s': %s"
-msgstr "kan niet omleiden van '%s' (%s)"
+msgstr "kan niet omleiden van '%s': %s"
 
 #: io.c:1051
-#, fuzzy, c-format
+#, c-format
 msgid "cannot redirect to `%s': %s"
-msgstr "kan niet omleiden naar '%s' (%s)"
+msgstr "kan niet omleiden naar '%s': %s"
 
 #: io.c:1153
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
-msgstr ""
-"systeemgrens voor aantal open bestanden is bereikt: begonnen met multiplexen"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
+msgstr "systeemgrens voor aantal open bestanden is bereikt: begonnen met multiplexen"
 
 #: io.c:1169
-#, fuzzy, c-format
+#, c-format
 msgid "close of `%s' failed: %s."
-msgstr "sluiten van '%s' is mislukt (%s)"
+msgstr "sluiten van '%s' is mislukt: %s"
 
 #: io.c:1177
 msgid "too many pipes or input files open"
@@ -2688,19 +2530,17 @@ msgstr "sluiten van een nooit-geopende omleiding"
 #: io.c:1325
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr ""
-"close: omleiding '%s' is niet geopend met '|&'; tweede argument wordt "
-"genegeerd"
+msgstr "close: omleiding '%s' is niet geopend met '|&'; tweede argument wordt genegeerd"
 
 #: io.c:1342
-#, fuzzy, c-format
+#, c-format
 msgid "failure status (%d) on pipe close of `%s': %s"
-msgstr "afsluitwaarde %d bij mislukte sluiting van pijp '%s' (%s)"
+msgstr "afsluitwaarde %d bij mislukte sluiting van pijp '%s': %s"
 
 #: io.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "failure status (%d) on file close of `%s': %s"
-msgstr "afsluitwaarde %d bij mislukte sluiting van bestand '%s' (%s)"
+msgstr "afsluitwaarde %d bij mislukte sluiting van bestand '%s': %s"
 
 #: io.c:1365
 #, c-format
@@ -2725,42 +2565,42 @@ msgstr "geen expliciete sluiting van bestand '%s' aangegeven"
 #: io.c:1411
 #, c-format
 msgid "fflush: cannot flush standard output: %s"
-msgstr ""
+msgstr "fflush: kan buffer voor standaarduitvoer niet leegmaken: %s"
 
 #: io.c:1412
 #, c-format
 msgid "fflush: cannot flush standard error: %s"
-msgstr ""
+msgstr "fflush: kan buffer voor standaardfoutuitvoer niet leegmaken: %s"
 
 #: io.c:1417 io.c:1508 main.c:662 main.c:709
-#, fuzzy, c-format
+#, c-format
 msgid "error writing standard output: %s"
-msgstr "fout tijdens schrijven van standaarduitvoer (%s)"
+msgstr "fout tijdens schrijven van standaarduitvoer: %s"
 
 #: io.c:1418 io.c:1521 main.c:664
-#, fuzzy, c-format
+#, c-format
 msgid "error writing standard error: %s"
-msgstr "fout tijdens schrijven van standaardfoutuitvoer (%s)"
+msgstr "fout tijdens schrijven van standaardfoutuitvoer: %s"
 
 #: io.c:1457
-#, fuzzy, c-format
+#, c-format
 msgid "pipe flush of `%s' failed: %s."
-msgstr "leegmaken van pijp '%s' is mislukt (%s)"
+msgstr "leegmaken van pijp '%s' is mislukt: %s"
 
 #: io.c:1460
-#, fuzzy, c-format
+#, c-format
 msgid "co-process flush of pipe to `%s' failed: %s."
-msgstr "leegmaken door co-proces van pijp naar '%s' is mislukt (%s)"
+msgstr "leegmaken door co-proces van pijp naar '%s' is mislukt: %s"
 
 #: io.c:1463
-#, fuzzy, c-format
+#, c-format
 msgid "file flush of `%s' failed: %s."
-msgstr "leegmaken van bestand '%s' is mislukt (%s)"
+msgstr "leegmaken van buffer voor bestand '%s' is mislukt: %s"
 
 #: io.c:1610
-#, fuzzy, c-format
+#, c-format
 msgid "local port %s invalid in `/inet': %s"
-msgstr "lokale poort %s is ongeldig in '/inet'"
+msgstr "lokale poort %s is ongeldig in '/inet': %s"
 
 #: io.c:1613
 #, c-format
@@ -2768,9 +2608,9 @@ msgid "local port %s invalid in `/inet'"
 msgstr "lokale poort %s is ongeldig in '/inet'"
 
 #: io.c:1636
-#, fuzzy, c-format
+#, c-format
 msgid "remote host and port information (%s, %s) invalid: %s"
-msgstr "host- en poortinformatie (%s, %s) zijn ongeldig"
+msgstr "host- en poortinformatie (%s, %s) zijn ongeldig: %s"
 
 #: io.c:1639
 #, c-format
@@ -2787,79 +2627,70 @@ msgid "could not open `%s', mode `%s'"
 msgstr "kan '%s' niet openen -- modus '%s'"
 
 #: io.c:2017 io.c:2069
-#, fuzzy, c-format
+#, c-format
 msgid "close of master pty failed: %s"
-msgstr "kan meester-pty van dochterproces niet sluiten (%s)"
+msgstr "sluiten van meester-pty is mislukt: %s"
 
 #: io.c:2019 io.c:2071 io.c:2418 io.c:2662
-#, fuzzy, c-format
+#, c-format
 msgid "close of stdout in child failed: %s"
-msgstr "kan standaarduitvoer van dochterproces niet sluiten (%s)"
+msgstr "sluiten van standaarduitvoer van dochterproces is mislukt: %s"
 
 #: io.c:2022 io.c:2074
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
-msgstr ""
-"kan slaaf-pty niet overzetten naar standaarduitvoer van dochterproces (dup: "
-"%s)"
+msgstr "kan slaaf-pty niet overzetten naar standaarduitvoer van dochterproces (dup: %s)"
 
 #: io.c:2024 io.c:2076 io.c:2423
-#, fuzzy, c-format
+#, c-format
 msgid "close of stdin in child failed: %s"
-msgstr "kan standaardinvoer van dochterproces niet sluiten (%s)"
+msgstr "sluiten van standaardinvoer van dochterproces is mislukt: %s"
 
 #: io.c:2027 io.c:2079
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
-msgstr ""
-"kan slaaf-pty niet overzetten naar standaardinvoer van dochterproces (dup: "
-"%s)"
+msgstr "kan slaaf-pty niet overzetten naar standaardinvoer van dochterproces (dup: %s)"
 
 #: io.c:2029 io.c:2081 io.c:2103
-#, fuzzy, c-format
+#, c-format
 msgid "close of slave pty failed: %s"
-msgstr "kan slaaf-pty niet sluiten (%s)"
+msgstr "sluiten van slaaf-pty is mislukt: %s"
 
 #: io.c:2265
-#, fuzzy
 msgid "could not create child process or open pty"
-msgstr "kan voor '%s' geen dochterproces starten (fork: %s)"
+msgstr "kan geen dochterproces starten of geen pty openen"
 
 #: io.c:2353 io.c:2421 io.c:2633 io.c:2665
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
-msgstr ""
-"kan pijp niet overzetten naar standaarduitvoer van dochterproces (dup: %s)"
+msgstr "kan pijp niet overzetten naar standaarduitvoer van dochterproces (dup: %s)"
 
 #: io.c:2360 io.c:2426
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
-msgstr ""
-"kan pijp niet overzetten naar standaardinvoer van dochterproces (dup: %s)"
+msgstr "kan pijp niet overzetten naar standaardinvoer van dochterproces (dup: %s)"
 
 #: io.c:2386 io.c:2655
-#, fuzzy
 msgid "restoring stdout in parent process failed"
-msgstr "kan standaarduitvoer van ouderproces niet herstellen\n"
+msgstr "herstellen van standaarduitvoer van moederproces is mislukt"
 
 #: io.c:2394
-#, fuzzy
 msgid "restoring stdin in parent process failed"
-msgstr "kan standaardinvoer van ouderproces niet herstellen\n"
+msgstr "herstellen van standaardinvoer van moederproces is mislukt"
 
 #: io.c:2429 io.c:2667 io.c:2682
-#, fuzzy, c-format
+#, c-format
 msgid "close of pipe failed: %s"
-msgstr "kan pijp niet sluiten (%s)"
+msgstr "sluiten van pijp is mislukt: %s"
 
 #: io.c:2488
 msgid "`|&' not supported"
 msgstr "'|&' wordt niet ondersteund"
 
 #: io.c:2618
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open pipe `%s': %s"
-msgstr "kan pijp '%s' niet openen (%s)"
+msgstr "kan pijp '%s' niet openen: %s"
 
 #: io.c:2676
 #, c-format
@@ -2890,10 +2721,8 @@ msgstr "register_output_wrapper(): NULL-pointer gekregen"
 
 #: io.c:3221
 #, c-format
-msgid ""
-"output wrapper `%s' conflicts with previously installed output wrapper `%s'"
-msgstr ""
-"uitvoer-wrapper '%s' botst met eerder geïnstalleerde uitvoer-wrapper '%s'"
+msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
+msgstr "uitvoer-wrapper '%s' botst met eerder geïnstalleerde uitvoer-wrapper '%s'"
 
 #: io.c:3228
 #, c-format
@@ -2906,11 +2735,8 @@ msgstr "register_output_processor(): NULL-pointer gekregen"
 
 #: io.c:3278
 #, c-format
-msgid ""
-"two-way processor `%s' conflicts with previously installed two-way processor "
-"`%s'"
-msgstr ""
-"tweeweg-processor '%s' botst met eerder geïnstalleerde tweeweg-processor '%s'"
+msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
+msgstr "tweeweg-processor '%s' botst met eerder geïnstalleerde tweeweg-processor '%s'"
 
 #: io.c:3287
 #, c-format
@@ -2956,19 +2782,19 @@ msgid "running %s setuid root may be a security problem"
 msgstr "het uitvoeren van %s als 'setuid root' kan een veiligheidsrisico zijn"
 
 #: main.c:421
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set binary mode on stdin: %s"
-msgstr "kan standaardinvoer niet in binaire modus zetten (%s)"
+msgstr "kan standaardinvoer niet in binaire modus zetten: %s"
 
 #: main.c:424
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set binary mode on stdout: %s"
-msgstr "kan standaarduitvoer niet in binaire modus zetten (%s)"
+msgstr "kan standaarduitvoer niet in binaire modus zetten: %s"
 
 #: main.c:426
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set binary mode on stderr: %s"
-msgstr "kan standaardfoutuitvoer niet in binaire modus zetten (%s)"
+msgstr "kan standaardfoutuitvoer niet in binaire modus zetten: %s"
 
 #: main.c:488
 msgid "no program text at all!"
@@ -3057,9 +2883,8 @@ msgstr "\t-l bibliotheek\t\t--load=bibliotheek\n"
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:609
-#, fuzzy
 msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
-msgstr "\t-L[fatal|invalid]\t\t--lint[=fatal|invalid]\n"
+msgstr "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 
 #: main.c:610
 msgid "\t-M\t\t\t--bignum\n"
@@ -3094,9 +2919,8 @@ msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
 #: main.c:618
-#, fuzzy
 msgid "\t-s\t\t\t--no-optimize\n"
-msgstr "\t-O\t\t\t--optimize\n"
+msgstr "\t-s\t\t\t--no-optimize\n"
 
 #: main.c:619
 msgid "\t-S\t\t\t--sandbox\n"
@@ -3115,13 +2939,12 @@ msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t\t--nostalgia\n"
 
 #: main.c:626
-#, fuzzy
 msgid "\t-Y\t\t\t--parsedebug\n"
 msgstr "\t-Y\t\t\t--parsedebug\n"
 
 #: main.c:629
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
-msgstr ""
+msgstr "\t-Z taalregionaam\t\t--locale=taalregionaam\n"
 
 #. TRANSLATORS: --help output (end)
 #. no-wrap
@@ -3148,15 +2971,15 @@ msgstr ""
 "\n"
 
 #: main.c:647
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Examples:\n"
 "\t%s '{ sum += $1 }; END { print sum }' file\n"
 "\t%s -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 "Voorbeelden:\n"
-"\tgawk '{ som += $1 }; END { print som }' bestand\n"
-"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+"\t%s '{ som += $1 }; END { print som }' bestand\n"
+"\t%s -F: '{ print $1 }' /etc/passwd\n"
 
 #: main.c:679
 #, c-format
@@ -3263,14 +3086,12 @@ msgid "empty argument to `-e/--source' ignored"
 msgstr "argument van '-e/--source' is leeg; genegeerd"
 
 #: main.c:1660 main.c:1665
-#, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
-msgstr "'--posix' overstijgt '--traditional'"
+msgstr "'--profile' overstijgt '--pretty-print'"
 
 #: main.c:1677
 msgid "-M ignored: MPFR/GMP support not compiled in"
-msgstr ""
-"optie '-M' is genegeerd; ondersteuning voor MPFR/GMP is niet meegecompileerd"
+msgstr "optie '-M' is genegeerd; ondersteuning voor MPFR/GMP is niet meegecompileerd"
 
 #: main.c:1702
 #, c-format
@@ -3309,18 +3130,17 @@ msgid "compl: received non-numeric argument"
 msgstr "compl: argument is geen getal"
 
 #: mpfr.c:816
-#, fuzzy
 msgid "compl(%Rg): negative value is not allowed"
-msgstr "compl(%Rg): negatieve waarden geven rare resultaten"
+msgstr "compl(%Rg): negatieve waarde is niet toegestaan"
 
 #: mpfr.c:821
 msgid "comp(%Rg): fractional value will be truncated"
 msgstr "compl(%Rg): cijfers na de komma worden afgekapt"
 
 #: mpfr.c:832
-#, fuzzy, c-format
+#, c-format
 msgid "compl(%Zd): negative values are not allowed"
-msgstr "compl(%Zd): negatieve waarden geven rare resultaten"
+msgstr "compl(%Zd): negatieve waarden zijn niet toegestaan"
 
 #: mpfr.c:850
 #, c-format
@@ -3332,19 +3152,17 @@ msgid "%s: argument #%d has invalid value %Rg, using 0"
 msgstr "%s: argument #%d heeft ongeldige waarde %Rg;  0 wordt gebruikt"
 
 #: mpfr.c:871
-#, fuzzy
 msgid "%s: argument #%d negative value %Rg is not allowed"
-msgstr "%s: negatieve waarde %2$Rg van argument #%1$d geeft rare resultaten"
+msgstr "%1$s: negatieve waarde %3$Rg van argument #%2$d is niet toegestaan"
 
 #: mpfr.c:878
 msgid "%s: argument #%d fractional value %Rg will be truncated"
-msgstr ""
-"%s: cijfers na de komma van waarde %2$Rg van argument #%1$d worden afgekapt"
+msgstr "%1$s: cijfers na de komma van waarde %3$Rg van argument #%2$d worden afgekapt"
 
 #: mpfr.c:892
-#, fuzzy, c-format
+#, c-format
 msgid "%s: argument #%d negative value %Zd is not allowed"
-msgstr "%1$s: negatieve waarde %3$Zd van argument #%2$d geeft rare resultaten"
+msgstr "%1$s: negatieve waarde %3$Zd van argument #%2$d is niet toegestaan"
 
 #: mpfr.c:982
 msgid "and: called with less than two arguments"
@@ -3363,14 +3181,12 @@ msgid "srand: received non-numeric argument"
 msgstr "srand: argument is geen getal"
 
 #: mpfr.c:1211
-#, fuzzy
 msgid "intdiv: received non-numeric first argument"
-msgstr "and: eerste argument is geen getal"
+msgstr "intdiv: eerste argument is geen getal"
 
 #: mpfr.c:1213
-#, fuzzy
 msgid "intdiv: received non-numeric second argument"
-msgstr "and: tweede argument is geen getal"
+msgstr "intdiv: tweede argument is geen getal"
 
 #: msg.c:75
 #, c-format
@@ -3397,12 +3213,8 @@ msgstr "geen hex cijfers in stuurcodereeks '\\x'"
 
 #: node.c:633
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
-msgstr ""
-"hexadecimale stuurcode \\x%.*s van %d tekens wordt waarschijnlijk niet "
-"afgehandeld zoals u verwacht"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
+msgstr "hexadecimale stuurcode \\x%.*s van %d tekens wordt waarschijnlijk niet afgehandeld zoals u verwacht"
 
 #: node.c:648
 #, c-format
@@ -3410,9 +3222,7 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "stuurcodereeks '\\%c' behandeld als normale '%c'"
 
 #: node.c:784
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
 msgstr ""
 "Ongeldige multibyte-gegevens gevonden.\n"
 "Uw gegevens passen vermoedelijk niet bij uw taalregio."
@@ -3420,9 +3230,7 @@ msgstr ""
 #: posix/gawkmisc.c:177
 #, c-format
 msgid "%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"
-msgstr ""
-"%s %s '%s': kan bestandsdescriptorvlaggen niet verkrijgen: (fcntl F_GETFD: "
-"%s)"
+msgstr "%s %s '%s': kan bestandsdescriptorvlaggen niet verkrijgen: (fcntl F_GETFD: %s)"
 
 #: posix/gawkmisc.c:189
 #, c-format
@@ -3503,9 +3311,7 @@ msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str(): onbekend omleidingstype %d"
 
 #: re.c:58 re.c:163
-msgid ""
-"behavior of matching a regexp containing NUL characters is not defined by "
-"POSIX"
+msgid "behavior of matching a regexp containing NUL characters is not defined by POSIX"
 msgstr ""
 
 #: re.c:127
@@ -3525,8 +3331,7 @@ msgstr ""
 #: re.c:663
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
-msgstr ""
-"component '%.*s' van reguliere expressie moet vermoedelijk '[%.*s]' zijn"
+msgstr "component '%.*s' van reguliere expressie moet vermoedelijk '[%.*s]' zijn"
 
 #: support/dfa.c:950
 msgid "unbalanced ["
@@ -3702,139 +3507,26 @@ msgstr "functie '%s': kan functie '%s' niet als parameternaam gebruiken"
 msgid "cannot pop main context"
 msgstr "kan hoofdcontext niet poppen"
 
-#, fuzzy
-#~ msgid "fts: first parameter is not an array"
-#~ msgstr "asort: eerste argument is geen array"
-
-#, fuzzy
-#~ msgid "fts: third parameter is not an array"
-#~ msgstr "match: derde argument is geen array"
-
-#~ msgid "adump: first argument not an array"
-#~ msgstr "adump: eerste argument is geen array"
-
-#~ msgid "asort: second argument not an array"
-#~ msgstr "asort: tweede argument is geen array"
-
-#~ msgid "asorti: second argument not an array"
-#~ msgstr "asorti: tweede argument is geen array"
-
-#~ msgid "asorti: first argument not an array"
-#~ msgstr "asorti: eerste argument is geen array"
-
-#, fuzzy
-#~ msgid "asorti: first argument cannot be SYMTAB"
-#~ msgstr "asorti: eerste argument is geen array"
-
-#, fuzzy
-#~ msgid "asorti: first argument cannot be FUNCTAB"
-#~ msgstr "asorti: eerste argument is geen array"
-
 #~ msgid "asorti: cannot use a subarray of first arg for second arg"
-#~ msgstr ""
-#~ "asorti: een subarray van het eerste argument kan niet als tweede argument "
-#~ "gebruikt worden"
+#~ msgstr "asorti: een subarray van het eerste argument kan niet als tweede argument gebruikt worden"
 
 #~ msgid "asorti: cannot use a subarray of second arg for first arg"
-#~ msgstr ""
-#~ "asorti: een subarray van het tweede argument kan niet als eerste argument "
-#~ "gebruikt worden"
+#~ msgstr "asorti: een subarray van het tweede argument kan niet als eerste argument gebruikt worden"
 
-#, c-format
 #~ msgid "can't read sourcefile `%s' (%s)"
 #~ msgstr "kan bronbestand '%s' niet lezen (%s)"
 
 #~ msgid "POSIX does not allow operator `**='"
 #~ msgstr "POSIX staat operator '**=' niet toe"
 
-#~ msgid "old awk does not support operator `**='"
-#~ msgstr "oude 'awk' kent de operator '**=' niet"
-
-#~ msgid "old awk does not support operator `**'"
-#~ msgstr "oude 'awk' kent de operator '**' niet"
-
-#~ msgid "operator `^=' is not supported in old awk"
-#~ msgstr "oude 'awk' kent de operator '^=' niet"
-
-#, c-format
 #~ msgid "could not open `%s' for writing (%s)"
 #~ msgstr "kan '%s' niet openen om te schrijven (%s)"
 
-#~ msgid "exp: received non-numeric argument"
-#~ msgstr "exp: argument is geen getal"
-
-#~ msgid "length: received non-string argument"
-#~ msgstr "length: argument is geen string"
-
-#~ msgid "log: received non-numeric argument"
-#~ msgstr "log: argument is geen getal"
-
-#~ msgid "sqrt: received non-numeric argument"
-#~ msgstr "sqrt: argument is geen getal"
-
-#, c-format
 #~ msgid "sqrt: called with negative argument %g"
 #~ msgstr "sqrt: argument %g is negatief"
 
-#~ msgid "strftime: received non-numeric second argument"
-#~ msgstr "strftime: tweede argument is geen getal"
-
-#~ msgid "strftime: received non-string first argument"
-#~ msgstr "strftime: eerste argument is geen string"
-
-#~ msgid "mktime: received non-string argument"
-#~ msgstr "mktime: argument is geen string"
-
-#~ msgid "tolower: received non-string argument"
-#~ msgstr "tolower: argument is geen string"
-
-#~ msgid "toupper: received non-string argument"
-#~ msgstr "toupper: argument is geen string"
-
-#~ msgid "sin: received non-numeric argument"
-#~ msgstr "sin: argument is geen getal"
-
-#~ msgid "cos: received non-numeric argument"
-#~ msgstr "cos: argument is geen getal"
-
-#~ msgid "lshift: received non-numeric first argument"
-#~ msgstr "lshift: eerste argument is geen getal"
-
-#~ msgid "lshift: received non-numeric second argument"
-#~ msgstr "lshift: tweede argument is geen getal"
-
-#~ msgid "rshift: received non-numeric first argument"
-#~ msgstr "rshift: eerste argument is geen getal"
-
-#~ msgid "rshift: received non-numeric second argument"
-#~ msgstr "rshift: tweede argument is geen getal"
-
-#, c-format
-#~ msgid "and: argument %d is non-numeric"
-#~ msgstr "and: argument %d is niet-numeriek"
-
-#, fuzzy, c-format
-#~ msgid "and: argument %d negative value %g is not allowed"
-#~ msgstr "and: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
-
-#, fuzzy, c-format
-#~ msgid "or: argument %d negative value %g is not allowed"
-#~ msgstr "or: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
-
-#, c-format
-#~ msgid "xor: argument %d is non-numeric"
-#~ msgstr "xor: argument %d is niet-numeriek"
-
-#, fuzzy, c-format
-#~ msgid "xor: argument %d negative value %g is not allowed"
-#~ msgstr "xor: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
-
-#, c-format
 #~ msgid "Can't find rule!!!\n"
 #~ msgstr "Kan regel niet vinden!!!\n"
-
-#~ msgid "q"
-#~ msgstr "q"
 
 #~ msgid "fts: bad first parameter"
 #~ msgstr "fts: onjuiste eerste parameter"
@@ -3851,9 +3543,6 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgid "ord: called with inappropriate argument(s)"
 #~ msgstr "ord: aangeroepen met onjuiste argumenten"
 
-#~ msgid "chr: called with inappropriate argument(s)"
-#~ msgstr "chr: aangeroepen met onjuiste argumenten"
-
 #~ msgid "gensub: third argument %g treated as 1"
 #~ msgstr "gensub: derde argument is %g; wordt beschouwd als 1"
 
@@ -3865,12 +3554,6 @@ msgstr "kan hoofdcontext niet poppen"
 
 #~ msgid "extension: cannot open library `%s' (%s)"
 #~ msgstr "extension: kan bibliotheek '%s' niet openen (%s)"
-
-#~ msgid ""
-#~ "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
-#~ msgstr ""
-#~ "extension: bibliotheek '%s' definieert 'plugin_is_GPL_compatible' niet "
-#~ "(%s)"
 
 #~ msgid "extension: library `%s': cannot call function `%s' (%s)"
 #~ msgstr "extension: bibliotheek '%s' kan functie '%s' niet aanroepen (%s)"
@@ -3890,19 +3573,8 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgid "extension: function name `%s' previously defined"
 #~ msgstr "extension: functienaam '%s' is al eerder gedefinieerd"
 
-#~ msgid "extension: can't use gawk built-in `%s' as function name"
-#~ msgstr ""
-#~ "extension: kan in gawk ingebouwde '%s' niet als functienaam gebruiken"
-
-#~ msgid "chdir: called with incorrect number of arguments, expecting 1"
-#~ msgstr ""
-#~ "chdir: aangeroepen met onjuist aantal argumenten; één wordt er verwacht"
-
 #~ msgid "stat: called with wrong number of arguments"
 #~ msgstr "stat: aangeroepen met onjuist aantal argumenten"
-
-#~ msgid "statvfs: called with wrong number of arguments"
-#~ msgstr "statvfs: aangeroepen met onjuist aantal argumenten"
 
 #~ msgid "fnmatch: called with less than three arguments"
 #~ msgstr "fnmatch: aangeroepen met minder dan drie argumenten"
@@ -3910,44 +3582,14 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgid "fnmatch: called with more than three arguments"
 #~ msgstr "fnmatch: aangeroepen met meer dan drie argumenten"
 
-#~ msgid "fork: called with too many arguments"
-#~ msgstr "fork: aangeroepen met te veel argumenten"
-
-#~ msgid "waitpid: called with too many arguments"
-#~ msgstr "waitpid: aangeroepen met te veel argumenten"
-
 #~ msgid "wait: called with no arguments"
 #~ msgstr "wait: aangeroepen zonder argumenten"
 
 #~ msgid "wait: called with too many arguments"
 #~ msgstr "wait: aangeroepen met te veel argumenten"
 
-#~ msgid "ord: called with too many arguments"
-#~ msgstr "ord: aangeroepen met te veel argumenten"
-
-#~ msgid "ord: called with no arguments"
-#~ msgstr "ord: aangeroepen zonder argumenten"
-
-#~ msgid "chr: called with too many arguments"
-#~ msgstr "chr: aangeroepen met te veel argumenten"
-
-#~ msgid "chr: called with no arguments"
-#~ msgstr "chr: aangeroepen zonder argumenten"
-
-#~ msgid "readfile: called with too many arguments"
-#~ msgstr "readfile: aangeroepen met te veel argumenten"
-
-#~ msgid "writea: called with too many arguments"
-#~ msgstr "writea: aangeroepen met te veel argumenten"
-
-#~ msgid "reada: called with too many arguments"
-#~ msgstr "reada: aangeroepen met te veel argumenten"
-
 #~ msgid "gettimeofday: ignoring arguments"
 #~ msgstr "gettimeofday: argumenten worden genegeerd"
-
-#~ msgid "sleep: called with too many arguments"
-#~ msgstr "sleep: aangeroepen met te veel argumenten"
 
 #~ msgid ""
 #~ "\n"
@@ -3968,9 +3610,7 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgstr "backslash aan het einde van de string"
 
 #~ msgid "function `%s' defined to take no more than %d argument(s)"
-#~ msgstr ""
-#~ "functie '%s' is gedefinieerd om niet meer dan %d argument(en) te "
-#~ "accepteren"
+#~ msgstr "functie '%s' is gedefinieerd om niet meer dan %d argument(en) te accepteren"
 
 #~ msgid "function `%s': missing argument #%d"
 #~ msgstr "functie '%s': ontbrekend argument #%d"
@@ -4001,9 +3641,7 @@ msgstr "kan hoofdcontext niet poppen"
 #~ "\n"
 
 #~ msgid "range of the form `[%c-%c]' is locale dependent"
-#~ msgstr ""
-#~ "de betekenis van een bereik van de vorm '[%c-%c]' is afhankelijk van de "
-#~ "taalregio"
+#~ msgstr "de betekenis van een bereik van de vorm '[%c-%c]' is afhankelijk van de taalregio"
 
 #~ msgid "reference to uninitialized element `%s[\"%.*s\"]'"
 #~ msgstr "verwijzing naar ongeïnitialiseerd element '%s[\"%.*s\"]'"
@@ -4059,11 +3697,8 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgid "statement has no effect"
 #~ msgstr "opdracht heeft geen effect"
 
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %ld to %ld during loop execution"
-#~ msgstr ""
-#~ "for: array '%s' veranderde van grootte %ld naar %ld tijdens uitvoer van "
-#~ "de lus"
+#~ msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
+#~ msgstr "for: array '%s' veranderde van grootte %ld naar %ld tijdens uitvoer van de lus"
 
 #~ msgid "function called indirectly through `%s' does not exist"
 #~ msgstr "indirect (via '%s') aangeroepen functie bestaat niet"
@@ -4096,8 +3731,7 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgstr "kan groepen niet vinden: %s"
 
 #~ msgid "assignment is not allowed to result of builtin function"
-#~ msgstr ""
-#~ "toewijzing aan het resultaat van een ingebouwde functie is niet toegestaan"
+#~ msgstr "toewijzing aan het resultaat van een ingebouwde functie is niet toegestaan"
 
 #~ msgid "attempt to use array in a scalar context"
 #~ msgstr "array wordt gebruikt in een scalaire context"
@@ -4132,12 +3766,8 @@ msgstr "kan hoofdcontext niet poppen"
 #~ msgid "`nextfile' cannot be called from a BEGIN rule"
 #~ msgstr "'nextfile' kan niet aangeroepen worden in een BEGIN-regel"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
-#~ msgstr ""
-#~ "concatenation: neveneffecten in de ene expressie hebben de lengte van een "
-#~ "andere veranderd!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
+#~ msgstr "concatenation: neveneffecten in de ene expressie hebben de lengte van een andere veranderd!"
 
 #~ msgid "illegal type (%s) in tree_eval"
 #~ msgstr "ongeldig type (%s) in tree_eval()"
