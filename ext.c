@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003-2014, 2016-2019,
+ * Copyright (C) 1995 - 2001, 2003-2014, 2016-2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the

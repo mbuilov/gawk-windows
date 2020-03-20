@@ -9,7 +9,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2011, 2012, 2013, 2018
+ * Copyright (C) 2001, 2004, 2011, 2012, 2013, 2018, 2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
