@@ -1079,6 +1079,20 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 }
 
 
+#ifdef _MSC_VER
+#define GAWK_PLUGIN_EXPORT __declspec(dllexport)
+#else
+#define GAWK_PLUGIN_EXPORT
+#endif
+
+#ifdef __cplusplus
+#define GAWK_PLUGIN_EXTERN_C_BEGIN extern "C" {
+#define GAWK_PLUGIN_EXTERN_C_END }
+#else
+#define GAWK_PLUGIN_EXTERN_C_BEGIN
+#define GAWK_PLUGIN_EXTERN_C_END
+#endif
+
 /*
  * Each extension must define a function with this prototype:
  *
@@ -1093,11 +1107,16 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
  * returns non-zero on success and zero upon failure.
  */
 
+GAWK_PLUGIN_EXTERN_C_BEGIN
+GAWK_PLUGIN_EXPORT
 extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
+GAWK_PLUGIN_EXTERN_C_END
 
 #if 0
 /* Boilerplate code: */
-int plugin_is_GPL_compatible;
+#include "gawkapi.h"
+
+GAWK_PLUGIN_GPL_COMPATIBLE
 
 static gawk_api_t *const api;
 static awk_ext_id_t ext_id;
@@ -1125,7 +1144,15 @@ static awk_bool_t (*init_func)(void) = init_my_extension;
 dl_load_func(func_table, some_name, "name_space_in_quotes")
 #endif
 
+#define GAWK_PLUGIN_GPL_COMPATIBLE \
+  GAWK_PLUGIN_EXTERN_C_BEGIN \
+  GAWK_PLUGIN_EXPORT \
+  int plugin_is_GPL_compatible; \
+  GAWK_PLUGIN_EXTERN_C_END
+
 #define dl_load_func(func_table, extension, name_space) \
+GAWK_PLUGIN_EXTERN_C_BEGIN \
+GAWK_PLUGIN_EXPORT \
 int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 { \
 	size_t i, j; \
@@ -1167,7 +1194,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 		register_ext_version(ext_version); \
 \
 	return (errors == 0); \
-}
+} \
+GAWK_PLUGIN_EXTERN_C_END
 
 #if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
 #define check_mpfr_version(extension) do { \
