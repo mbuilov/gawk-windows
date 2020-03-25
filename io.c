@@ -3098,6 +3098,38 @@ find_source(const char *src, struct stat *stb, int *errcode, bool is_extlib)
 #endif /* __EMX__ */
 	path = do_find_source(src, stb, errcode, pi);
 
+#ifdef _MSC_VER
+	if (path == NULL && is_extlib && pi->awkpath[0] == NULL) {
+		/* environment variable AWKLIBPATH is not set, DEFLIBPATH is empty,
+		  assume DLLs are in the same directory as GAWK.EXE */
+		char pathbuf[MAX_PATH + 1];
+		unsigned len = GetModuleFileName(NULL, pathbuf, sizeof(pathbuf)/sizeof(pathbuf[0]));
+		if (len > 0 && len < sizeof(pathbuf)/sizeof(pathbuf[0])) {
+			/* trim "\\GAWK.EXE" */
+			const char *dirend = strrchr(pathbuf, '\\');
+			if (dirend != NULL && dirend != pathbuf) {
+				char *dir;
+				unsigned dirlen = (unsigned)(dirend - pathbuf) + 1 /* for trailing '\\' */;
+				emalloc(dir, char *, sizeof(*dir)*(dirlen + 1), "find_source");
+				memcpy(dir, pathbuf, sizeof(*dir)*dirlen);
+				dir[dirlen] = '\0';
+				assert(!pi->max_pathlen);
+				pi->max_pathlen = dirlen;
+				assert(pi->awkpath[1] == NULL);
+				pi->awkpath[0] = dir;
+
+				/* check if already has the SUFFIX - then try to find DLL now,
+				  because below will not try to find it with added suffix. */
+				{
+					const char *suffix = strrchr(src, '.');
+					if (suffix != NULL && 0 == strcmp(suffix + 1, SHLIBEXT))
+						path = do_find_source(src, stb, errcode, pi);
+				}
+			}
+		}
+	}
+#endif /* _MSC_VER */
+
 	if (path == NULL && is_extlib) {
 		char *file_ext;
 		int save_errno;
