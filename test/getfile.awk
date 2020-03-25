@@ -5,7 +5,7 @@ function basename(x) {
 BEGIN {
 	print "BEGIN"
 
-	cmd = "echo hello; echo goodbye"
+	cmd = "echo hello&& echo goodbye"
 	rc = get_file(cmd, "<<", -1, res)
 	print "expected error result", rc, ERRNO
 	print "get_file returned", get_file(cmd, "|<", -1, res)
