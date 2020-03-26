@@ -25,6 +25,10 @@
 
 #include "awk.h"
 
+#ifdef _MSC_VER
+#include <io.h> /* open/close */
+#endif
+
 #ifdef HAVE_MPFR
 #define getmpfr(n)	getblock(n, BLOCK_MPFR, mpfr_ptr)
 #define freempfr(n)	freeblock(n, BLOCK_MPFR)
@@ -290,6 +294,24 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 		err(false, _("warning: "), format, args);
 	}
 	va_end(args);
+}
+
+/* api_printf --- print a message to stdout */
+
+static int
+api_printf(const char *format, ...)
+{
+	int ret;
+	va_list args;
+
+	va_start(args, format);
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+	ret = vprintf(format, args);
+PRAGMA_WARNING_POP
+	va_end(args);
+
+	return ret;
 }
 
 /* api_register_input_parser --- register an input_parser; for opening files read-only */
@@ -1372,6 +1394,14 @@ api_get_mpz(awk_ext_id_t id)
 #endif
 }
 
+/* api_open --- open a file */
+
+static int
+api_open(const char *name, int flags)
+{
+	return open(name, flags);
+}
+
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
@@ -1526,6 +1556,7 @@ gawk_api_t api_impl = {
 	api_warning,
 	api_lintwarn,
 	api_nonfatal,
+	api_printf,
 
 	/* updating ERRNO */
 	api_update_ERRNO_int,
@@ -1565,6 +1596,10 @@ gawk_api_t api_impl = {
 	free,
 	api_get_mpfr,
 	api_get_mpz,
+
+	/* Open/Close files */
+	api_open,
+	close,
 
 	/* Find/open a file */
 	api_get_file,

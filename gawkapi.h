@@ -301,7 +301,7 @@ typedef struct awk_two_way_processor {
 } awk_two_way_processor_t;
 
 #define gawk_api_major_version 3
-#define gawk_api_minor_version 0
+#define gawk_api_minor_version 1
 
 /* Current version of the API. */
 enum {
@@ -540,6 +540,9 @@ typedef struct gawk_api {
 	void (*api_warning)(awk_ext_id_t id, const char *format, ...);
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
+
+	/* Just print message to stdout */
+	int (*api_printf)(const char *format, ...);
 
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
@@ -794,7 +797,14 @@ typedef struct gawk_api {
 	 */
 	void *(*api_get_mpz)(awk_ext_id_t id);
 
-        /*
+	/*
+	 * File descriptors passed between gawk and the extension must be
+	 * opened and closed by the same library.
+	 */
+	int (*api_open)(const char *name, int flags);
+	int (*api_close)(int fd);
+
+	/*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype argument, so that may be
@@ -808,7 +818,7 @@ typedef struct gawk_api {
 	 *
 	 * If the file is not already open, and the fd argument is non-negative,
 	 * gawk will use that file descriptor instead of opening the file
-	 * in the usual way.
+	 * in the usual way. The fd must be opened via gawk_open().
 	 *
 	 * If the fd is non-negative, but the file exists already, gawk
 	 * ignores the fd and returns the existing file.  It is the caller's
@@ -832,6 +842,9 @@ typedef struct gawk_api {
 			const char *name,
 			size_t name_len,
 			const char *filetype,
+			/*
+			 * If non-negative, must be opened via gawk_open()
+			 */
 			fd_t fd,
 			/*
 			 * Return values (on success, one or both should
@@ -866,11 +879,13 @@ void fatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void nonfatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void warning(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+int gawk_printf(_Printf_format_string_ const char *format, ...);
 #else /* !(_MSC_VER && _PREFAST_) */
 #define fatal		api->api_fatal
 #define nonfatal	api->api_nonfatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
+#define gawk_printf	api->api_printf
 #endif /* !(_MSC_VER && _PREFAST_) */
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
@@ -907,8 +922,20 @@ void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 #define set_array_element(array, index, value) \
 	(api->api_set_array_element(ext_id, array, index, value))
 
+static inline awk_bool_t
+r_set_array_element_by_elem(const gawk_api_t *api,
+			    awk_ext_id_t ext_id,
+			    awk_array_t array,
+			    const struct awk_element *elem)
+{
+	return api->api_set_array_element(ext_id,
+					  array,
+					  &elem->index,
+					  &elem->value);
+}
+
 #define set_array_element_by_elem(array, elem) \
-	(api->api_set_array_element(ext_id, array, & (elem)->index, & (elem)->value))
+	r_set_array_element_by_elem(api, ext_id, array, elem)
 
 #define del_array_element(array, index) \
 	(api->api_del_array_element(ext_id, array, index))
@@ -933,6 +960,24 @@ void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 #define gawk_calloc(nmemb, size)	(api->api_calloc(nmemb, size))
 #define gawk_realloc(ptr, size)		(api->api_realloc(ptr, size))
 #define gawk_free(ptr)			(api->api_free(ptr))
+
+static inline fd_t
+r_gawk_open(const gawk_api_t *api,
+	    const char *name,
+	    int flags)
+{
+	return api->api_open(name, flags);
+}
+
+static inline int
+r_gawk_close(const gawk_api_t *api,
+	     fd_t fd)
+{
+	return api->api_close(fd);
+}
+
+#define gawk_open(name, flags) 		r_gawk_open(api, name, flags)
+#define gawk_close(fd) 			r_gawk_close(api, fd)
 
 #define create_value(value, result) \
 	(api->api_create_value(ext_id, value,result))
