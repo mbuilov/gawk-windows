@@ -69,6 +69,12 @@
 
 #include "gawkapi.h"
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t ext_id;
+static const char *ext_version = "readdir extension: version 3.0";
+
 #include "gawkdirfd.h"
 
 #include "gettext.h"
@@ -79,14 +85,8 @@
 #define PATH_MAX	1024	/* a good guess */
 #endif
 
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "readdir extension: version 3.0";
-
 static awk_bool_t init_readdir(void);
 static awk_bool_t (*init_func)(void) = init_readdir;
-
-GAWK_PLUGIN_GPL_COMPATIBLE
 
 /* data type for the opaque pointer: */
 
@@ -381,7 +381,7 @@ dir_close(awk_input_buf_t *iobuf)
 #else
 	FindClose((HANDLE) (intptr_t) iobuf->fd);
 #endif
-	gawk_free(the_dir);
+	free(the_dir);
 
 	iobuf->fd = INVALID_HANDLE;
 }
@@ -514,7 +514,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		((WIN32_FIND_DATA*) the_dir->buf)->dwFileAttributes == ~(DWORD)0)
 	{
 		int err = report_opendir_error(iobuf->name);
-		gawk_free(the_dir);
+		free(the_dir);
 		update_ERRNO_int(err);
 		return awk_false;
 	}
