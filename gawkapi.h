@@ -300,28 +300,14 @@ typedef struct awk_two_way_processor {
 	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
 
-/*
- * To be able to combine major & minor version numbers to one negative integer,
- * assume:
- *  gawk_api_major_version <= 127 &&
- *  gawk_api_minor_version <= 255
-*/
 #define gawk_api_major_version 3
 #define gawk_api_minor_version 1
-
-#define GAWK_API_VER_COMBINE(major, minor)	((int)(((major) << 8) | (minor)))
-#define GAWK_API_VER_MAJOR(ver)			((ver) >> 8)
-#define GAWK_API_VER_MINOR(ver)			((ver) & 255)
 
 /* Current version of the API. */
 enum {
 	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
 	GAWK_API_MINOR_VERSION = gawk_api_minor_version
 };
-
-/* Current version of the API as one integer. */
-#define GAWK_API_VERSION \
-	GAWK_API_VER_COMBINE(GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION)
 
 /* A number of typedefs related to different types of values. */
 
@@ -887,6 +873,18 @@ typedef struct gawk_api {
 
 } gawk_api_t;
 
+typedef struct gawk_extension_api_ver {
+	const char *api_name;
+	struct {
+		int major_version;
+		int minor_version;
+	} need;
+	struct {
+		int major_version;
+		int minor_version;
+	} have;
+} gawk_extension_api_ver_t;
+
 #ifndef GAWK	/* these are not for the gawk code itself! */
 /*
  * Use these if you want to define "global" variables named api
@@ -1251,6 +1249,17 @@ dl_load_func(func_table, some_name, "name_space_in_quotes")
   int plugin_is_GPL_compatible; \
   GAWK_PLUGIN_EXTERN_C_END
 
+#define gawk_check_api_version(name_, MAJOR_, MINOR_, major_, minor_) \
+	if (major_ != MAJOR_ || minor_ < MINOR_) { \
+		gawk_extension_api_ver_t *ver = *(gawk_extension_api_ver_t**) id; \
+		ver->api_name = name_; \
+		ver->need.major_version = MAJOR_; \
+		ver->need.minor_version = MINOR_; \
+		ver->have.major_version = major_; \
+		ver->have.minor_version = minor_; \
+		return -1; \
+	} \
+
 #define dl_load_func(func_table, extension, name_space) \
 GAWK_PLUGIN_EXTERN_C_BEGIN \
 GAWK_PLUGIN_EXPORT \
@@ -1262,11 +1271,9 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 	api = api_p; \
 	ext_id = (void **) id; \
 \
-	if (api->major_version != GAWK_API_MAJOR_VERSION \
-	    || api->minor_version < GAWK_API_MINOR_VERSION) { \
-		*(const char**) ext_id = #extension; \
-		return -GAWK_API_VERSION; \
-	} \
+	gawk_check_api_version(#extension, \
+		GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION, \
+		api->major_version, api->minor_version); \
 \
 	check_mpfr_version(extension); \
 \
@@ -1297,22 +1304,12 @@ GAWK_PLUGIN_EXTERN_C_END
 
 #if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
 #define check_mpfr_version(extension) do { \
-	if (api->gmp_major_version != __GNU_MP_VERSION \
-	    || api->gmp_minor_version < __GNU_MP_VERSION_MINOR) { \
-		fprintf(stderr, #extension ": GMP version mismatch with gawk!\n"); \
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
-			__GNU_MP_VERSION, __GNU_MP_VERSION_MINOR, \
-			api->gmp_major_version, api->gmp_minor_version); \
-		exit(1); \
-	} \
-	if (api->mpfr_major_version != MPFR_VERSION_MAJOR \
-	    || api->mpfr_minor_version < MPFR_VERSION_MINOR) { \
-		fprintf(stderr, #extension ": MPFR version mismatch with gawk!\n"); \
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
-			MPFR_VERSION_MAJOR, MPFR_VERSION_MINOR, \
-			api->mpfr_major_version, api->mpfr_minor_version); \
-		exit(1); \
-	} \
+	gawk_check_api_version(#extension ": GMP", \
+		__GNU_MP_VERSION, __GNU_MP_VERSION_MINOR, \
+		api->gmp_major_version, api->gmp_minor_version); \
+	gawk_check_api_version(#extension ": MPFR", \
+		MPFR_VERSION_MAJOR, MPFR_VERSION_MINOR, \
+		api->mpfr_major_version, api->mpfr_minor_version); \
 } while (0)
 #else
 #define check_mpfr_version(extension) /* nothing */
