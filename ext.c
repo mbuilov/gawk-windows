@@ -46,6 +46,8 @@ load_ext(const char *lib_name)
 	void *dl;
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
+	int ret;
+	const char *extension = NULL;
 
 #ifdef HAVE_DLERROR_BUF
 	char dl_buf[1024];
@@ -79,7 +81,14 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)"),
 				lib_name, INIT_FUNC, dlerror_());
 
-	if (install_func(& api_impl, NULL /* ext_id */) == 0)
+	ret = install_func(& api_impl, & extension /* ext_id */);
+	if (ret < 0) {
+		fatal("%s version mismatch with gawk!\n"
+			"\tmy version (API %d.%d), gawk version (API %d.%d)",
+			extension, GAWK_API_VER_MAJOR(-ret), GAWK_API_VER_MINOR(-ret),
+			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION);
+	}
+	if (ret == 0)
 		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
 				lib_name, INIT_FUNC);
 }

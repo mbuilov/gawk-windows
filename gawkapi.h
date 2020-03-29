@@ -300,14 +300,28 @@ typedef struct awk_two_way_processor {
 	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
 
+/*
+ * To be able to combine major & minor version numbers to one negative integer,
+ * assume:
+ *  gawk_api_major_version <= 127 &&
+ *  gawk_api_minor_version <= 255
+*/
 #define gawk_api_major_version 3
 #define gawk_api_minor_version 1
+
+#define GAWK_API_VER_COMBINE(major, minor)	((int)(((major) << 8) | (minor)))
+#define GAWK_API_VER_MAJOR(ver)			((ver) >> 8)
+#define GAWK_API_VER_MINOR(ver)			((ver) & 255)
 
 /* Current version of the API. */
 enum {
 	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
 	GAWK_API_MINOR_VERSION = gawk_api_minor_version
 };
+
+/* Current version of the API as one integer. */
+#define GAWK_API_VERSION \
+	GAWK_API_VER_COMBINE(GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION)
 
 /* A number of typedefs related to different types of values. */
 
@@ -507,7 +521,7 @@ typedef struct gawk_api {
 	awk_bool_t (*api_add_ext_func)(awk_ext_id_t id, const char *name_space,
 			awk_ext_func_t *func);
 
-	/* Register an input parser; for opening files read-only */
+	/* Register an input parser, for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id,
 					awk_input_parser_t *input_parser);
 
@@ -1250,11 +1264,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 \
 	if (api->major_version != GAWK_API_MAJOR_VERSION \
 	    || api->minor_version < GAWK_API_MINOR_VERSION) { \
-		fprintf(stderr, #extension ": version mismatch with gawk!\n"); \
-		fprintf(stderr, "\tmy version (API %d.%d), gawk version (API %d.%d)\n", \
-			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION, \
-			api->major_version, api->minor_version); \
-		exit(1); \
+		*(const char**) ext_id = #extension; \
+		return -GAWK_API_VERSION; \
 	} \
 \
 	check_mpfr_version(extension); \
