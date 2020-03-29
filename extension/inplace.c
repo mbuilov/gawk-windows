@@ -40,12 +40,23 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+#include <io.h> /* _mktemp */
+#else
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "gawkapi.h"
+
+GAWK_PLUGIN_GPL_COMPATIBLE
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t ext_id;
+static const char *ext_version = "inplace extension: version 1.0";
 
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
@@ -55,25 +66,23 @@
 #define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
-#ifdef __MINGW32__
+#ifdef _MSC_VER
+#define STDOUT_FILENO fileno(stdout)
+#endif
+
+#if defined(__MINGW32__) || defined(_MSC_VER)
 # define chown(x,y,z)  (0)
 # define link(f1,f2)   rename(f1,f2)
-int
-mkstemp (char *template)
+fd_t
+mkstemp (char *templ)
 {
-  char *tmp_fname = _mktemp (template);
+  char *tmp_fname = _mktemp (templ);
 
   if (tmp_fname)
-    return _open (tmp_fname, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
+    return open (tmp_fname, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
   return -1;
 }
 #endif
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "inplace extension: version 1.0";
-
-int plugin_is_GPL_compatible;
 
 static struct {
 	char *tname;
@@ -96,7 +105,7 @@ at_exit(void *data, int exit_status)
 	(void) exit_status;	/* silence warnings */
 	if (state.tname) {
 		unlink(state.tname);
-		gawk_free(state.tname);
+		free(state.tname);
 		state.tname = NULL;
 	}
 }
@@ -122,7 +131,10 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
 	struct stat sbuf;
-	int fd;
+	fd_t fd;
+	int r;
+
+	(void) unused;
 
 	assert(result != NULL);
 	fflush(stdout);
@@ -171,11 +183,10 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			state.tname, strerror(errno));
 
 	/* N.B. chown/chmod should be more portable than fchown/fchmod */
-	if (chown(state.tname, sbuf.st_uid, sbuf.st_gid) < 0) {
-		/* jumping through hoops to silence gcc and clang. :-( */
-		int junk;
-		junk = chown(state.tname, -1, sbuf.st_gid);
-		++junk;
+	r = chown(state.tname, sbuf.st_uid, sbuf.st_gid);
+	if (r < 0) {
+		r = chown(state.tname, -1, sbuf.st_gid);
+		(void) r;
 	}
 
 	if (chmod(state.tname, sbuf.st_mode) < 0)
@@ -205,6 +216,8 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, suffix;
 
+	(void) unused;
+
 	assert(result != NULL);
 
 	if (nargs != 2)
@@ -229,7 +242,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if (close(state.default_stdout) < 0)
 		fatal(ext_id, _("inplace::end: close(%d) failed (%s)"),
 			state.default_stdout, strerror(errno));
-	state.default_stdout = -1;
+	state.default_stdout = INVALID_HANDLE;
 	if (state.posrc == 0 && fsetpos(stdout, &state.pos) < 0)
 		fatal(ext_id, _("inplace::end: fsetpos(stdout) failed (%s)"),
 			strerror(errno));
@@ -246,17 +259,17 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		if (link(filename.str_value.str, bakname) < 0)
 			fatal(ext_id, _("inplace::end: link(`%s', `%s') failed (%s)"),
 				filename.str_value.str, bakname, strerror(errno));
-		gawk_free(bakname);
+		free(bakname);
 	}
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	unlink(filename.str_value.str);
 #endif
 
 	if (rename(state.tname, filename.str_value.str) < 0)
 		fatal(ext_id, _("inplace::end: rename(`%s', `%s') failed (%s)"),
 			state.tname, filename.str_value.str, strerror(errno));
-	gawk_free(state.tname);
+	free(state.tname);
 	state.tname = NULL;
 	return make_number(0, result);
 }
