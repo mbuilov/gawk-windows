@@ -44,11 +44,11 @@
 
 #include "gawkapi.h"
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "testext extension: version 1.0";
-
-GAWK_PLUGIN_GPL_COMPATIBLE
 
 static void fill_in_array(awk_value_t *value);
 
@@ -134,7 +134,7 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 	make_number(0.0, result);
 
 	if (nargs != 2) {
-		gawk_printf("dump_array_and_delete: nargs not right (%d should be 2)\n", nargs);
+		printf("dump_array_and_delete: nargs not right (%d should be 2)\n", nargs);
 		goto out;
 	}
 
@@ -142,42 +142,42 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 	if (get_argument(0, AWK_STRING, & value)) {
 		name = value.str_value.str;
 		if (sym_lookup(name, AWK_ARRAY, & value2))
-			gawk_printf("dump_array_and_delete: sym_lookup of %s passed\n", name);
+			printf("dump_array_and_delete: sym_lookup of %s passed\n", name);
 		else {
-			gawk_printf("dump_array_and_delete: sym_lookup of %s failed\n", name);
+			printf("dump_array_and_delete: sym_lookup of %s failed\n", name);
 			goto out;
 		}
 	} else {
-		gawk_printf("dump_array_and_delete: get_argument(0) failed\n");
+		printf("dump_array_and_delete: get_argument(0) failed\n");
 		goto out;
 	}
 
 	if (! get_element_count(value2.array_cookie, & count)) {
-		gawk_printf("dump_array_and_delete: get_element_count failed\n");
+		printf("dump_array_and_delete: get_element_count failed\n");
 		goto out;
 	}
 
-	gawk_printf("dump_array_and_delete: incoming size is %llu\n", 0ull + count);
+	printf("dump_array_and_delete: incoming size is %llu\n", 0ull + count);
 
 	if (! flatten_array(value2.array_cookie, & flat_array)) {
-		gawk_printf("dump_array_and_delete: could not flatten array\n");
+		printf("dump_array_and_delete: could not flatten array\n");
 		goto out;
 	}
 
 	if (flat_array->count != count) {
-		gawk_printf("dump_array_and_delete: flat_array->count (%llu) != count (%llu)\n",
+		printf("dump_array_and_delete: flat_array->count (%llu) != count (%llu)\n",
 				0ull + flat_array->count,
 				0ull + count);
 		goto out;
 	}
 
 	if (! get_argument(1, AWK_STRING, & value3)) {
-		gawk_printf("dump_array_and_delete: get_argument(1) failed\n");
+		printf("dump_array_and_delete: get_argument(1) failed\n");
 		goto out;
 	}
 
 	for (i = 0; i < flat_array->count; i++) {
-		gawk_printf("\t%s[\"%.*s\"] = %s\n",
+		printf("\t%s[\"%.*s\"] = %s\n",
 			name,
 			(int) flat_array->elements[i].index.str_value.len,
 			flat_array->elements[i].index.str_value.str,
@@ -185,13 +185,13 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 
 		if (strcmp(value3.str_value.str, flat_array->elements[i].index.str_value.str) == 0) {
 			flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
-			gawk_printf("dump_array_and_delete: marking element \"%s\" for deletion\n",
+			printf("dump_array_and_delete: marking element \"%s\" for deletion\n",
 				flat_array->elements[i].index.str_value.str);
 		}
 	}
 
 	if (! release_flattened_array(value2.array_cookie, flat_array)) {
-		gawk_printf("dump_array_and_delete: could not release flattened array\n");
+		printf("dump_array_and_delete: could not release flattened array\n");
 		goto out;
 	}
 
@@ -229,21 +229,21 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 0) {
-		gawk_printf("try_modify_environ: nargs not right (%d should be 0)\n", nargs);
+		printf("try_modify_environ: nargs not right (%d should be 0)\n", nargs);
 		goto out;
 	}
 
 	/* get ENVIRON array */
 	if (sym_lookup("ENVIRON", AWK_ARRAY, & value))
-		gawk_printf("try_modify_environ: sym_lookup of ENVIRON passed\n");
+		printf("try_modify_environ: sym_lookup of ENVIRON passed\n");
 	else {
-		gawk_printf("try_modify_environ: sym_lookup of ENVIRON failed\n");
+		printf("try_modify_environ: sym_lookup of ENVIRON failed\n");
 		goto out;
 	}
 
 	environ_array = value.array_cookie;
 	if (! get_element_count(environ_array, & count)) {
-		gawk_printf("try_modify_environ: get_element_count failed\n");
+		printf("try_modify_environ: get_element_count failed\n");
 		goto out;
 	}
 
@@ -251,20 +251,20 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) make_const_string("testext2", 8, & index);
 	(void) make_const_string("a value", 7, & value);
 	if (set_array_element(environ_array, & index, & newvalue)) {
-		gawk_printf("try_modify_environ: set_array_element of ENVIRON passed\n");
+		printf("try_modify_environ: set_array_element of ENVIRON passed\n");
 	} else {
-		gawk_printf("try_modify_environ: set_array_element of ENVIRON failed\n");
-		gawk_free(index.str_value.str);
-		gawk_free(value.str_value.str);
+		printf("try_modify_environ: set_array_element of ENVIRON failed\n");
+		free(index.str_value.str);
+		free(value.str_value.str);
 	}
 
 	if (! flatten_array(environ_array, & flat_array)) {
-		gawk_printf("try_modify_environ: could not flatten array\n");
+		printf("try_modify_environ: could not flatten array\n");
 		goto out;
 	}
 
 	if (flat_array->count != count) {
-		gawk_printf("try_modify_environ: flat_array->count (%llu) != count (%llu)\n",
+		printf("try_modify_environ: flat_array->count (%llu) != count (%llu)\n",
 				0ull + flat_array->count,
 				0ull + count);
 		goto out;
@@ -273,7 +273,7 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	for (i = 0; i < flat_array->count; i++) {
 		/* don't print */
 	/*
-		gawk_printf("\t%s[\"%.*s\"] = %s\n",
+		printf("\t%s[\"%.*s\"] = %s\n",
 			name,
 			(int) flat_array->elements[i].index.str_value.len,
 			flat_array->elements[i].index.str_value.str,
@@ -281,13 +281,13 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	*/
 		if (strcmp("testext", flat_array->elements[i].index.str_value.str) == 0) {
 			flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
-			gawk_printf("try_modify_environ: marking element \"%s\" for deletion\n",
+			printf("try_modify_environ: marking element \"%s\" for deletion\n",
 				flat_array->elements[i].index.str_value.str);
 		}
 	}
 
 	if (! release_flattened_array(environ_array, flat_array)) {
-		gawk_printf("try_modify_environ: could not release flattened array\n");
+		printf("try_modify_environ: could not release flattened array\n");
 		goto out;
 	}
 
@@ -316,28 +316,28 @@ var_test(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 1) {
-		gawk_printf("var_test: nargs not right (%d should be 1)\n", nargs);
+		printf("var_test: nargs not right (%d should be 1)\n", nargs);
 		goto out;
 	}
 
 	/* look up PROCINFO - should succeed fail */
 	if (sym_lookup("PROCINFO", AWK_ARRAY, & value))
-		gawk_printf("var_test: sym_lookup of PROCINFO passed - got a value!\n");
+		printf("var_test: sym_lookup of PROCINFO passed - got a value!\n");
 	else
-		gawk_printf("var_test: sym_lookup of PROCINFO failed - did not get a value\n");
+		printf("var_test: sym_lookup of PROCINFO failed - did not get a value\n");
 
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
-		gawk_printf("var_test: sym_lookup of ARGC passed - got a value!\n");
+		printf("var_test: sym_lookup of ARGC passed - got a value!\n");
 	else
-		gawk_printf("var_test: sym_lookup of ARGC failed - did not get a value\n");
+		printf("var_test: sym_lookup of ARGC failed - did not get a value\n");
 
 	/* now try to set it - should fail */
 	value.num_value++;
 	if (sym_update("ARGC", & value))
-		gawk_printf("var_test: sym_update of ARGC passed and should not have!\n");
+		printf("var_test: sym_update of ARGC passed and should not have!\n");
 	else
-		gawk_printf("var_test: sym_update of ARGC failed - correctly\n");
+		printf("var_test: sym_update of ARGC failed - correctly\n");
 
 	/* look up variable whose name is passed in, should pass */
 	if (get_argument(0, AWK_STRING, & value)) {
@@ -346,17 +346,17 @@ var_test(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			valp = make_number(42.0, & value2);
 
 			if (sym_update(value.str_value.str, valp)) {
-				gawk_printf("var_test: sym_update(\"%s\") succeeded\n", value.str_value.str);
+				printf("var_test: sym_update(\"%s\") succeeded\n", value.str_value.str);
 			} else {
-				gawk_printf("var_test: sym_update(\"%s\") failed\n", value.str_value.str);
+				printf("var_test: sym_update(\"%s\") failed\n", value.str_value.str);
 				goto out;
 			}
 		} else {
-			gawk_printf("var_test: sym_lookup(\"%s\") failed\n", value.str_value.str);
+			printf("var_test: sym_lookup(\"%s\") failed\n", value.str_value.str);
 			goto out;
 		}
 	} else {
-		gawk_printf("var_test: get_argument() failed\n");
+		printf("var_test: get_argument() failed\n");
 		goto out;
 	}
 
@@ -381,7 +381,7 @@ test_errno(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 0) {
-		gawk_printf("test_errno: nargs not right (%d should be 0)\n", nargs);
+		printf("test_errno: nargs not right (%d should be 0)\n", nargs);
 		goto out;
 	}
 
@@ -428,12 +428,12 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 0) {
-		gawk_printf("test_deferred: nargs not right (%d should be 0)\n", nargs);
+		printf("test_deferred: nargs not right (%d should be 0)\n", nargs);
 		goto out;
 	}
 
 	if (! sym_lookup("PROCINFO", AWK_ARRAY, & arr)) {
-		gawk_printf("test_deferred: %d: sym_lookup failed\n", __LINE__);
+		printf("test_deferred: %d: sym_lookup failed\n", __LINE__);
 		goto out;
 	}
 
@@ -441,7 +441,7 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		make_const_string(seed[i].name, strlen(seed[i].name), & index);
 		make_number(seed[i].val, & value);
 		if (! set_array_element(arr.array_cookie, & index, & value)) {
-			gawk_printf("test_deferred: %d: set_array_element(%s) failed\n", __LINE__, seed[i].name);
+			printf("test_deferred: %d: set_array_element(%s) failed\n", __LINE__, seed[i].name);
 			goto out;
 		}
 	}
@@ -451,10 +451,10 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		make_const_string(seed[i].name, strlen(seed[i].name), & index);
 		make_null_string(& value);
 		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
-			gawk_printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, seed[i].name);
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, seed[i].name);
 			goto out;
 		}
-		gawk_printf("%s = %g\n", seed[i].name, value.num_value);
+		printf("%s = %g\n", seed[i].name, value.num_value);
 	}
 
 	/* check a few automatically-supplied values */
@@ -462,10 +462,10 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		make_const_string(sysval[i].name, strlen(sysval[i].name), & index);
 		make_null_string(& value);
 		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
-			gawk_printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, sysval[i].name);
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, sysval[i].name);
 			goto out;
 		}
-		gawk_printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val) ? 1 : 0);
+		printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val) ? 1 : 0);
 	}
 
 	make_number(1.0, result);
@@ -496,26 +496,26 @@ test_array_size(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 1) {
-		gawk_printf("test_array_size: nargs not right (%d should be 1)\n", nargs);
+		printf("test_array_size: nargs not right (%d should be 1)\n", nargs);
 		goto out;
 	}
 
 	/* get element count and print it; should match length(array) from awk script */
 	if (! get_argument(0, AWK_ARRAY, & value)) {
-		gawk_printf("test_array_size: get_argument failed\n");
+		printf("test_array_size: get_argument failed\n");
 		goto out;
 	}
 
 	if (! get_element_count(value.array_cookie, & count)) {
-		gawk_printf("test_array_size: get_element_count failed\n");
+		printf("test_array_size: get_element_count failed\n");
 		goto out;
 	}
 
-	gawk_printf("test_array_size: incoming size is %llu\n", 0ull + count);
+	printf("test_array_size: incoming size is %llu\n", 0ull + count);
 
 	/* clear array - length(array) should then go to zero in script */
 	if (! clear_array(value.array_cookie)) {
-		gawk_printf("test_array_size: clear_array failed\n");
+		printf("test_array_size: clear_array failed\n");
 		goto out;
 	}
 
@@ -561,25 +561,25 @@ test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(result != NULL);
 
 	if (nargs != 2) {
-		gawk_printf("test_array_elem: nargs not right (%d should be 2)\n", nargs);
+		printf("test_array_elem: nargs not right (%d should be 2)\n", nargs);
 		goto out;
 	}
 
 	/* look up an array element and print the value */
 	if (! get_argument(0, AWK_ARRAY, & array)) {
-		gawk_printf("test_array_elem: get_argument 0 (array) failed\n");
+		printf("test_array_elem: get_argument 0 (array) failed\n");
 		goto out;
 	}
 	if (! get_argument(1, AWK_STRING, & index)) {
-		gawk_printf("test_array_elem: get_argument 1 (index) failed\n");
+		printf("test_array_elem: get_argument 1 (index) failed\n");
 		goto out;
 	}
 	(void) make_const_string(index.str_value.str, index.str_value.len, & index2);
 	if (! get_array_element(array.array_cookie, & index2, AWK_UNDEFINED, & value)) {
-		gawk_printf("test_array_elem: get_array_element failed\n");
+		printf("test_array_elem: get_array_element failed\n");
 		goto out;
 	}
-	gawk_printf("test_array_elem: a[\"%.*s\"] = %s\n",
+	printf("test_array_elem: a[\"%.*s\"] = %s\n",
 			(int) index.str_value.len,
 			index.str_value.str,
 			valrep2str(& value));
@@ -588,14 +588,14 @@ test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) make_number(42.0, & value);
 	(void) make_const_string(index.str_value.str, index.str_value.len, & index2);
 	if (! set_array_element(array.array_cookie, & index2, & value)) {
-		gawk_printf("test_array_elem: set_array_element failed\n");
+		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
 
 	/* delete another element - "5" */
 	(void) make_const_string("5", 1, & index);
 	if (! del_array_element(array.array_cookie, & index)) {
-		gawk_printf("test_array_elem: del_array_element failed\n");
+		printf("test_array_elem: del_array_element failed\n");
 		goto out;
 	}
 
@@ -603,7 +603,7 @@ test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) make_const_string("7", 1, & index);
 	(void) make_const_string("seven", 5, & value);
 	if (! set_array_element(array.array_cookie, & index, & value)) {
-		gawk_printf("test_array_elem: set_array_element failed\n");
+		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
 
@@ -611,7 +611,7 @@ test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) make_const_string("subarray", 8, & index);
 	fill_in_array(& value);
 	if (! set_array_element(array.array_cookie, & index, & value)) {
-		gawk_printf("test_array_elem: set_array_element (subarray) failed\n");
+		printf("test_array_elem: set_array_element (subarray) failed\n");
 		goto out;
 	}
 
@@ -649,19 +649,19 @@ test_array_param(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (! get_argument(0, AWK_UNDEFINED, & arg0)) {
-		gawk_printf("test_array_param: could not get argument\n");
+		printf("test_array_param: could not get argument\n");
 		goto out;
 	}
 
 	if (arg0.val_type != AWK_UNDEFINED) {
-		gawk_printf("test_array_param: argument is not undefined (%d)\n",
+		printf("test_array_param: argument is not undefined (%d)\n",
 				arg0.val_type);
 		goto out;
 	}
 
 	fill_in_array(& new_array);
 	if (! set_argument(0, new_array.array_cookie)) {
-		gawk_printf("test_array_param: could not change type of argument\n");
+		printf("test_array_param: could not change type of argument\n");
 		goto out;
 	}
 
@@ -690,11 +690,11 @@ print_do_lint(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (nargs != 0) {
-		gawk_printf("print_do_lint: nargs not right (%d should be 0)\n", nargs);
+		printf("print_do_lint: nargs not right (%d should be 0)\n", nargs);
 		goto out;
 	}
 
-	gawk_printf("print_do_lint: lint = %d\n", do_lint);
+	printf("print_do_lint: lint = %d\n", do_lint);
 
 	make_number(1.0, result);
 
@@ -729,15 +729,15 @@ test_scalar(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	make_number(0.0, result);
 
 	if (! sym_lookup("the_scalar", AWK_SCALAR, & the_scalar)) {
-		gawk_printf("test_scalar: could not get scalar cookie\n");
+		printf("test_scalar: could not get scalar cookie\n");
 		goto out;
 	}
 
 	if (! get_argument(0, AWK_UNDEFINED, & new_value)) {
-		gawk_printf("test_scalar: could not get argument\n");
+		printf("test_scalar: could not get argument\n");
 		goto out;
 	} else if (new_value.val_type != AWK_STRING && new_value.val_type != AWK_NUMBER) {
-		gawk_printf("test_scalar: argument is not a scalar\n");
+		printf("test_scalar: argument is not a scalar\n");
 		goto out;
 	}
 
@@ -748,7 +748,7 @@ test_scalar(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 
 	if (! sym_update_scalar(the_scalar.scalar_cookie, & new_value2)) {
-		gawk_printf("test_scalar: could not update new_value2!\n");
+		printf("test_scalar: could not update new_value2!\n");
 		goto out;
 	}
 
@@ -777,18 +777,18 @@ test_scalar_reserved(int nargs, awk_value_t *result, struct awk_ext_func *unused
 
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_SCALAR, & the_scalar)) {
-		gawk_printf("test_scalar_reserved: sym_lookup of ARGC passed - got a value!\n");
+		printf("test_scalar_reserved: sym_lookup of ARGC passed - got a value!\n");
 	} else {
-		gawk_printf("test_scalar_reserved: sym_lookup of ARGC failed - did not get a value\n");
+		printf("test_scalar_reserved: sym_lookup of ARGC failed - did not get a value\n");
 		goto out;
 	}
 
 	/* updating it should fail */
 	make_number(42.0, & new_value);
 	if (! sym_update_scalar(the_scalar.scalar_cookie, & new_value)) {
-		gawk_printf("test_scalar_reserved: could not update new_value2 for ARGC - pass\n");
+		printf("test_scalar_reserved: could not update new_value2 for ARGC - pass\n");
 	} else {
-		gawk_printf("test_scalar_reserved: was able to update new_value2 for ARGC - fail\n");
+		printf("test_scalar_reserved: was able to update new_value2 for ARGC - fail\n");
 		goto out;
 	}
 
@@ -833,13 +833,13 @@ test_indirect_vars(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) unlink("testexttmp.txt");
 
 	if (sym_lookup(name, AWK_NUMBER, & value))
-		gawk_printf("test_indirect_var: sym_lookup of %s passed\n", name);
+		printf("test_indirect_var: sym_lookup of %s passed\n", name);
 	else {
-		gawk_printf("test_indirect_var: sym_lookup of %s failed\n", name);
+		printf("test_indirect_var: sym_lookup of %s failed\n", name);
 		goto out;
 	}
 
-	gawk_printf("test_indirect_var: value of NR is %g\n", value.num_value);
+	printf("test_indirect_var: value of NR is %g\n", value.num_value);
 
 	make_number(1.0, result);
 out:
@@ -877,28 +877,28 @@ test_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) unused;		/* silence warnings */
 
 	if (nargs != 2) {
-		gawk_printf("%s: nargs not right (%d should be 2)\n", "test_get_file", nargs);
+		printf("%s: nargs not right (%d should be 2)\n", "test_get_file", nargs);
 		return make_number(-1.0, result);
 	}
 
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		gawk_printf("%s: cannot get first arg\n", "test_get_file");
+		printf("%s: cannot get first arg\n", "test_get_file");
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(1, AWK_STRING, & alias)) {
-		gawk_printf("%s: cannot get second arg\n", "test_get_file");
+		printf("%s: cannot get second arg\n", "test_get_file");
 		return make_number(-1.0, result);
 	}
-	if ((fd = gawk_open(filename.str_value.str, O_RDONLY)) < 0) {
-		gawk_printf("%s: open(%s) failed\n", "test_get_file", filename.str_value.str);
+	if ((fd = open(filename.str_value.str, O_RDONLY)) < 0) {
+		printf("%s: open(%s) failed\n", "test_get_file", filename.str_value.str);
 		return make_number(-1.0, result);
 	}
 	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", fd, &ibuf, &obuf)) {
-		gawk_printf("%s: get_file(%s) failed\n", "test_get_file", alias.str_value.str);
+		printf("%s: get_file(%s) failed\n", "test_get_file", alias.str_value.str);
 		return make_number(-1.0, result);
 	}
 	if (! ibuf || ibuf->fd != fd) {
-		gawk_printf("%s: get_file(%s) returned fd %d instead of %d\n", "test_get_file", alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
+		printf("%s: get_file(%s) returned fd %d instead of %d\n", "test_get_file", alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
 		return make_number(-1.0, result);
 	}
 	return make_number(0.0, result);
@@ -915,30 +915,30 @@ do_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) unused;		/* silence warnings */
 
 	if (nargs != 4) {
-		gawk_printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
+		printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
 		return make_number(-1.0, result);
 	}
 
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		gawk_printf("%s: cannot get first arg\n", "get_file");
+		printf("%s: cannot get first arg\n", "get_file");
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(1, AWK_STRING, & filetype)) {
-		gawk_printf("%s: cannot get second arg\n", "get_file");
+		printf("%s: cannot get second arg\n", "get_file");
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(2, AWK_NUMBER, & fd)) {
-		gawk_printf("%s: cannot get third arg\n", "get_file");
+		printf("%s: cannot get third arg\n", "get_file");
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(3, AWK_ARRAY, & res)) {
-		gawk_printf("%s: cannot get fourth arg\n", "get_file");
+		printf("%s: cannot get fourth arg\n", "get_file");
 		return make_number(-1.0, result);
 	}
 	clear_array(res.array_cookie);
 
 	if (! get_file(filename.str_value.str, strlen(filename.str_value.str), filetype.str_value.str, (fd_t)fd.num_value, &ibuf, &obuf)) {
-		gawk_printf("%s: get_file(%s, %s, %d) failed\n", "get_file", filename.str_value.str, filetype.str_value.str, (int)(fd.num_value));
+		printf("%s: get_file(%s, %s, %d) failed\n", "get_file", filename.str_value.str, filetype.str_value.str, (int)(fd.num_value));
 		return make_number(0.0, result);
 	}
 
@@ -979,14 +979,14 @@ fill_in_array(awk_value_t *new_array)
 	(void) make_const_string("hello", 5, & index);
 	(void) make_const_string("world", 5, & value);
 	if (! set_array_element(a_cookie, & index, & value)) {
-		gawk_printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
 		return;
 	}
 
 	(void) make_const_string("answer", 6, & index);
 	(void) make_number(42.0, & value);
 	if (! set_array_element(a_cookie, & index, & value)) {
-		gawk_printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
 		return;
 	}
 
@@ -1003,19 +1003,19 @@ create_new_array(void)
 
 	fill_in_array(& value);
 	if (! sym_update("new_array", & value))
-		gawk_printf("create_new_array: sym_update(\"new_array\") failed!\n");
+		printf("create_new_array: sym_update(\"new_array\") failed!\n");
 }
 
 /* at_exit0 --- first at_exit program, runs last */
 
 static void at_exit0(void *data, int exit_status)
 {
-	gawk_printf("at_exit0 called (should be third):");
+	printf("at_exit0 called (should be third):");
 	if (data)
-		gawk_printf(" data = %p,", data);
+		printf(" data = %p,", data);
 	else
-		gawk_printf(" data = NULL,");
-	gawk_printf(" exit_status = %d\n", exit_status);
+		printf(" data = NULL,");
+	printf(" exit_status = %d\n", exit_status);
 }
 
 /* at_exit1 --- second at_exit program, runs second */
@@ -1025,28 +1025,28 @@ static void at_exit1(void *data, int exit_status)
 {
 	int *data_p = (int *) data;
 
-	gawk_printf("at_exit1 called (should be second):");
+	printf("at_exit1 called (should be second):");
 	if (data) {
 		if (data == & data_for_1)
-			gawk_printf(" (data is & data_for_1),");
+			printf(" (data is & data_for_1),");
 		else
-			gawk_printf(" (data is NOT & data_for_1),");
-		gawk_printf(" data value = %#x,", *data_p);
+			printf(" (data is NOT & data_for_1),");
+		printf(" data value = %#x,", *data_p);
 	} else
-		gawk_printf(" data = NULL,");
-	gawk_printf(" exit_status = %d\n", exit_status);
+		printf(" data = NULL,");
+	printf(" exit_status = %d\n", exit_status);
 }
 
 /* at_exit2 --- third at_exit program, runs first */
 
 static void at_exit2(void *data, int exit_status)
 {
-	gawk_printf("at_exit2 called (should be first):");
+	printf("at_exit2 called (should be first):");
 	if (data)
-		gawk_printf(" data = %p,", data);
+		printf(" data = %p,", data);
 	else
-		gawk_printf(" data = NULL,");
-	gawk_printf(" exit_status = %d\n", exit_status);
+		printf(" data = NULL,");
+	printf(" exit_status = %d\n", exit_status);
 }
 
 /* do_test_function --- test function for test namespace */
@@ -1055,7 +1055,7 @@ static awk_value_t *
 do_test_function(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	(void) nargs, (void) unused;		/* silence warnings */
-	gawk_printf("test::test_function() called.\n");
+	printf("test::test_function() called.\n");
 	fflush(stdout);
 
 	return make_number(0.0, result);
@@ -1115,24 +1115,24 @@ BEGIN {
 
 	/* install some variables */
 	if (! sym_update("answer_num", make_number(42, & value)))
-		gawk_printf("testext: sym_update(\"answer_num\") failed!\n");
+		printf("testext: sym_update(\"answer_num\") failed!\n");
 
 	if (! sym_update("message_string",
 			make_const_string(message, strlen(message), & value)))
-		gawk_printf("testext: sym_update(\"answer_num\") failed!\n");
+		printf("testext: sym_update(\"answer_num\") failed!\n");
 
 	if (! sym_update("the_scalar",
 			make_const_string(message2, strlen(message2), & value)))
-		gawk_printf("testext: sym_update(\"the_scalar\") failed!\n");
+		printf("testext: sym_update(\"the_scalar\") failed!\n");
 
 	create_new_array();
 
 	if (! sym_update_ns("test", "testval",
 			make_const_string(message3, strlen(message3), & value)))
-		gawk_printf("testext: sym_update_ns(\"test\", \"testval\") failed!\n");
+		printf("testext: sym_update_ns(\"test\", \"testval\") failed!\n");
 
 	if (! add_ext_func("test", & ns_test_func))
-		gawk_printf("testext: add_ext_func(\"test\", ns_test_func) failed!\n");
+		printf("testext: add_ext_func(\"test\", ns_test_func) failed!\n");
 
 	return awk_true;
 }
