@@ -314,6 +314,15 @@ PRAGMA_WARNING_POP
 	return ret;
 }
 
+/* api_assert_failed --- print error message and abort the program */
+
+ATTRIBUTE_NORETURN
+static void
+api_assert_failed(const char *sexpr, const char *file, unsigned line)
+{
+	error("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
+}
+
 /* api_register_input_parser --- register an input_parser; for opening files read-only */
 
 static void
@@ -1394,14 +1403,6 @@ api_get_mpz(awk_ext_id_t id)
 #endif
 }
 
-/* api_open --- open a file */
-
-static int
-api_open(const char *name, int flags)
-{
-	return open(name, flags);
-}
-
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
@@ -1556,7 +1557,6 @@ gawk_api_t api_impl = {
 	api_warning,
 	api_lintwarn,
 	api_nonfatal,
-	api_printf,
 
 	/* updating ERRNO */
 	api_update_ERRNO_int,
@@ -1597,12 +1597,29 @@ gawk_api_t api_impl = {
 	api_get_mpfr,
 	api_get_mpz,
 
-	/* Open/Close files */
-	api_open,
-	close,
-
 	/* Find/open a file */
 	api_get_file,
+
+	/* print a message to stdout */
+	api_printf,
+
+	/* process failed assertion */
+	api_assert_failed,
+
+	/* File IO */
+	open,
+	close,
+	dup,
+	dup2,
+	fflush,
+	fgetpos,
+	fsetpos,
+	rewind,
+
+	/* Standard streams */
+	stdin,
+	stdout,
+	stderr,
 };
 
 /* init_ext_api --- init the extension API */

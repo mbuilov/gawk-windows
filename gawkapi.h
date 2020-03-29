@@ -541,9 +541,6 @@ typedef struct gawk_api {
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
 
-	/* Just print message to stdout */
-	int (*api_printf)(const char *format, ...);
-
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
 	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string);
@@ -798,13 +795,6 @@ typedef struct gawk_api {
 	void *(*api_get_mpz)(awk_ext_id_t id);
 
 	/*
-	 * File descriptors passed between gawk and the extension must be
-	 * opened and closed by the same library.
-	 */
-	int (*api_open)(const char *name, int flags);
-	int (*api_close)(int fd);
-
-	/*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype argument, so that may be
@@ -818,7 +808,7 @@ typedef struct gawk_api {
 	 *
 	 * If the file is not already open, and the fd argument is non-negative,
 	 * gawk will use that file descriptor instead of opening the file
-	 * in the usual way. The fd must be opened via gawk_open().
+	 * in the usual way. The fd must be opened via gawk_api_open().
 	 *
 	 * If the fd is non-negative, but the file exists already, gawk
 	 * ignores the fd and returns the existing file.  It is the caller's
@@ -843,7 +833,7 @@ typedef struct gawk_api {
 			size_t name_len,
 			const char *filetype,
 			/*
-			 * If non-negative, must be opened via gawk_open()
+			 * If non-negative, must be opened via gawk_api_open()
 			 */
 			fd_t fd,
 			/*
@@ -852,6 +842,35 @@ typedef struct gawk_api {
 			 */
 			const awk_input_buf_t **ibufp,
 			const awk_output_buf_t **obufp);
+
+	/* Just print message to stdout */
+	int (*api_printf)(const char *format, ...);
+
+	/* Assert failed: print message and abort the program */
+	void (*api_assert_failed)(const char *sexpr, const char *file, unsigned line);
+
+	/*
+	 * File descriptors passed between gawk and the extension must be
+	 * opened and closed in the same CRT library domain (which could
+	 * be statically linked to the gawk executable).
+	 */
+	int (*api_open)(const char *name, int flags, ...);
+	int (*api_close)(int fd);
+	int (*api_dup)(int oldfd);
+	int (*api_dup2)(int oldfd, int newfd);
+	int (*api_fflush)(FILE *stream);
+	int (*api_fgetpos)(FILE *stream, fpos_t *pos);
+	int (*api_fsetpos)(FILE *stream, const fpos_t *pos);
+	void (*api_rewind)(FILE *stream);
+
+	/*
+	 * Extensions must use standard streams of the gawk executable
+	 * instead the ones provided by the statically linked runtime library.
+	 */
+	FILE *api_stdin;
+	FILE *api_stdout;
+	FILE *api_stderr;
+
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -879,14 +898,21 @@ void fatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void nonfatal(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void warning(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
 void lintwarn(awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
-int gawk_printf(_Printf_format_string_ const char *format, ...);
+int gawk_api_printf(_Printf_format_string_ const char *format, ...);
 #else /* !(_MSC_VER && _PREFAST_) */
 #define fatal		api->api_fatal
 #define nonfatal	api->api_nonfatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
-#define gawk_printf	api->api_printf
+#define gawk_api_printf	api->api_printf
 #endif /* !(_MSC_VER && _PREFAST_) */
+
+#ifndef NDEBUG
+#define gawk_api_assert(expr) ((void)((expr) ? 1 : \
+				(api->api_assert_failed(#expr, __FILE__, __LINE__), 0)))
+#else
+#define gawk_api_assert(expr) ((void)0)
+#endif
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
 #define register_output_wrapper(wrapper) (api->api_register_output_wrapper(ext_id, wrapper))
@@ -956,18 +982,10 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define release_flattened_array(array, data) \
 	(api->api_release_flattened_array(ext_id, array, data))
 
-#define gawk_malloc(size)		(api->api_malloc(size))
-#define gawk_calloc(nmemb, size)	(api->api_calloc(nmemb, size))
-#define gawk_realloc(ptr, size)		(api->api_realloc(ptr, size))
-#define gawk_free(ptr)			(api->api_free(ptr))
-
-static inline fd_t
-r_gawk_open(const gawk_api_t *api,
-	    const char *name,
-	    int flags)
-{
-	return api->api_open(name, flags);
-}
+#define gawk_api_malloc(size)		(api->api_malloc(size))
+#define gawk_api_calloc(nmemb, size)	(api->api_calloc(nmemb, size))
+#define gawk_api_realloc(ptr, size)	(api->api_realloc(ptr, size))
+#define gawk_api_free(ptr)		(api->api_free(ptr))
 
 static inline int
 r_gawk_close(const gawk_api_t *api,
@@ -976,8 +994,32 @@ r_gawk_close(const gawk_api_t *api,
 	return api->api_close(fd);
 }
 
-#define gawk_open(name, flags) 		r_gawk_open(api, name, flags)
-#define gawk_close(fd) 			r_gawk_close(api, fd)
+static inline fd_t
+r_gawk_dup(const gawk_api_t *api,
+	     fd_t oldfd)
+{
+	return api->api_dup(oldfd);
+}
+
+static inline fd_t
+r_gawk_dup2(const gawk_api_t *api,
+	     fd_t oldfd, fd_t newfd)
+{
+	return api->api_dup2(oldfd, newfd);
+}
+
+#define gawk_api_open			(fd_t) api->api_open
+#define gawk_api_close(fd)		r_gawk_close(api, fd)
+#define gawk_api_dup(oldfd)		r_gawk_dup(api, oldfd)
+#define gawk_api_dup2(oldfd, newfd)	r_gawk_dup2(api, oldfd, newfd)
+#define gawk_api_fflush(stream)		api->api_fflush(stream)
+#define gawk_api_fgetpos(stream, pos)	api->api_fgetpos(stream, pos)
+#define gawk_api_fsetpos(stream, pos)	api->api_fsetpos(stream, pos)
+#define gawk_api_rewind(stream)		api->api_rewind(stream)
+
+#define gawk_api_stdin()		api->api_stdin
+#define gawk_api_stdout()		api->api_stdout
+#define gawk_api_stderr()		api->api_stderr
 
 #define create_value(value, result) \
 	(api->api_create_value(ext_id, value,result))
@@ -996,19 +1038,19 @@ r_gawk_close(const gawk_api_t *api,
 
 #define emalloc(pointer, type, size, message) \
 	do { \
-		if ((pointer = (type) gawk_malloc(size)) == 0) \
+		if ((pointer = (type) gawk_api_malloc(size)) == 0) \
 			fatal(ext_id, "%s: malloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
 #define ezalloc(pointer, type, size, message) \
 	do { \
-		if ((pointer = (type) gawk_calloc(1, size)) == 0) \
+		if ((pointer = (type) gawk_api_calloc(1, size)) == 0) \
 			fatal(ext_id, "%s: calloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
 #define erealloc(pointer, type, size, message) \
 	do { \
-		if ((pointer = (type) gawk_realloc(pointer, size)) == 0) \
+		if ((pointer = (type) gawk_api_realloc(pointer, size)) == 0) \
 			fatal(ext_id, "%s: realloc of %llu bytes failed", message, 0ull + size); \
 	} while(0)
 
@@ -1264,6 +1306,99 @@ GAWK_PLUGIN_EXTERN_C_END
 #else
 #define check_mpfr_version(extension) /* nothing */
 #endif
+
+#ifndef GAWK_API_DO_NOT_REDEFINE_CRT
+
+/* Extension DLLs should acquire/release resources (memory, files) via the CRT
+  library (possibly statically linked) of the main gawk executable - to be able
+  to pass these resources to the gawk executable and to allow it to manage them. */
+
+#ifdef printf
+#undef printf
+#endif
+#define printf gawk_api_printf
+
+#ifdef assert
+#undef assert
+#endif
+#define assert(expr) gawk_api_assert(expr)
+
+#ifdef open
+#undef open
+#endif
+#define open gawk_api_open
+
+#ifdef close
+#undef close
+#endif
+#define close gawk_api_close
+
+#ifdef dup
+#undef dup
+#endif
+#define dup gawk_api_dup
+
+#ifdef dup2
+#undef dup2
+#endif
+#define dup2 gawk_api_dup2
+
+#ifdef fflush
+#undef fflush
+#endif
+#define fflush gawk_api_fflush
+
+#ifdef fgetpos
+#undef fgetpos
+#endif
+#define fgetpos gawk_api_fgetpos
+
+#ifdef fsetpos
+#undef fsetpos
+#endif
+#define fsetpos gawk_api_fsetpos
+
+#ifdef rewind
+#undef rewind
+#endif
+#define rewind gawk_api_rewind
+
+#ifdef stdin
+#undef stdin
+#endif
+#define stdin gawk_api_stdin()
+
+#ifdef stdout
+#undef stdout
+#endif
+#define stdout gawk_api_stdout()
+
+#ifdef stderr
+#undef stderr
+#endif
+#define stderr gawk_api_stderr()
+
+#ifdef malloc
+#undef malloc
+#endif
+#define malloc gawk_api_malloc
+
+#ifdef calloc
+#undef calloc
+#endif
+#define calloc gawk_api_calloc
+
+#ifdef realloc
+#undef realloc
+#endif
+#define realloc gawk_api_realloc
+
+#ifdef free
+#undef free
+#endif
+#define free gawk_api_free
+
+#endif /* !GAWK_API_DO_NOT_REDEFINE_CRT */
 
 #endif /* GAWK */
 
