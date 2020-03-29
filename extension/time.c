@@ -33,7 +33,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -72,19 +75,6 @@ vms_fake_nanosleep(struct timespec *rqdly, struct timespec *rmdly)
 #endif
 #endif
 
-#include "gawkapi.h"
-
-#include "gettext.h"
-#define _(msgid)  gettext(msgid)
-#define N_(msgid) msgid
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "time extension: version 1.0";
-static awk_bool_t (*init_func)(void) = NULL;
-
-int plugin_is_GPL_compatible;
-
 #include <time.h>
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 #include <sys/time.h>
@@ -97,6 +87,20 @@ int plugin_is_GPL_compatible;
 #include <windows.h>
 #endif
 
+#include "gawkapi.h"
+
+GAWK_PLUGIN_GPL_COMPATIBLE
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t ext_id;
+static const char *ext_version = "time extension: version 1.0";
+
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
+static awk_bool_t (*init_func)(void) = NULL;
+
 /*
  * Returns time since 1/1/1970 UTC as a floating point value; should
  * have sub-second precision, but the actual precision will vary based
@@ -106,6 +110,8 @@ static awk_value_t *
 do_gettimeofday(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	double curtime;
+
+	(void) nargs, (void) unused;
 
 	assert(result != NULL);
 
@@ -156,6 +162,8 @@ do_sleep(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	double secs;
 	int rc;
 
+	(void) nargs, (void) unused;
+
 	assert(result != NULL);
 
 	if (! get_argument(0, AWK_NUMBER, &num)) {
@@ -191,7 +199,7 @@ do_sleep(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 #elif defined(HAVE_GETSYSTEMTIMEASFILETIME)
 	{
-		DWORD milliseconds = secs * 1000;
+		DWORD milliseconds = (DWORD) (secs * 1000);
 
 		Sleep (milliseconds);
 		rc = 0;
