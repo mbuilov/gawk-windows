@@ -2,7 +2,7 @@
 .\"
 .\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 .\" 2005, 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
-.\" 2019
+.\" 2019, 2020
 .\" Free Software Foundation, Inc.
 .\" 
 .\" Permission is granted to make and distribute verbatim copies of
@@ -100,7 +100,7 @@ Variables	5\*(CX
 \*(CD
 .SL
 .nf
-\*(FRCopyright \(co 1996\(en2005, 2007, 2009\(en2019
+\*(FRCopyright \(co 1996\(en2005, 2007, 2009\(en2020
 Free Software Foundation, Inc.
 .nf
 .BT
@@ -277,14 +277,12 @@ See \fHAwk Program Execution\*(FR.
 Load dynamic extension \*(FIlib\fP.
 See \fHDynamic Extensions\*(FR.
 .TI "\*(FC\-L \*(FR[\*(FC\*(FIvalue\*(FR], \*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
-Warn about dubious or non-portable constructs.
-If \*(FIvalue\*(FR is
+Warn about dubious or non-portable constructs. Possible optional
+\*(FIvalue\*(FRs are
 \*(FCfatal\*(FR,
-lint warnings become fatal errors.
-If \*(FIvalue\*(FR is
-\*(FCinvalid\*(FR,
-only issue warnings about things that are
-actually invalid (not fully implemented yet).
+\*(FCinvalid\*(FR, and
+\*(FCno-ext\*(FR.
+See \*(AM for the details.
 .TI "\*(FC\-M\*(FR, \*(FC\-\^\-bignum\*(FR
 Enable arbitrary-precision arithmetic.
 .TI "\*(FC\-n\*(FR, \*(FC\-\^\-non\-decimal\-data\*(FR
@@ -1462,7 +1460,7 @@ accept the following conversion specification formats:
 .sp .5
 .nf
 \*(CB\*(FC%a\fP, \*(FC%A\fP	A C99 floating point hexadecimal number.\*(CD
-\*(FC%c\fP		An \s-1ASCII\s+1 character.
+\*(FC%c\fP		A single character.
 \*(FC%d\fP, \*(FC%i\fP	A decimal number (the integer part).
 \*(FC%e\fP		A floating point number of the form
 		\*(FC[\-]d.dddddde[+\^\-]dd\*(FR.
@@ -2013,7 +2011,7 @@ maintains it.\*(CX
 .ES
 .fi
 \*(CDCopyright \(co 1996\(en2005,
-2007, 2009\(en2019 Free Software Foundation, Inc.
+2007, 2009\(en2020 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice

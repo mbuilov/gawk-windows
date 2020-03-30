@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jul 21 2019" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Mar 23 2020" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -491,6 +491,7 @@ cannot be used in place of
 and
 .BR ^= .
 .RE
+.bp \" MANUAL EDIT
 .TP
 .PD 0
 .B \-r
@@ -1107,9 +1108,11 @@ option from within an \*(AK program.
 When true,
 .I gawk
 prints lint warnings. When false, it does not.
-When assigned the string value \fB"fatal"\fP,
-lint warnings become fatal errors, exactly like
-.BR \-\^\-lint=fatal .
+The values allowed for the
+.B \-\^\-lint
+option may also be assinged to
+.BR LINT ,
+with the same effects.
 Any other true value just prints warnings.
 .TP
 .B NF
@@ -4275,7 +4278,7 @@ We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

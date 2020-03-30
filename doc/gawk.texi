@@ -1541,7 +1541,7 @@ Solaris systems still use an old @command{awk} for the
 default @command{awk} utility. A more modern @command{awk} lives in
 @file{/usr/xpg6/bin} on these systems.} If your system's standard
 @command{awk} is the old one, you will see something like this
-if you try the test program:
+if you try the following test program:
 
 @example
 @group
@@ -1863,7 +1863,7 @@ This @value{SECTION} briefly documents the typographical conventions used in Tex
 @end ifinfo
 
 Examples you would type at the command line are preceded by the common
-shell primary and secondary prompts, @samp{$} and @samp{>}.
+shell primary and secondary prompts, @samp{$} and @samp{>}, respectively.
 Input that you type is shown @kbd{like this}.
 @c 8/2014: @print{} is stripped from the texi to make docbook.
 @ifclear FOR_PRINT
@@ -2223,7 +2223,6 @@ significant editorial help for this @value{DOCUMENT} for the
 @cindex Kahrs, J@"urgen
 @cindex Kasal, Stepan
 @cindex Malmberg, John
-@cindex Pitts, Dave
 @cindex Ramey, Chet
 @cindex Rankin, Pat
 @cindex Schorr, Andrew
@@ -2244,7 +2243,6 @@ Michal Jaegermann,
 J@"urgen Kahrs,
 Stepan Kasal,
 John Malmberg,
-Dave Pitts,
 Chet Ramey,
 Pat Rankin,
 Andrew Schorr,
@@ -2270,9 +2268,11 @@ Thanks to Michael Brennan for the Forewords.
 
 @cindex Duman, Patrice
 @cindex Berry, Karl
+@cindex Smith, Gavin
 Thanks to Patrice Dumas for the new @command{makeinfo} program.
-Thanks to Karl Berry, who continues to work to keep
-the Texinfo markup language sane.
+Thanks to Karl Berry for his past work on Texinfo, and
+to Gavin Smith, who continues to work to improve
+the Texinfo markup language.
 
 @cindex Kernighan, Brian
 @cindex Brennan, Michael
@@ -2289,7 +2289,7 @@ or its documentation without his help.
 
 Brian is in a class by himself as a programmer and technical
 author.  I have to thank him (yet again) for his ongoing friendship
-and for being a role model to me for close to 30 years!
+and for being a role model to me for over 30 years!
 Having him as a reviewer is an exciting privilege. It has also
 been extremely humbling@enddots{}
 
@@ -2311,7 +2311,7 @@ take advantage of those opportunities.
 Arnold Robbins @*
 Nof Ayalon @*
 Israel @*
-February 2015
+March, 2020
 @end ifnotdocbook
 
 @ifnotinfo
@@ -2646,15 +2646,11 @@ typed @samp{awk -f advice}:
 
 @example
 $ @kbd{chmod +x advice}
-$ @kbd{advice}
+$ @kbd{./advice}
 @print{} Don't Panic!
 @end example
 
 @noindent
-(We assume you have the current directory in your shell's search
-path variable [typically @code{$PATH}].  If not, you may need
-to type @samp{./advice} at the shell.)
-
 Self-contained @command{awk} scripts are useful when you want to write a
 program that users can invoke without their having to know that the program is
 written in @command{awk}.
@@ -2682,7 +2678,7 @@ interpreter with the given argument and the full argument list of the
 executed program.  The first argument in the list is the full @value{FN}
 of the @command{awk} program.  The rest of the argument list contains
 either options to @command{awk}, or @value{DF}s, or both. (Note that on
-many systems @command{awk} may be found in @file{/usr/bin} instead of
+many systems @command{awk} is found in @file{/usr/bin} instead of
 in @file{/bin}.)
 
 Some systems limit the length of the interpreter name to 32 characters.
@@ -2733,7 +2729,7 @@ interpreter with the given argument and the full argument list of the
 executed program.  The first argument in the list is the full @value{FN}
 of the @command{awk} program.  The rest of the argument list contains
 either options to @command{awk}, or @value{DF}s, or both. (Note that on
-many systems @command{awk} may be found in @file{/usr/bin} instead of
+many systems @command{awk} is found in @file{/usr/bin} instead of
 in @file{/bin}.)
 
 Some systems limit the length of the interpreter name to 32 characters.
@@ -3007,7 +3003,7 @@ $ @kbd{awk 'BEGIN @{ print "Here is a double quote <\42>" @}'}
 
 @noindent
 This works nicely, but you should comment clearly what the
-escapes mean.
+escape sequences mean.
 
 A fourth option is to use command-line variable assignment, like this:
 
@@ -3519,7 +3515,7 @@ If you would like to split a single statement into two lines at a point
 where a newline would terminate it, you can @dfn{continue} it by ending the
 first line with a backslash character (@samp{\}).  The backslash must be
 the final character on the line in order to be recognized as a continuation
-character.  A backslash is allowed anywhere in the statement, even
+character.  A backslash followed by a newline is allowed anywhere in the statement, even
 in the middle of a string or regular expression.  For example:
 
 @example
@@ -3534,7 +3530,9 @@ We have generally not used backslash continuation in our sample programs.
 length of a line, so backslash continuation is never strictly necessary;
 it just makes programs more readable.  For this same reason, as well as
 for clarity, we have kept most statements short in the programs
-presented throughout the @value{DOCUMENT}.  Backslash continuation is
+presented throughout the @value{DOCUMENT}.
+
+Backslash continuation is
 most useful when your @command{awk} program is in a separate source file
 instead of entered from the command line.  You should also note that
 many @command{awk} implementations are more particular about where you
@@ -3850,7 +3848,8 @@ program consists of the concatenation of the contents of
 each specified @var{source-file}.
 
 Files named with @option{-f} are treated as if they had @samp{@@namespace "awk"}
-at their beginning. @xref{Changing The Namespace}, for more information.
+at their beginning. @xref{Changing The Namespace}, for more information
+on this advanced feature.
 
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
@@ -4119,15 +4118,22 @@ other @command{awk} implementations.
 No space is allowed between the @option{-L} and @var{value}, if
 @var{value} is supplied.
 Some warnings are issued when @command{gawk} first reads your program.  Others
-are issued at runtime, as your program executes.
-With an optional argument of @samp{fatal},
-lint warnings become fatal errors.
+are issued at runtime, as your program executes. The optional
+argument may be one of the following:
+
+@table @code
+@item fatal
+Cause lint warnings become fatal errors.
 This may be drastic, but its use will certainly encourage the
 development of cleaner @command{awk} programs.
-With an optional argument of @samp{invalid}, only warnings about things
+
+@item invalid
+Only issue warnings about things
 that are actually invalid are issued. (This is not fully implemented yet.)
-With an optional argument of @samp{no-ext}, warnings about @command{gawk}
-extensions are disabled.
+
+@item no-ext
+Disable warnings about @command{gawk} extensions.
+@end table
 
 Some warnings are only printed once, even if the dubious constructs they
 warn about occur multiple times in your @command{awk} program.  Thus,
@@ -4293,7 +4299,7 @@ Also, disallow adding filenames to @code{ARGV} that were
 not there when @command{gawk} started running.
 This is particularly useful when you want to run @command{awk} scripts
 from questionable sources and need to make sure the scripts
-can't access your system (other than the specified input @value{DF}).
+can't access your system (other than the specified input @value{DF}s).
 
 @item @option{-t}
 @itemx @option{--lint-old}
@@ -4357,7 +4363,7 @@ source of data.)
 Because it is clumsy using the standard @command{awk} mechanisms to mix
 source file and command-line @command{awk} programs, @command{gawk}
 provides the @option{-e} option.  This does not require you to
-preempt the standard input for your source code; it allows you to easily
+preempt the standard input for your source code, and it allows you to easily
 mix command-line and library source code (@pxref{AWKPATH Variable}).
 As with @option{-f}, the @option{-e} and @option{-i}
 options may also be used multiple times on the command line.
@@ -4437,13 +4443,16 @@ awk -f program.awk file1 ./count=1 file2
 @cindex @code{ARGIND} variable @subentry command-line arguments
 @cindex @code{ARGV} array, indexing into
 @cindex @code{ARGC}/@code{ARGV} variables @subentry command-line arguments
+@cindex @command{gawk} @subentry @code{PROCINFO} array in
 All the command-line arguments are made available to your @command{awk} program in the
 @code{ARGV} array (@pxref{Built-in Variables}).  Command-line options
 and the program text (if present) are omitted from @code{ARGV}.
 All other arguments, including variable assignments, are
 included.   As each element of @code{ARGV} is processed, @command{gawk}
 sets @code{ARGIND} to the index in @code{ARGV} of the
-current element.
+current element.  (@command{gawk} makes the full command line,
+including program text and options, available in @code{PROCINFO["argv"]};
+@pxref{Auto-set}.)
 
 @c FIXME: One day, move the ARGC and ARGV node closer to here.
 Changing @code{ARGC} and @code{ARGV} in your @command{awk} program lets
@@ -40419,6 +40428,10 @@ distribution.
 Juan Manuel Guerrero took over maintenance of the DJGPP port.
 
 @item
+@cindex Jannick
+``Jannick'' provided support for MSYS2.
+
+@item
 @cindex Robbins @subentry Arnold
 Arnold Robbins
 has been working on @command{gawk} since 1988, at first
@@ -41799,7 +41812,6 @@ The people maintaining the various @command{gawk} ports are:
 @c put the index entries outside the table, for docbook
 @cindex Buening, Andreas
 @cindex Malmberg, John
-@cindex Pitts, Dave
 @cindex G., Daniel Richard
 @cindex Robbins @subentry Arnold
 @cindex Zaretskii, Eli
@@ -41818,7 +41830,6 @@ The people maintaining the various @command{gawk} ports are:
 @item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
 @item z/OS (OS/390) @tab Daniel Richard G.@: @EMAIL{skunk@@iSKUNK.ORG,skunk at iSKUNK.ORG}
-@item  @tab Dave Pitts (Maintainer Emeritus), @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 If your bug is also reproducible under Unix, send a copy of your
@@ -42086,7 +42097,7 @@ the file.
 @item
 @command{gawk} may be built on non-POSIX systems as well. The currently
 supported systems are MS-Windows using
-MSYS, DJGPP, MinGW, and Cygwin,
+MSYS, MSYS2, DJGPP, MinGW, and Cygwin,
 @c OS/2,
 and both Vax/VMS and OpenVMS.
 Instructions for each system are included in this @value{APPENDIX}.
