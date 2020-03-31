@@ -35,7 +35,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <locale.h>
 
 static unsigned long long
 file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
@@ -46,26 +48,29 @@ file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 	return inode;
 }
 
-static const char *
+static int
 ftype_and_ino(
-	const WIN32_FIND_DATA *ffd,
-	const char *dirname,
+	const WIN32_FIND_DATAW *ffd,
+	const wchar_t dirname[],
+	unsigned dir_len,
 	unsigned long long *inode/*out*/)
 {
 	HANDLE fh;
-	char fname[2*MAX_PATH];
+	wchar_t fname[2*MAX_PATH];
 
 	unsigned long long ino = 0; /* zero - in case of error */
-	const char *ftstr = "u"; /* unknown - in case of error */
+	int ftype = 'u'; /* unknown - in case of error */
 
 	if (ffd->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-		ftstr = "l";
+		ftype = 'l'; /* link */
 	else if (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		ftstr = "d";
+		ftype = 'd'; /* directory */
 
-	sprintf(fname, "%s\\%s", dirname, ffd->cFileName);
+	memcpy(fname, dirname, dir_len*sizeof(dirname[0]));
+	fname[dir_len] = L'\\';
+	wcscpy(fname + dir_len + 1, ffd->cFileName);
 
-	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
+	fh = CreateFileW(fname, 0, 0, NULL, OPEN_EXISTING,
 			((ffd->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
 				? FILE_FLAG_OPEN_REPARSE_POINT : 0u) |
 			FILE_FLAG_BACKUP_SEMANTICS, NULL);
@@ -77,21 +82,21 @@ ftype_and_ino(
 		if (GetFileInformationByHandle(fh, &info))
 			ino = file_info_get_inode(&info);
 
-		if ('u' == *ftstr) {
+		if ('u' == ftype) {
 			const DWORD ft = GetFileType(fh);
 
 			switch (ft) {
 				case FILE_TYPE_DISK:
-					ftstr = "f";
+					ftype = 'f'; /* file */
 					break;
 				case FILE_TYPE_CHAR:
-					ftstr = "c";
+					ftype = 'c'; /* character device */
 					break;
 				case FILE_TYPE_PIPE:
 					if (GetNamedPipeInfo(fh, NULL, NULL, NULL, NULL))
-						ftstr = "p";
+						ftype = 'p'; /* pipe */
 					else
-						ftstr = "s";
+						ftype = 's'; /* socket */
 					break;
 				default:
 					break;
@@ -102,97 +107,182 @@ ftype_and_ino(
 	}
 
 	*inode = ino;
-	return ftstr;
+	return ftype;
+}
+
+static int
+set_lcat_from_env(const wchar_t prog[], int cat, const wchar_t name[])
+{
+	const wchar_t *lc = _wgetenv(name);
+	if (lc && lc[0] && !_wsetlocale(cat, lc)) {
+		fwprintf(stderr, L"%s: bad locale: %s=%s\n", prog, name, lc);
+		return -1;
+	}
+	return 0;
+}
+
+/* Set locale based on the values of environment variables.  */
+static int
+set_locale_from_env(const wchar_t prog[], const wchar_t def[])
+{
+	const wchar_t *lc = _wgetenv(L"LC_ALL");
+	if (lc && lc[0]) {
+		if (!_wsetlocale(LC_ALL, lc)) {
+			fwprintf(stderr, L"%s: bad locale: LC_ALL=%s\n",
+				prog, lc);
+			return -1;
+		}
+		return 0;
+	}
+
+	/* LANG is the default for all LC_...  */
+	lc = _wgetenv(L"LANG");
+
+	/* if LANG is not defined - set the system default.
+	   (If def is "", locale may be be set to e.g. Russian_Russia.1251).  */
+	if (!lc || !lc[0])
+		lc = def;
+
+	if (!_wsetlocale(LC_ALL, lc)) {
+		fwprintf(stderr, L"%s: bad locale: LANG=%s\n", prog, lc);
+		return -1;
+	}
+
+	/* set all locale categories from the environment:
+	   specific LC_... take precedence over LANG.  */
+	if (set_lcat_from_env(prog, LC_CTYPE,    L"LC_CTYPE") ||
+		set_lcat_from_env(prog, LC_COLLATE,  L"LC_COLLATE") ||
+		set_lcat_from_env(prog, LC_MONETARY, L"LC_MONETARY") ||
+		set_lcat_from_env(prog, LC_NUMERIC,  L"LC_NUMERIC") ||
+		set_lcat_from_env(prog, LC_TIME,     L"LC_TIME"))
+		return -1;
+
+	return 0;
 }
 
 static HANDLE open_dir(
-	const char prog[],
-	const char dir[],
-	WIN32_FIND_DATA *ffd/*out*/)
+	const wchar_t prog[],
+	const wchar_t dirname[],
+	size_t dir_len,
+	WIN32_FIND_DATAW *ffd/*out*/)
 {
 	HANDLE h;
-	char path_buf[MAX_PATH];
-	size_t dir_len = strlen(dir);
+	wchar_t path_buf[MAX_PATH];
 
-	if (dir_len > sizeof(path_buf) - sizeof("\\*")) {
-		fprintf(stderr, "%s: too long directory path: \"%s\"\n",
-			prog, dir);
+	if (dir_len > (sizeof(path_buf) - sizeof(L"\\*"))/sizeof(wchar_t)) {
+		fwprintf(stderr, L"%s: too long directory path: \"%s\"\n",
+			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
 
-	memcpy(path_buf, dir, dir_len);
-	memcpy(path_buf + dir_len, "\\*", sizeof("\\*"));
+	memcpy(path_buf, dirname, dir_len*sizeof(dirname[0]));
+	memcpy(path_buf + dir_len, L"\\*", sizeof(L"\\*"));
 
-	h = FindFirstFile(path_buf, ffd);
+	h = FindFirstFileExW(path_buf, FindExInfoStandard, ffd, FindExSearchNameMatch, NULL, 0);
 	if (INVALID_HANDLE_VALUE == h) {
-		fprintf(stderr, "%s: can't open directory \"%s\"\n",
-			prog, dir);
+		fwprintf(stderr, L"%s: can't open directory \"%s\"\n",
+			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
 
 	return h;
 }
 
-int main(int argc, char *argv[])
+static int usage(const wchar_t *prog)
 {
-	WIN32_FIND_DATA ffd;
+	fwprintf(stderr, L"Usage: %s [--locale=<locale>] (-afi|-lna) <dir>\n", prog);
+	return 2;
+}
+
+int wmain(int argc, wchar_t *wargv[])
+{
+	WIN32_FIND_DATAW ffd;
 	HANDLE h;
 
-	const char *const opts = argv[1];
+	int afi;
+	const wchar_t *dirname;
+	const wchar_t *locale = NULL;	/* optional */
+	wchar_t **w = wargv + 1;
+	size_t dir_len;
 
-	if (argc != 3 || (strcmp("-afi", opts) && strcmp("-lna", opts))) {
-		fprintf(stderr, "usage: %s [-afi|-lna] <dir>\n", argv[0]);
-		return 2;
+	if (argc < 3 || argc > 4)
+		return usage(wargv[0]);
+
+	for (;; w++) {
+		if (!wcsncmp(*w, L"--locale=", wcslen(L"--locale="))) {
+			if (locale)
+				return usage(wargv[0]);
+			locale = *w + wcslen(L"--locale=");
+			continue;
+		}
+		if (!wcscmp(*w, L"-afi")) {
+			afi = 1;
+			break;
+		}
+		if (!wcscmp(*w, L"-lna")) {
+			afi = 0;
+			break;
+		}
+		return usage(wargv[0]);
 	}
 
-	h = open_dir(argv[0], argv[2], &ffd);
+	dirname = *++w;
+	if (!dirname || w[1])
+		return usage(wargv[0]);
+
+	if (locale) {
+		if (!_wsetlocale(LC_ALL, locale)) {
+			fwprintf(stderr, L" %s: bad locale: %s\n", wargv[0], locale);
+			return 2;
+		}
+	}
+	else if (set_locale_from_env(wargv[0], L""))
+		return 2;
+
+	dir_len = wcslen(dirname);
+	h = open_dir(wargv[0], dirname, dir_len, &ffd);
 	if (INVALID_HANDLE_VALUE == h)
 		return 2;
 
+	/* print fake total */
+	if (!afi)
+		fwprintf(stdout, L"total 555\n");
+
+	do {
+		unsigned long long ino;
+
+		int ftype = ftype_and_ino(&ffd, dirname, (unsigned) dir_len, &ino);
+
+		if (afi) {
+			/* ls -afi */
+			fwprintf(stdout, L"%llu %s\n", ino, ffd.cFileName);
+		}
+		else {
+			/* ls -lna */
+			unsigned name_len = (unsigned) wcslen(ffd.cFileName);
+			fwprintf(stdout, L"%c%s %2.u 1000 1000 %8.u Mar 27 2016 %s%s\n",
+				'd' == ftype ? L'd' :
+				'l' == ftype ? L'l' :
+				L'-',
+				'd' == ftype ? L"rwxr-xr-x" :
+				'l' == ftype ? L"rwxrwxrwx" :
+				L"rwxrw-r--",
+				name_len /* fake */,
+				256*name_len /* fake */,
+				ffd.cFileName,
+				'l' == ftype ? L" -> xxx" : L"" /* fake */);
+		}
+
+	} while (FindNextFileW(h, &ffd));
+
 	{
-		const int afi = 0 == strcmp("-afi", opts);
+		const DWORD err = GetLastError();
+		FindClose(h);
 
-		/* print fake total */
-		if (!afi)
-			fprintf(stdout, "total 555\n");
-
-		do {
-			unsigned long long ino;
-
-			const char *ftype = ftype_and_ino(
-				&ffd, argv[2], &ino);
-
-			if (afi) {
-				/* ls -afi */
-				fprintf(stdout, "%I64u %s\n",
-					ino, ffd.cFileName);
-			}
-			else {
-				/* ls -lna */
-				unsigned name_len = (unsigned) strlen(ffd.cFileName);
-				fprintf(stdout, "%c%s %2.u 1000 1000 %8.u Mar 27 2016 %s%s\n",
-					'd' == *ftype ? 'd' :
-					'l' == *ftype ? 'l' :
-					'-',
-					'd' == *ftype ? "rwxr-xr-x" :
-					'l' == *ftype ? "rwxrwxrwx" :
-					"rwxrw-r--",
-					name_len /* fake */,
-					256*name_len /* fake */,
-					ffd.cFileName,
-					'l' == *ftype ? " -> xxx" : "" /* fake */);
-			}
-		} while (FindNextFile(h, &ffd));
-
-		{
-			const DWORD err = GetLastError();
-			FindClose(h);
-
-			if (ERROR_NO_MORE_FILES != err) {
-				fprintf(stderr, "%s: FindNextFile() failed with error: %lx\n",
-					argv[0], err);
-				return 2;
-			}
+		if (ERROR_NO_MORE_FILES != err) {
+			fwprintf(stderr, L"%s: FindNextFileW() failed with error: %lx\n",
+				wargv[0], err);
+			return 2;
 		}
 	}
 
