@@ -34,40 +34,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "gawkapi.h"
 
-#include "gettext.h"
-#define _(msgid)  gettext(msgid)
-#define N_(msgid) msgid
+GAWK_PLUGIN_GPL_COMPATIBLE
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "revoutput extension: version 1.1";
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 static awk_bool_t init_revoutput(void);
 static awk_bool_t (*init_func)(void) = init_revoutput;
-
-int plugin_is_GPL_compatible;
 
 /* rev_fwrite --- write out characters in reverse order */
 
 static size_t
 rev_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
 {
-	const char *cp = buf;
-	int nbytes = size * count;
+	const char *cp = (const char*) buf;
+	size_t i = count;
 
-	(void) opaque;
+	assert(sizeof(char) == size);
 
-	for (; nbytes >= 1; nbytes--)
-		putc(cp[nbytes-1], fp);
+	(void) size, (void) opaque;
 
-	return (size * count);
+	while (i) {
+		char c = cp[--i];
+		if (EOF == putc(c, fp))
+			return count - i - 1;
+	}
+
+	return count;
 }
 
 
@@ -84,7 +92,7 @@ revoutput_can_take_file(const awk_output_buf_t *outbuf)
 	if (! sym_lookup("REVOUT", AWK_NUMBER, & value))
 		return awk_false;
 
-	return (value.num_value != 0);
+	return (awk_bool_t) (value.num_value != 0);
 }
 
 /*
@@ -114,7 +122,7 @@ static awk_output_wrapper_t output_wrapper = {
 /* init_revoutput --- set things ups */
 
 static awk_bool_t
-init_revoutput()
+init_revoutput(void)
 {
 	awk_value_t value;
 
