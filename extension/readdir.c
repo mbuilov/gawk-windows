@@ -9,9 +9,9 @@
  * Simplified 11/2012.
  * Improved 3/2019.
  *
- * Michael M. Builov: ported to _MSC_VER.
+ * Michael M. Builov: reworked, ported to _MSC_VER.
  * mbuilov@gmail.com
- * Ported 3/2020
+ * Reworked 3/2020
  */
 
 /*
@@ -73,7 +73,12 @@ GAWK_PLUGIN_GPL_COMPATIBLE
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
+
+#ifndef READDIR_TEST
 static const char *ext_version = "readdir extension: version 2.0";
+#else
+static const char *ext_version = "readdir extension: version 3.0";
+#endif
 
 #include "gawkdirfd.h"
 
@@ -90,12 +95,24 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 
 /* data type for the opaque pointer: */
 
+union u_field_info {
+	awk_fieldwidth_info_t fw;
+	char buf[awk_fieldwidth_info_size(3)];
+};
+
 typedef struct open_directory {
-#ifndef _MSC_VER
-	DIR *dp;
+#ifdef READDIR_TEST
+	union u_field_info u;
 #endif
+#ifdef _MSC_VER
+	unsigned dir_len;
+	wchar_t dirname[1];
+#else
+	DIR *dp;
 	char buf[1];
+#endif
 } open_directory_t;
+#define fw u.fw
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
 static unsigned long long
@@ -110,21 +127,21 @@ file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 
 #ifndef _MSC_VER
 
-/* ftype --- return type of file as a single character string */
+/* file_type --- return type of file as a single character */
 
-static const char *
-ftype(struct dirent *entry, const char *dirname)
+static int
+file_type(struct dirent *entry, const char *dirname)
 {
 #ifdef DT_BLK
 	(void) dirname;		/* silence warnings */
 	switch (entry->d_type) {
-	case DT_BLK:	return "b";
-	case DT_CHR:	return "c";
-	case DT_DIR:	return "d";
-	case DT_FIFO:	return "p";
-	case DT_LNK:	return "l";
-	case DT_REG:	return "f";
-	case DT_SOCK:	return "s";
+	case DT_BLK:	return 'b';
+	case DT_CHR:	return 'c';
+	case DT_DIR:	return 'd';
+	case DT_FIFO:	return 'p';
+	case DT_LNK:	return 'l';
+	case DT_REG:	return 'f';
+	case DT_SOCK:	return 's';
 	default:
 	case DT_UNKNOWN: break;	// JFS returns 'u', so fall through to stat
 	}
@@ -137,25 +154,25 @@ ftype(struct dirent *entry, const char *dirname)
 	strcat(fname, entry->d_name);
 	if (stat(fname, &sbuf) == 0) {
 		if (S_ISBLK(sbuf.st_mode))
-			return "b";
+			return 'b';
 		if (S_ISCHR(sbuf.st_mode))
-			return "c";
+			return 'c';
 		if (S_ISDIR(sbuf.st_mode))
-			return "d";
+			return 'd';
 		if (S_ISFIFO(sbuf.st_mode))
-			return "p";
+			return 'p';
 		if (S_ISREG(sbuf.st_mode))
-			return "f";
+			return 'f';
 #ifdef S_ISLNK
 		if (S_ISLNK(sbuf.st_mode))
-			return "l";
+			return 'l';
 #endif
 #ifdef S_ISSOCK
 		if (S_ISSOCK(sbuf.st_mode))
-			return "s";
+			return 's';
 #endif
 	}
-	return "u";
+	return 'u';
 }
 
 /* get_inode --- get the inode of a file */
@@ -189,26 +206,29 @@ get_inode(struct dirent *entry, const char *dirname)
 /* ftype_and_ino: use file handle to get both inode number and the file type
   --- return type of file as a single character string,
   --- get the inode of the file */
-static const char *
+static int
 ftype_and_ino(
-	const WIN32_FIND_DATA *ffd,
-	const char *dirname,
+	const WIN32_FIND_DATAW *ffd,
+	const wchar_t dirname[],
+	unsigned dir_len,
 	unsigned long long *inode/*out*/)
 {
 	HANDLE fh;
-	char fname[2*MAX_PATH];
+	wchar_t fname[2*MAX_PATH];
 
 	unsigned long long ino = 0; /* zero - in case of error */
-	const char *ftstr = "u"; /* unknown - in case of error */
+	int ftype = 'u'; /* unknown - in case of error */
 
 	if (ffd->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-		ftstr = "l";
+		ftype = 'l'; /* link */
 	else if (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		ftstr = "d";
+		ftype = 'd'; /* directory */
 
-	sprintf(fname, "%s\\%s", dirname, ffd->cFileName);
+	memcpy(fname, dirname, dir_len*sizeof(dirname[0]));
+	fname[dir_len] = L'\\';
+	wcscpy(fname + dir_len + 1, ffd->cFileName);
 
-	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
+	fh = CreateFileW(fname, 0, 0, NULL, OPEN_EXISTING,
 			((ffd->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
 				? FILE_FLAG_OPEN_REPARSE_POINT : 0u) |
 			FILE_FLAG_BACKUP_SEMANTICS, NULL);
@@ -220,21 +240,21 @@ ftype_and_ino(
 		if (GetFileInformationByHandle(fh, &info))
 			ino = file_info_get_inode(&info);
 
-		if ('u' == *ftstr) {
+		if ('u' == ftype) {
 			const DWORD ft = GetFileType(fh);
 
 			switch (ft) {
 				case FILE_TYPE_DISK:
-					ftstr = "f";
+					ftype = 'f'; /* file */
 					break;
 				case FILE_TYPE_CHAR:
-					ftstr = "c";
+					ftype = 'c'; /* character device */
 					break;
 				case FILE_TYPE_PIPE:
 					if (GetNamedPipeInfo(fh, NULL, NULL, NULL, NULL))
-						ftstr = "p";
+						ftype = 'p'; /* pipe */
 					else
-						ftstr = "s";
+						ftype = 's'; /* socket */
 					break;
 				default:
 					break;
@@ -245,9 +265,46 @@ ftype_and_ino(
 	}
 
 	*inode = ino;
-	return ftstr;
+	return ftype;
 }
 
+#endif /* _MSC_VER */
+
+#ifdef _MSC_VER
+static unsigned ffd_offset(unsigned dir_len)
+{
+	unsigned offs;
+
+# ifndef READDIR_TEST
+
+	/* ensure that offsetof(struct open_directory, dirname) == sizeof(unsigned) */
+	(void) sizeof(int[1-2*!(sizeof(unsigned) ==
+		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
+
+	offs = sizeof(unsigned);
+
+# else /* READDIR_TEST */
+
+	/* ensure that offsetof(struct open_directory, dir_len)
+		== sizeof(union u_field_info) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) ==
+		((char*)&((struct open_directory*)NULL)->dir_len - (char*)NULL))]);
+
+	/* ensure that offsetof(struct open_directory, dirname)
+		== sizeof(union u_field_info) + sizeof(unsigned) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(unsigned) ==
+		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
+
+	offs = sizeof(union u_field_info) + sizeof(unsigned);
+
+# endif /* READDIR_TEST */
+
+	offs += dir_len*sizeof(wchar_t) + sizeof(void*) - 1;
+
+	offs &= ~(sizeof(void*) - 1);
+
+	return offs;
+}
 #endif /* _MSC_VER */
 
 /* dir_get_record --- get one record at a time out of a directory */
@@ -255,21 +312,22 @@ ftype_and_ino(
 static int
 dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len,
-		const awk_fieldwidth_info_t **unused)
+		const awk_fieldwidth_info_t **field_width)
 {
 #ifndef _MSC_VER
 	DIR *dp;
 	struct dirent *dirent;
 #else
-	WIN32_FIND_DATA *ffd;
+	WIN32_FIND_DATAW *ffd;
+	size_t converted;
 #endif
 	char *out_buf;
-	int len;
+	int len, flen;
 	open_directory_t *the_dir;
-	const char *ftstr;
+	int ftype;
 	unsigned long long ino;
 
-	(void) unused;
+	(void) field_width;
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
@@ -280,13 +338,10 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		return EOF;
 
 	the_dir = (open_directory_t *) iobuf->opaque;
-#ifndef _MSC_VER
-	dp = the_dir->dp;
-#else
-	ffd = (WIN32_FIND_DATA*) the_dir->buf;
-#endif
 
 #ifndef _MSC_VER
+
+	dp = the_dir->dp;
 
 	/*
 	 * Initialize errno, since readdir does not set it to zero on EOF.
@@ -299,56 +354,100 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	}
 
 	ino = get_inode(dirent, iobuf->name);
-	ftstr = ftype(dirent, iobuf->name);
+	ftype = file_type(dirent, iobuf->name);
 	out_buf = the_dir->buf;
 
-#ifdef __MINGW32__
+# ifndef READDIR_TEST
+
+#  ifdef __MINGW32__
 	len = sprintf(out_buf, "%I64u/%s", ino, dirent->d_name);
-#else
+#  else
 	len = sprintf(out_buf, "%llu/%s", ino, dirent->d_name);
-#endif
+#  endif
+
+# else /* READDIR_TEST */
+
+#  ifdef __MINGW32__
+	len = sprintf(out_buf, "%I64u", ino);
+#  else
+	len = sprintf(out_buf, "%llu", ino);
+#  endif
+	the_dir->fw.fields[0].len = (unsigned) len;
+	len += (flen = sprintf(out_buf + len, "/%s", dirent->d_name));
+	the_dir->fw.fields[1].len = (unsigned) flen - 1;
+
+# endif /* READDIR_TEST */
 
 #else /* _MSC_VER */
 
+	ffd = (WIN32_FIND_DATAW*) ((char*) the_dir + ffd_offset(the_dir->dir_len));
+
 	if (ffd->dwFileAttributes == ~(DWORD)0) {
 		/* no cached entry */
-		if (!FindNextFile((HANDLE)(intptr_t)iobuf->fd, ffd)) {
+		if (!FindNextFileW((HANDLE)(intptr_t)iobuf->fd, ffd)) {
 			const DWORD err = GetLastError();
 			*errcode = ERROR_NO_MORE_FILES == err ? 0 : err ? (int)err : -1;
 			return EOF;
 		}
 	}
 
-	ftstr = ftype_and_ino(ffd, iobuf->name, &ino);
+	ftype = ftype_and_ino(ffd, the_dir->dirname, the_dir->dir_len, &ino);
 
 	/* mark that there is no cached entry */
 	ffd->dwFileAttributes = ~(DWORD)0;
 
 	/* dwFileAttributes must be the first member */
 	(void) sizeof(int[1-2*!!(
-		(char*)&((WIN32_FIND_DATA*)NULL)->dwFileAttributes - (char*)NULL)]);
+		(char*)&((WIN32_FIND_DATAW*)NULL)->dwFileAttributes - (char*)NULL)]);
 
-	/* there must be at least 21 chars between ffd->dwFileAttributes and ffd->cFileName */
+	/* layout of the_dir:
+	  <dir_len><dirname><padding><WIN32_FIND_DATAW><MAX_PATH*MB_CUR_MAX> */
+	converted = wcstombs((char*)(ffd + 1), ffd->cFileName, MAX_PATH);
+
+	if ((size_t)-1 == converted) {
+		*errcode = errno;
+		return EOF;
+	}
+
+	/* there must be a space for at least 21 characters between
+	  ffd->dwfileattributes and ffd->cfilename */
 	(void) sizeof(int[1-2*!(
-		(size_t)((char*)&((WIN32_FIND_DATA*)NULL)->cFileName - (char*)NULL) >=
-			sizeof(((WIN32_FIND_DATA*)NULL)->dwFileAttributes) + 21)]);
+		(size_t)((char*)&((WIN32_FIND_DATAW*)NULL)->cFileName - (char*)NULL) >=
+			sizeof(((WIN32_FIND_DATAW*)NULL)->dwFileAttributes) + 21)]);
 
-	/* print max 21 chars, including terminating '\0' */
-	len = sprintf((char*)(&ffd->dwFileAttributes + 1), "%I64u", ino);
+	/* print max 21 characters, including terminating '\0' */
+	out_buf = (char*)(&ffd->dwFileAttributes + 1);
+	len = sprintf(out_buf, "%llu", ino);
+# ifdef READDIR_TEST
+	the_dir->fw.fields[0].len = (unsigned) len;
+# endif
 
-	ffd->cFileName[-1] = '/';
-	out_buf = ffd->cFileName - 1 - len;
-	memmove(out_buf, &ffd->dwFileAttributes + 1, (unsigned) len);
-	len += 1 + (int)strlen(ffd->cFileName);
+	/* there must be a space for 3 more characters: two forward slashes and ftype */
+	(void) sizeof(int[1-2*!(sizeof((WIN32_FIND_DATAW*)NULL)->cFileName >= 3)]);
+
+	out_buf[len++] = '/';
+	memcpy(out_buf + len, ffd + 1, converted);
+	len += (int) converted;
+# ifdef READDIR_TEST
+	the_dir->fw.fields[1].len = (unsigned) converted;
+# endif
 
 #endif /* _MSC_VER */
 
-	len += sprintf(out_buf + len, "/%s", ftstr);
+	flen = sprintf(out_buf + len, "/%c", (char) ftype);
+	len += flen;
+#ifdef READDIR_TEST
+	the_dir->fw.fields[2].len = (unsigned) flen - 1;
+#endif
 
 	*out = out_buf;
 
 	*rt_start = NULL;
 	*rt_len = 0;	/* set RT to "" */
+#ifdef READDIR_TEST
+	if (field_width)
+		*field_width = & the_dir->fw;
+#endif
 	return len;
 }
 
@@ -441,13 +540,13 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	DIR *dp;
 
 	errno = 0;
-#ifdef HAVE_FDOPENDIR
+# ifdef HAVE_FDOPENDIR
 	dp = fdopendir(iobuf->fd);
-#else
+# else
 	dp = opendir(iobuf->name);
 	if (dp != NULL)
 		iobuf->fd = dirfd(dp);
-#endif
+# endif
 	if (dp == NULL) {
 		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
 				strerror(errno));
@@ -455,56 +554,97 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		return awk_false;
 	}
 
+# ifndef READDIR_TEST
+
 	/* ensure that offsetof(struct open_directory, buf) == sizeof(DIR*) */
 	(void) sizeof(int[1-2*!(sizeof(DIR*) ==
 		((char*)&((struct open_directory*)NULL)->buf - (char*)NULL))]);
 
-	size = sizeof(DIR*)
-		+ sizeof(struct dirent)
+	size = sizeof(DIR*);
+
+# else /* READDIR_TEST */
+
+	/* ensure that offsetof(struct open_directory, dp)
+		== sizeof(union u_field_info) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) ==
+		((char*)&((struct open_directory*)NULL)->dp - (char*)NULL))]);
+
+	/* ensure that offsetof(struct open_directory, buf)
+		== sizeof(union u_field_info) + sizeof(DIR*) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(DIR*) ==
+		((char*)&((struct open_directory*)NULL)->buf - (char*)NULL))]);
+
+	size = sizeof(union u_field_info) + sizeof(DIR*);
+
+# endif /* READDIR_TEST */
+
+	size += sizeof(struct dirent)
 		+ 20 /* max digits in inode */
 		+ 2 /* slashes */
 		+ 1 /* ftype */;
 
 	emalloc(the_dir, open_directory_t *, size, "dir_take_control_of");
 
+	the_dir->dp = dp;
+
 #else /* _MSC_VER */
 
 	HANDLE h;
-	char path_buf[MAX_PATH];
-	size_t dir_len = strlen(iobuf->name);
+	wchar_t path_buf[MAX_PATH];
+	unsigned offset;
+	WIN32_FIND_DATAW *ffd;
 
-	if (dir_len > sizeof(path_buf) - sizeof("\\*")) {
+	size_t converted = mbstowcs(NULL, iobuf->name, 0);
+	if ((size_t)-1 == converted) {
+		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
+				strerror(errno));
+		update_ERRNO_int(errno);
+		return awk_false;
+	}
+
+	if (converted > (sizeof(path_buf) - sizeof(L"\\*"))/sizeof(path_buf[0])) {
 		warning(ext_id, _("dir_take_control_of: too long directory name: %s"),
 				iobuf->name);
 		update_ERRNO_int(ENAMETOOLONG);
 		return awk_false;
 	}
 
-	memcpy(path_buf, iobuf->name, dir_len);
-	memcpy(path_buf + dir_len, "\\*", sizeof("\\*"));
+	(void) mbstowcs(path_buf, iobuf->name, converted);
+	memcpy(path_buf + converted, L"\\*", sizeof(L"\\*"));
 
-	size = sizeof(WIN32_FIND_DATA) + 1 /* slash */ + 1 /* ftype */;
+	offset = ffd_offset((unsigned) converted);
+	size = offset
+		+ sizeof(WIN32_FIND_DATAW)
+		+ MAX_PATH*MB_CUR_MAX;
+
 	emalloc(the_dir, open_directory_t *, size, "dir_take_control_of");
 
 	/* cache found file in the_dir */
-	h = FindFirstFile(path_buf, (WIN32_FIND_DATA*) the_dir->buf);
+	ffd = (WIN32_FIND_DATAW*) ((char*) the_dir + offset);
+	h = FindFirstFileW(path_buf, ffd);
 
 	/* must find at least '.', otherwise directory path is wrong */
-	if (h == INVALID_HANDLE_VALUE ||
-		((WIN32_FIND_DATA*) the_dir->buf)->dwFileAttributes == ~(DWORD)0)
-	{
+	if (h == INVALID_HANDLE_VALUE || ffd->dwFileAttributes == ~(DWORD)0) {
 		int err = report_opendir_error(iobuf->name);
 		free(the_dir);
 		update_ERRNO_int(err);
 		return awk_false;
 	}
 
+	the_dir->dir_len = (unsigned) converted;
+	memcpy(the_dir->dirname, path_buf, converted*sizeof(path_buf[0]));
+
 	iobuf->fd = (fd_t) (intptr_t) h; /* only 32 bits of HANDLE are meaningful */
 
 #endif /* _MSC_VER */
 
-#ifndef _MSC_VER
-	the_dir->dp = dp;
+#ifdef READDIR_TEST
+	/* pre-populate the field_width struct with constant values: */
+	the_dir->fw.use_chars = awk_false;
+	the_dir->fw.nf = 3;
+	the_dir->fw.fields[0].skip = 0;	/* no leading space */
+	the_dir->fw.fields[1].skip = 1;	/* single '/' separator */
+	the_dir->fw.fields[2].skip = 1;	/* single '/' separator */
 #endif
 
 	iobuf->opaque = the_dir;
