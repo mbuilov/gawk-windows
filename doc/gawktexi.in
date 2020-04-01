@@ -3726,7 +3726,7 @@ The keyword can be abbreviated, as long as the abbreviation allows the option
 to be uniquely identified.  If the option takes an argument, either the
 keyword is immediately followed by an equals sign (@samp{=}) and the
 argument's value, or the keyword and the argument's value are separated
-by whitespace.
+by whitespace (spaces or TABs).
 If a particular option with a value is given more than once, it is the
 last value that counts.
 
@@ -6087,7 +6087,7 @@ or underscores (@samp{_}):
 @cindex backslash (@code{\}) @subentry @code{\s} operator (@command{gawk})
 @cindex @code{\} (backslash) @subentry @code{\s} operator (@command{gawk})
 @item \s
-Matches any whitespace character.
+Matches any space character as defined by the curent locale.
 Think of it as shorthand for
 @w{@samp{[[:space:]]}}.
 
@@ -6095,7 +6095,7 @@ Think of it as shorthand for
 @cindex backslash (@code{\}) @subentry @code{\S} operator (@command{gawk})
 @cindex @code{\} (backslash) @subentry @code{\S} operator (@command{gawk})
 @item \S
-Matches any character that is not whitespace.
+Matches any character that is not a space, as defined by the current locale.
 Think of it as shorthand for
 @w{@samp{[^[:space:]]}}.
 
@@ -6765,6 +6765,7 @@ Readfile} for another option.
 @cindex fields
 @cindex accessing fields
 @cindex fields @subentry examining
+@cindex whitespace @subentry definition of
 When @command{awk} reads an input record, the record is
 automatically @dfn{parsed} or separated by the @command{awk} utility into chunks
 called @dfn{fields}.  By default, fields are separated by @dfn{whitespace},
