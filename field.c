@@ -463,7 +463,9 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 
-	if (RS_is_null && default_FS) {
+	bool default_field_splitting = (RS_is_null && default_FS);
+
+	if (default_field_splitting) {
 		sep = scan;
 		while (scan < end && (*scan == ' ' || *scan == '\t' || *scan == '\n'))
 			scan++;
@@ -504,7 +506,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
            			(long) (REEND(rp, scan) - RESTART(rp, scan)), sep_arr);
 		scan += REEND(rp, scan);
 		field = scan;
-		if (scan == end)	/* FS at end of record */
+		if (scan == end && ! default_field_splitting)	/* FS at end of record */
 			(*set)(++nf, field, 0L, n);
 	}
 	if (nf != up_to && scan < end) {
