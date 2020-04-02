@@ -2046,7 +2046,8 @@ Questo @value{SECTION} documenta brevemente le convenzioni tipografiche usate in
 @end ifinfo
 
 Gli esempi da immettere sulla riga di comando sono preceduti dai
-comuni prompt di shell primario e secondario, @samp{$} e @samp{>}.
+comuni prompt di shell primario e secondario, rispettivamente
+@samp{$} e @samp{>}.
 L'input che si inserisce viene mostrato @kbd{in questo modo}.
 @c 8/2014: @print{} is stripped from the texi to make docbook.
 @ifclear FOR_PRINT
@@ -2439,7 +2440,6 @@ Michal Jaegermann,
 J@"urgen Kahrs,
 Stepan Kasal,
 John Malmberg,
-Dave Pitts,
 Chet Ramey,
 Pat Rankin,
 Andrew Schorr,
@@ -2466,9 +2466,11 @@ Grazie a Michael Brennan per le Prefazioni.
 
 @cindex Duman, Patrice
 @cindex Berry, Karl
+@cindex Smith, Gavin
 Grazie a Patrice Dumas per il nuovo programma @command{makeinfo}.
-Grazie a Karl Berry, che continua a lavorare per tenere
-aggiornato il linguaggio di marcatura Texinfo.
+Grazie a Karl Berry, che per il lavoro svolto in passato
+su Texinfo, e a Gavin Smith, che continua a lavorare per
+migliorare il linguaggio di marcatura Texinfo.
 
 @cindex Kernighan, Brian
 @cindex Brennan, Michael
@@ -2485,7 +2487,7 @@ sulla sua documentazione senza il suo aiuto.
 
 Brian @`e un fuoriclasse sia come programmatore che come autore di manuali
 tecnici.  @`E mio dovere ringraziarlo (una volta di pi@`u) per la sua costante
-amicizia e per essere stato per me un modello da seguire ormai da quasi
+amicizia e per essere stato per me un modello da seguire ormai per oltre
 30 anni!  Averlo come revisiore @`e per me un privilegio eccitante, ma @`e
 stata anche un'esperienza che mi ha fatto sentire molto piccolo@enddots{}
 
@@ -2507,7 +2509,7 @@ vantaggio da quelle opportunit@`a.
 Arnold Robbins @*
 Nof Ayalon @*
 Israel @*
-Febbraio 2015
+Marzo 2020
 @end ifnotdocbook
 
 @ifnotinfo
@@ -2875,16 +2877,11 @@ come se si fosse digitato @samp{awk -f consiglio}:
 
 @example
 $ @kbd{chmod +x consiglio}
-$ @kbd{consiglio}
+$ @kbd{./consiglio}
 @print{} Non v'allarmate!
 @end example
 
 @noindent
-(Si suppone che la directory corrente sia tra quelle contenute nella variabile
-che indica il "percorso" di ricerca [solitamente @code{$PATH}].  In caso
-contrario si potrebbe aver bisogno di digitare @samp{./consiglio} nella
-shell.)
-
 @dfn{Script} @command{awk} autocontenuti sono utili se si vuol scrivere un
 programma che gli utenti possono richiamare senza dover essere informati che
 il programma @`e scritto in @command{awk}.
@@ -2908,7 +2905,7 @@ richiama l'interpretatore con gli argomenti dati e con l'intera lista di
 argomenti con cui era stato invocato il programma.  Il primo argomento nella
 lista @`e l'intero @value{FN} del programma @command{awk}.  Il resto della lista
 degli argomenti contiene opzioni per  @command{awk}, oppure @value{DF}, o
-entrambi.  (Si noti che in molti sistemi @command{awk} pu@`o essere trovato in
+entrambi.  (Si noti che in molti sistemi @command{awk} si trova in
 @file{/usr/bin} invece che in @file{/bin}.)
 
 Alcuni sistemi limitano la lunghezza del nome del programma interpretarore a
@@ -3202,8 +3199,8 @@ $ @kbd{awk 'BEGIN @{ print "Questo @`e un doppio apice <\42>" @}'}
 @end example
 
 @noindent
-Questo funziona bene, ma sai dovrebbe commentare chiaramente quel che
-il testo protetto significa.
+Questo funziona bene, ma si dovrebbe commentare chiaramente quel che
+la sequenza di protezione significa.
 
 Una quarta possibilit@`a @`e di usare assegnamenti di variabili sulla riga di
 comando, cos@`{@dotless{i}}:
@@ -3739,12 +3736,13 @@ andando a capo sarebbe considerata conclusa, @`e possibile @dfn{continuare}
 nella riga successiva terminando la prima riga con un carattere di
 barra inversa (@samp{\}).  La barra inversa dev'essere l'ultimo carattere
 sulla riga, per essere riconosciuto come un carattere di continuazione.
-Una barra inversa @`e consentita in ogni parte dell'istruzione, anche in mezzo
+Una barra inversa seguita da un ritorno a capo  @`e consentita
+in ogni parte dell'istruzione, anche in mezzo
 a una stringa o a un'espressione regolare.  Per esempio:
 
 @example
 awk '/Questa espressione regolare @`e troppo lunga, quindi\
-la continuiamo sulla riga seguente/ @{ print $1 @}'
+ la continuiamo sulla riga seguente/ @{ print $1 @}'
 @end example
 
 @noindent
@@ -3755,6 +3753,7 @@ una riga, quindi la continuazione tramite barra inversa non @`e mai strettamente
 necessaria; serve soltanto a migliorare la leggibilit@`a del programma.
 Per la stessa ragione, ma anche per amore di chiarezza, abbiamo tenuto
 concise molte istruzioni nei programmi presentati in questo @value{DOCUMENT}.
+
 La continuazione tramite barra inversa @`e molto utile quando il proprio
 programma @command{awk} si trova in un file sorgente separato, invece di
 essere immesso nella riga di comando.  Si noti anche che molte implementazioni
@@ -4073,7 +4072,7 @@ chiave.  La parola chiave pu@`o essere abbreviata, a condizione che
 l'abbreviazione identifichi univocamente l'opzione.  Se l'opzione prevede un
 argomento, la parola chiave @`e immediatamente seguita da un segno di uguale
 (@samp{=}) e dal valore dell'argomento, oppure la parola chiave e il valore
-dell'argomento sono separati da spazi.
+dell'argomento sono separati da spazio bianco (spazi o caratteri TAB).
 Se un'opzione con un valore viene immessa pi@`u di una volta,
 l'ultimo valore @`e quello che conta.
 
@@ -4111,7 +4110,7 @@ Quest'opzione pu@`o essere data pi@`u volte; il programma @command{awk}
 I file specificati dall'opzione @option{-f} sono considerati
 appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
 a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
-informazioni.
+informazioni riguardo a questa funzionalit@`a avanzata.
 
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
@@ -4424,14 +4423,23 @@ Non sono consentiti spazi tra @option{-L} e @var{valore}, se
 viene indicato il @var{valore}.
 Alcuni avvertimenti vengono emessi quando @command{gawk} legge preliminarmente
 il programma.  Altri vengono emessi quando il programma viene eseguito.
-Con l'argomento opzionale @samp{fatal}, gli avvertimenti @dfn{lint} sono
-considerati come errori gravi.  Potrebbe essere una misura drastica, per@`o il
+L'argomento opzionale pu@`o essere uno dei seguenti:
+
+@table @code
+@item fatal
+Richiede che gli avvertimenti di lint siano considerati errori gravi.
+Potrebbe essere una misura drastica, per@`o il
 suo uso incoragger@`a certamente lo sviluppo di programmi @command{awk} pi@`u
-corretti.  Con l'argomento opzionale @samp{invalid}, vengono emessi solo gli
+corretti.
+
+@item invalid
+Vengono emessi solo gli
 avvertimenti relativi a quello che @`e effettivamente non valido (funzionalit@`a
-non ancora completamente implementata).  Con un argomento opzionale di
-@samp{no-ext}, gli avvertimenti relativi alle estensioni @command{gawk} sono
-disabilitati.
+non ancora completamente implementata).
+
+@item no-ext
+Gli avvertimenti relativi alle estensioni @command{gawk} sono disabilitati.
+@end table
 
 Alcuni avvertimenti vengono stampati solo una volta, anche se i costrutti dubbi
 per i quali vengono emessi avvisi ricorrono diverse volte nel programma
@@ -4632,7 +4640,7 @@ Inoltre, non consente di aggiungere nomi di file ad @code{ARGV} che
 non siano gi@`a presenti all'inizio dell'esecuzione di @command{gawk}.
 @`E particolarmente utile quando si vogliono eseguire @dfn{script} @command{awk}
 da sorgenti dubbie e si vuol essere ricuri che gli @dfn{script} non abbiano
-accesso al sistema (oltre al @value{DF} di input specificato).
+accesso al sistema (oltre ai @value{DF} di input specificati).
 
 @item @option{-t}
 @itemx @option{--lint-old}
@@ -4703,7 +4711,7 @@ di dati).
 Siccome @`e scomodo usare il meccanismo di @command{awk} standard per combinare
 file sorgenti e programmi @command{awk} da riga di comando, @command{gawk}
 fornisce l'opzione @option{-e}.  Questo non richiede di evitare l'uso dello
-standard input per immettere codice sorgente; consente di combinare
+standard input per immettere codice sorgente, e consente di combinare
 facilmente codice sorgente da riga di comando e da libreria
 (@pxref{AWKPATH (Variabile)}).
 Come per @option{-f}, le opzioni @option{-e} e @option{-i}
@@ -4789,13 +4797,17 @@ awk -f programma.awk file1 ./count=1 file2
 @cindex @code{ARGIND} (variabile) @subentry argomenti da riga di comando
 @cindex @code{ARGV} (vettore) @subentry indicizzare all'interno di
 @cindex @code{ARGC}/@code{ARGV} (variabili) @subentry argomenti da riga di comando
+@cindex @command{gawk} @subentry @code{PROCINFO} (vettore) vettori in
+@cindex @code{PROCINFO} (vettore) @subentry vettori in
 Tutti gli argomenti da riga di comando sono resi disponibili al programma
 @command{awk} nel vettore @code{ARGV} (@pxref{Variabili predefinite}).  Opzioni da
 riga di comando e il testo del programma (se presente) sono esclusi da
 @code{ARGV}.  Tutti gli altri argomenti, compresi gli assegnamenti di
 variabile, sono inclusi.  Come ogni elemento di @code{ARGV} viene elaborato,
 @command{gawk} imposta @code{ARGIND} all'indice in @code{ARGV}
-dell'elemento corrente.
+dell'elemento corrente.  (@command{gawk} mette a disposizione l'intera
+riga di comando, ed @`e contenuta in @code{PROCINFO["argv"]};
+@pxref{Variabili auto-assegnate}.)
 
 @c FIXME: One day, move the ARGC and ARGV node closer to here.
 La modifica di @code{ARGC} e @code{ARGV} nel proprio programma @command{awk}
@@ -6656,7 +6668,8 @@ cifre, o trattini bassi (@samp{_}):
 @cindex barra inversa (@code{\}) @subentry @code{\s} (operatore @command{gawk})
 @cindex @code{\} (barra inversa) @subentry @code{\s} (operatore @command{gawk})
 @item \s
-Corrisponde a ogni carattere bianco.
+Corrisponde a ogni carattere bianco,
+come definito nella localizzazione corrente.
 Lo si pu@`o pensare come un'abbreviazione di
 @w{@samp{[[:space:]]}}.
 
@@ -6664,7 +6677,8 @@ Lo si pu@`o pensare come un'abbreviazione di
 @cindex barra inversa (@code{\}) @subentry @code{\S} (operatore @command{gawk})
 @cindex @code{\} (barra inversa) @subentry @code{\S} (operatore @command{gawk})
 @item \S
-Corrisponde a ogni carattere che non @`e uno spazio bianco.
+Corrisponde a ogni carattere che non @`e uno spazio bianco,
+come definito nella localizzazione corrente.
 Lo si pu@`o pensare come un'abbreviazione di
 @w{@samp{[^[:space:]]}}.
 
@@ -7375,6 +7389,7 @@ file interi.  Se si usa  @command{gawk}, si veda
 @cindex campi
 @cindex accesso ai campi
 @cindex campi @subentry esame dei
+@cindex spazio bianco @subentry definizione di
 Quando @command{awk} legge un record in input, il record @`e
 automaticamente @dfn{analizzato} o separato da @command{awk} in "pezzi"
 chiamati @dfn{campi}.  Per default, i campi sono separati da
@@ -42877,6 +42892,10 @@ Juan Manuel Guerrero ha preso in carico la manutenzione dellla
 versione DJGPP di @command{gawk}.
 
 @item
+@cindex Jannick
+``Jannick'' ha fornito il supporto per l'ambiente MSYS2.
+
+@item
 @cindex Robbins @subentry Arnold
 Arnold Robbins
 ha lavorato su @command{gawk} dal 1988, dapprima
@@ -44398,7 +44417,6 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 @c put the index entries outside the table, for docbook
 @cindex Buening, Andreas
 @cindex Malmberg, John
-@cindex Pitts, Dave
 @cindex G., Daniel Richard
 @cindex Robbins @subentry Arnold
 @cindex Zaretskii, Eli
@@ -44422,7 +44440,6 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 @item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
 @item z/OS (OS/390) @tab Daniel Richard G.@: @EMAIL{skunk@@iSKUNK.ORG,skunk at iSKUNK.ORG}
-@item  @tab Dave Pitts (Maintainer Emeritus), @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 Se il problema riscontrato @`e riproducibile anche sotto Unix,
@@ -44730,7 +44747,7 @@ per poter scaricare il file.
 @item
 @command{gawk} pu@`o essere installato anche su sistemi non-POSIX.  I sistemi
 correntemente supportati sono MS-Windows, usando
-MSYS, DJGPP, MinGW, e Cygwin,
+MSYS, MSYS2, DJGPP, MinGW e Cygwin,
 @c OS/2,
 e sia Vax/VMS che OpenVMS.  Le istruzioni per ognuno di questi sistemi sono
 incluse in questa @value{APPENDIX}.

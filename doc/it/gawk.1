@@ -11,6 +11,7 @@
 .\"Aggiornam. a gawk-4.2.1 di A.G. Colombo - revis. M. Curreli - Febbraio 2018
 .\"Aggiornam. a gawk-4.2.2 di A.G. Colombo - revis. M. Curreli - Dicembre 2018
 .\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Luglio 2019
+.\"Aggiornam. a gawk-5.1.1 di A.G. Colombo - Marzo 2020
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -27,7 +28,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jul 21 2019" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Mar 23 2020" "Free Software Foundation" "Utility Commands"
 .SH NOME
 gawk \- linguaggio per il riconoscimento e il trattamento di espressioni
 regolari
@@ -506,6 +507,7 @@ al posto di
 e
 .BR ^= .
 .RE
+.bp \" MANUAL EDIT
 .TP
 .PD 0
 .B \-r
@@ -1112,9 +1114,11 @@ dall'interno di un programma \*(AK.
 Quando il valore è "vero",
 .I gawk
 stampa avvertimenti lint. Quando è "falso", no.
-Assegnando il valore di stringa \fB"fatal"\fP,
-gli avvertimenti lint sono considerati errori fatali, esattamente come
-.BR \-\^\-lint=fatal .
+I valori specificabili con l'opzione
+.B \-\^\-lint
+possono anche essere assegnati alla variabile d'ambiente
+.BR LINT ,
+e hanno gli stessi effetti.
 Qualsiasi altro valore "vero" stampa solo avvertimenti.
 .TP
 .B NF
@@ -4291,7 +4295,7 @@ Lo ringraziamo.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
