@@ -44,15 +44,15 @@
 
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 GAWK_PLUGIN_GPL_COMPATIBLE
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "revoutput extension: version 1.1";
-
-#include "gettext.h"
-#define _(msgid)  gettext(msgid)
-#define N_(msgid) msgid
 
 static awk_bool_t init_revoutput(void);
 static awk_bool_t (*init_func)(void) = init_revoutput;
