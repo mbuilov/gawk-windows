@@ -17,39 +17,22 @@ along with this library; see the file COPYING.LIB.  If not, write to the Free
 Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 USA.  */
 
-#ifndef	_FNMATCH_H
-#define	_FNMATCH_H	1
+/*
+ * Reworked version of original "missing_d/fnmatch.h":
+ * 1) Assume compiler supports at least ANSI C.
+ * 2) Added wide-character version: wfnmatch (include "wfnmatch.h")
+ *
+ * Michael M. Builov
+ * mbuilov@gmail.com
+ * Reworked 4/2020
+ */
+
+#ifndef	FNMATCH_H_INCLUDED
+#define	FNMATCH_H_INCLUDED
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
-
-#if defined __cplusplus || (defined __STDC__ && __STDC__) || defined WINDOWS32
-# if !defined __GLIBC__
-#  undef	__P
-#  define __P(protos)	protos
-# endif
-#else /* Not C++ or ANSI C.  */
-# undef	__P
-# define __P(protos)	()
-/* We can get away without defining `const' here only because in this file
-   it is used only inside the prototype for `fnmatch', which is elided in
-   non-ANSI C where `const' is problematical.  */
-#endif /* C++ or ANSI C.  */
-
-#ifndef const
-# if (defined __STDC__ && __STDC__) || defined __cplusplus || defined WINDOWS32
-#  define __const	const
-# else
-#  define __const
-# endif
-#endif
-
-/* We #undef these before defining them because some losing systems
-   (HP-UX A.08.07 for example) define these in <unistd.h>.  */
-#undef	FNM_PATHNAME
-#undef	FNM_NOESCAPE
-#undef	FNM_PERIOD
 
 /* Bits set in the FLAGS argument to `fnmatch'.  */
 #define	FNM_PATHNAME	(1 << 0) /* No wildcard can ever match `/'.  */
@@ -75,8 +58,7 @@ extern "C" {
 
 /* Match NAME against the filename pattern PATTERN,
    returning zero if it matches, FNM_NOMATCH if not.  */
-extern int fnmatch __P ((__const char *__pattern, __const char *__name,
-			 int __flags));
+extern int fnmatch(const char *pattern, const char *name, int flags);
 
 #ifdef	__cplusplus
 }
