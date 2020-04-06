@@ -52,12 +52,6 @@
 
 #include "gawkapi.h"
 
-GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "inplace extension: version 1.0";
-
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
@@ -73,16 +67,13 @@ static const char *ext_version = "inplace extension: version 1.0";
 #if defined(__MINGW32__) || defined(_MSC_VER)
 # define chown(x,y,z)  (0)
 # define link(f1,f2)   rename(f1,f2)
-fd_t
-mkstemp (char *templ)
-{
-  char *tmp_fname = _mktemp (templ);
-
-  if (tmp_fname)
-    return open (tmp_fname, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
-  return -1;
-}
 #endif
+
+GAWK_PLUGIN_GPL_COMPATIBLE
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t ext_id;
+static const char *ext_version = "inplace extension: version 1.0";
 
 static struct {
 	char *tname;
