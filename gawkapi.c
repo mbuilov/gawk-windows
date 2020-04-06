@@ -27,6 +27,7 @@
 
 #ifdef _MSC_VER
 #include <io.h> /* open/close */
+#include <direct.h> /* mkdir/rmdir */
 #endif
 
 #ifdef HAVE_MPFR
@@ -1498,6 +1499,30 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	return awk_true;
 }
 
+static int api_mb_cur_max(void)
+{
+	return MB_CUR_MAX;
+}
+
+static int *api_errno_p(void)
+{
+	return _errno();
+}
+
+static int api_mkstemp(char *templ)
+{
+#if defined(__MINGW32__) || defined(_MSC_VER)
+	char *tmp_fname = _mktemp(templ);
+	if (tmp_fname)
+		return open(tmp_fname,
+			O_RDWR | O_CREAT | O_EXCL,
+			S_IREAD | S_IWRITE);
+	return INVALID_HANDLE;
+#else
+	return mkstemp(templ);
+#endif
+}
+
 /*
  * Register a version string for this extension with gawk.
  */
@@ -1606,20 +1631,113 @@ gawk_api_t api_impl = {
 	/* process failed assertion */
 	api_assert_failed,
 
+	/* Standard streams */
+	NULL,
+	NULL,
+	NULL,
+
 	/* File IO */
 	open,
 	close,
 	dup,
 	dup2,
+
 	fflush,
 	fgetpos,
 	fsetpos,
 	rewind,
+	fseek,
+	ftell,
 
-	/* Standard streams */
-	stdin,
-	stdout,
-	stderr,
+	fopen,
+	fclose,
+	fread,
+	fwrite,
+
+	putchar,
+	fputc,
+	getchar,
+	fgetc,
+	puts,
+	fputs,
+
+	fgets,
+	ungetc,
+
+	mkdir,
+	rmdir,
+	remove,
+	unlink,
+	rename,
+	stat,
+	fstat,
+	chmod,
+
+	setlocale,
+
+	strcoll,
+	wcscoll,
+
+	api_mb_cur_max,
+
+	btowc,
+
+	mblen,
+	mbtowc,
+	wctomb,
+	mbstowcs,
+	wcstombs,
+
+	fprintf,
+	sprintf,
+	snprintf,
+
+	vprintf,
+	vfprintf,
+	vsprintf,
+	vsnprintf,
+
+	api_errno_p,
+	strerror,
+
+	api_mkstemp,
+
+	getenv,
+
+	tolower,
+	toupper,
+	isascii,
+	isalnum,
+	isalpha,
+	isblank,
+	iscntrl,
+	isdigit,
+	isgraph,
+	islower,
+	isprint,
+	ispunct,
+	isspace,
+	isupper,
+	isxdigit,
+
+	towlower,
+	towupper,
+	iswascii,
+	iswalnum,
+	iswalpha,
+	iswblank,
+	iswcntrl,
+	iswdigit,
+	iswgraph,
+	iswlower,
+	iswprint,
+	iswpunct,
+	iswspace,
+	iswupper,
+	iswxdigit,
+
+	wctype,
+	iswctype,
 };
 
 /* init_ext_api --- init the extension API */
@@ -1634,6 +1752,10 @@ init_ext_api(void)
 	api_impl.do_flags[3] = (do_sandbox ? 1 : 0);
 	api_impl.do_flags[4] = (do_debug ? 1 : 0);
 	api_impl.do_flags[5] = (do_mpfr ? 1 : 0);
+
+	api_impl.api_stdin  = stdin;
+	api_impl.api_stdout = stdout;
+	api_impl.api_stderr = stderr;
 }
 
 /* update_ext_api --- update the variables in the API that can change */
