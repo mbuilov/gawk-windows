@@ -105,6 +105,7 @@ typedef struct open_directory {
 	union u_field_info u;
 #endif
 #ifdef _MSC_VER
+	HANDLE ffd_handle;
 	unsigned dir_len;
 	wchar_t dirname[1];
 #else
@@ -277,25 +278,36 @@ static unsigned ffd_offset(unsigned dir_len)
 
 # ifndef READDIR_TEST
 
-	/* ensure that offsetof(struct open_directory, dirname) == sizeof(unsigned) */
-	(void) sizeof(int[1-2*!(sizeof(unsigned) ==
+	/* ensure that offsetof(struct open_directory, dir_len) == sizeof(HANDLE) */
+	(void) sizeof(int[1-2*!(sizeof(HANDLE) ==
+		((char*)&((struct open_directory*)NULL)->dir_len - (char*)NULL))]);
+
+	/* ensure that offsetof(struct open_directory, dirname) ==
+		sizeof(HANDLE) + sizeof(unsigned) */
+	(void) sizeof(int[1-2*!(sizeof(HANDLE) + sizeof(unsigned) ==
 		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
 
-	offs = sizeof(unsigned);
+	offs = sizeof(HANDLE) + sizeof(unsigned);
 
 # else /* READDIR_TEST */
 
-	/* ensure that offsetof(struct open_directory, dir_len)
+	/* ensure that offsetof(struct open_directory, ffd_handle)
 		== sizeof(union u_field_info) */
 	(void) sizeof(int[1-2*!(sizeof(union u_field_info) ==
+		((char*)&((struct open_directory*)NULL)->ffd_handle - (char*)NULL))]);
+
+	/* ensure that offsetof(struct open_directory, dir_len)
+		== sizeof(union u_field_info) + sizeof(HANDLE) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(HANDLE) ==
 		((char*)&((struct open_directory*)NULL)->dir_len - (char*)NULL))]);
 
 	/* ensure that offsetof(struct open_directory, dirname)
-		== sizeof(union u_field_info) + sizeof(unsigned) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(unsigned) ==
+		== sizeof(union u_field_info) + sizeof(HANDLE) + sizeof(unsigned) */
+	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(HANDLE) +
+			sizeof(unsigned) ==
 		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
 
-	offs = sizeof(union u_field_info) + sizeof(unsigned);
+	offs = sizeof(union u_field_info) + sizeof(HANDLE) + sizeof(unsigned);
 
 # endif /* READDIR_TEST */
 
@@ -384,7 +396,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	if (ffd->dwFileAttributes == ~(DWORD)0) {
 		/* no cached entry */
-		if (!FindNextFileW((HANDLE)(intptr_t)iobuf->fd, ffd)) {
+		if (!FindNextFileW(the_dir->ffd_handle, ffd)) {
 			const DWORD err = GetLastError();
 			*errcode = ERROR_NO_MORE_FILES == err ? 0 : err ? (int)err : -1;
 			return EOF;
@@ -466,7 +478,7 @@ dir_close(awk_input_buf_t *iobuf)
 #ifndef _MSC_VER
 	closedir(the_dir->dp);
 #else
-	FindClose((HANDLE) (intptr_t) iobuf->fd);
+	FindClose(the_dir->ffd_handle);
 #endif
 	free(the_dir);
 
@@ -631,10 +643,9 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		return awk_false;
 	}
 
+	the_dir->ffd_handle = h;
 	the_dir->dir_len = (unsigned) converted;
 	memcpy(the_dir->dirname, path_buf, converted*sizeof(path_buf[0]));
-
-	iobuf->fd = (fd_t) (intptr_t) h; /* only 32 bits of HANDLE are meaningful */
 
 #endif /* _MSC_VER */
 
