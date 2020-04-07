@@ -1,0 +1,7 @@
+fnmatch("[\]xyz]", "x", 0)  = 0
+fnmatch("[\]-_]]", "^", 0)  = 0
+fnmatch("[[:alpha:]-?]", "=", 0)  = FNM_NOMATCH
+fnmatch("[A-Z]", "^", FNM["CASEFOLD"])  = FNM_NOMATCH
+fnmatch("X[a[:digit:]]Z", "XaZ", 0)  = 0
+fnmatch("[z-a]", "z", 0)  = FNM_NOMATCH
+fnmatch("a[b", "a[b", 0)  = 0

@@ -4,6 +4,11 @@
  * Arnold Robbins
  * arnold@skeeve.com
  * Written 7/2012
+ *
+ * Michael M. Builov
+ * mbuilov@gmail.com
+ * Reworked 4/2020
+ *
  */
 
 /*
@@ -34,28 +39,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/stat.h>
 
-#if HAVE_SYS_SYSMACROS_H
+#ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
-#elif HAVE_SYS_MKDEV_H
+#elif defined HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif /* HAVE_SYS_MKDEV_H */
 
 #include <sys/types.h>
 
-#include "gawkapi.h"
-
-#include "gettext.h"
-#define _(msgid)  gettext(msgid)
-#define N_(msgid) msgid
-
-#ifdef __VMS
-#define __iswctype iswctype
-#define __btowc btowc
+#ifndef HAVE_FNMATCH
+/* these headers are included in fnmatch.c,
+  include them before "gawkapi.h",
+  which overrides some system functions */
+#include <errno.h>
+#include <locale.h>
+#include <ctype.h>
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
 #endif
+#ifdef HAVE_WCTYPE_H
+#include <wctype.h>
+#endif
+#endif
+
+#include "gawkapi.h"
 
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #ifdef HAVE_FNMATCH_H
@@ -76,7 +90,12 @@
 #include "../missing_d/fnmatch.c"	/* ditto */
 #endif
 #define HAVE_FNMATCH
+#define HAVE_WFNMATCH
 #endif
+
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
 
 /* Provide GNU extensions as no-ops if not defined */
 #ifndef FNM_CASEFOLD
@@ -89,14 +108,14 @@
 #define FNM_FILE_NAME	0
 #endif
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
-static const char *ext_version = "fnmatch extension: version 1.0";
+static const char *ext_version = "fnmatch extension: version 1.1";
 
 static awk_bool_t init_fnmatch(void);
 static awk_bool_t (*init_func)(void) = init_fnmatch;
-
-int plugin_is_GPL_compatible;
 
 
 /* do_fnmatch --- implement the fnmatch interface */
@@ -111,7 +130,9 @@ do_fnmatch(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		FNM_PATHNAME    | FNM_PERIOD ;
 #endif
 	awk_value_t pattern, string, flags;
-	int int_flags, retval;
+	int int_flags, retval = -1;
+
+	(void) nargs, (void) unused;
 
 	make_number(-1.0, result);	/* default return */
 
@@ -131,11 +152,74 @@ do_fnmatch(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		goto out;
 	}
 
-	int_flags = flags.num_value;
+	int_flags = (int) flags.num_value;
 	int_flags &= flags_mask;
 
-	retval = fnmatch(pattern.str_value.str,
-			string.str_value.str, int_flags);
+#ifdef HAVE_WFNMATCH
+	if (MB_CUR_MAX > 1) {
+		/* Convert to wide-characters both the pattern and the string */
+		wchar_t buf[256];
+		wchar_t *dbuf = NULL;
+		const unsigned bufavail = sizeof(buf)/sizeof(buf[0]);
+		const size_t psz = pattern.str_value.len + 1;
+		const size_t ssz = string.str_value.len + 1;
+		unsigned wcavail = bufavail;
+		wchar_t *pwc = NULL, *swc = NULL;
+		size_t n;
+
+		if (psz <= wcavail) {
+			wcavail -= (unsigned) psz;
+			pwc = buf;
+		}
+		if (ssz <= wcavail)
+			swc = buf + sizeof(buf)/sizeof(buf[0]) - wcavail;
+
+		if (psz > bufavail || ssz > bufavail - psz) {
+			size_t need = 0;
+			if (psz > bufavail) {
+				need += psz;
+				if (ssz > bufavail)
+					need += ssz;
+			}
+			else
+				need = ssz;
+
+			emalloc(dbuf, wchar_t *, need, "do_fnmatch");
+
+			if (psz > bufavail) {
+				pwc = dbuf;
+				if (ssz > bufavail)
+					swc = dbuf + psz;
+			}
+			else
+				swc = dbuf;
+		}
+
+		n = mbstowcs(pwc, pattern.str_value.str, psz);
+		if (n > psz) {
+			warning(ext_id, _("fnmatch: failed to convert to "
+					"wide-characters the pattern: %s"),
+					pattern.str_value.str);
+			goto err;
+		}
+
+		n = mbstowcs(swc, string.str_value.str, ssz);
+		if (n > ssz) {
+			warning(ext_id, _("fnmatch: failed to convert to "
+					"wide-characters the string: %s"),
+					string.str_value.str);
+			goto err;
+		}
+
+		retval = wfnmatch(pwc, swc, int_flags);
+err:
+		if (dbuf != NULL)
+			free(dbuf);
+	}
+	else
+#endif
+		retval = fnmatch(pattern.str_value.str,
+				string.str_value.str, int_flags);
 	make_number((double) retval, result);
 
 out:
@@ -197,7 +281,7 @@ init_fnmatch(void)
 	}
 
 #endif
-	return errors == 0;
+	return (awk_bool_t) (errors == 0);
 }
 
 static awk_ext_func_t func_table[] = {
