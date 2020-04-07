@@ -41,14 +41,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _MSC_VER
-#include <io.h> /* _mktemp */
-#else
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "gawkapi.h"
 
