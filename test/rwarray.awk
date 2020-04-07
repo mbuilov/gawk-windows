@@ -33,15 +33,22 @@ BEGIN {
 		# return status from system() on VMS can not be used here
 	}
 	if (os != "VMS") {
-		ret = system("cmp orig.out new.out")
+		if (PROCINFO["platform"] == "windows")
+			ret = system("fc /b orig.out new.out >NUL")
+		else
+			ret = system("cmp orig.out new.out")
 
 		if (ret == 0)
 			print "old and new are equal - GOOD"
 		else
 			print "old and new are not equal - BAD"
 
-		if (ret == 0 && !("KEEPIT" in ENVIRON))
-			system("rm -f orig.bin orig.out new.out")
+		if (ret == 0 && !("KEEPIT" in ENVIRON)) {
+			if (PROCINFO["platform"] == "windows")
+				system("del orig.bin orig.out new.out")
+			else
+				system("rm -f orig.bin orig.out new.out")
+		}
 	}
 
 	if (typeof(dict[re_sub]) != "regexp")
