@@ -40,6 +40,7 @@ USA.  */
  *  the range is invalid, i.e.: do _not_ match "z" by "[z-a]".
  * 9) Try to match unpaired '[' as a non-special char, e.g.:
  *  "a[b" will match "a[b".
+ * 10) Use collating order when maching against ranges in bracket expressions.
  *
  * Improvements:
  * 1) Add wide-character support.
@@ -268,6 +269,7 @@ INTERNAL_FNMATCH (
         case CH('*'):
           /* Previous asterisk have eaten part of the name.  */
           state = NO_ASTERISK;
+          no_leading_period = flags & FNM_PERIOD;
 
           if (*n == CH('.') && no_leading_period
               && (n == string
@@ -408,8 +410,8 @@ INTERNAL_FNMATCH (
               goto not_matched;
 
             if (*n == CH('.') && no_leading_period
-                && (n == string || (n[-1] == CH('/')
-                                    && (flags & FNM_FILE_NAME))))
+                && (n == string ||
+                    (n[-1] == CH('/') && (flags & FNM_FILE_NAME))))
               goto not_matched;
 
             if (*n == CH('/') && (flags & FNM_FILE_NAME))
