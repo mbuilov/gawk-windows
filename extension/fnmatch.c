@@ -198,16 +198,16 @@ do_fnmatch(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		n = mbstowcs(pwc, pattern.str_value.str, psz);
 		if (n > psz) {
 			warning(ext_id, _("fnmatch: failed to convert to "
-					"wide-characters the pattern: %s"),
-					pattern.str_value.str);
+					"wide-characters the pattern: \"%s\". LC_ALL=%s"),
+					pattern.str_value.str, setlocale(LC_ALL, NULL));
 			goto err;
 		}
 
 		n = mbstowcs(swc, string.str_value.str, ssz);
 		if (n > ssz) {
 			warning(ext_id, _("fnmatch: failed to convert to "
-					"wide-characters the string: %s"),
-					string.str_value.str);
+					"wide-characters the string: \"%s\". LC_ALL=%s"),
+					string.str_value.str, setlocale(LC_ALL, NULL));
 			goto err;
 		}
 
