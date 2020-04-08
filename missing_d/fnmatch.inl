@@ -41,6 +41,8 @@ USA.  */
  * 9) Try to match unpaired '[' as a non-special char, e.g.:
  *  "a[b" will match "a[b".
  * 10) Use collating order when maching against ranges in bracket expressions.
+ * 11) Do not match file name beginning with dot after bracket expression:
+ *  fnmatch("*[a]/??", "ca/.b", PATHNAME | PERIOD) should _not_ match.
  *
  * Improvements:
  * 1) Add wide-character support.
@@ -188,6 +190,7 @@ wcschrnul (
 # define CH(c)                  c
 # define FNMSTRCHR(str, c)      strchr ((const char*)(str), c)
 # define FNMSTRCHRNUL(str, c)   __strchrnul ((const char*)(str), c)
+# define FNMISWCTYPE(c, wt)     iswctype (btowc (c), wt)
 #else
 # define FNM_CHAR               wchar_t
 # define FNM_UCHAR              wchar_t
@@ -195,6 +198,7 @@ wcschrnul (
 # define CH(c)                  L##c
 # define FNMSTRCHR(str, c)      wcschr (str, c)
 # define FNMSTRCHRNUL(str, c)   wcschrnul (str, c)
+# define FNMISWCTYPE(c, wt)     iswctype (c, wt)
 #endif
 
 #ifndef FNMATCH_WIDE_CHAR
@@ -209,16 +213,16 @@ static int
 INTERNAL_FNMATCH (
      const FNM_UCHAR *const pattern,
      const FNM_UCHAR *const string,
-     int no_leading_period, int flags, const int do_coll)
+     int flags, const int do_coll)
 {
   const FNM_UCHAR *p = pattern, *n = string;
   FNM_INT c;
 
   enum {
-    NO_ASTERISK      = 0,
-    ASTERISK         = 1,
-    ASTERISK_BRACKET = 2
-  } state = NO_ASTERISK;
+    NO_WILDCARD      = 0,
+    WILDCARD         = 1,
+    WILDCARD_BRACKET = 2
+  } state = NO_WILDCARD;
 
   const FNM_UCHAR *endp = NULL;
 
@@ -239,20 +243,6 @@ INTERNAL_FNMATCH (
 
       switch (c)
         {
-        case CH('?'):
-          /* A ? needs to match one character.  */
-          if (*n == CH('\0'))
-            /* There isn't another character; no match.  */
-            return FNM_NOMATCH;
-          if (*n == CH('/') && (flags & FNM_FILE_NAME))
-            /* A slash does not match a wildcard under FNM_FILE_NAME.  */
-            goto not_matched;
-          if (*n == CH('.') && no_leading_period
-              && (n == string
-                  || (n[-1] == CH('/') && (flags & FNM_FILE_NAME))))
-            goto not_matched;
-          break;
-
         case CH('\\'):
           if (!(flags & FNM_NOESCAPE))
             {
@@ -262,180 +252,192 @@ INTERNAL_FNMATCH (
                 return FNM_NOMATCH;
               c = FOLD (c);
             }
-          if (FOLD (*n) != c)
-            goto not_matched;
+          goto as_normal;
+
+        case CH('?'):
+          /* A ? needs to match one character.  */
+          if (*n == CH('\0') || (*n == CH('/') && (flags & FNM_FILE_NAME)))
+            /* A slash does not match a wildcard under FNM_FILE_NAME.  */
+            return FNM_NOMATCH;
+          if (*n == CH('.') && (flags & FNM_PERIOD)
+              && (n == string
+                  || ((flags & FNM_FILE_NAME) && n[-1] == CH('/'))))
+            /* A leading dot does not match a wildcard under FNM_PERIOD.  */
+            return FNM_NOMATCH;
           break;
 
         case CH('*'):
-          /* Previous asterisk have eaten part of the name.  */
-          state = NO_ASTERISK;
-          no_leading_period = flags & FNM_PERIOD;
+          /* Previous wildcard (if any) have consumed part of the string.
+             Reset state.  */
+          state = NO_WILDCARD;
 
-          if (*n == CH('.') && no_leading_period
+          if (*n == CH('.') && (flags & FNM_PERIOD)
               && (n == string
-                  || (n[-1] == CH('/') && (flags & FNM_FILE_NAME))))
+                  || ((flags & FNM_FILE_NAME) && n[-1] == CH('/'))))
+            /* A leading dot does not match a wildcard under FNM_PERIOD.  */
             return FNM_NOMATCH;
 
-          for (c = *p++; c == CH('?') || c == CH('*'); c = *p++)
+          /* Read * and ? wildcards.  They are can be mixed arbitrary.  */
+          for (;;)
             {
-              if (*n == CH('/') && (flags & FNM_FILE_NAME))
+              c = *p++;
+              if (c == CH('*'))
+                continue;
+              if (c != CH('?'))
+                break;
+              /* A ? needs to match one character.  */
+              if (*n == CH('\0') || (*n == CH('/') && (flags & FNM_FILE_NAME)))
                 /* A slash does not match a wildcard under FNM_FILE_NAME.  */
                 return FNM_NOMATCH;
-              if (c == CH('?'))
-                {
-                  /* A ? needs to match one character.  */
-                  if (*n == CH('\0'))
-                    /* There isn't another character; no match.  */
-                    return FNM_NOMATCH;
-                  /* One character of the string is consumed in matching
-                     this ? wildcard, so *??? won't match if there are
-                     less than three characters.  */
-                  ++n;
-                }
+              /* One character of the string is consumed in matching
+                 this ? wildcard, so *??? won't match if there are
+                 less than three characters.  */
+              ++n;
             }
 
           if (c == CH('\0'))
             /* The wildcard(s) is/are the last element of the pattern.
                If the name is a file name and contains another slash
                this does mean it cannot match.  */
-            /* The FNM_LEADING_DIR flag allows to match a string ended by
-               slash */
+            /* The FNM_LEADING_DIR flag allows slash(es) after a name.  */
             return (flags & FNM_FILE_NAME) && !(flags & FNM_LEADING_DIR) &&
                    FNMSTRCHR (n, CH('/')) != NULL ? FNM_NOMATCH : 0;
 
-          else if (c == CH('/') && (flags & FNM_FILE_NAME))
+          if (c == CH('/') && (flags & FNM_FILE_NAME))
             {
-              while (*n != CH('\0') && *n != CH('/'))
-                ++n;
-              if (*n == CH('/'))
+              /* Simple case:
+                 a slash does not match a wildcard under FNM_FILE_NAME,
+                 so can't consume `/' by a wildcard and re-match from the
+                 next char.  */
+              n = (const FNM_UCHAR*) FNMSTRCHR (n, CH('/'));
+              if (n != NULL)
                 {
                   ++n;
-                  no_leading_period = flags & FNM_PERIOD;
                   continue;
                 }
+              return FNM_NOMATCH;
             }
-          else
+
+          /* Prepare for re-matching tail of the name while consuming name
+             characters by a wildcard.  endp points to the name end.  */
+          if (endp == NULL || (flags & FNM_FILE_NAME))
+            endp = (const FNM_UCHAR*) FNMSTRCHRNUL (n,
+                                                    (flags & FNM_FILE_NAME)
+                                                    ? CH('/') : CH('\0'));
+
+          /* Have already checked for a leading dot, may remove FNM_PERIOD
+             from flags.  */
+          flags = (flags & FNM_FILE_NAME) ? flags : (flags & ~FNM_PERIOD);
+
+          /* Position of the first pattern character after wildcard.  */
+          saved_p = p;
+
+          if (c == CH('['))
             {
-              if (endp == NULL || (flags & FNM_FILE_NAME))
-                endp = (const FNM_UCHAR*) FNMSTRCHRNUL (n,
-                                                        (flags & FNM_FILE_NAME)
-                                                        ? CH('/') : CH('\0'));
-              if (n < endp)
-                {
-                  no_leading_period = no_leading_period
-                                      && (n == string
-                                          || ((flags & FNM_FILE_NAME)
-                                              && n[-1] == CH('/')));
+              /* Try to match by bracket expression.  If not matched, consume
+                 one name character and retry a match.  */
+              state = WILDCARD_BRACKET;
+              saved_n = n;
+              goto bracket;
 
-                  flags = (flags & FNM_FILE_NAME)
-                          ? flags : (flags & ~FNM_PERIOD);
+            wildcard_bracket_not_matched:
+              if (n >= endp)
+                /* Full name was matched, but remaining part of the string
+                   was not.  Wildcard cannot consume more than the name.  */
+                return FNM_NOMATCH;
 
-                  /* Prepare for a recursive call.  */
-                  saved_p = --p;
-
-                  if (c == CH('['))
-                    {
-                      state = ASTERISK_BRACKET;
-                      saved_n = n;
-                      continue;
-
-                    asterisk_bracket_return:
-                      /* Restart scan moving n by 1.  */
-                      n = ++saved_n;
-                      if (n < endp)
-                        {
-                          p = saved_p;
-                          no_leading_period = no_leading_period
-                                              && (flags & FNM_FILE_NAME)
-                                              && n[-1] == CH('/');
-                          continue;
-                        }
-                    }
-
-                  if (c == CH('\\') && !(flags & FNM_NOESCAPE))
-                    c = p[1];
-                  saved_c = FOLD (c);
-
-                  do
-                    {
-                      if (FOLD (*n) == saved_c)
-                        break;
-                    }
-                  while (++n < endp);
-
-                  if (n < endp)
-                    {
-                      state = ASTERISK;
-                      saved_n = n;
-                      continue;
-
-                    asterisk_return:
-                      /* Restart scan moving n by 1.  */
-                      n = saved_n;
-                      while (++n < endp)
-                        {
-                          if (FOLD (*n) == saved_c)
-                            break;
-                        }
-
-                      if (n < endp)
-                        {
-                          saved_n = n;
-                          p = saved_p;
-                          no_leading_period = no_leading_period
-                                              && (flags & FNM_FILE_NAME)
-                                              && n[-1] == CH('/');
-                          continue;
-                        }
-                    }
-                }
+              /* Consume one name character by a wildcard and retry a match.  */
+              n = ++saved_n;
+              p = saved_p;
+              goto bracket;
             }
 
-          /* If we come here no match is possible with the wildcard.  */
-          return FNM_NOMATCH;
+          if (c == CH('\\') && !(flags & FNM_NOESCAPE))
+            {
+              c = *p++;
+              if (c == CH('\0'))
+                /* Trailing \ loses.  */
+                return FNM_NOMATCH;
+            }
+
+          state = WILDCARD;
+          saved_c = FOLD (c);
+
+        wildcard_rematch:
+          /* Consume characters of the name by a wildcard.  */
+          while (FOLD (*n) != saved_c)
+            if (++n >= endp)
+              return FNM_NOMATCH;
+
+          /* Try to match tail of the name from the next character.
+             If cannot match, consume some characters of the name by
+             a wildcard and retry a match.  */
+          saved_n = ++n;
+          continue;
+
+        wildcard_not_matched:
+          if (n >= endp)
+            /* Full name was matched, but remaining part of the string
+               was not.  Wildcard cannot consume more than the name.  */
+            return FNM_NOMATCH;
+
+          /* Consume matched name character by a wildcard, then repeat.  */
+          n = saved_n;
+          p = saved_p;
+          goto wildcard_rematch;
 
         case CH('['):
+        bracket:
           {
             /* Nonzero if the sense of the character class is inverted.  */
-            static int posixly_correct;
-            int not;
+            int not_;
             FNM_INT cold;
             FNM_INT fn;
             const FNM_UCHAR *const bracket = p;
+            static int posixly_correct;
+
+            if (*n == CH('\0') || (*n == CH('/') && (flags & FNM_FILE_NAME)))
+              /* `/' cannot be matched.  */
+              goto not_matched;
+
+            if (*n == CH('.') && (flags & FNM_PERIOD)
+                && (n == string
+                    || ((flags & FNM_FILE_NAME) && n[-1] == CH('/'))))
+              /* leading `.' cannot be matched.  */
+              goto not_matched;
 
             if (posixly_correct == 0)
               posixly_correct = getenv ("POSIXLY_CORRECT") != NULL ? 1 : -1;
 
-            if (*n == CH('\0'))
-              goto not_matched;
-
-            if (*n == CH('.') && no_leading_period
-                && (n == string ||
-                    (n[-1] == CH('/') && (flags & FNM_FILE_NAME))))
-              goto not_matched;
-
-            if (*n == CH('/') && (flags & FNM_FILE_NAME))
-              /* `/' cannot be matched.  */
-              goto not_matched;
-
-            not = (*p == CH('!') || (posixly_correct < 0 && *p == CH('^')));
-            if (not)
+            not_ = (*p == CH('!') || (posixly_correct < 0 && *p == CH('^')));
+            if (not_)
               ++p;
 
             fn = FOLD (*n);
 
+            /* Scan bracket expression until `]'  */
             c = *p++;
             do
               {
-                if (!(flags & FNM_NOESCAPE) && c == CH('\\'))
+                if (c == CH('\\') && !(flags & FNM_NOESCAPE))
                   {
-                    if (*p == CH('\0'))
+                    c = *p++;
+                    if (c == CH('\0'))
                       /* Trailing \ loses.  */
                       return FNM_NOMATCH;
-                    c = *p++;
-                    goto do_match;
+                    goto pat_match;
                   }
-                else if (c == CH('[') && *p == CH(':'))
+
+                if (c == CH('\0'))
+                  {
+                    /* [ (unterminated) loses.
+                      Try to match [ as a non-special char.  */
+                    c = CH('[');
+                    p = bracket;
+                    goto as_normal;
+                  }
+
+                if (c == CH('[') && *p == CH(':'))
                   {
                     /* Leave room for the null.  */
                     char str[CHAR_CLASS_MAX_LENGTH + 1];
@@ -464,7 +466,7 @@ INTERNAL_FNMATCH (
                                Match it as a normal range.  */
                             p = startp;
                             c = CH('[');
-                            goto do_match;
+                            goto pat_match;
                           }
                         str[c1++] = (char) ('a' + ((FNM_CHAR) c - CH('a')));
                       }
@@ -475,14 +477,8 @@ INTERNAL_FNMATCH (
                     if (wt == 0)
                       /* Invalid character class name.  */
                       return FNM_NOMATCH;
-
-# ifndef FNMATCH_WIDE_CHAR
-                    if (iswctype (btowc (*n), wt))
+                    if (FNMISWCTYPE(*n, wt))
                       goto matched;
-# else
-                    if (iswctype (*n, wt))
-                      goto matched;
-# endif
 #else
                     if STREQ (str, "alnum") {if FNMISALNUM (*n) goto matched;}
                     else if STREQ (str, "alpha") {if FNMISALPHA (*n) goto matched;}
@@ -501,25 +497,16 @@ INTERNAL_FNMATCH (
                       return FNM_NOMATCH;
 #endif
                   }
-                else if (c == CH('\0'))
-                  {
-                    /* [ (unterminated) loses.
-                      Try to match [ as a non-special char.  */
-                    c = CH('[');
-                    p = bracket;
-                    goto as_normal;
-                  }
                 else
                   {
-                  do_match:
-
+                  pat_match:
                     cold = FOLD (c);
 
                     if (*p == CH('-') && p[1] != CH(']'))
                       {
                         /* It is a range.  */
                         FNM_INT cend = *++p;
-                        if (!(flags & FNM_NOESCAPE) && cend == CH('\\'))
+                        if (cend == CH('\\') && !(flags & FNM_NOESCAPE))
                           cend = *++p;
                         if (cend == CH('\0'))
                           /* Trailing \ loses.  */
@@ -552,16 +539,17 @@ INTERNAL_FNMATCH (
                       goto matched;
                   }
 
+                /* Try next character of the pattern.  */
                 c = *p++;
               }
             while (c != CH(']'));
 
-            if (!not)
+            if (!not_)
               goto not_matched;
             break;
 
           matched:
-            if (not)
+            if (not_)
               goto not_matched;
 
             /* Skip the rest of the [...] that already matched.  */
@@ -575,7 +563,7 @@ INTERNAL_FNMATCH (
                   /* [... (unterminated) loses.  */
                   goto not_matched;
 
-                if (!(flags & FNM_NOESCAPE) && c == CH('\\'))
+                if (c == CH('\\') && !(flags & FNM_NOESCAPE))
                   {
                     if (*p == CH('\0'))
                       /* Trailing \ loses.  */
@@ -619,15 +607,15 @@ as_normal:
   if (*n == CH('\0'))
     return 0;
 
-  if ((flags & FNM_LEADING_DIR) && *n == CH('/'))
+  if (*n == CH('/') && (flags & FNM_LEADING_DIR))
     /* The FNM_LEADING_DIR flag says that "foo*" matches "foobar/frobozz".  */
     return 0;
 
   not_matched:
-  if (state == ASTERISK_BRACKET)
-    goto asterisk_bracket_return;
-  if (state == ASTERISK)
-    goto asterisk_return;
+  if (state == WILDCARD_BRACKET)
+    goto wildcard_bracket_not_matched;
+  if (state == WILDCARD)
+    goto wildcard_not_matched;
 
   return FNM_NOMATCH;
 #undef FOLD
@@ -653,7 +641,7 @@ FNMATCH (
 
   return INTERNAL_FNMATCH ((const FNM_UCHAR*) pattern,
                            (const FNM_UCHAR*) string,
-                           flags & FNM_PERIOD, flags, do_coll);
+                           flags, do_coll);
 }
 
 #undef FNMCOLL
@@ -677,6 +665,7 @@ FNMATCH (
 #undef CH
 #undef FNMSTRCHR
 #undef FNMSTRCHRNUL
+#undef FNMISWCTYPE
 
 #undef INTERNAL_FNMATCH
 #undef FNMATCH
