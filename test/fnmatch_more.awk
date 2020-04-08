@@ -6,6 +6,9 @@ BEGIN {
 	printf("fnmatch(\"123?456\", \"123]456\", 0)  = %d\n", fnmatch("123?456", "123]456", 0) )
 	printf("fnmatch(\"123[]]456\", \"123]456\", 0)  = %d\n", fnmatch("123[]]456", "123]456", 0) )
 	printf("fnmatch(\"123[\\]]456\", \"123]456\", 0)  = %d\n", fnmatch("123[\\]]456", "123]456", 0) )
+	printf("fnmatch(\"*[a]/??\", \"ca/.b\", 0)  = %d\n", fnmatch("*[a]/??", "ca/.b", 0) )
+	printf("fnmatch(\"*[a]/??\", \"ca/.b\", PATHNAME)  = %d\n", fnmatch("*[a]/??", "ca/.b", FNM["PATHNAME"]) )
+	printf("fnmatch(\"*[a]/??\", \"ca/.b\", PATHNAME | PERIOD)  = %d\n", fnmatch("*[a]/??", "ca/.b", or(FNM["PATHNAME"], FNM["PERIOD"])) )
 
 	pat = "a*b*c*d*e*f*g*h*i*j*k*l*m*n*o*p*q*r*s*t*u*v*w*x*y*z"
 	printf("fnmatch(\"" pat "\", \"aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyy\", 0)  = %d\n",

@@ -5,3 +5,4 @@ fnmatch("[A-Z]", "^", FNM["CASEFOLD"])  = FNM_NOMATCH
 fnmatch("X[a[:digit:]]Z", "XaZ", 0)  = 0
 fnmatch("[z-a]", "z", 0)  = FNM_NOMATCH
 fnmatch("a[b", "a[b", 0)  = 0
+fnmatch("*[a]/??", "ca/.b", PATHNAME | PERIOD)  = FNM_NOMATCH

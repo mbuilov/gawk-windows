@@ -17,4 +17,8 @@ BEGIN {
 	else
 		printf("fnmatch(\"[z-a]\", \"z\", 0)  = 0\n")
 	printf("fnmatch(\"a[b\", \"a[b\", 0)  = %d\n", fnmatch("a[b", "a[b", 0) )
+	if (fnmatch("*[a]/??", "ca/.b", or(FNM["PATHNAME"], FNM["PERIOD"])))
+		printf("fnmatch(\"*[a]/??\", \"ca/.b\", PATHNAME | PERIOD)  = FNM_NOMATCH\n")
+	else
+		printf("fnmatch(\"*[a]/??\", \"ca/.b\", PATHNAME | PERIOD)  = 0\n")
 }
