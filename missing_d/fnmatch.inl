@@ -108,26 +108,28 @@ USA.  */
 # define FNMISUPPER(c) isupper (c)
 # define FNMISXDIGIT(c) isxdigit (c)
 
-# define FNMCOLL(s1, s2) strcoll(s1, s2)
-
 #else /* FNMATCH_WIDE_CHAR */
 
-# define FNMISBLANK(c) wisblank (c)
-# define FNMISGRAPH(c) wisgraph (c)
-# define FNMISPRINT(c) wisprint (c)
-# define FNMISDIGIT(c) wisdigit (c)
-# define FNMISALNUM(c) wisalnum (c)
-# define FNMISALPHA(c) wisalpha (c)
-# define FNMISCNTRL(c) wiscntrl (c)
-# define FNMISLOWER(c) wislower (c)
-# define FNMISPUNCT(c) wispunct (c)
-# define FNMISSPACE(c) wisspace (c)
-# define FNMISUPPER(c) wisupper (c)
-# define FNMISXDIGIT(c) wisxdigit (c)
-
-# define FNMCOLL(s1, s2) wcscoll(s1, s2)
+# define FNMISBLANK(c) iswblank (c)
+# define FNMISGRAPH(c) iswgraph (c)
+# define FNMISPRINT(c) iswprint (c)
+# define FNMISDIGIT(c) iswdigit (c)
+# define FNMISALNUM(c) iswalnum (c)
+# define FNMISALPHA(c) iswalpha (c)
+# define FNMISCNTRL(c) iswcntrl (c)
+# define FNMISLOWER(c) iswlower (c)
+# define FNMISPUNCT(c) iswpunct (c)
+# define FNMISSPACE(c) iswspace (c)
+# define FNMISUPPER(c) iswupper (c)
+# define FNMISXDIGIT(c) iswxdigit (c)
 
 #endif /* FNMATCH_WIDE_CHAR */
+
+#ifndef FNMATCH_WIDE_CHAR
+# define FNMCOLL(s1, s2) strcoll(s1, s2)
+#else
+# define FNMCOLL(s1, s2) wcscoll(s1, s2)
+#endif
 
 #ifndef STREQ
 # define STREQ(s1, s2) ((strcmp (s1, s2) == 0))
@@ -442,9 +444,6 @@ INTERNAL_FNMATCH (
                     /* Leave room for the null.  */
                     char str[CHAR_CLASS_MAX_LENGTH + 1];
                     size_t c1 = 0;
-#if defined HAVE_WCTYPE_H && defined HAVE_WCHAR_H
-                    wctype_t wt;
-#endif
                     const FNM_UCHAR *const startp = p;
 
                     for (;;)
@@ -473,12 +472,14 @@ INTERNAL_FNMATCH (
                     str[c1] = '\0';
 
 #if defined HAVE_WCTYPE_H && defined HAVE_WCHAR_H
-                    wt = wctype (str);
-                    if (wt == 0)
-                      /* Invalid character class name.  */
-                      return FNM_NOMATCH;
-                    if (FNMISWCTYPE(*n, wt))
-                      goto matched;
+                    {
+                      wctype_t wt = wctype (str);
+                      if (wt == 0)
+                        /* Invalid character class name.  */
+                        return FNM_NOMATCH;
+                      if (FNMISWCTYPE(*n, wt))
+                        goto matched;
+                    }
 #else
                     if STREQ (str, "alnum") {if FNMISALNUM (*n) goto matched;}
                     else if STREQ (str, "alpha") {if FNMISALPHA (*n) goto matched;}
@@ -524,9 +525,9 @@ INTERNAL_FNMATCH (
                             FNM_CHAR fns[2];
                             FNM_CHAR coll[2];
                             fns[0] = (FNM_CHAR) fn;
-                            fns[1] = '\0';
+                            fns[1] = CH('\0');
                             coll[0] = (FNM_CHAR) cold;
-                            coll[1] = '\0';
+                            coll[1] = CH('\0');
                             if (FNMCOLL (coll, fns) <= 0)
                               {
                                 coll[0] = (FNM_CHAR) cend;
