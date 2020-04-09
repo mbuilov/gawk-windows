@@ -1163,8 +1163,12 @@ r_gawk_fstat(const gawk_api_t *api,
 
 #define gawk_api_putchar(c)			(gawk_api()->api_putchar(c))
 #define gawk_api_fputc(c, stream)		(gawk_api()->api_fputc(c, stream))
+/* same as fputc */
+#define gawk_api_putc(c, stream)		(gawk_api()->api_fputc(c, stream))
 #define gawk_api_getchar()			(gawk_api()->api_getchar())
 #define gawk_api_fgetc(stream)			(gawk_api()->api_fgetc(stream))
+/* same as fgetc */
+#define gawk_api_getc(stream)			(gawk_api()->api_fgetc(stream))
 #define gawk_api_puts(s)			(gawk_api()->api_puts(s))
 #define gawk_api_fputs(s, stream)		(gawk_api()->api_fputs(s, stream))
 
@@ -1700,11 +1704,10 @@ extern const gawk_api_t *gawk_api(void);
 #endif
 #define fputc(c, stream) gawk_api_fputc(c, stream)
 
-/* same as fputc */
 #ifdef putc
 #undef putc
 #endif
-#define putc(c, stream) gawk_api_fputc(c, stream)
+#define putc(c, stream) gawk_api_putc(c, stream)
 
 #ifdef getchar
 #undef getchar
@@ -1716,11 +1719,10 @@ extern const gawk_api_t *gawk_api(void);
 #endif
 #define fgetc(stream) gawk_api_fgetc(stream)
 
-/* same as fgetc */
 #ifdef getc
 #undef getc
 #endif
-#define getc(stream) gawk_api_fgetc(stream)
+#define getc(stream) gawk_api_getc(stream)
 
 #ifdef puts
 #undef puts
