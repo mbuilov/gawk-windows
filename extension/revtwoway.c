@@ -36,10 +36,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "gawkapi.h"
 
@@ -47,51 +56,14 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "revtwoway extension: version 1.0";
 
 static awk_bool_t init_revtwoway(void);
 static awk_bool_t (*init_func)(void) = init_revtwoway;
-
-int plugin_is_GPL_compatible;
-
-/*
- * Use this variable to provide a value != INVALID_HANDLE in the awk_input_buf_t
- * and != NULL in the awk_output_buf_t.  The idea is to have a value that
- * is greater than the largest allowable file descriptor.
- */
-static size_t max_fds;
-
-#ifndef HAVE_GETDTABLESIZE
-/* gawk_getdtablesize --- replacement version that should be good enough */
-
-static inline int
-gawk_getdtablesize()
-{
-	/*
-	 * Algorithm for the GNULIB folks:
-	 *
-	 * Set up a bitmap of 2048 elements.
-	 * Initialize it to zero.
-	 * In a loop, do
-	 * 	fd = open("/dev/null", O_RDONLY)
-	 * 	set the bit corresponding to fd in the bit map
-	 * until it fails.
-	 * Get the highest value that succeeded and increment it by one
-	 * --> that is how many descriptors we have.
-	 * Loop over the bitmap to close all the file descriptors we opened.
-	 *
-	 * Do all this upon the first call and return static values upon
-	 * subsequent calls.
-	 */
-
-	/* In the meantime, this is good enough for us: */
-	return 1024;
-}
-
-#define getdtablesize() gawk_getdtablesize()
-#endif
 
 /*
  * IMPORTANT NOTE: This is a NOT a true general purpose
@@ -116,13 +88,11 @@ typedef struct two_way_proc_data {
 static void
 close_two_proc_data(two_way_proc_data_t *proc_data)
 {
-	if (proc_data->in_use > 1) {
-		proc_data->in_use--;
+	if (--(proc_data->in_use) != 0)
 		return;
-	}
 
-	gawk_free(proc_data->data);
-	gawk_free(proc_data);
+	free(proc_data->data);
+	free(proc_data);
 }
 
 /*
@@ -136,8 +106,10 @@ rev2way_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len,
 		const awk_fieldwidth_info_t **unused)
 {
-	int len = 0;	/* for now */
+	size_t len, data_len;
 	two_way_proc_data_t *proc_data;
+
+	(void) unused;
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
@@ -154,19 +126,17 @@ rev2way_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	*out = proc_data->data;
 
-	len = proc_data->len;
+	len = data_len = proc_data->len;
 	proc_data->len = 0;
 
-	*rt_len = 0;	/* default: set RT to "" */
-	if (proc_data->data[len-1] == '\n') {
-		while (proc_data->data[len-1] == '\n') {
-			len--;
-			(*rt_len)++;
-		}
-		*rt_start = proc_data->data + len;
-	}
+	while (len > 0 && proc_data->data[len-1] == '\n')
+		len--;
 
-	return len;
+	*rt_len = data_len - len;
+	if (data_len != len)
+		*rt_start = proc_data->data + len;
+
+	return (int) len;
 }
 
 /* rev2way_close --- close up input side when done */
@@ -196,7 +166,7 @@ static size_t
 rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
 {
 	two_way_proc_data_t *proc_data;
-	size_t amount, char_count;
+	size_t amount;
 	char *src, *dest;
 
 	(void) fp;	/* silence warnings */
@@ -215,13 +185,13 @@ rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaqu
 		proc_data->size += amount;
 	}
 
-	src = (char *) buf + amount -1;
+	src = (char *) buf + amount;
 	dest = proc_data->data + proc_data->len;
-	for (char_count = amount; char_count > 0; char_count--) {
+	while (src > buf) {
 		/* copy in backwards */
-		*dest++ = *src--;
+		*dest++ = *--src;
 	}
-	proc_data->len += amount;
+	proc_data->len = (size_t) (dest - proc_data->data);
 
 	return amount;
 }
@@ -272,7 +242,7 @@ rev2way_fclose(FILE *fp, void *opaque)
 static awk_bool_t
 revtwoway_can_take_two_way(const char *name)
 {
-	return (name != NULL && strcmp(name, "/magic/mirror") == 0);
+	return (awk_bool_t) (name != NULL && strcmp(name, "/magic/mirror") == 0);
 }
 
 /*
@@ -284,6 +254,7 @@ revtwoway_can_take_two_way(const char *name)
 static awk_bool_t
 revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_buf_t *outbuf)
 {
+	static int fake_file;
 	two_way_proc_data_t *proc_data;
 
 	(void) name;	/* silence warnings */
@@ -296,17 +267,14 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 	proc_data->len = 0;
 	proc_data->data = NULL;
 
-	if (max_fds + 1 == 0)	/* wrapped. ha! */
-		max_fds = getdtablesize();
-
 	/* input side: */
 	inbuf->get_record = rev2way_get_record;
 	inbuf->close_func = rev2way_close;
-	inbuf->fd = max_fds;
+	inbuf->fd = INVALID_HANDLE;	/* must be INVALID_HANDLE if not a real handle.  */
 	inbuf->opaque = proc_data;
 
 	/* output side: */
-	outbuf->fp = (FILE *) max_fds++;
+	outbuf->fp = (FILE *) &fake_file; 	/* must be != NULL.  */
 	outbuf->opaque = proc_data;
 	outbuf->gawk_fwrite = rev2way_fwrite;
 	outbuf->gawk_fflush = rev2way_fflush;
@@ -330,8 +298,6 @@ static awk_bool_t
 init_revtwoway()
 {
 	register_two_way_processor(& two_way_processor);
-
-	max_fds = getdtablesize();
 
 	return awk_true;
 }
