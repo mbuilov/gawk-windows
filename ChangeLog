@@ -1,3 +1,12 @@
+2020-04-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (save_FPAT): New global variable.
+	(get_field): Check if using FPAT or not in order to pass in
+	the right variables to parse_field function.  Fixes bug in
+	delayed field parsing when using FPAT.  Thanks to
+	luciole75w <luciole75w@gmail.com> for the bug report.
+	(set_FPAT): Use global save_FPAT instead of local save_fpat.
+
 2020-04-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* field.c (re_parse_field): If default parsing and trailing
