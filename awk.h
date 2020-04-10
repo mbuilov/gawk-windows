@@ -1180,6 +1180,7 @@ extern int exit_val;
 #ifdef NO_LINT
 #define do_lint 0
 #define do_lint_old 0
+#define do_lint_extensions 0
 #else
 #define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
 #define do_lint_old         (do_flags & DO_LINT_OLD)
