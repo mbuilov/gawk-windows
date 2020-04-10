@@ -6305,7 +6305,7 @@ or underscores (@samp{_}):
 @cindex backslash (@code{\}) @subentry @code{\s} operator (@command{gawk})
 @cindex @code{\} (backslash) @subentry @code{\s} operator (@command{gawk})
 @item \s
-Matches any space character as defined by the curent locale.
+Matches any space character as defined by the current locale.
 Think of it as shorthand for
 @w{@samp{[[:space:]]}}.
 
@@ -23713,8 +23713,8 @@ specification of long options allows an argument to an option
 @end example
 
 Next, we try to find the current option in @code{longopts}.  The regular
-expression givent to @code{match()}, @code{@w{"(^|,)" thisopt "($|[,:])"}},
-matches this option at the beginninng of @code{longopts}, or at the
+expression given to @code{match()}, @code{@w{"(^|,)" thisopt "($|[,:])"}},
+matches this option at the beginning of @code{longopts}, or at the
 beginning of a subsequent long option (the previous long option would
 have been terminated by a comma), and, in any case, either at the end of
 the @code{longopts} string (@samp{$}), or followed by a comma
