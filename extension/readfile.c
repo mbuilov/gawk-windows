@@ -9,6 +9,10 @@
  * Mon Jun 14 14:53:07 IDT 2004
  * Revised for formal API May 2012
  * Added input parser March 2014
+ *
+ * Michael M. Builov
+ * mbuilov@gmail.com
+ * Ported to _MSC_VER 4/2020
  */
 
 /*
@@ -45,10 +49,19 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "gawkapi.h"
 
@@ -60,20 +73,21 @@
 #define O_BINARY 0
 #endif
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "readfile extension: version 2.0";
-static awk_bool_t init_readfile();
+static awk_bool_t init_readfile(void);
 static awk_bool_t (*init_func)(void) = init_readfile;
-
-int plugin_is_GPL_compatible;
 
 /* read_file_to_buffer --- handle the mechanics of reading the file */
 
 static char *
-read_file_to_buffer(int fd, const struct stat *sbuf)
+read_file_to_buffer(fd_t fd, const struct stat *sbuf, size_t limit)
 {
 	char *text;
+	size_t size;
 
 	if ((sbuf->st_mode & S_IFMT) != S_IFREG) {
 		errno = EINVAL;
@@ -81,14 +95,21 @@ read_file_to_buffer(int fd, const struct stat *sbuf)
 		return NULL;
 	}
 
-	emalloc(text, char *, sbuf->st_size + 1, "do_readfile");
-
-	if (read(fd, text, sbuf->st_size) != sbuf->st_size) {
+	if ((size_t) sbuf->st_size > limit) {
+		errno = EFBIG;
 		update_ERRNO_int(errno);
-		gawk_free(text);
 		return NULL;
 	}
-	text[sbuf->st_size] = '\0';
+
+	size = (size_t) sbuf->st_size;
+	emalloc(text, char *, size + 1, "read_file_to_buffer");
+
+	if (read(fd, text, size) != (ssize_t) size) {
+		update_ERRNO_int(errno);
+		free(text);
+		return NULL;
+	}
+	text[size] = '\0';
 	return text;
 }
 
@@ -101,7 +122,9 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	int ret;
 	struct stat sbuf;
 	char *text;
-	int fd;
+	fd_t fd;
+
+	(void) nargs, (void) unused;
 
 	assert(result != NULL);
 	make_null_string(result);	/* default return value */
@@ -120,12 +143,14 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			goto done;
 		}
 
-		text = read_file_to_buffer(fd, & sbuf);
-		if (text == NULL)
+		text = read_file_to_buffer(fd, & sbuf, (size_t)-1/2);
+		if (text == NULL) {
+			close(fd);
 			goto done;	/* ERRNO already updated */
+		}
 
 		close(fd);
-		make_malloced_string(text, sbuf.st_size, result);
+		make_malloced_string(text, (size_t) sbuf.st_size, result);
 		goto done;
 	} else if (do_lint)
 		lintwarn(ext_id, _("readfile: called with wrong kind of argument"));
@@ -144,6 +169,8 @@ readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 {
 	char *text;
 
+	(void) errcode, (void) unused;
+
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
 	 * error occurs.
@@ -157,13 +184,13 @@ readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		 * Already read the whole file,
 		 * free up stuff and return EOF
 		 */
-		gawk_free(iobuf->opaque);
+		free(iobuf->opaque);
 		iobuf->opaque = NULL;
 		return EOF;
 	}
 
 	/* read file */
-	text = read_file_to_buffer(iobuf->fd, & iobuf->sbuf);
+	text = read_file_to_buffer(iobuf->fd, & iobuf->sbuf, INT_MAX);
 	if (text == NULL)
 		return EOF;
 
@@ -176,7 +203,7 @@ readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	*out = text;
 
 	/* return count */
-	return iobuf->sbuf.st_size;
+	return (int) iobuf->sbuf.st_size;
 }
 
 /* readfile_can_take_file --- return true if we want the file */
@@ -193,15 +220,13 @@ readfile_can_take_file(const awk_input_buf_t *iobuf)
 	 * This could fail if PROCINFO isn't referenced from
 	 * the awk program. It's not a "can't happen" error.
 	 */
-	if (! sym_lookup("PROCINFO", AWK_ARRAY, & array)) {
+	if (! sym_lookup("PROCINFO", AWK_ARRAY, & array))
 		return awk_false;
-	}
 
 	(void) make_const_string("readfile", 8, & index);
 
-	if (! get_array_element(array.array_cookie, & index, AWK_UNDEFINED, & value)) {
+	if (! get_array_element(array.array_cookie, & index, AWK_UNDEFINED, & value))
 		return awk_false;
-	}
 
 	return awk_true;
 }
@@ -228,7 +253,7 @@ static awk_input_parser_t readfile_parser = {
 /* init_readfile --- set things up */
 
 static awk_bool_t
-init_readfile()
+init_readfile(void)
 {
 	register_input_parser(& readfile_parser);
 
