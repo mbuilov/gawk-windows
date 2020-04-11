@@ -67,6 +67,12 @@
 #include <windows.h>
 #endif
 
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #include "gawkapi.h"
 
 #include "gawkdirfd.h"
