@@ -167,7 +167,8 @@ rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaqu
 {
 	two_way_proc_data_t *proc_data;
 	size_t amount;
-	char *src, *dest;
+	const char *src;
+	char *dest;
 
 	(void) fp;	/* silence warnings */
 	if (opaque == NULL)
@@ -185,9 +186,9 @@ rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaqu
 		proc_data->size += amount;
 	}
 
-	src = (char *) buf + amount;
+	src = (const char *) buf + amount;
 	dest = proc_data->data + proc_data->len;
-	while (src > buf) {
+	while (src > (const char *) buf) {
 		/* copy in backwards */
 		*dest++ = *--src;
 	}
@@ -295,7 +296,7 @@ static awk_two_way_processor_t two_way_processor = {
 /* init_revtwoway --- set things ups */
 
 static awk_bool_t
-init_revtwoway()
+init_revtwoway(void)
 {
 	register_two_way_processor(& two_way_processor);
 
