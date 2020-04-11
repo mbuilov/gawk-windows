@@ -461,6 +461,8 @@ typedef struct awk_ext_func {
 
 typedef void *awk_ext_id_t;	/* opaque type for extension id */
 
+struct lconv;
+
 /*
  * The API into gawk. Lots of functions here. We hope that they are
  * logically organized.
@@ -867,6 +869,12 @@ typedef struct gawk_api {
 	int (*api_dup)(int oldfd);
 	int (*api_dup2)(int oldfd, int newfd);
 
+	ssize_t (*api_read)(int fd, void *buf, size_t count);
+	ssize_t (*api_write)(int fd, const void *buf, size_t count);
+	long long (*api_lseek)(int fd, long long offset, int whence);
+	long long (*api_tell)(int fd);
+	int (*api_fsync)(int fd);
+
 	/* Locale-dependent functions should also be referenced from gawk
 	 * executable, or the extension must set locale (via setlocale() call)
 	 * of extension's own statically linked CRT library */
@@ -881,6 +889,11 @@ typedef struct gawk_api {
 	int (*api_fclose)(FILE *stream);
 	size_t (*api_fread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
 	size_t (*api_fwrite)(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+	void (*api_clearerr)(FILE *stream);
+	int (*api_feof)(FILE *stream);
+	int (*api_ferror)(FILE *stream);
+	int (*api_fileno)(FILE *stream);
 
 	int (*api_putchar)(int c);
 	int (*api_fputc)(int c, FILE *stream);
@@ -902,6 +915,7 @@ typedef struct gawk_api {
 	int (*api_chmod)(const char *path, int mode);
 
 	char *(*api_setlocale)(int category, const char *locale);
+	struct lconv *(*api_localeconv)(void);
 
 	int (*api_strcoll)(const char *s1, const char *s2);
 	int (*api_wcscoll)(const wchar_t *s1, const wchar_t *s2);
@@ -1122,16 +1136,51 @@ r_gawk_close(const gawk_api_t *api,
 
 static inline fd_t
 r_gawk_dup(const gawk_api_t *api,
-	     fd_t oldfd)
+	   fd_t oldfd)
 {
 	return api->api_dup(oldfd);
 }
 
 static inline fd_t
 r_gawk_dup2(const gawk_api_t *api,
-	     fd_t oldfd, fd_t newfd)
+	    fd_t oldfd, fd_t newfd)
 {
 	return api->api_dup2(oldfd, newfd);
+}
+
+static inline ssize_t
+r_gawk_read(const gawk_api_t *api,
+	    fd_t fd, void *buf, size_t count)
+{
+	return api->api_read(fd, buf, count);
+}
+
+static inline ssize_t
+r_gawk_write(const gawk_api_t *api,
+	     fd_t fd, const void *buf, size_t count)
+{
+	return api->api_write(fd, buf, count);
+}
+
+static inline long long
+r_gawk_lseek(const gawk_api_t *api,
+	      fd_t fd, long long offset, int whence)
+{
+	return api->api_lseek(fd, offset, whence);
+}
+
+static inline long long
+r_gawk_tell(const gawk_api_t *api,
+	    fd_t fd)
+{
+	return api->api_tell(fd);
+}
+
+static inline int
+r_gawk_fsync(const gawk_api_t *api,
+	     fd_t fd)
+{
+	return api->api_fsync(fd);
 }
 
 static inline int
@@ -1145,6 +1194,12 @@ r_gawk_fstat(const gawk_api_t *api,
 #define gawk_api_close(fd)			r_gawk_close(gawk_api(), fd)
 #define gawk_api_dup(oldfd)			r_gawk_dup(gawk_api(), oldfd)
 #define gawk_api_dup2(oldfd, newfd)		r_gawk_dup2(gawk_api(), oldfd, newfd)
+
+#define gawk_api_read(fd, buf, count)		r_gawk_read(gawk_api(), fd, buf, count)
+#define gawk_api_write(fd, buf, count)		r_gawk_write(gawk_api(), fd, buf, count)
+#define gawk_api_lseek(fd, offset, whence)	r_gawk_lseek(gawk_api(), fd, offset, whence)
+#define gawk_api_tell(fd)			r_gawk_tell(gawk_api(), fd)
+#define gawk_api_fsync(fd)			r_gawk_fsync(gawk_api(), fd)
 
 #define gawk_api_fflush(stream)			(gawk_api()->api_fflush(stream))
 #define gawk_api_fgetpos(stream, pos)		(gawk_api()->api_fgetpos(stream, pos))
@@ -1160,6 +1215,11 @@ r_gawk_fstat(const gawk_api_t *api,
 	(gawk_api()->api_fread(ptr, size, nmemb, stream))
 #define gawk_api_fwrite(ptr, size, nmemb, stream) \
 	(gawk_api()->api_fwrite(ptr, size, nmemb, stream))
+
+#define gawk_api_clearerr(stream)		(gawk_api()->api_clearerr(stream))
+#define gawk_api_feof(stream)			(gawk_api()->api_feof(stream))
+#define gawk_api_ferror(stream)			(gawk_api()->api_ferror(stream))
+#define gawk_api_fileno(stream)			(gawk_api()->api_fileno(stream))
 
 #define gawk_api_putchar(c)			(gawk_api()->api_putchar(c))
 #define gawk_api_fputc(c, stream)		(gawk_api()->api_fputc(c, stream))
@@ -1185,6 +1245,7 @@ r_gawk_fstat(const gawk_api_t *api,
 #define gawk_api_chmod(path, mode)		(gawk_api()->api_chmod(path, mode))
 
 #define gawk_api_setlocale(category, locale)	(gawk_api()->api_setlocale(category, locale))
+#define gawk_api_localeconv()			(gawk_api()->api_localeconv())
 
 #define gawk_api_strcoll(s1, s2)		(gawk_api()->api_strcoll(s1, s2))
 #define gawk_api_wcscoll(s1, s2)		(gawk_api()->api_wcscoll(s1, s2))
@@ -1642,6 +1703,31 @@ extern const gawk_api_t *gawk_api(void);
 #endif
 #define dup2(oldfd, newfd) gawk_api_dup2(oldfd, newfd)
 
+#ifdef read
+#undef read
+#endif
+#define read(fd, buf, count) gawk_api_read(fd, buf, count)
+
+#ifdef write
+#undef write
+#endif
+#define write(fd, buf, count) gawk_api_write(fd, buf, count)
+
+#ifdef lseek
+#undef lseek
+#endif
+#define lseek(fd, offset, whence) gawk_api_lseek(fd, offset, whence)
+
+#ifdef tell
+#undef tell
+#endif
+#define tell(fd) gawk_api_tell(fd)
+
+#ifdef fsync
+#undef fsync
+#endif
+#define fsync(fd) gawk_api_fsync(fd)
+
 #ifdef fflush
 #undef fflush
 #endif
@@ -1693,6 +1779,26 @@ extern const gawk_api_t *gawk_api(void);
 #endif
 #define fwrite(ptr, size, nmemb, stream) \
 	gawk_api_fwrite(ptr, size, nmemb, stream)
+
+#ifdef clearerr
+#undef clearerr
+#endif
+#define clearerr(stream) gawk_api_clearerr(stream)
+
+#ifdef feof
+#undef feof
+#endif
+#define feof(stream) gawk_api_feof(stream)
+
+#ifdef ferror
+#undef ferror
+#endif
+#define ferror(stream) gawk_api_ferror(stream)
+
+#ifdef fileno
+#undef fileno
+#endif
+#define fileno(stream) gawk_api_fileno(stream)
 
 #ifdef putchar
 #undef putchar
@@ -1788,6 +1894,11 @@ extern const gawk_api_t *gawk_api(void);
 #undef setlocale
 #endif
 #define setlocale(category, locale) gawk_api_setlocale(category, locale)
+
+#ifdef localeconv
+#undef localeconv
+#endif
+#define localeconv() gawk_api_localeconv()
 
 #ifdef strcoll
 #undef strcoll

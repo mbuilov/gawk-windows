@@ -299,6 +299,7 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 
 /* api_printf --- print a message to stdout */
 
+#ifdef _MSC_VER
 static int
 api_printf(const char *format, ...)
 {
@@ -314,6 +315,7 @@ PRAGMA_WARNING_POP
 
 	return ret;
 }
+#endif /* _MSC_VER */
 
 /* api_assert_failed --- print error message and abort the program */
 
@@ -1499,27 +1501,93 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	return awk_true;
 }
 
+#ifdef _MSC_VER
+static ssize_t api_read(int fd, void *buf, size_t count)
+{
+	ssize_t ret = 0;
+	/* Don't overflow ssize_t.  */
+	if (count > (size_t)-1/2) {
+		errno = EINVAL;
+		return -1;
+	}
+	while (count > 0) {
+		/* Cannot read more than INT_MAX at once.  */
+		int n = count > INT_MAX ? INT_MAX : (int) count;
+		int x = _read(fd, buf, (unsigned) n);
+		if (x < 0)
+			return -1;
+		ret += x;
+		if (x < n)
+			break;
+		buf = (char*) buf + n;
+		count -= n;
+	}
+	return ret;
+}
+
+static ssize_t api_write(int fd, const void *buf, size_t count)
+{
+	ssize_t ret;
+	/* Don't overflow ssize_t.  */
+	if (count > (size_t)-1/2) {
+		errno = EINVAL;
+		return -1;
+	}
+	ret = (ssize_t) count;
+	while (count > 0) {
+		/* Cannot write more than INT_MAX at once.  */
+		int n = count > INT_MAX ? INT_MAX : (int) count;
+		int x = _write(fd, buf, (unsigned) n);
+		if (x != n)
+			return -1;
+		buf = (const char*) buf + n;
+		count -= n;
+	}
+	return ret;
+}
+#endif /* _MSC_VER */
+
+#ifndef _MSC_VER
+static long long api_lseek(int fd, long long offset, int whence)
+{
+	/* Note:
+	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
+	  to support 64-bit offsets.  */
+	off_t ret = lseek(fd, (off_t) offset, whence);
+	return (long long) ret;
+}
+
+static long long api_tell(int fd)
+{
+	/* Note:
+	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
+	  to support 64-bit offsets.  */
+	off_t ret = tell(fd);
+	return (long long) ret;
+}
+#endif /* !_MSC_VER */
+
 static int api_mb_cur_max(void)
 {
 	return MB_CUR_MAX;
 }
 
+#ifndef _MSC_VER
 static int *api_errno_p(void)
 {
-	return _errno();
+	return &errno;
 }
+#endif
 
+#if defined(__MINGW32__) || defined(_MSC_VER)
 static int api_mkstemp(char *templ)
 {
-#if defined(__MINGW32__) || defined(_MSC_VER)
 	char *tmp_fname = _mktemp(templ);
 	if (tmp_fname)
 		return open(tmp_fname,
 			O_RDWR | O_CREAT | O_EXCL,
 			S_IREAD | S_IWRITE);
 	return INVALID_HANDLE;
-#else
-	return mkstemp(templ);
 #endif
 }
 
@@ -1626,7 +1694,11 @@ gawk_api_t api_impl = {
 	api_get_file,
 
 	/* print a message to stdout */
+#ifdef _MSC_VER
 	api_printf,
+#else
+	printf,
+#endif
 
 	/* process failed assertion */
 	api_assert_failed,
@@ -1642,6 +1714,20 @@ gawk_api_t api_impl = {
 	dup,
 	dup2,
 
+#ifdef _MSC_VER
+	api_read,
+	api_write,
+	_lseeki64,
+	_telli64,
+	_commit,
+#else
+	read,
+	write,
+	api_lseek,
+	api_tell,
+	fsync,
+#endif
+
 	fflush,
 	fgetpos,
 	fsetpos,
@@ -1653,6 +1739,11 @@ gawk_api_t api_impl = {
 	fclose,
 	fread,
 	fwrite,
+
+	clearerr,
+	feof,
+	ferror,
+	fileno,
 
 	putchar,
 	fputc,
@@ -1674,6 +1765,7 @@ gawk_api_t api_impl = {
 	chmod,
 
 	setlocale,
+	localeconv,
 
 	strcoll,
 	wcscoll,
@@ -1697,10 +1789,18 @@ gawk_api_t api_impl = {
 	vsprintf,
 	vsnprintf,
 
+#ifdef _MSC_VER
+	_errno,
+#else
 	api_errno_p,
+#endif
 	strerror,
 
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	api_mkstemp,
+#else
+	mkstemp,
+#endif
 
 	getenv,
 
