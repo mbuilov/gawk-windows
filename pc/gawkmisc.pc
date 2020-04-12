@@ -803,7 +803,7 @@ nl_langinfo (int item)
       case CODESET:
         {
           /* M.B. Reworked Gnulib's implementation of nl_langinfo:
-             - Gnulib's implementation is unnecessary complex,
+             - Gnulib's implementation is unnecessarily complex,
              - Gnulib's implementation doesn't handle UTF-8 code page.  */
           static char buf[2 + 10 + 1] = "CP";
           const char *locale = setlocale (LC_CTYPE, NULL);
