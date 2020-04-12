@@ -577,6 +577,7 @@ particular records in a file and perform operations upon them.
 * Allowing trailing data::              Capturing optional trailing data.
 * Fields with fixed data::              Field values with fixed-width data.
 * Splitting By Content::                Defining Fields By Content
+* More CSV::                            More on CSV files.
 * Testing field creation::              Checking how @command{gawk} is
                                         splitting records.
 * Multiple Line::                       Reading multiline records.
@@ -8188,6 +8189,10 @@ four, and @code{$4} has the value @code{"ddd"}.
 @node Splitting By Content
 @section Defining Fields by Content
 
+@menu
+* More CSV::                    More on CSV files.
+@end menu
+
 @c O'Reilly doesn't like it as a note the first thing in the section.
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
@@ -8227,7 +8232,9 @@ This regular expression describes the contents of each field.
 
 In the case of CSV data as presented here, each field is either ``anything that
 is not a comma,'' or ``a double quote, anything that is not a double quote, and a
-closing double quote.''  If written as a regular expression constant
+closing double quote.''  (There are more complicated definitions of CSV data,
+treated shortly.)
+If written as a regular expression constant
 (@pxref{Regexp}),
 we would have @code{/([^,]+)|("[^"]+")/}.
 Writing this as a string requires us to escape the double quotes, leading to:
@@ -8283,12 +8290,6 @@ if (substr($i, 1, 1) == "\"") @{
 @}
 @end example
 
-As with @code{FS}, the @code{IGNORECASE} variable (@pxref{User-modified})
-affects field splitting with @code{FPAT}.
-
-Assigning a value to @code{FPAT} overrides field splitting
-with @code{FS} and with @code{FIELDWIDTHS}.
-
 @quotation NOTE
 Some programs export CSV data that contains embedded newlines between
 the double quotes.  @command{gawk} provides no way to deal with this.
@@ -8311,8 +8312,77 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 @c (star in latter part of value) to allow quoted strings to be empty.
 @c Per email from Ed Morton <mortoneccc@comcast.net>
 
+As with @code{FS}, the @code{IGNORECASE} variable (@pxref{User-modified})
+affects field splitting with @code{FPAT}.
+
+Assigning a value to @code{FPAT} overrides field splitting
+with @code{FS} and with @code{FIELDWIDTHS}.
+
 Finally, the @code{patsplit()} function makes the same functionality
 available for splitting regular strings (@pxref{String Functions}).
+
+@node More CSV
+@subsection More on CSV Files
+
+Manuel Collado notes that in addition to commas, a CSV field can also
+contains quotes, that have to be escaped by doubling them. The previously
+described regexps fail to accept quoted fields with both commas and
+quotes inside. He suggests that the simplest @code{FPAT} expression that
+recognizes this kind of fields is @code{/([^,]*)|("([^"]|"")+")/}. He
+provides the following imput data test these variants:
+
+@example
+@c file eg/misc/sample.csv
+p,"q,r",s
+p,"q""r",s
+p,"q,""r",s
+p,"",s
+p,,s
+@c endfile
+@end example
+
+@noindent
+And here is his test program:
+
+@example
+@c file eg/misc/test-csv.awk
+@group
+BEGIN @{
+     fp[0] = "([^,]+)|(\"[^\"]+\")"
+     fp[1] = "([^,]*)|(\"[^\"]+\")"
+     fp[2] = "([^,]*)|(\"([^\"]|\"\")+\")"
+     FPAT =  fp[fpat+0]
+@}
+@end group
+
+@group
+@{
+     print "<" $0 ">"
+     printf("NF = %s ", NF)
+     for (i = 1; i <= NF; i++) @{
+         printf("<%s>", $i)
+     @}
+     print ""
+@}
+@end group
+@c endfile
+@end example
+
+When run on the third variant, it produces:
+
+@example
+$ @kbd{gawk -v fpat=2 -f test-csv.awk sample.csv}
+@print{} <p,"q,r",s>
+@print{} NF = 3 <p><"q,r"><s>
+@print{} <p,"q""r",s>
+@print{} NF = 3 <p><"q""r"><s>
+@print{} <p,"q,""r",s>
+@print{} NF = 3 <p><"q,""r"><s>
+@print{} <p,"",s>
+@print{} NF = 3 <p><""><s>
+@print{} <p,,s>
+@print{} NF = 3 <p><><s>
+@end example
 
 @node Testing field creation
 @section Checking How @command{gawk} Is Splitting Records
