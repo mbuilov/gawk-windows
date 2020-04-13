@@ -685,6 +685,7 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Campi con dati a larghezza fissa::    Valore di campi con dati a larghezza
                                         fissa.
 * Separazione in base al contenuto::    Definire campi dal loro contenuto.
+* File CSV::                            Ancora sui file CSV.
 * Controllare la creazione di campi::   Controllare come @command{gawk} sta
                                         dividendo i record.
 * Righe multiple::                      Record su righe multiple
@@ -8490,6 +8491,10 @@ per un esempio di tale funzione).
 @node Separazione in base al contenuto
 @section Definire i campi in base al contenuto
 
+@menu
+* File CSV::                    Ancora sui file CSV.
+@end menu
+
 @c O'Reilly doesn't like it as a note the first thing in the section.
 @ifnotinfo
 Questa
@@ -8537,7 +8542,9 @@ regolare.  L'espressione regolare descrive il contenuto di ciascun campo.
 
 Nel caso dei dati CSV visti prima, ogni campo @`e ``qualsiasi cosa che non
 sia una virgola,'' oppure ``doppi apici, seguiti da qualsiasi cosa che non
-siano doppi apici, e doppi apici di chiusura''.  Se fosse scritta come una
+siano doppi apici, e doppi apici di chiusura''.  (Ci sono definizioni di
+dati CSV pi@`u complicate, vedere pi@`u sotto.)
+Se fosse scritta come una
 costante @dfn{regexp}
 @iftex
 (@pxrefil{Espressioni regolari}),
@@ -8597,17 +8604,10 @@ questo tipo:
 
 @example
 if (substr($i, 1, 1) == "\"") @{
-len = length($i)
-$i = substr($i, 2, len - 2) # Ottiene il testo tra doppi apici
+    len = length($i)
+    $i = substr($i, 2, len - 2) # Ottiene il testo tra doppi apici
 @}
 @end example
-
-Come per @code{FS}, la variabile @code{IGNORECASE}
-(@pxref{Variabili modificabili dall'utente}) ha effetto sulla separazione dei
-campi con @code{FPAT}.
-
-Se si assegna un valore a @code{FPAT} la divisione in campi non viene
-effettuata utilizzando @code{FS} o @code{FIELDWIDTHS}.
 
 @quotation NOTA
 Alcuni programmi esportano dei dati CSV che contengono dei ritorni a capo al
@@ -8632,8 +8632,81 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 @c (star in latter part of value) to allow quoted strings to be empty.
 @c Per email from Ed Morton <mortoneccc@comcast.net>
 
+Come per @code{FS}, la variabile @code{IGNORECASE}
+(@pxref{Variabili modificabili dall'utente}) ha effetto sulla separazione dei
+campi con @code{FPAT}.
+
+Se si assegna un valore a @code{FPAT} la divisione in campi non viene
+effettuata utilizzando @code{FS} o @code{FIELDWIDTHS}.
+
 Infine, la funzione @code{patsplit()} rende la stessa funzionalit@`a disponibile
 per suddividere normali stringhe (@pxref{Funzioni per stringhe}).
+
+@node File CSV
+@subsection Ancora sui file CSV
+
+@cindex Collado, Manuel
+Manuel Collado fa notare che, oltre alle virgole, un campo CSV pu@`o anche
+contenere apici, che devono essere protetti raddoppiandoli.
+Le espressione regolari descritte sopra non sono in grado di accettare
+campi fra apici che contengano al loro interno sia virgole che apici.
+Egli suggerisce che l'espressione pi@`u semplice di @code{FPAT} in grado
+di riconoscere tale tipo di campi @`e @code{/([^,]*)|("([^"]|"")+")/}.
+Egli ha preparato questo input come test per riconoscere queste varianti:
+
+@example
+@c file eg/misc/sample.csv
+p,"q,r",s
+p,"q""r",s
+p,"q,""r",s
+p,"",s
+p,,s
+@c endfile
+@end example
+
+@noindent
+E questo @`e il suo programma di test:
+
+@example
+@c file eg/misc/test-csv.awk
+@group
+BEGIN @{
+     fp[0] = "([^,]+)|(\"[^\"]+\")"
+     fp[1] = "([^,]*)|(\"[^\"]+\")"
+     fp[2] = "([^,]*)|(\"([^\"]|\"\")+\")"
+     FPAT = fp[fpat+0]
+@}
+@end group
+
+@group
+@{
+     print "<" $0 ">"
+     printf("NF = %s ", NF)
+     for (i = 1; i <= NF; i++) @{
+         printf("<%s>", $i)
+     @}
+     print ""
+@}
+@end group
+@c endfile
+@end example
+
+Se eseguito usando la terza variante di @code{FPAT},
+il programma produce in output:
+
+@example
+$ @kbd{gawk -v fpat=2 -f test-csv.awk sample.csv}
+@print{} <p,"q,r",s>
+@print{} NF = 3 <p><"q,r"><s>
+@print{} <p,"q""r",s>
+@print{} NF = 3 <p><"q""r"><s>
+@print{} <p,"q,""r",s>
+@print{} NF = 3 <p><"q,""r"><s>
+@print{} <p,"",s>
+@print{} NF = 3 <p><""><s>
+@print{} <p,,s>
+@print{} NF = 3 <p><><s>
+@end example
 
 @node Controllare la creazione di campi
 @section Controllare come @command{gawk} sta dividendo i record
