@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2020-03-20 11:03+0200\n"
+"POT-Creation-Date: 2020-04-14 14:48+0300\n"
 "PO-Revision-Date: 2015-05-18 12:37+0200\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -2341,101 +2341,101 @@ msgstr "exp: argumentet %g er uden for det tilladte område"
 msgid "sleep: not supported on this platform"
 msgstr ""
 
-#: field.c:281
+#: field.c:284
 msgid "input record too large"
 msgstr ""
 
-#: field.c:397
+#: field.c:400
 msgid "NF set to negative value"
 msgstr "NF sat til en negativ værdi"
 
-#: field.c:402
+#: field.c:405
 msgid "decrementing NF is not portable to many awk versions"
 msgstr ""
 
-#: field.c:846
+#: field.c:853
 msgid "accessing fields from an END rule may not be portable"
 msgstr ""
 
-#: field.c:964 field.c:971
+#: field.c:978 field.c:985
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: fjerde argument er en gawk-udvidelse"
 
-#: field.c:968
+#: field.c:982
 msgid "split: fourth argument is not an array"
 msgstr "split: fjerde argument er ikke et array"
 
-#: field.c:978
+#: field.c:992
 msgid "split: second argument is not an array"
 msgstr "split: andet argument er ikke et array"
 
-#: field.c:982
+#: field.c:996
 msgid "split: cannot use the same array for second and fourth args"
 msgstr "split: kan ikke bruge det samme array som andet og fjerde argument"
 
-#: field.c:987
+#: field.c:1001
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: kan ikke bruge et underarray af andet argument som fjerde argument"
 
-#: field.c:990
+#: field.c:1004
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: kan ikke bruge et underarray af fjerde argument som andet argument"
 
-#: field.c:1024
+#: field.c:1038
 #, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: tom streng som tredje argument er en gawk-udvidelse"
 
-#: field.c:1061
+#: field.c:1075
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: fjerde argument er ikke et array"
 
-#: field.c:1066
+#: field.c:1080
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: andet argument er ikke et array"
 
-#: field.c:1075
+#: field.c:1089
 msgid "patsplit: third argument must be non-null"
 msgstr "patmatch: tredje argument er ikke et array"
 
-#: field.c:1079
+#: field.c:1093
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr "patsplit: kan ikke bruge det samme array som andet og fjerde argument"
 
-#: field.c:1084
+#: field.c:1098
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: kan ikke bruge et underarray af andet argument som fjerde argument"
 
-#: field.c:1087
+#: field.c:1101
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: kan ikke bruge et underarray af fjerde argument som andet argument"
 
-#: field.c:1137
+#: field.c:1151
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "'FIELDWIDTHS' er en gawk-udvidelse"
 
-#: field.c:1206
+#: field.c:1220
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
-#: field.c:1227
+#: field.c:1241
 #, fuzzy, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "ugyldig FIELDWIDTHS værdi, nær '%s"
 
-#: field.c:1300
+#: field.c:1314
 msgid "null string for `FS' is a gawk extension"
 msgstr "tom streng som 'FS' er en gawk-udvidelse"
 
-#: field.c:1304
+#: field.c:1318
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "gamle versioner af awk understøtter ikke regexp'er som værdi for 'FS'"
 
-#: field.c:1431
+#: field.c:1444
 msgid "`FPAT' is a gawk extension"
 msgstr "'FPAT' er en gawk-udvidelse"
 
@@ -3669,7 +3669,6 @@ msgstr ""
 #~ msgstr ""
 #~ "asorti: kan ikke bruge et underarray af andet argument for første argument"
 
-#, c-format
 #~ msgid "can't read sourcefile `%s' (%s)"
 #~ msgstr "kan ikke læse kildefilen '%s' (%s)"
 
@@ -3685,7 +3684,6 @@ msgstr ""
 #~ msgid "operator `^=' is not supported in old awk"
 #~ msgstr "operatoren '^=' understøttes ikke i gamle versioner af awk"
 
-#, c-format
 #~ msgid "could not open `%s' for writing (%s)"
 #~ msgstr "kunne ikke åbne '%s' for skrivning (%s)"
 
@@ -3701,7 +3699,6 @@ msgstr ""
 #~ msgid "sqrt: received non-numeric argument"
 #~ msgstr "sqrt: fik ikke-numerisk argument"
 
-#, c-format
 #~ msgid "sqrt: called with negative argument %g"
 #~ msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -3738,27 +3735,24 @@ msgstr ""
 #~ msgid "rshift: received non-numeric second argument"
 #~ msgstr "rshift: fik et ikke-numerisk andet argument"
 
-#, c-format
 #~ msgid "and: argument %d is non-numeric"
 #~ msgstr "and: argumentet %d er ikke-numerisk"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "and: argument %d negative value %g is not allowed"
 #~ msgstr "and: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "or: argument %d negative value %g is not allowed"
 #~ msgstr "or: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#, c-format
 #~ msgid "xor: argument %d is non-numeric"
 #~ msgstr "xor: argumentet %d er ikke-numerisk"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "xor: argument %d negative value %g is not allowed"
 #~ msgstr "xor: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#, c-format
 #~ msgid "Can't find rule!!!\n"
 #~ msgstr "Kan ikke finde regel!!!\n"
 
