@@ -1428,7 +1428,7 @@ SHLIB_TESTS = \
 	inplace1 inplace2 inplace2bcomp inplace3 inplace3bcomp \
 	ordchr ordchr2 \
 	readdir readdir_test readdir_retest readfile readfile2 revout \
-	revtwoway rwarray \
+	revtwoway rwarray rwarray0 \
 	testext time
 
 # List of the tests which should be run with --debug option:
@@ -2304,6 +2304,16 @@ filefuncs:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v builddir="$(abs_top_builddir)" "gawkapi.o"  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rwarray:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -l $@ -f $@.awk -v FORMAT=3.1  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rwarray0:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -l $@ -f rwarray.awk -v FORMAT=3.0  < "$(srcdir)"/rwarray.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/rwarray.ok _$@ && rm -f _$@
 
 genpot:
 	@echo $@

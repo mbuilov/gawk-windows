@@ -1,4 +1,4 @@
-@load "rwarray"
+# @load "rwarray"
 
 BEGIN {
 	while ((getline word) > 0)
@@ -51,11 +51,13 @@ BEGIN {
 		}
 	}
 
-	if (typeof(dict[re_sub]) != "regexp")
-		printf("dict[\"%s\"] should be regexp, is %s\n",
-			re_sub, typeof(dict[re_sub]));
+	if (FORMAT != "3.0") {
+		if (typeof(dict[re_sub]) != "regexp")
+			printf("dict[\"%s\"] should be regexp, is %s\n",
+				re_sub, typeof(dict[re_sub]));
 
-	if (typeof(dict[strnum_sub]) != "strnum")
-		printf("dict[\"%s\"] should be strnum, is %s\n",
-			strnum_sub, typeof(dict[strnum_sub]));
+		if (typeof(dict[strnum_sub]) != "strnum")
+			printf("dict[\"%s\"] should be strnum, is %s\n",
+				strnum_sub, typeof(dict[strnum_sub]));
+	}
 }
