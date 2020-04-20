@@ -11,7 +11,7 @@
 .\"Aggiornam. a gawk-4.2.1 di A.G. Colombo - revis. M. Curreli - Febbraio 2018
 .\"Aggiornam. a gawk-4.2.2 di A.G. Colombo - revis. M. Curreli - Dicembre 2018
 .\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Luglio 2019
-.\"Aggiornam. a gawk-5.1.1 di A.G. Colombo - Marzo 2020
+.\"Aggiornam. a gawk-5.1.1 di A.G. Colombo - revis. M. Curreli - Aprile 2020
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -67,17 +67,17 @@ La riga di comando contiene opzioni per
 stesso, il testo del programma \*(AK (se non è stato fornito con le opzioni
 .B \-f
 o
-.B \-\^\-include ),
+.BR \-\^\-include ),
 e valori da rendere disponibili
 nelle variabili \*(AK predefinite
 .B ARGC
 e
-.B ARGV .
+.BR ARGV .
 .PP
 Quando
 .I gawk
 è invocato con l'opzione
-.B \-\^\-profile ,
+.BR \-\^\-profile ,
 inizia a raccogliere statistiche sul comportamento del programma
 durante l'esecuzione.
 .I Gawk
@@ -99,9 +99,9 @@ carica il
 codice sorgente di AWK e poi richiede l'inserimento di comandi di debug.
 .I Gawk
 può analizzare solo il sorgente di un programma AWK fornito tramite l'opzione
-.BR \-f
+.B \-f
 e
-.B \-\^\-include .
+.BR \-\^\-include .
 Il debugger è documentato in \*(EP.
 .SH FORMATO DELLE OPZIONI
 .PP
@@ -270,7 +270,7 @@ Quest'opzione permette di combinare in modo semplice funzioni di libreria
 (usate attraverso i file indicati dalle opzioni
 .B \-f
 e
-.B \-\^\-include )
+.BR \-\^\-include )
 con codice sorgente immesso sulla riga di comando.
 È rivolta principalmente a programmi  \*(AK di media e grande dimensione
 usati all'interno di script di shell.
@@ -306,7 +306,7 @@ nel programma.  Il programma in sé non viene eseguito.
 Si veda la distribuzione \*(GN
 .I gettext
 per maggiori informazioni sui file
-.B \&.pot .
+.BR \&.pot .
 .TP
 .PD 0
 .B \-h
@@ -329,7 +329,7 @@ Cerca la libreria usando la variabile d'ambiente
 .BR AWKPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso
-.B \&.awk .
+.BR \&.awk .
 Il file verrà caricato solo una volta
 (cioè vengono ignorati i duplicati), e il codice non costituisce
 il sorgente del programma principale.
@@ -347,7 +347,7 @@ Carica un'estensione
 dalla libreria condivisa
 .IR lib .
 Cerca la libreria usando la variabile d'ambiente
-.B AWKLIBPATH .
+.BR AWKLIBPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso della libreria
 condivisa predefinita per la piattaforma.
@@ -414,7 +414,7 @@ faccia questo quando l'opzione
 il punto come separatore decimale, anche per le localizzazioni in cui
 il carattere di separazione non è il punto.  Quest'opzione ignora il
 comportamento predefinito, senza il rigore draconiano dell'opzione
-.B \-\^\-posix .
+.BR \-\^\-posix .
 .ig
 .\" Quest'opzione è lasciata intenzionalmente non documentata.
 .TP
@@ -476,7 +476,7 @@ Quest'opzione attiva anche l'opzione
 .PD
 .B \-\^\-posix
 Quest'opzione attiva la modalità di
-.I compatibilità ,
+.IR compatibilità ,
 con le seguenti restrizioni aggiuntive:
 .RS
 .TP "\w'\(bu'u+1n"
@@ -495,7 +495,7 @@ e
 Non viene riconosciuto il sinonimo
 .B func
 per la parola chiave
-.B function .
+.BR function .
 .TP
 \(bu
 Non si possono usare gli operatori
@@ -535,7 +535,7 @@ rimane per essere usata insieme all'opzione
 .PD
 .B \-\^\-no\-optimize
 Disabilita le ottimizzazioni predefinite di
-.IR gawk
+.I gawk
 nella rappresentazione interna del programma.
 .TP
 .PD 0
@@ -599,7 +599,7 @@ per l'elaborazione.  Questo è particolarmente utile per eseguire i programmi
 .BR #! .
 .PP
 Per compatibilità con \*(PX, si può usare l'opzione
-.B \-W ,
+.BR \-W ,
 seguita dal nome di un'opzione lunga.
 .SH ESECUZIONE DEL PROGRAMMA AWK
 .PP
@@ -645,13 +645,13 @@ Oltre a ciò, le righe che iniziano con
 possono essere usate per includere altri file sorgenti nel programma,
 rendendo l'uso della libreria ancora più facile.  Questo è equivalente
 all'uso dell'opzione
-.B \-\^\-include .
+.BR \-\^\-include .
 .PP
 Le righe che iniziano con
 .B @load
 possono essere usate per caricare funzioni di estensione nel programma.  Questo è
 equivalente all'uso dell'opzione
-.B \-\^\-load .
+.BR \-\^\-load .
 .PP
 La variabile d'ambiente
 .B AWKPATH
@@ -659,7 +659,7 @@ specifica il percorso lungo il quale cercare i file sorgenti
 indicati con le opzioni
 .B \-f
 e
-.B \-\^\-include .
+.BR \-\^\-include .
 Se questa variabile non esiste, il percorso predefinito è
 \fB"/usr/local/share/awk"\fR
 (la directory in questione può variare a seconda di come
@@ -674,7 +674,7 @@ La variabile d'ambiente
 .B AWKLIBPATH
 specifica il percorso lungo il quale cercare i file sorgenti
 indicati con l'opzione
-.B \-\^\-load .
+.BR \-\^\-load .
 Se questa variabile non esiste, il percorso predefinito è
 \fB"/usr/local/lib/gawk"\fR
 (la directory in questione può variare a seconda di come
@@ -1163,7 +1163,7 @@ Gli indici partono dallo zero.
 .TP
 \fBPROCINFO["egid"]\fP
 Il valore della chiamata di sistema
-.IR getegid (2) .
+.IR getegid (2).
 .TP
 \fBPROCINFO["errno"]\fP
 Il valore di
@@ -1174,7 +1174,7 @@ quando
 .TP
 \fBPROCINFO["euid"]\fP
 Il valore della chiamata di sistema
-.IR geteuid (2) .
+.IR geteuid (2).
 .TP
 \fBPROCINFO["FS"]\fP
 \fB"FS"\fP se la separazione in campi con
@@ -1191,7 +1191,7 @@ o \fB"API"\fP se la separazione in campi con l'analizzatore di input API
 .TP
 \fBPROCINFO["gid"]\fP
 Il valore della chiamata di sistema
-.IR getgid (2) .
+.IR getgid (2).
 .TP
 \fBPROCINFO["identifiers"]\fP
 Un sottovettore, avente come indici i nomi di tutti gli identificatori usati
@@ -1232,11 +1232,11 @@ L'identificatore è una funzione definita dall'utente.
 .TP
 \fBPROCINFO["pgrpid"]\fP
 Il valore dalla chiamata di sistema
-.IR getpgrp (2) .
+.IR getpgrp (2).
 .TP
 \fBPROCINFO["pid"]\fP
 Il valore dalla chiamata di sistema
-.IR getpid (2) .
+.IR getpid (2).
 .TP
 \fBPROCINFO["platform"]\fP
 Una stringa che indica la piattaforma sulla quale
@@ -1259,7 +1259,7 @@ OpenVMS o Vax/VMS.
 .TP
 \fBPROCINFO["ppid"]\fP
 Il valore della chiamata di sistema
-.IR getppid (2) .
+.IR getppid (2).
 .TP
 \fBPROCINFO["strftime"]\fP
 La stringa di formato data/ora predefinita per
@@ -1270,7 +1270,7 @@ visualizza i valori di data e ora se chiamata senza specificare argomenti.
 .TP
 \fBPROCINFO["uid"]\fP
 Il valore della chiamata di sistema
-.IR getuid (2) .
+.IR getuid (2).
 .TP
 \fBPROCINFO["version"]\fP
 La versione di
@@ -1482,7 +1482,7 @@ Se l'espressione è formata da una lista di espressioni
 l'indice del vettore è una stringa ottenuta concatenando
 i valori (stringa) di ogni espressione, separati dal valore della
 variabile
-.B SUBSEP .
+.BR SUBSEP .
 Questa modalità è usata per simulare vettori multidimensionali.
 Per esempio:
 .PP
@@ -1557,17 +1557,17 @@ si aspetta di trovare un vettore (come nel secondo argomento di
 .BR split() ).
 Si può fare questo creando un elemento nel sottovettore e cancellandolo
 poi con l'istruzione
-.B delete .
+.BR delete .
 .SS Spazi-dei-nomi
 .I Gawk
 fornisce una semplice funzionalità, 
-.I namespace ,
+.IR namespace ,
 (spazio-dei-nomi) per ovviare al fatto che tutte le variabili in
 AWK sono globali.
 .PP
 Un
 .I "nome qualificato"
-consiste di due identificativi semplici, congiunti da una coppia di ":"
+consiste di due identificativi semplici, congiunti da una coppia di due punti
 .RB ( :: ).
 Il primo dei due identificativi designa lo spazio-dei-nomi (namespace)
 mentre il secondo è il nome della variabile al suo interno.
@@ -1576,11 +1576,11 @@ allo spazio-dei-nomi ``corrente''; lo spazio-dei-nomi predefinito ha nome
 .BR awk .
 Comunque, gli identificativi i cui nomi sono composti solo da lettere
 maiuscole, vengono sempre considerati come facenti parte dello spazio-dei-nomi
-.B awk ,
+.BR awk ,
 anche se lo spazio-dei-nomi corrente è diverso da quello predefinito.
 .PP
-Si può cambiare lo spazio-dei-nomi corente tramite la direttiva
-\fB@namespace "\fInome\^\fB"\fR .
+Si può cambiare lo spazio-dei-nomi corrente tramite la direttiva
+\fB@namespace "\fInome\^\fB"\fR.
 .PP
 I nomi delle funzioni interne predefinite non possono essere usati come
 nomi di uno spazio-dei-nomi.  I nomi di ulteriori funzioni, fornite da
@@ -1605,7 +1605,7 @@ valore di stringa "" (la stringa nulla, o vuota).
 .PP
 Quando una stringa deve essere convertita in un numero, la conversione
 è compiuta con
-.IR strtod (3) .
+.IR strtod (3).
 I numeri sono convertiti a stringhe usando
 .IR sprintf (3)
 col valore di
@@ -1662,7 +1662,7 @@ a
 agli elementi di
 .B ARGV
 di
-.B ENVIRON ,
+.BR ENVIRON ,
 ed agli elementi di un vettore creato da
 .B split()
 o da
@@ -1836,13 +1836,13 @@ Le azioni di tutti i criteri di ricerca
 .B BEGIN
 sono unite insieme, come se tutte le istruzioni fossero
 scritte in un'unica regola
-.B BEGIN ,
+.BR BEGIN ,
 e sono eseguite prima che sia letto qualsiasi input.
 Allo stesso modo, tutte le regole
 .B END
 sono fuse insieme, ed eseguite dopo che tutti i dati in input sono
 terminati o dopo che si è incontrata l'istruzione
-.B exit .
+.BR exit .
 .B BEGIN
 e
 .B END
@@ -1860,7 +1860,7 @@ sono altri criteri speciali le cui azioni sono eseguite
 prima della lettura del primo record di ogni file di input richiamato sulla riga
 di comando, e dopo la lettura dell'ultimo record di ognuno di questi file.
 All'interno della regola
-.B BEGINFILE ,
+.BR BEGINFILE ,
 il valore di
 .B ERRNO
 è una stringa vuota se il file è stato aperto con successo.
@@ -2377,7 +2377,7 @@ imposta
 .TP
 \fIcomando\fB | getline \fR[\fIvariabile\fR]
 Esegue
-.IR comando
+.I comando
 dirigendo l'output [del comando] o in
 .B $0
 o in
@@ -2614,7 +2614,7 @@ invece di
 .TP
 .B %%
 Un singolo carattere
-.B % ;
+.BR % ;
 non c'è alcuna conversione di argomenti.
 .PP
 Alcuni ulteriori parametri facoltativi possono comparire fra il
@@ -3339,7 +3339,7 @@ Se
 Se
 .I format
 è omesso, è assunto un formato equivalente a quello dell'output del comando
-.IR date (1) .
+.IR date (1).
 Il formato predefinito è disponibile in
 .BR PROCINFO["strftime"] .
 Vedere le specifiche per la funzione
@@ -3591,7 +3591,7 @@ al posto di
 anche se questo modo di operare è deprecato.
 .SH CARICARE DINAMICAMENTE NUOVE FUNZIONI
 Si possono aggiungere dinamicamente nuove funzioni scritte in C o C++
-all'interpreter
+all'interpretatore
 .I gawk
 in esecuzione tramite l'istruzione
 .BR @load .
@@ -3719,7 +3719,7 @@ assegnazione compariva prima di un nome di file, l'assegnazione sarebbe
 avvenuta 
 .I prima
 di eseguire la regola
-.B BEGIN .
+.BR BEGIN .
 Esistono applicazioni che dipendono da questa \*(lqfunzionalità.\*(rq
 Quando
 .I awk
