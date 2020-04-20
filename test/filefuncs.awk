@@ -6,7 +6,7 @@ BEGIN {
       exit 1
    }
 
-   if (stat(ARGV[0] "api.o", st) < 0) {
+   if (stat(ARGV[1], st) < 0) {
       printf "Error: stat(%s) failed with ERRNO %s\n", ARGV[0] "api.o", ERRNO
       exit 1
    }
