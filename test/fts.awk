@@ -12,6 +12,9 @@ BEGIN {
 		system("copy fts.awk [.d1]f2")
 		system("copy fts.awk [.d2]f1")
 		system("copy fts.awk [.d2]f2")
+	} else if (PROCINFO["platform"] == "windows") {
+		system("rd /s /q d1 d2 2>NUL")
+		system("md d1 d2 & rem.> d1\\f1 & rem.> d1\\f2 & rem.> d2\\f1 & rem.> d2\\f2")
 	} else {
 		system("rm -fr d1 d2")
 		system("mkdir d1 d2 ; touch d1/f1 d1/f2 d2/f1 d2/f2")
@@ -35,6 +38,8 @@ BEGIN {
 		system("delete [.d2]*.*;*")
 		system("delete d1.dir;*")
 		system("delete d2.dir;*")
+	} else if (PROCINFO["platform"] == "windows") {
+		system("rd /s /q d1 d2")
 	} else {
 		system("rm -fr d1 d2")
 	}
@@ -131,7 +136,10 @@ function process(pathname, data_array,
 		return
 	}
 
-	command = ("ls -f " pathname)
+	if (PROCINFO["platform"] == "windows")
+		command = ("(echo .) & (echo ..) & dir /B " pathname)
+	else
+		command = ("ls -f " pathname)
 	while ((command | getline direntry) > 0) {
 		if (direntry == "." || direntry == "..")
 			continue
