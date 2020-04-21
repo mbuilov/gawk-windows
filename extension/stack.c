@@ -23,68 +23,95 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "stack.h"
+#include "gawkapi.h"
 
 #define INITIAL_STACK	20
+#define MAX_DBL_SIZE	2000
 
 static size_t size;
 static void **stack;
-static int index = -1;
+static size_t filled;
 
 /* stack_empty --- return true if stack is empty */
 
 int
-stack_empty()
+stack_empty(void)
 {
-	return index < 0;
+	return filled == 0;
 }
 
 /* stack_top --- return top object on the stack */
 
 void *
-stack_top()
+stack_top(void)
 {
-	if (stack_empty() || stack == NULL)
+	if (stack_empty())
 		return NULL;
 
-	return stack[index];
+	return stack[filled - 1];
 }
 
 /* stack_pop --- pop top object and return it */
 
 void *
-stack_pop()
+stack_pop(void)
 {
-	if (stack_empty() || stack == NULL)
+	if (stack_empty())
 		return NULL;
 
-	return stack[index--];
+	return stack[--filled];
 }
 
 /* stack_push --- push an object onto the stack */
 
 int stack_push(void *object)
 {
+	size_t new_size;
 	void **new_stack;
-	size_t new_size = 2 * size;
 
 	if (stack == NULL) {
 		stack = (void **) malloc(INITIAL_STACK * sizeof(void *));
 		if (stack == NULL)
 			return 0;
 		size = INITIAL_STACK;
-	} else if (index + 1 >= size) {
-		if (new_size < size)
+	} else if (filled == size) {
+		if (size < MAX_DBL_SIZE)
+			new_size = size * 2;
+		else if (size > (size_t)-1/sizeof(void *) - MAX_DBL_SIZE)
 			return 0;
-		new_stack = realloc(stack, new_size * sizeof(void *));
+		else
+			new_size = size + MAX_DBL_SIZE;
+		new_stack = (void**) realloc(stack, new_size * sizeof(void *));
 		if (new_stack == NULL)
 			return 0;
 		size = new_size;
 		stack = new_stack;
 	}
 
-	stack[++index] = object;
+	stack[filled++] = object;
 	return 1;
+}
+
+/* stack_clear --- deallocate stack */
+
+void stack_clear(void)
+{
+	if (stack != NULL) {
+		free(stack);
+		stack = NULL;
+		filled = 0;
+		size = 0;
+	}
 }

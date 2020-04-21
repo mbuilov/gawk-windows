@@ -23,9 +23,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-extern int stack_empty();	/* return true if stack is empty */
-extern void *stack_top();	/* return top object on the stack */
-extern void *stack_pop();	/* pop top object and return it */
+extern int stack_empty(void);	/* return true if stack is empty */
+extern void *stack_top(void);	/* return top object on the stack */
+extern void *stack_pop(void);	/* pop top object and return it */
 extern int stack_push(void *);	/* push an object onto the stack,
 				 * return 0 if failed, 1 if success 
 				 */
+extern void stack_clear(void);	/* deallocate stack */
