@@ -31,6 +31,12 @@
  *	@(#)fts.h	8.3 (Berkeley) 8/14/94
  */
 
+/*
+ * Michael M. Builov
+ * mbuilov@gmail.com
+ * Ported to _MSC_VER 4/2020
+ */
+
 #ifndef	_FTS_H_
 #define	_FTS_H_
 
@@ -50,13 +56,37 @@
 #define MAXPATHLEN FILENAME_MAX
 #endif
 
+#ifndef _MSC_VER
+
+typedef int		fts_dir_fd_t;
+typedef dev_t		fts_dev_t;
+typedef ino_t		fts_ino_t;
+typedef struct stat	fts_stat_t;
+
+#else /* _MSC_VER */
+
+struct dir_fd_;
+typedef struct dir_fd_	*fts_dir_fd_t;
+typedef xdev_t		fts_dev_t;
+typedef xino_t		fts_ino_t;
+typedef struct xstat	fts_stat_t;
+#define FTS_DIRNLINK_SUPPORTED 0
+
+#endif /* _MSC_VER */
+
+/* Non-zero if st_nlink field of stat(2) result is the number of
+   sub-directories (including "." and "..") for a stat'ed directory.  */
+#ifndef FTS_DIRNLINK_SUPPORTED
+#define FTS_DIRNLINK_SUPPORTED 1
+#endif
+
 typedef struct {
 	struct _ftsent *fts_cur;	/* current node */
 	struct _ftsent *fts_child;	/* linked list of children */
 	struct _ftsent **fts_array;	/* sort array */
-	dev_t fts_dev;			/* starting device # */
 	char *fts_path;			/* path for this descent */
-	int fts_rfd;			/* fd for root */
+	fts_dir_fd_t fts_rfd;		/* fd for root */
+	fts_dev_t fts_dev;		/* starting device # */
 	unsigned int fts_pathlen;	/* sizeof(path) */
 	unsigned int fts_nitems;	/* elements in the sort array */
 	int (*fts_compar)		/* compare function */
@@ -81,22 +111,25 @@ typedef struct _ftsent {
 	struct _ftsent *fts_cycle;	/* cycle node */
 	struct _ftsent *fts_parent;	/* parent directory */
 	struct _ftsent *fts_link;	/* next file in directory */
-	long long fts_number;		/* local numeric value */
 	void *fts_pointer;	        /* local address value */
 	char *fts_accpath;		/* access path */
 	char *fts_path;			/* root path */
+	long long fts_number;		/* local numeric value */
+	fts_dir_fd_t fts_symfd;		/* fd for symlink */
 	int fts_errno;			/* errno for this node */
-	int fts_symfd;			/* fd for symlink */
 	unsigned int fts_pathlen;	/* strlen(fts_path) */
 	unsigned int fts_namelen;	/* strlen(fts_name) */
-
-	ino_t fts_ino;		/* inode */
-	dev_t fts_dev;		/* device */
-	unsigned int fts_nlink;	/* link count */
 
 #define	FTS_ROOTPARENTLEVEL	-1
 #define	FTS_ROOTLEVEL		 0
 	int fts_level;		/* depth (-1 to N) */
+
+	/* these fields are for FTS_D/FTS_DC only */
+#if defined(FTS_DIRNLINK_SUPPORTED) && FTS_DIRNLINK_SUPPORTED
+	unsigned int fts_nlink;	/* link count */
+#endif
+	fts_ino_t fts_ino;		/* inode */
+	fts_dev_t fts_dev;		/* device */
 
 #define	FTS_D		 1		/* preorder directory */
 #define	FTS_DC		 2		/* directory that causes cycles */
@@ -125,7 +158,7 @@ typedef struct _ftsent {
 #define	FTS_SKIP	 4		/* discard node */
 	unsigned short fts_instr;	/* fts_set() instructions */
 
-	struct stat *fts_statp;	/* stat(2) information */
+	fts_stat_t *fts_statp;		/* stat(2) information */
 	char fts_name[1];		/* file name */
 } FTSENT;
 
