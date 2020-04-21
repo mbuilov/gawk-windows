@@ -1822,12 +1822,12 @@ devopen_simple(const char *name, const char *mode, bool try_real_open)
 		else if (do_traditional)
 			goto done;
 		else if (strncmp(cp, "fd/", 3) == 0) {
-			struct stat sbuf;
+			gawk_stat_t sbuf;
 
 			cp += 3;
 			openfd = (fd_t) strtoul(cp, & ptr, 10);
 			if (openfd <= INVALID_HANDLE || ptr == cp
-			    || fstat(openfd, & sbuf) < 0)
+			    || gawk_fstat(openfd, & sbuf) < 0)
 				openfd = INVALID_HANDLE;
 		}
 		/* do not set close-on-exec for inherited fd's */
@@ -1945,10 +1945,10 @@ strictopen:
 	if (openfd == INVALID_HANDLE && errno == EACCES) {
 		/* On OS/2 and Windows directory access via open() is
 		   not permitted.  */
-		struct stat buf;
+		gawk_stat_t buf;
 
 		if (! inetfile(name, strlen(name), NULL)
-		    && stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
+		    && gawk_stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
 			errno = EISDIR;
 	}
 #endif
@@ -2221,7 +2221,7 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 		char c;
 		fd_t master, dup_master;
 		pid_t pid;
-		struct stat statb;
+		gawk_stat_t statb;
 		/* Use array of chars to avoid ASCII / EBCDIC issues */
 		static const char pty_chars[] = "pqrstuvwxyzabcdefghijklmno";
 
@@ -2229,13 +2229,13 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 			unsigned i;
 			initialized = true;
 #if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
-			have_dev_ptmx = (stat("/dev/ptmx", & statb) >= 0);
+			have_dev_ptmx = (gawk_stat("/dev/ptmx", & statb) >= 0);
 #endif
 			i = 0;
 			do {
 				c = pty_chars[i++];
 				sprintf(slavenam, "/dev/pty%c0", c);
-				if (stat(slavenam, & statb) >= 0) {
+				if (gawk_stat(slavenam, & statb) >= 0) {
 					first_pty_letter = c;
 					break;
 				}
@@ -2280,7 +2280,7 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 
 				for (i = 0; i < 16; i++) {
 					sprintf(slavenam, "/dev/pty%c%x", c, i);
-					if (stat(slavenam, & statb) < 0) {
+					if (gawk_stat(slavenam, & statb) < 0) {
 						no_ptys = true;	/* bypass all this next time */
 						goto use_pipes;
 					}
@@ -3041,7 +3041,7 @@ init_awkpath(path_info *pi)
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */
 
 static char *
-do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
+do_find_source(const char *src, gawk_stat_t *stb, int *errcode, path_info *pi)
 {
 	char *path;
 	unsigned i;
@@ -3052,7 +3052,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 	if (ispath(src)) {
 		emalloc(path, char *, strlen(src) + 1, "do_find_source");
 		strcpy(path, src);
-		if (stat(path, stb) == 0)
+		if (gawk_stat(path, stb) == 0)
 			return path;
 		*errcode = errno;
 		efree(path);
@@ -3069,7 +3069,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 		else
 			strcpy(path, pi->awkpath[i]);
 		strcat(path, src);
-		if (stat(path, stb) == 0)
+		if (gawk_stat(path, stb) == 0)
 			return path;
 	}
 
@@ -3082,7 +3082,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 /* find_source --- find source file with default file extension handling */
 
 char *
-find_source(const char *src, struct stat *stb, int *errcode, bool is_extlib)
+find_source(const char *src, gawk_stat_t *stb, int *errcode, bool is_extlib)
 {
 	char *path;
 	path_info *pi = (is_extlib ? & pi_awklibpath : & pi_awkpath);
@@ -3442,7 +3442,7 @@ iop_alloc(fd_t fd, const char *name, int errno_val)
 	iop->errcode = errno_val;
 
 	if (fd != INVALID_HANDLE)
-		fstat(fd, & iop->publ.sbuf);
+		gawk_fstat(fd, & iop->publ.sbuf);
 #if defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
 	else if (errno_val == EISDIR) {
 		iop->publ.sbuf.st_mode = (_S_IFDIR | _S_IRWXU);
@@ -4493,18 +4493,26 @@ typedef long suseconds_t;
  * read_wrap --- wrapper around OS-specific read() function.
  */
 
+#ifdef _MSC_VER
 ssize_t
 read_wrap(fd_t fd, void *buf, size_t size)
 {
-#ifndef _MSC_VER
-	return read(fd, buf, size);
-#else /* _MSC_VER */
-	/* _read() cannot read more than INT_MAX bytes.  */
-	unsigned to_read =
-		size <= INT_MAX ? (unsigned) size : INT_MAX;
-	return _read(fd, buf, to_read);
-#endif /* _MSC_VER */
+	ssize_t ret = 0;
+	while (size > 0) {
+		/* Cannot read more than INT_MAX at once.  */
+		int n = size > INT_MAX ? INT_MAX : (int) size;
+		int x = _read(fd, buf, (unsigned) n);
+		if (x < 0)
+			return -1;
+		ret += x;
+		if (x < n)
+			break;
+		buf = (char*) buf + n;
+		size -= n;
+	}
+	return ret;
 }
+#endif /* _MSC_VER */
 
 /*
  * Dummy pass through functions for default output.
