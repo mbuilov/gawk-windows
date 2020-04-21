@@ -84,7 +84,7 @@ static awk_bool_t (*init_func)(void) = init_readfile;
 /* read_file_to_buffer --- handle the mechanics of reading the file */
 
 static char *
-read_file_to_buffer(fd_t fd, const struct stat *sbuf, size_t limit)
+read_file_to_buffer(fd_t fd, const gawk_stat_t *sbuf, size_t limit)
 {
 	char *text;
 	size_t size;
@@ -120,7 +120,7 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
 	int ret;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	char *text;
 	fd_t fd;
 
