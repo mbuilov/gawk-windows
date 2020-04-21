@@ -31,13 +31,15 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
+
 #include <math.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include "gawkapi.h"
 
 #ifdef HAVE_MPFR
 #include <gmp.h>
@@ -48,16 +50,24 @@
 #endif
 #endif
 
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
+#include "gawkapi.h"
+
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
+
+GAWK_PLUGIN_GPL_COMPATIBLE
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "intdiv extension: version 1.0";
 static awk_bool_t (*init_func)(void) = NULL;
-
-int plugin_is_GPL_compatible;
 
 /* double_to_int --- get the integer part of a double */
 
@@ -134,6 +144,8 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t nv, dv, array_param;
 	awk_array_t array;
+
+	(void) nargs, (void) unused;
 
 	if (! get_argument(0, AWK_NUMBER, & nv)) {
 		warning(ext_id, _("intdiv: first argument must be numeric"));
