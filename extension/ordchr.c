@@ -38,10 +38,19 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "gawkapi.h"
 
@@ -49,12 +58,12 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "ordchr extension: version 1.0";
 static awk_bool_t (*init_func)(void) = NULL;
-
-int plugin_is_GPL_compatible;
 
 /*  do_ord --- return numeric value of first char of string */
 
@@ -63,6 +72,8 @@ do_ord(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t str;
 	double ret = -1;
+
+	(void) nargs, (void) unused;
 
 	assert(result != NULL);
 
@@ -85,15 +96,17 @@ do_chr(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	double val = 0.0;
 	char str[2];
 
+	(void) nargs, (void) unused;
+
 	str[0] = str[1] = '\0';
 
 	assert(result != NULL);
 
 	if (get_argument(0, AWK_NUMBER, & num)) {
 		val = num.num_value;
-		ret = val;	/* convert to int */
+		ret = (unsigned int) val;	/* convert to int */
 		ret &= 0xff;
-		str[0] = ret;
+		str[0] = (char) ret;
 		str[1] = '\0';
 	} else if (do_lint)
 		lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
