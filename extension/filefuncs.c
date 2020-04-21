@@ -10,6 +10,12 @@
  */
 
 /*
+ * Michael M. Builov
+ * mbuilov@gmail.com
+ * Ported to _MSC_VER 4/2020
+ */
+
+/*
  * Copyright (C) 2001, 2004, 2005, 2010-2019
  * the Free Software Foundation, Inc.
  *
@@ -70,24 +76,42 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 
-#if HAVE_SYS_SYSMACROS_H
+#ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
-#elif HAVE_SYS_MKDEV_H
+#elif defined HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif /* HAVE_SYS_MKDEV_H */
 
 #include <sys/types.h>
-
 #include <sys/stat.h>
 
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
 #include <sys/statvfs.h>
+#endif
+
+#if defined(__MINGW32__) || defined(_MSC_VER)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#ifdef _MSC_VER
+#include <direct.h> /* chdir */
+#include "xstat.h"
+#endif
+
+/* Include <locale.h> before "gawkapi.h" redefines setlocale().
+  "gettext.h" will include <locale.h> anyway */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
 #endif
 
 #include "gawkapi.h"
@@ -99,13 +123,49 @@
 #include "gawkfts.h"
 #include "stack.h"
 
+#ifdef _MSC_VER
+#include "wreadlink.h"
+#endif
+
+#ifdef _MSC_VER
+#define BAD_FILE_HANDLE		INVALID_HANDLE_VALUE
+#else
+#define BAD_FILE_HANDLE		NULL
+#endif
+
+#ifndef _MSC_VER
+#define xstat(path, buf)	stat(path, buf)
+#define xlstat(path, buf)	lstat(path, buf)
+#endif
+
 #ifndef S_IFLNK
-#define lstat stat
+#undef xlstat
+#define xlstat xstat
 #define S_ISLNK(s) 0
 #define readlink(f,b,bs) (-1)
 #endif
 
-#ifdef __MINGW32__
+#ifdef _MSC_VER
+# ifndef S_IRUSR
+#  define S_IRUSR _S_IREAD
+# endif
+# ifndef S_IWUSR
+#  define S_IWUSR _S_IWRITE
+# endif
+# ifndef S_IXUSR
+#  define S_IXUSR _S_IEXEC
+# endif
+# ifndef S_IFIFO
+#  define S_IFIFO _S_IFIFO
+# endif
+# ifndef S_ISCHR
+#  define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
+# endif
+# define S_ISBLK(m) 0
+# define st_rdev st_dev
+#endif
+
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define S_IRGRP S_IRUSR
 #define S_IWGRP S_IWUSR
 #define S_IXGRP S_IXUSR
@@ -117,22 +177,24 @@
 #define S_ISVTX 0
 #define major(s) (s)
 #define minor(s) (0)
+#endif
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
+#ifdef __MINGW32__
 /* get_inode --- get the inode of a file */
 static long long
 get_inode(const char *fname)
 {
 	HANDLE fh;
+	BOOL ok;
 	BY_HANDLE_FILE_INFORMATION info;
 
 	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
 			FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	if (fh == INVALID_HANDLE_VALUE)
 		return 0;
-	if (GetFileInformationByHandle(fh, &info)) {
+	ok = GetFileInformationByHandle(fh, &info);
+	CloseHandle(fh);
+	if (ok) {
 		long long inode = info.nFileIndexHigh;
 
 		inode <<= 32;
@@ -143,13 +205,13 @@ get_inode(const char *fname)
 }
 #endif
 
+GAWK_PLUGIN_GPL_COMPATIBLE
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static awk_bool_t init_filefuncs(void);
 static awk_bool_t (*init_func)(void) = init_filefuncs;
 static const char *ext_version = "filefuncs extension: version 1.0";
-
-int plugin_is_GPL_compatible;
 
 /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
@@ -158,6 +220,8 @@ do_chdir(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t newdir;
 	int ret = -1;
+
+	(void) nargs, (void) unused;
 
 	assert(result != NULL);
 
@@ -172,16 +236,17 @@ do_chdir(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 /* format_mode --- turn a stat mode field into something readable */
 
-static char *
-format_mode(unsigned long fmode)
+static void
+format_mode(unsigned long fmode, char outbuf[12])
 {
-	static char outbuf[12];
-	static struct ftype_map {
+	static const struct ftype_map {
 		unsigned int mask;
 		int charval;
 	} ftype_map[] = {
 		{ S_IFREG, '-' },	/* redundant */
+#ifdef S_IFBLK
 		{ S_IFBLK, 'b' },
+#endif
 		{ S_IFCHR, 'c' },
 		{ S_IFDIR, 'd' },
 #ifdef S_IFSOCK
@@ -197,7 +262,7 @@ format_mode(unsigned long fmode)
 		{ S_IFDOOR, 'D' },
 #endif /* S_IFDOOR */
 	};
-	static struct mode_map {
+	static const struct mode_map {
 		unsigned int mask;
 		int rep;
 	} map[] = {
@@ -205,7 +270,7 @@ format_mode(unsigned long fmode)
 		{ S_IRGRP, 'r' }, { S_IWGRP, 'w' }, { S_IXGRP, 'x' },
 		{ S_IROTH, 'r' }, { S_IWOTH, 'w' }, { S_IXOTH, 'x' },
 	};
-	static struct setuid_map {
+	static const struct setuid_map {
 		unsigned int mask;
 		int index;
 		int small_rep;
@@ -215,7 +280,7 @@ format_mode(unsigned long fmode)
 		{ S_ISGID, 6, 's', 'l' }, /* setgid without execute == locking */
 		{ S_ISVTX, 9, 't', 'T' }, /* the so-called "sticky" bit */
 	};
-	int i, j, k;
+	unsigned i, j, k;
 
 	strcpy(outbuf, "----------");
 
@@ -223,7 +288,7 @@ format_mode(unsigned long fmode)
 	i = 0;
 	for (j = 0, k = sizeof(ftype_map)/sizeof(ftype_map[0]); j < k; j++) {
 		if ((fmode & S_IFMT) == ftype_map[j].mask) {
-			outbuf[i] = ftype_map[j].charval;
+			outbuf[i] = (char) ftype_map[j].charval;
 			break;
 		}
 	}
@@ -231,8 +296,8 @@ format_mode(unsigned long fmode)
 	/* now the permissions */
 	for (j = 0, k = sizeof(map)/sizeof(map[0]); j < k; j++) {
 		i++;
-		if ((fmode & map[j].mask) != 0)
-			outbuf[i] = map[j].rep;
+		if (fmode & map[j].mask)
+			outbuf[i] = (char) map[j].rep;
 	}
 
 	i++;
@@ -242,13 +307,11 @@ format_mode(unsigned long fmode)
 	for (j = 0, k = sizeof(setuid_map)/sizeof(setuid_map[0]); j < k; j++) {
 		if (fmode & setuid_map[j].mask) {
 			if (outbuf[setuid_map[j].index] == 'x')
-				outbuf[setuid_map[j].index] = setuid_map[j].small_rep;
+				outbuf[setuid_map[j].index] = (char) setuid_map[j].small_rep;
 			else
-				outbuf[setuid_map[j].index] = setuid_map[j].big_rep;
+				outbuf[setuid_map[j].index] = (char) setuid_map[j].big_rep;
 		}
 	}
-
-	return outbuf;
 }
 
 /* read_symlink --- read a symbolic link into an allocated buffer.
@@ -267,8 +330,19 @@ format_mode(unsigned long fmode)
 #define MAXSIZE (SIZE_MAX < SSIZE_MAX ? SIZE_MAX : SSIZE_MAX)
 
 static char *
-read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
+read_symlink(void *h, const char *fname, size_t bufsize, ssize_t *linksize)
 {
+#ifdef _MSC_VER
+	(void) fname;
+# define READLINK(h, fname, buf, bufsize) \
+	h != INVALID_HANDLE_VALUE \
+	? readlinkfd(h, buf, bufsize) \
+	: readlink(fname, buf, bufsize)
+#else
+	(void) h;
+# define READLINK(h, fname, buf, bufsize) readlink(fname, buf, bufsize)
+#endif
+
 	if (bufsize)
 		bufsize += 2;
 	else
@@ -278,16 +352,17 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 	if (bufsize > MAXSIZE || bufsize < 2)
 		bufsize = MAXSIZE;
 
-	while (1) {
-		char *buf;
+	for (;;) {
+		char *buf = (char*) malloc(bufsize);
+		if (buf == NULL)
+			return NULL;
 
-		emalloc(buf, char *, bufsize, "read_symlink");
-		if ((*linksize = readlink(fname, buf, bufsize)) < 0) {
+		if ((*linksize = READLINK(h, fname, buf, bufsize)) < 0) {
 			/* On AIX 5L v5.3 and HP-UX 11i v2 04/09, readlink
 			   returns -1 with errno == ERANGE if the buffer is
 			   too small.  */
 			if (errno != ERANGE) {
-				gawk_free(buf);
+				free(buf);
 				return NULL;
 			}
 		}
@@ -296,14 +371,15 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 			buf[*linksize] = '\0';
 			return buf;
 		}
-		gawk_free(buf);
+		free(buf);
 		if (bufsize <= MAXSIZE/2)
 			bufsize *= 2;
 		else if (bufsize < MAXSIZE)
 			bufsize = MAXSIZE;
 		else
-			return NULL;
+			break;
 	}
+#undef READLINK
 	return NULL;
 }
 
@@ -311,7 +387,7 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 /* device_blocksize --- try to figure out units of st_blocks */
 
 static int
-device_blocksize()
+device_blocksize(void)
 {
 	/* some of this derived from GNULIB stat-size.h */
 #if defined(DEV_BSIZE)
@@ -325,8 +401,14 @@ device_blocksize()
 #elif defined _AIX && defined _I386
 	/* AIX PS/2 counts st_blocks in 4K units.  */
 	return 4 * 1024;
-#elif defined __MINGW32__
-	return 1024;
+#elif defined __MINGW32__ || defined _MSC_VER
+	/*
+	 * DOS doesn't have the file system block size in the
+	 * stat structure. So we have to make some sort of reasonable
+	 * guess. We use stdio's BUFSIZ, since that is what it was
+	 * meant for in the first place.
+	 */
+	return BUFSIZ;
 #else
 	return 512;
 #endif
@@ -358,33 +440,37 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 /* fill_stat_array --- do the work to fill an array with stat info */
 
 static int
-fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
+fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *sbuf)
 {
-	char *pmode;	/* printable mode */
+	char pmode[12];	/* printable mode */
 	const char *type = "unknown";
+	unsigned int type_len = 7;
 	awk_value_t tmp;
-	static struct ftype_map {
+	static const struct ftype_map {
 		unsigned int mask;
+		unsigned int len;
 		const char *type;
 	} ftype_map[] = {
-		{ S_IFREG, "file" },
-		{ S_IFBLK, "blockdev" },
-		{ S_IFCHR, "chardev" },
-		{ S_IFDIR, "directory" },
+		{ S_IFREG, 4, "file" },
+#ifdef S_IFBLK
+		{ S_IFBLK, 8, "blockdev" },
+#endif
+		{ S_IFCHR, 7, "chardev" },
+		{ S_IFDIR, 9, "directory" },
 #ifdef S_IFSOCK
-		{ S_IFSOCK, "socket" },
+		{ S_IFSOCK, 6, "socket" },
 #endif
 #ifdef S_IFIFO
-		{ S_IFIFO, "fifo" },
+		{ S_IFIFO, 4, "fifo" },
 #endif
 #ifdef S_IFLNK
-		{ S_IFLNK, "symlink" },
+		{ S_IFLNK, 7, "symlink" },
 #endif
 #ifdef S_IFDOOR	/* Solaris weirdness */
-		{ S_IFDOOR, "door" },
+		{ S_IFDOOR, 4, "door" },
 #endif /* S_IFDOOR */
 	};
-	int j, k;
+	unsigned j, k;
 
 	/* empty out the array */
 	clear_array(array);
@@ -395,21 +481,27 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 #ifdef __MINGW32__
 	array_set_numeric(array, "ino", (double)get_inode (name));
 #else
-	array_set_numeric(array, "ino", sbuf->st_ino);
+	array_set_numeric(array, "ino", (double)sbuf->st_ino);
 #endif
 	array_set_numeric(array, "mode", sbuf->st_mode);
 	array_set_numeric(array, "nlink", sbuf->st_nlink);
+#ifdef _MSC_VER
+	array_set_numeric(array, "uid", 0);
+	array_set_numeric(array, "gid", 0);
+#else
 	array_set_numeric(array, "uid", sbuf->st_uid);
 	array_set_numeric(array, "gid", sbuf->st_gid);
-	array_set_numeric(array, "size", sbuf->st_size);
-#ifdef __MINGW32__
-	array_set_numeric(array, "blocks", (sbuf->st_size + 4095) / 4096);
+#endif
+	array_set_numeric(array, "size", (double)sbuf->st_size);
+#if defined(__MINGW32__) || defined(_MSC_VER)
+	array_set_numeric(array, "blocks", (double)((sbuf->st_size +
+		device_blocksize() - 1) / device_blocksize()));
 #else
 	array_set_numeric(array, "blocks", sbuf->st_blocks);
 #endif
-	array_set_numeric(array, "atime", sbuf->st_atime);
-	array_set_numeric(array, "mtime", sbuf->st_mtime);
-	array_set_numeric(array, "ctime", sbuf->st_ctime);
+	array_set_numeric(array, "atime", (double)sbuf->st_atime);
+	array_set_numeric(array, "mtime", (double)sbuf->st_mtime);
+	array_set_numeric(array, "ctime", (double)sbuf->st_ctime);
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) {
@@ -420,14 +512,14 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
-#elif defined(__MINGW32__)
+#elif defined(__MINGW32__) || defined(_MSC_VER)
 	array_set_numeric(array, "blksize", 4096);
 #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
 	/* the size of a block for st_blocks */
 	array_set_numeric(array, "devbsize", device_blocksize());
 
-	pmode = format_mode(sbuf->st_mode);
+	format_mode(sbuf->st_mode, pmode);
 	array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));
 
 	/* for symbolic links, add a linkval field */
@@ -435,25 +527,70 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 		char *buf;
 		ssize_t linksize;
 
-		if ((buf = read_symlink(name, sbuf->st_size,
-					& linksize)) != NULL)
-			array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
+		if ((buf = read_symlink(h, name, sbuf->st_size, & linksize)) != NULL)
+			array_set(array, "linkval",
+				make_malloced_string(buf, (size_t) linksize, & tmp));
 		else
 			warning(ext_id, _("stat: unable to read symbolic link `%s'"), name);
 	}
 
 	/* add a type field */
-	type = "unknown";	/* shouldn't happen */
 	for (j = 0, k = sizeof(ftype_map)/sizeof(ftype_map[0]); j < k; j++) {
-		if ((sbuf->st_mode & S_IFMT) == ftype_map[j].mask) {
+		if ((unsigned) (sbuf->st_mode & S_IFMT) == ftype_map[j].mask) {
 			type = ftype_map[j].type;
+			type_len = ftype_map[j].len;
 			break;
 		}
 	}
 
-	array_set(array, "type", make_const_string(type, strlen(type), & tmp));
+	array_set(array, "type", make_const_string(type, type_len, & tmp));
 
 	return 0;
+}
+
+/* stat_and_fill_array --- stat a file and fill an array with stat info */
+
+static int
+stat_and_fill_array(const char *name, awk_array_t array, int do_lstat)
+{
+	void *h = NULL;
+	int ret = -1;
+	fts_stat_t sbuf;
+
+#ifdef _MSC_VER
+	wchar_t buf[MAX_PATH];
+	wchar_t *wp = xpathwc(name, buf, sizeof(buf)/sizeof(buf[0]));
+
+	if (wp != NULL) {
+		h = xstat_open(wp, do_lstat);
+		if (h == INVALID_HANDLE_VALUE) {
+			const DWORD open_err = GetLastError();
+			ret = xstat_root(wp, & sbuf);
+			if (ret && errno == ENOENT) {
+				if (ERROR_ACCESS_DENIED == open_err)
+					errno = EACCES;
+			}
+		}
+		else
+			ret = xfstat(h, wp, & sbuf);
+
+		if (wp != buf)
+			free(wp);
+	}
+	else
+		h = INVALID_HANDLE_VALUE;
+#else
+	ret = do_lstat ? lstat(name, & sbuf) : stat(name, & sbuf);
+#endif
+
+	if (ret == 0)
+		ret = fill_stat_array(h, name, array, & sbuf);
+
+#ifdef _MSC_VER
+	if (h != INVALID_HANDLE_VALUE)
+		CloseHandle(h);
+#endif
+	return ret;
 }
 
 /* do_stat --- provide a stat() function for gawk */
@@ -462,11 +599,11 @@ static awk_value_t *
 do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t file_param, array_param;
-	char *name;
+	const char *name;
 	awk_array_t array;
-	int ret;
-	struct stat sbuf;
-	int (*statfunc)(const char *path, struct stat *sbuf) = lstat;	/* default */
+	int ret, do_lstat = 1;	/* default */
+
+	(void) unused;
 
 	assert(result != NULL);
 
@@ -477,9 +614,8 @@ do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		return make_number(-1, result);
 	}
 
-	if (nargs == 3) {
-		statfunc = stat;
-	}
+	if (nargs == 3)
+		do_lstat = 0;
 
 	name = file_param.str_value.str;
 	array = array_param.array_cookie;
@@ -488,13 +624,11 @@ do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	clear_array(array);
 
 	/* stat the file; if error, set ERRNO and return */
-	ret = statfunc(name, & sbuf);
+	ret = stat_and_fill_array(name, array, do_lstat);
 	if (ret < 0) {
 		update_ERRNO_int(errno);
 		return make_number(ret, result);
 	}
-
-	ret = fill_stat_array(name, array, & sbuf);
 
 	return make_number(ret, result);
 }
@@ -559,12 +693,14 @@ static awk_bool_t
 init_filefuncs(void)
 {
 	int errors = 0;
-	int i;
+	unsigned int i;
 	awk_value_t value;
 
 #ifndef __MINGW32__
 	/* at least right now, only FTS needs initializing */
-	static struct flagtab {
+
+#define FTS_NON_RECURSIVE 0x8000 /* Don't step into directories.  */
+	static const struct flagtab {
 		const char *name;
 		int value;
 	} opentab[] = {
@@ -572,10 +708,11 @@ init_filefuncs(void)
 		ENTRY(FTS_COMFOLLOW),
 		ENTRY(FTS_LOGICAL),
 		ENTRY(FTS_NOCHDIR),
+		ENTRY(FTS_NOSTAT),
 		ENTRY(FTS_PHYSICAL),
 		ENTRY(FTS_SEEDOT),
 		ENTRY(FTS_XDEV),
-		ENTRY(FTS_SKIP),
+		{"FTS_SKIP", FTS_NON_RECURSIVE},
 		{ NULL, 0 }
 	};
 
@@ -587,8 +724,9 @@ init_filefuncs(void)
 			errors++;
 		}
 	}
-#endif
-	return errors == 0;
+
+#endif /* !__MINGW32__ */
+	return (awk_bool_t) (errors == 0);
 }
 
 #ifdef __MINGW32__
@@ -615,7 +753,7 @@ static int fts_errors = 0;
 /* fill_stat_element --- fill in stat element of array */
 
 static void
-fill_stat_element(awk_array_t element_array, const char *name, struct stat *sbuf)
+fill_stat_element(awk_array_t element_array, const char *name, const fts_stat_t *sbuf)
 {
 	awk_value_t index, value;
 	awk_array_t stat_array;
@@ -626,7 +764,7 @@ fill_stat_element(awk_array_t element_array, const char *name, struct stat *sbuf
 		fts_errors++;
 		return;
 	}
-	fill_stat_array(name, stat_array, sbuf);
+	fill_stat_array(BAD_FILE_HANDLE, name, stat_array, sbuf);
 	(void) make_const_string("stat", 4, & index);
 	value.val_type = AWK_ARRAY;
 	value.array_cookie = stat_array;
@@ -676,7 +814,7 @@ fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, awk
 	fill_path_element(element_array, fentry->fts_path);
 
 	/* stat info */
-	if (! bad_ret) {
+	if (! bad_ret && fentry->fts_statp != NULL) {
 		fill_stat_element(element_array,
 				fentry->fts_name,
 				fentry->fts_statp);
@@ -691,7 +829,7 @@ fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, awk
 /* process --- process the hierarchy */
 
 static void
-process(FTS *hierarchy, awk_array_t destarray, int seedot, int skipset)
+process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 {
 	FTSENT *fentry;
 	awk_value_t index, value;
@@ -707,7 +845,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int skipset)
 		case FTS_D:
 			/* directory */
 
-			if (skipset && fentry->fts_level == 0)
+			if (nonrecursive && fentry->fts_level == 0)
 				fts_set(hierarchy, fentry, FTS_SKIP);
 
 			/* create array to hold entries */
@@ -731,7 +869,8 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int skipset)
 			newdir_array = value.array_cookie;
 
 			/* push current directory */
-			stack_push(destarray);
+			if (! stack_push(destarray))
+				fatal(ext_id, _("fts-process: could not push an entry"));
 
 			/* new directory becomes current */
 			destarray = newdir_array;
@@ -745,15 +884,16 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int skipset)
 			bad_ret = awk_true;
 			/* fall through */
 
-		case FTS_NSOK:
-		case FTS_SL:
-		case FTS_SLNONE:
-		case FTS_F:
 		case FTS_DOT:
 			/* if see dot, skip "." */
 			if (seedot && strcmp(fentry->fts_name, ".") == 0)
 				break;
+			/* fall through */
 
+		case FTS_NSOK:
+		case FTS_SL:
+		case FTS_SLNONE:
+		case FTS_F:
 			/*
 			 * File case.
 			 * destarray is the directory we're reading.
@@ -832,7 +972,9 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	int ret = -1;
 	static const int mask = (
 		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_PHYSICAL
-		| FTS_SEEDOT | FTS_XDEV | FTS_SKIP);
+		| FTS_SEEDOT | FTS_XDEV | FTS_NON_RECURSIVE);
+
+	(void) unused;
 
 	assert(result != NULL);
 	fts_errors = 0;		/* ensure a fresh start */
@@ -867,7 +1009,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	/* check the flags first, before the array flattening */
 
 	/* get flags */
-	flags = flagval.num_value;
+	flags = (int) flagval.num_value;
 
 	/* enforce physical or logical but not both, and not no_stat */
 	if ((flags & (FTS_PHYSICAL|FTS_LOGICAL)) == 0
@@ -875,11 +1017,13 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
+#if 0
 	if ((flags & FTS_NOSTAT) != 0) {
 		flags &= ~FTS_NOSTAT;
 		if (do_lint)
 			lintwarn(ext_id, _("fts: ignoring sneaky FTS_NOSTAT flag. nyah, nyah, nyah."));
 	}
+#endif
 	flags &= mask;	/* turn off anything else */
 
 	/* make pathvector */
@@ -900,7 +1044,9 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* let's do it! */
 	if ((hierarchy = fts_open(pathvector, flags, NULL)) != NULL) {
-		process(hierarchy, dest.array_cookie, (flags & FTS_SEEDOT) != 0, (flags & FTS_SKIP) != 0);
+		process(hierarchy, dest.array_cookie,
+			(flags & FTS_SEEDOT) != 0,
+			(flags & FTS_NON_RECURSIVE) != 0);
 		fts_close(hierarchy);
 
 		if (fts_errors == 0)
@@ -910,7 +1056,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 out:
 	if (pathvector != NULL)
-		gawk_free(pathvector);
+		free(pathvector);
 	if (path_array != NULL)
 		(void) release_flattened_array(pathlist.array_cookie, path_array);
 
