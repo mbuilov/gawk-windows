@@ -321,7 +321,7 @@
 #undef HAVE_STRUCT_PASSWD_PW_PASSWD
 
 /* Define to 1 if `st_blksize' is a member of `struct stat'. */
-#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(__DJGPP__)
 #define HAVE_STRUCT_STAT_ST_BLKSIZE 1
 #endif
 
