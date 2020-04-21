@@ -11,7 +11,7 @@
  *
  * Michael M. Builov: reworked, ported to _MSC_VER.
  * mbuilov@gmail.com
- * Reworked 3/2020
+ * Reworked 4/2020
  */
 
 /*
@@ -111,15 +111,63 @@ typedef struct open_directory {
 	union u_field_info u;
 #endif
 #ifdef _MSC_VER
-	HANDLE ffd_handle;
+	/* HANDLE ffd_handle        */
+	/* wchar_t dirname[dir_len] */
+	/* ...optional padding...   */
 	unsigned dir_len;
-	wchar_t dirname[1];
+	unsigned space;
+	WIN32_FIND_DATAW ffd;
 #else
 	DIR *dp;
-	char buf[1];
 #endif
+	char buf[1];
 } open_directory_t;
 #define fw u.fw
+
+/* Get head size of struct open_directory.  */
+static size_t
+dir_head_size(void)
+{
+#ifdef READDIR_TEST
+# define FIELDS_ADD_SIZE sizeof(((struct open_directory*)NULL)->u)
+#else
+# define FIELDS_ADD_SIZE 0
+#endif
+
+#ifdef _MSC_VER
+# define FIELDS_SIZE \
+	FIELDS_ADD_SIZE + \
+	sizeof(((struct open_directory*)NULL)->dir_len) +    \
+	sizeof(((struct open_directory*)NULL)->space) +      \
+	sizeof(((struct open_directory*)NULL)->ffd)
+#else
+# define FIELDS_SIZE \
+	FIELDS_ADD_SIZE + \
+	sizeof(((struct open_directory*)NULL)->dp)
+#endif
+
+	/* Ensure that there is no padding between fields.  */
+	(void) sizeof(int[1-2*!(
+		(char*)&((struct open_directory*)NULL)->buf - (char*)NULL
+		== FIELDS_SIZE)]);
+
+	return FIELDS_SIZE;
+
+#undef FIELDS_SIZE
+#undef FIELDS_ADD_SIZE
+}
+
+#ifdef _MSC_VER
+/* Get size of memory before the head of struct open_directory.  */
+static size_t
+head_offset(size_t dir_len)
+{
+	/* Align offset on size of pointer.  */
+	size_t offset = sizeof(HANDLE) + dir_len*sizeof(wchar_t);
+	offset = (offset + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
+	return offset;
+}
+#endif /* _MSC_VER */
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
 static unsigned long long
@@ -217,11 +265,12 @@ static int
 ftype_and_ino(
 	const WIN32_FIND_DATAW *ffd,
 	const wchar_t dirname[],
-	unsigned dir_len,
+	const unsigned dir_len,
 	unsigned long long *inode/*out*/)
 {
 	HANDLE fh;
-	wchar_t fname[2*MAX_PATH];
+	wchar_t path_buf[2*MAX_PATH], *path = path_buf;
+	size_t fname_len = wcslen(ffd->cFileName);
 
 	unsigned long long ino = 0; /* zero - in case of error */
 	int ftype = 'u'; /* unknown - in case of error */
@@ -231,11 +280,21 @@ ftype_and_ino(
 	else if (ffd->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		ftype = 'd'; /* directory */
 
-	memcpy(fname, dirname, dir_len*sizeof(dirname[0]));
-	fname[dir_len] = L'\\';
-	wcscpy(fname + dir_len + 1, ffd->cFileName);
+	if (dir_len + fname_len > sizeof(path_buf)/sizeof(path_buf[0]) - 2) {
+		size_t full_len = dir_len + fname_len + 2;
+		path = (wchar_t*) malloc(sizeof(wchar_t)*(full_len));
+		if (path == NULL)
+			goto err;
+	}
 
-	fh = CreateFileW(fname, 0, 0, NULL, OPEN_EXISTING,
+	memcpy(path, dirname, dir_len*sizeof(dirname[0]));
+	path[dir_len] = L'\\';
+	memcpy(path + dir_len + 1, ffd->cFileName,
+		sizeof(wchar_t)*(fname_len + 1));
+
+	fh = CreateFileW(path, FILE_READ_ATTRIBUTES,
+			FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL, OPEN_EXISTING,
 			((ffd->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
 				? FILE_FLAG_OPEN_REPARSE_POINT : 0u) |
 			FILE_FLAG_BACKUP_SEMANTICS, NULL);
@@ -258,7 +317,8 @@ ftype_and_ino(
 					ftype = 'c'; /* character device */
 					break;
 				case FILE_TYPE_PIPE:
-					if (GetNamedPipeInfo(fh, NULL, NULL, NULL, NULL))
+					if (GetNamedPipeInfo(fh, NULL, NULL,
+								NULL, NULL))
 						ftype = 'p'; /* pipe */
 					else
 						ftype = 's'; /* socket */
@@ -271,58 +331,13 @@ ftype_and_ino(
 		CloseHandle(fh);
 	}
 
+	if (path != path_buf)
+		free(path);
+err:
 	*inode = ino;
 	return ftype;
 }
 
-#endif /* _MSC_VER */
-
-#ifdef _MSC_VER
-static unsigned ffd_offset(unsigned dir_len)
-{
-	unsigned offs;
-
-# ifndef READDIR_TEST
-
-	/* ensure that offsetof(struct open_directory, dir_len) == sizeof(HANDLE) */
-	(void) sizeof(int[1-2*!(sizeof(HANDLE) ==
-		((char*)&((struct open_directory*)NULL)->dir_len - (char*)NULL))]);
-
-	/* ensure that offsetof(struct open_directory, dirname) ==
-		sizeof(HANDLE) + sizeof(unsigned) */
-	(void) sizeof(int[1-2*!(sizeof(HANDLE) + sizeof(unsigned) ==
-		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
-
-	offs = sizeof(HANDLE) + sizeof(unsigned);
-
-# else /* READDIR_TEST */
-
-	/* ensure that offsetof(struct open_directory, ffd_handle)
-		== sizeof(union u_field_info) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) ==
-		((char*)&((struct open_directory*)NULL)->ffd_handle - (char*)NULL))]);
-
-	/* ensure that offsetof(struct open_directory, dir_len)
-		== sizeof(union u_field_info) + sizeof(HANDLE) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(HANDLE) ==
-		((char*)&((struct open_directory*)NULL)->dir_len - (char*)NULL))]);
-
-	/* ensure that offsetof(struct open_directory, dirname)
-		== sizeof(union u_field_info) + sizeof(HANDLE) + sizeof(unsigned) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(HANDLE) +
-			sizeof(unsigned) ==
-		((char*)&((struct open_directory*)NULL)->dirname - (char*)NULL))]);
-
-	offs = sizeof(union u_field_info) + sizeof(HANDLE) + sizeof(unsigned);
-
-# endif /* READDIR_TEST */
-
-	offs += dir_len*sizeof(wchar_t) + sizeof(void*) - 1;
-
-	offs &= ~(sizeof(void*) - 1);
-
-	return offs;
-}
 #endif /* _MSC_VER */
 
 /* dir_get_record --- get one record at a time out of a directory */
@@ -336,8 +351,9 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	DIR *dp;
 	struct dirent *dirent;
 #else
-	WIN32_FIND_DATAW *ffd;
 	size_t converted;
+	HANDLE *ffd_handle;
+	const wchar_t *dirname;
 #endif
 	char *out_buf;
 	int len, flen;
@@ -398,34 +414,44 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 #else /* _MSC_VER */
 
-	ffd = (WIN32_FIND_DATAW*) ((char*) the_dir + ffd_offset(the_dir->dir_len));
+	ffd_handle = (HANDLE*) ((char*) the_dir - head_offset(the_dir->dir_len));
 
-	if (ffd->dwFileAttributes == ~(DWORD)0) {
+	if (the_dir->ffd.dwFileAttributes == ~(DWORD)0) {
 		/* no cached entry */
-		if (!FindNextFileW(the_dir->ffd_handle, ffd)) {
+		if (!FindNextFileW(*ffd_handle, &the_dir->ffd)) {
 			const DWORD err = GetLastError();
-			*errcode = ERROR_NO_MORE_FILES == err ? 0 : err ? (int)err : -1;
+			*errcode = ERROR_NO_MORE_FILES == err ? 0 : EACCES;
 			return EOF;
 		}
 	}
 
-	ftype = ftype_and_ino(ffd, the_dir->dirname, the_dir->dir_len, &ino);
+	dirname = (const wchar_t*) (ffd_handle + 1);
+	ftype = ftype_and_ino(&the_dir->ffd, dirname, the_dir->dir_len, &ino);
 
 	/* mark that there is no cached entry */
-	ffd->dwFileAttributes = ~(DWORD)0;
+	the_dir->ffd.dwFileAttributes = ~(DWORD)0;
 
-	/* dwFileAttributes must be the first member */
-	(void) sizeof(int[1-2*!!(
-		(char*)&((WIN32_FIND_DATAW*)NULL)->dwFileAttributes - (char*)NULL)]);
-
-	/* layout of the_dir:
-	  <dir_len><dirname><padding><WIN32_FIND_DATAW><MAX_PATH*MB_CUR_MAX> */
-	converted = wcstombs((char*)(ffd + 1), ffd->cFileName, MAX_PATH);
+	converted = wcstombs(the_dir->buf, the_dir->ffd.cFileName,
+		the_dir->space);
 
 	if ((size_t)-1 == converted) {
-		*errcode = errno;
+		*errcode = EILSEQ;
 		return EOF;
 	}
+
+	/* Make sure that conversion wasn't stopped due to small buffer.  */
+	/* Note: the_dir->space > 10 */
+	if (converted > the_dir->space - 10/*MB_CUR_MAX*/) {
+		const size_t n = wcstombs(NULL, the_dir->ffd.cFileName, 0);
+		if (n != converted) {
+			*errcode = (size_t)-1 == n ? EILSEQ : ENAMETOOLONG;
+			return EOF;
+		}
+	}
+
+	/* dwFileAttributes must be the first member of WIN32_FIND_DATAW */
+	(void) sizeof(int[1-2*!!(
+		(char*)&((WIN32_FIND_DATAW*)NULL)->dwFileAttributes - (char*)NULL)]);
 
 	/* there must be a space for at least 21 characters between
 	  ffd->dwfileattributes and ffd->cfilename */
@@ -434,17 +460,17 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 			sizeof(((WIN32_FIND_DATAW*)NULL)->dwFileAttributes) + 21)]);
 
 	/* print max 21 characters, including terminating '\0' */
-	out_buf = (char*)(&ffd->dwFileAttributes + 1);
+	out_buf = (char*)(&the_dir->ffd.dwFileAttributes + 1);
 	len = sprintf(out_buf, "%llu", ino);
 # ifdef READDIR_TEST
 	the_dir->fw.fields[0].len = (unsigned) len;
 # endif
 
-	/* there must be a space for 3 more characters: two forward slashes and ftype */
+	/* There must be a space for 3 more characters: 2 slashes and ftype.  */
 	(void) sizeof(int[1-2*!(sizeof((WIN32_FIND_DATAW*)NULL)->cFileName >= 3)]);
 
 	out_buf[len++] = '/';
-	memcpy(out_buf + len, ffd + 1, converted);
+	memmove(out_buf + len, the_dir->buf, converted);
 	len += (int) converted;
 # ifdef READDIR_TEST
 	the_dir->fw.fields[1].len = (unsigned) converted;
@@ -475,6 +501,7 @@ static void
 dir_close(awk_input_buf_t *iobuf)
 {
 	open_directory_t *the_dir;
+	void *mem;
 
 	if (iobuf == NULL || iobuf->opaque == NULL)
 		return;
@@ -482,12 +509,14 @@ dir_close(awk_input_buf_t *iobuf)
 	the_dir = (open_directory_t *) iobuf->opaque;
 
 #ifndef _MSC_VER
+	mem = the_dir;
 	closedir(the_dir->dp);
 #else
-	FindClose(the_dir->ffd_handle);
+	mem = (char*) the_dir - head_offset(the_dir->dir_len);
+	FindClose(*(HANDLE*)mem);
 #endif
-	free(the_dir);
 
+	free(mem);
 	iobuf->fd = INVALID_HANDLE;
 }
 
@@ -505,14 +534,10 @@ dir_can_take_file(const awk_input_buf_t *iobuf)
 
 #ifdef _MSC_VER
 static int
-report_opendir_error(const char *dirname)
+report_opendir_error(const char *dirname, const DWORD last_err)
 {
 	DWORD n_chars;
 	char *msg_buf = NULL;
-	DWORD last_err = GetLastError();
-
-	if (!last_err)
-		last_err = ERROR_INVALID_DATA;
 
 	n_chars = FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -537,7 +562,10 @@ report_opendir_error(const char *dirname)
 			dirname, last_err);
 
 	LocalFree(msg_buf);
-	return (int) last_err;
+	return
+		ERROR_FILE_NOT_FOUND == last_err ? ENOENT :
+		ERROR_ACCESS_DENIED == last_err ? EACCES :
+		EFAULT;
 }
 #endif /* _MSC_VER */
 
@@ -566,37 +594,15 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		iobuf->fd = dirfd(dp);
 # endif
 	if (dp == NULL) {
-		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
-				strerror(errno));
+		warning(ext_id,
+			_("dir_take_control_of: opendir/fdopendir failed: %s"),
+			strerror(errno));
 		update_ERRNO_int(errno);
 		return awk_false;
 	}
 
-# ifndef READDIR_TEST
-
-	/* ensure that offsetof(struct open_directory, buf) == sizeof(DIR*) */
-	(void) sizeof(int[1-2*!(sizeof(DIR*) ==
-		((char*)&((struct open_directory*)NULL)->buf - (char*)NULL))]);
-
-	size = sizeof(DIR*);
-
-# else /* READDIR_TEST */
-
-	/* ensure that offsetof(struct open_directory, dp)
-		== sizeof(union u_field_info) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) ==
-		((char*)&((struct open_directory*)NULL)->dp - (char*)NULL))]);
-
-	/* ensure that offsetof(struct open_directory, buf)
-		== sizeof(union u_field_info) + sizeof(DIR*) */
-	(void) sizeof(int[1-2*!(sizeof(union u_field_info) + sizeof(DIR*) ==
-		((char*)&((struct open_directory*)NULL)->buf - (char*)NULL))]);
-
-	size = sizeof(union u_field_info) + sizeof(DIR*);
-
-# endif /* READDIR_TEST */
-
-	size += sizeof(struct dirent)
+	size = dir_head_size()
+		+ sizeof(struct dirent)
 		+ 20 /* max digits in inode */
 		+ 2 /* slashes */
 		+ 1 /* ftype */;
@@ -607,51 +613,67 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 
 #else /* _MSC_VER */
 
-	HANDLE h;
-	wchar_t path_buf[MAX_PATH];
-	unsigned offset;
-	WIN32_FIND_DATAW *ffd;
+	HANDLE *ffd_handle;
+	wchar_t *dirname;
+	size_t offset;
 
-	size_t converted = mbstowcs(NULL, iobuf->name, 0);
-	if ((size_t)-1 == converted) {
-		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
-				strerror(errno));
+	size_t dir_len = mbstowcs(NULL, iobuf->name, 0);
+	if ((size_t)-1 == dir_len) {
+		errno = EILSEQ;
+		warning(ext_id,
+			_("dir_take_control_of: opendir/fdopendir failed: %s"),
+			strerror(errno));
 		update_ERRNO_int(errno);
 		return awk_false;
 	}
 
-	if (converted > (sizeof(path_buf) - sizeof(L"\\*"))/sizeof(path_buf[0])) {
-		warning(ext_id, _("dir_take_control_of: too long directory name: %s"),
-				iobuf->name);
+	/* Path should not exceed the limit of 32767 wide characters.  */
+	if (dir_len > 32767 - 3) {
+		warning(ext_id,
+			_("dir_take_control_of: too long directory path: \"%s\""),
+			iobuf->name);
 		update_ERRNO_int(ENAMETOOLONG);
 		return awk_false;
 	}
 
-	(void) mbstowcs(path_buf, iobuf->name, converted);
-	memcpy(path_buf + converted, L"\\*", sizeof(L"\\*"));
-
-	offset = ffd_offset((unsigned) converted);
+	offset = head_offset(dir_len);
 	size = offset
-		+ sizeof(WIN32_FIND_DATAW)
-		+ MAX_PATH*MB_CUR_MAX;
+		+ dir_head_size()
+		+ MAX_PATH*MB_CUR_MAX + 10;
 
-	emalloc(the_dir, open_directory_t *, size, "dir_take_control_of");
+	emalloc(ffd_handle, HANDLE *, size, "dir_take_control_of");
 
-	/* cache found file in the_dir */
-	ffd = (WIN32_FIND_DATAW*) ((char*) the_dir + offset);
-	h = FindFirstFileW(path_buf, ffd);
+	the_dir = (open_directory_t*) ((char*) ffd_handle + offset);
+	dirname = (wchar_t*) (ffd_handle + 1);
 
-	/* must find at least '.', otherwise directory path is wrong */
-	if (h == INVALID_HANDLE_VALUE || ffd->dwFileAttributes == ~(DWORD)0) {
-		int err = report_opendir_error(iobuf->name);
-		free(the_dir);
+	(void) mbstowcs(dirname, iobuf->name, dir_len);
+
+	/* Note: write past dirname.  This memory will be initialized later.  */
+	memcpy(dirname + dir_len, L"\\*", 3*sizeof(wchar_t));
+
+	/* Cache found file in the_dir.  */
+	*ffd_handle = FindFirstFileW(dirname, &the_dir->ffd);
+
+	/* Must find at least '.', otherwise directory path is wrong.  */
+	if (*ffd_handle == INVALID_HANDLE_VALUE ||
+		the_dir->ffd.dwFileAttributes == ~(DWORD)0)
+	{
+		const int err = report_opendir_error(iobuf->name,
+			*ffd_handle == INVALID_HANDLE_VALUE
+			? GetLastError() : ERROR_INVALID_DATA);
+
+		if (*ffd_handle != INVALID_HANDLE_VALUE)
+			FindClose(*ffd_handle);
+		free(ffd_handle);
 		update_ERRNO_int(err);
 		return awk_false;
 	}
 
-	the_dir->ffd_handle = h;
-	the_dir->dir_len = (unsigned) converted;
-	memcpy(the_dir->dirname, path_buf, converted*sizeof(path_buf[0]));
+	/* Trim the directory name.  */
+	dirname[dir_len] = L'\0';
+
+	the_dir->dir_len = (unsigned) dir_len;
+	the_dir->space = (unsigned) (size - offset - dir_head_size());
 
 #endif /* _MSC_VER */
 
