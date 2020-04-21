@@ -100,10 +100,28 @@
  * in a subsequent revision of the API.
  */
 
+#ifdef GAWK_STATIC_CRT
+/* CRT (C runtime library) is statically linked to the main GAWK executable.
+   Extension DLLs should use GAWK API for the CRT calls and should not link
+   (statically or dynamically) other CRTs - to share one copy of internal
+   CRT data (file descriptor table, locale, heap) with the GAWK executable.  */
+#define gawk_api_major_version 4
+#define gawk_api_minor_version 0
+#else
+#define gawk_api_major_version 3
+#define gawk_api_minor_version 0
+#endif
+
 /* Allow use in C++ code.  */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Current version of the API. */
+enum {
+	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
+	GAWK_API_MINOR_VERSION = gawk_api_minor_version
+};
 
 /* This is used to keep extensions from modifying certain fields in some structs. */
 #ifdef GAWK
@@ -114,7 +132,7 @@ extern "C" {
 
 typedef enum awk_bool {
 	awk_false = 0,
-	awk_true
+	awk_true  = 1
 } awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
 /*
@@ -148,6 +166,14 @@ typedef struct {
 /* File descriptor type.  */
 typedef int fd_t;
 #define INVALID_HANDLE (-1)
+
+/* File status information.  */
+#ifndef _MSC_VER
+typedef struct stat gawk_stat_t;
+#else
+/* Fields st_size, st_atime, st_mtime, st_ctime are 64-bit values.   */
+typedef struct _stat64 gawk_stat_t;
+#endif
 
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {
@@ -204,7 +230,7 @@ typedef struct awk_input {
 	void (*close_func)(struct awk_input *iobuf);
 
 	/* put last, for alignment. bleah */
-	struct stat sbuf;       /* stat buf */
+	gawk_stat_t sbuf;       /* stat buf */
 
 } awk_input_buf_t;
 
@@ -299,15 +325,6 @@ typedef struct awk_two_way_processor {
 
 	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
-
-#define gawk_api_major_version 3
-#define gawk_api_minor_version 1
-
-/* Current version of the API. */
-enum {
-	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
-	GAWK_API_MINOR_VERSION = gawk_api_minor_version
-};
 
 /* A number of typedefs related to different types of values. */
 
@@ -462,6 +479,10 @@ typedef struct awk_ext_func {
 typedef void *awk_ext_id_t;	/* opaque type for extension id */
 
 struct lconv;
+
+#ifdef _MSC_VER
+struct xstat;
+#endif
 
 /*
  * The API into gawk. Lots of functions here. We hope that they are
@@ -845,11 +866,14 @@ typedef struct gawk_api {
 			const awk_input_buf_t **ibufp,
 			const awk_output_buf_t **obufp);
 
+#ifdef GAWK_STATIC_CRT
+
 	/* Just print message to stdout */
 	int (*api_printf)(const char *format, ...);
 
 	/* Assert failed: print message and abort the program */
-	void (*api_assert_failed)(const char *sexpr, const char *file, unsigned line);
+	void (*api_assert_failed)(const char *sexpr, const char *file,
+			unsigned line);
 
 	/*
 	 * Extensions must use standard streams of the gawk executable
@@ -888,7 +912,8 @@ typedef struct gawk_api {
 	FILE *(*api_fopen)(const char *filename, const char *mode);
 	int (*api_fclose)(FILE *stream);
 	size_t (*api_fread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
-	size_t (*api_fwrite)(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+	size_t (*api_fwrite)(const void *ptr, size_t size, size_t nmemb,
+			FILE *stream);
 
 	void (*api_clearerr)(FILE *stream);
 	int (*api_feof)(FILE *stream);
@@ -910,8 +935,21 @@ typedef struct gawk_api {
 	int (*api_remove)(const char *pathname);
 	int (*api_unlink)(const char *pathname);
 	int (*api_rename)(const char *old_name, const char *new_name);
-	int (*api_stat)(const char *path, struct stat *buf);
-	int (*api_fstat)(int fd, struct stat *buf);
+	int (*api_chdir)(const char *path);
+
+#ifdef _MSC_VER
+	wchar_t *(*api_xpathwc)(const char *path, wchar_t buf[],
+		size_t buf_size);
+	int (*api_xfstat)(void *h, const wchar_t *path, struct xstat *buf);
+	int (*api_xwstat)(const wchar_t *path, struct xstat *buf,
+			int dont_follow);
+	int (*api_xstat)(const char *path, struct xstat *buf);
+	int (*api_xlstat)(const char *path, struct xstat *buf);
+	int (*api_xstat_root)(const wchar_t *path, struct xstat *buf);
+#endif
+
+	int (*api_stat)(const char *path, gawk_stat_t *buf);
+	int (*api_fstat)(int fd, gawk_stat_t *buf);
 	int (*api_chmod)(const char *path, int mode);
 
 	char *(*api_setlocale)(int category, const char *locale);
@@ -938,7 +976,8 @@ typedef struct gawk_api {
 	int (*api_vprintf)(const char *format, va_list ap);
 	int (*api_vfprintf)(FILE *stream, const char *format, va_list ap);
 	int (*api_vsprintf)(char *str, const char *format, va_list ap);
-	int (*api_vsnprintf)(char *str, size_t size, const char *format, va_list ap);
+	int (*api_vsnprintf)(char *str, size_t size, const char *format,
+			va_list ap);
 
 	int *(*api_errno_p)(void);
 	char *(*api_strerror)(int error_number);
@@ -981,6 +1020,10 @@ typedef struct gawk_api {
 
 	wctype_t (*api_wctype)(char const *name);
 	int (*api_iswctype)(wint_t c, wctype_t mask);
+
+	/* Add more CRT replacements here.  */
+
+#endif /* GAWK_STATIC_CRT */
 
 } gawk_api_t;
 
@@ -1026,7 +1069,8 @@ int gawk_api_fprintf(FILE *file, _Printf_format_string_ const char *format, ...)
 int gawk_api_sprintf(char *str, _Printf_format_string_ const char *format, ...);
 int gawk_api_snprintf(char *str, size_t size, _Printf_format_string_ const char *format, ...);
 __declspec(noreturn)
-void api_fatal_(const gawk_api_t *api, awk_ext_id_t id, _Printf_format_string_ const char *format, ...);
+void api_fatal_(const gawk_api_t *api, awk_ext_id_t id,
+		_Printf_format_string_ const char *format, ...);
 #else /* !(_MSC_VER && _PREFAST_) */
 #define fatal			gawk_api()->api_fatal
 #define nonfatal		gawk_api()->api_nonfatal
@@ -1036,7 +1080,8 @@ void api_fatal_(const gawk_api_t *api, awk_ext_id_t id, _Printf_format_string_ c
 #define gawk_api_fprintf	gawk_api()->api_fprintf
 #define gawk_api_sprintf	gawk_api()->api_sprintf
 #define gawk_api_snprintf	gawk_api()->api_snprintf
-#define api_fatal_(api, id, format, message, param) api->api_fatal(id, format, message, param)
+#define api_fatal_(api, id, format, message, param) \
+	api->api_fatal(id, format, message, param)
 #endif /* !(_MSC_VER && _PREFAST_) */
 
 #ifndef NDEBUG
@@ -1123,6 +1168,8 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define gawk_api_realloc(ptr, size)	(gawk_api()->api_realloc(ptr, size))
 #define gawk_api_free(ptr)		(gawk_api()->api_free(ptr))
 
+#ifdef GAWK_STATIC_CRT
+
 #define gawk_api_stdin()		(gawk_api()->api_stdin)
 #define gawk_api_stdout()		(gawk_api()->api_stdout)
 #define gawk_api_stderr()		(gawk_api()->api_stderr)
@@ -1185,7 +1232,7 @@ r_gawk_fsync(const gawk_api_t *api,
 
 static inline int
 r_gawk_fstat(const gawk_api_t *api,
-	     fd_t fd, struct stat *buf)
+	     fd_t fd, gawk_stat_t *buf)
 {
 	return api->api_fstat(fd, buf);
 }
@@ -1240,6 +1287,17 @@ r_gawk_fstat(const gawk_api_t *api,
 #define gawk_api_remove(pathname)		(gawk_api()->api_remove(pathname))
 #define gawk_api_unlink(pathname)		(gawk_api()->api_unlink(pathname))
 #define gawk_api_rename(old_name, new_name)	(gawk_api()->api_rename(old_name, new_name))
+#define gawk_api_chdir(path)			(gawk_api()->api_chdir(path))
+
+#ifdef _MSC_VER
+#define gawk_api_xpathwc(path, buf, buf_size)	(gawk_api()->api_xpathwc(path, buf, buf_size))
+#define gawk_api_xfstat(h, path, buf)		(gawk_api()->api_xfstat(h, path, buf))
+#define gawk_api_xwstat(path, buf, dont_follow)	(gawk_api()->api_xwstat(path, buf, dont_follow))
+#define gawk_api_xstat(path, buf)		(gawk_api()->api_xstat(path, buf))
+#define gawk_api_xlstat(path, buf)		(gawk_api()->api_xlstat(path, buf))
+#define gawk_api_xstat_root(path, buf)		(gawk_api()->api_xstat_root(path, buf))
+#endif
+
 #define gawk_api_stat(path, buf)		(gawk_api()->api_stat(path, buf))
 #define gawk_api_fstat(fd, buf)			r_gawk_fstat(gawk_api(), fd, buf)
 #define gawk_api_chmod(path, mode)		(gawk_api()->api_chmod(path, mode))
@@ -1316,6 +1374,10 @@ r_gawk_mkstemp(const gawk_api_t *api,
 
 #define gawk_api_wctype(name)			(gawk_api()->api_wctype(name))
 #define gawk_api_iswctype(c, mask)		(gawk_api()->api_iswctype(c, mask))
+
+/* Add more CRT replacements here.  */
+
+#endif /* GAWK_STATIC_CRT */
 
 #define create_value(value, result) \
 	(gawk_api()->api_create_value(ext_id, value,result))
@@ -1485,10 +1547,11 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 #define GAWK_PLUGIN_EXTERN_C_END
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(GAWK_STATIC_CRT)
 /* Do not initialize static version of CRT library compiled in extension
   DLLs - they should use gawk API for all except stateless CRT functions,
   like memcpy, strlen, fileno, etc. */
+/* Tip: link extension DLLs with "/Entry:ExtDllMain" option.  */
 #define EXTENSION_DLL_MAIN \
 	int __stdcall ExtDllMain( \
 		void * hinstDLL, \
@@ -1498,9 +1561,11 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 		(void) hinstDLL, (void) fdwReason, (void) lpvReserved; \
 		return 1; \
 	}
-#else
+#endif /* _MSC_VER && GAWK_STATIC_CRT */
+
+#ifndef EXTENSION_DLL_MAIN
 #define EXTENSION_DLL_MAIN
-#endif /* _MSC_VER */
+#endif
 
 /*
  * Each extension must define a function with this prototype:
@@ -1632,7 +1697,7 @@ GAWK_PLUGIN_EXTERN_C_END
   headers included between "gawkapi.h" and the declaration of "api" pointer */
 extern const gawk_api_t *gawk_api(void);
 
-#ifndef GAWK_API_DONT_REDEFINE_CRT
+#if defined(GAWK_STATIC_CRT) && !defined(GAWK_API_DONT_REDEFINE_CRT)
 
 /* Extension DLLs should acquire/release resources (memory, files) via the CRT
   library (possibly statically linked) of the main gawk executable - to be able
@@ -1874,6 +1939,45 @@ extern const gawk_api_t *gawk_api(void);
 #undef rename
 #endif
 #define rename(old_name, new_name) gawk_api_rename(old_name, new_name)
+
+#ifdef chdir
+#undef chdir
+#endif
+#define chdir(path) gawk_api_chdir(path)
+
+#ifdef _MSC_VER
+
+#ifdef xpathwc
+#undef xpathwc
+#endif
+#define xpathwc(path, buf, buf_size) gawk_api_xpathwc(path, buf, buf_size)
+
+#ifdef xfstat
+#undef xfstat
+#endif
+#define xfstat(h, path, buf) gawk_api_xfstat(h, path, buf)
+
+#ifdef xwstat
+#undef xwstat
+#endif
+#define xwstat(path, buf, dont_follow) gawk_api_xwstat(path, buf, dont_follow)
+
+#ifdef xstat
+#undef xstat
+#endif
+#define xstat(path, buf) gawk_api_xstat(path, buf)
+
+#ifdef xlstat
+#undef xlstat
+#endif
+#define xlstat(path, buf) gawk_api_xlstat(path, buf)
+
+#ifdef xstat_root
+#undef xstat_root
+#endif
+#define xstat_root(path, buf) gawk_api_xstat_root(path, buf)
+
+#endif /* _MSC_VER */
 
 #ifdef stat
 #undef stat
@@ -2160,7 +2264,9 @@ extern const gawk_api_t *gawk_api(void);
 #endif
 #define iswctype(c, mask) gawk_api_iswctype(c, mask)
 
-#endif /* !GAWK_API_DONT_REDEFINE_CRT */
+/* Add more CRT replacements here.  */
+
+#endif /* GAWK_STATIC_CRT && !GAWK_API_DONT_REDEFINE_CRT */
 
 #endif /* GAWK */
 

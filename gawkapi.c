@@ -28,6 +28,7 @@
 #ifdef _MSC_VER
 #include <io.h> /* open/close */
 #include <direct.h> /* mkdir/rmdir */
+#include "pc/xstat.h" /* xstat/xlstat */
 #endif
 
 #ifdef HAVE_MPFR
@@ -295,35 +296,6 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 		err(false, _("warning: "), format, args);
 	}
 	va_end(args);
-}
-
-/* api_printf --- print a message to stdout */
-
-#ifdef _MSC_VER
-static int
-api_printf(const char *format, ...)
-{
-	int ret;
-	va_list args;
-
-	va_start(args, format);
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-	ret = vprintf(format, args);
-PRAGMA_WARNING_POP
-	va_end(args);
-
-	return ret;
-}
-#endif /* _MSC_VER */
-
-/* api_assert_failed --- print error message and abort the program */
-
-ATTRIBUTE_NORETURN
-static void
-api_assert_failed(const char *sexpr, const char *file, unsigned line)
-{
-	error("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
 }
 
 /* api_register_input_parser --- register an input_parser; for opening files read-only */
@@ -1501,6 +1473,39 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 	return awk_true;
 }
 
+#ifdef GAWK_STATIC_CRT
+
+#ifdef _MSC_VER
+
+/* api_printf --- print a message to stdout */
+
+static int
+api_printf(const char *format, ...)
+{
+	int ret;
+	va_list args;
+
+	va_start(args, format);
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+	ret = vprintf(format, args);
+PRAGMA_WARNING_POP
+	va_end(args);
+
+	return ret;
+}
+
+#endif /* _MSC_VER */
+
+/* api_assert_failed --- print error message and abort the program */
+
+ATTRIBUTE_NORETURN
+static void
+api_assert_failed(const char *sexpr, const char *file, unsigned line)
+{
+	error("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
+}
+
 #ifdef _MSC_VER
 static ssize_t api_read(int fd, void *buf, size_t count)
 {
@@ -1588,8 +1593,10 @@ static int api_mkstemp(char *templ)
 			O_RDWR | O_CREAT | O_EXCL,
 			S_IREAD | S_IWRITE);
 	return INVALID_HANDLE;
-#endif
 }
+#endif
+
+#endif /* GAWK_STATIC_CRT */
 
 /*
  * Register a version string for this extension with gawk.
@@ -1693,6 +1700,8 @@ gawk_api_t api_impl = {
 	/* Find/open a file */
 	api_get_file,
 
+#ifdef GAWK_STATIC_CRT
+
 	/* print a message to stdout */
 #ifdef _MSC_VER
 	api_printf,
@@ -1760,8 +1769,27 @@ gawk_api_t api_impl = {
 	remove,
 	unlink,
 	rename,
+	chdir,
+
+#ifdef _MSC_VER
+	xpathwc,
+	xfstat,
+	xwstat,
+	xstat,
+	xlstat,
+	xstat_root,
+#endif
+
+#ifdef _MSC_VER
+	_stat64,
+#else
 	stat,
+#endif
+#ifdef _MSC_VER
+	_fstat64,
+#else
 	fstat,
+#endif
 	chmod,
 
 	setlocale,
@@ -1838,6 +1866,10 @@ gawk_api_t api_impl = {
 
 	wctype,
 	iswctype,
+
+	/* Add more CRT replacements here.  */
+
+#endif /* GAWK_STATIC_CRT */
 };
 
 /* init_ext_api --- init the extension API */
@@ -1853,9 +1885,11 @@ init_ext_api(void)
 	api_impl.do_flags[4] = (do_debug ? 1 : 0);
 	api_impl.do_flags[5] = (do_mpfr ? 1 : 0);
 
+#ifdef GAWK_STATIC_CRT
 	api_impl.api_stdin  = stdin;
 	api_impl.api_stdout = stdout;
 	api_impl.api_stderr = stderr;
+#endif
 }
 
 /* update_ext_api --- update the variables in the API that can change */
