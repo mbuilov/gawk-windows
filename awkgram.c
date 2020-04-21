@@ -5379,7 +5379,7 @@ SRCFILE *
 add_srcfile(enum srctype stype, const char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
 {
 	SRCFILE *s;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	char *path;
 	int errno_val = 0;
 
@@ -5623,7 +5623,7 @@ get_src_buf(void)
 	char *scan;
 	bool newfile;
 	size_t savelen;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 
 	static ssize_t (*readfunc)(int fd, void *buffer, size_t count) = 0;
 
