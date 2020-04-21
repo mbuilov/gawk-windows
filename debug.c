@@ -517,7 +517,7 @@ static SRCFILE *
 source_find(const char *src)
 {
 	SRCFILE *s;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	char *path;
 	int errno_val = 0;
 
@@ -559,7 +559,7 @@ print_lines(const char *src, unsigned start_line, unsigned nlines)
 	SRCFILE *s;
 	unsigned *pos;
 	unsigned i;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 
 	assert(nlines > 0);
 
@@ -572,7 +572,7 @@ print_lines(const char *src, unsigned start_line, unsigned nlines)
 		return 0;
 	}
 
-	if (fstat(s->fd, &sbuf) == 0 && s->mtime < sbuf.st_mtime) {
+	if (gawk_fstat(s->fd, &sbuf) == 0 && s->mtime < sbuf.st_mtime) {
 		fprintf(out_fp, _("WARNING: source file `%s' modified since program compilation.\n"),
 				src);
 		efree(s->line_offset);
