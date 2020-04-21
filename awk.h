@@ -224,6 +224,14 @@ typedef struct Regexp {
 
 #include "gawkapi.h"
 
+#ifdef _MSC_VER
+#define gawk_fstat(fd, buf) _fstat64(fd, buf)
+#define gawk_stat(path, buf) _stat64(path, buf)
+#else
+#define gawk_fstat(fd, buf) fstat(fd, buf)
+#define gawk_stat(path, buf) stat(path, buf)
+#endif
+
 /* Stuff for losing systems. */
 #if !defined(HAVE_STRTOD)
 extern double gawk_strtod();
@@ -1325,7 +1333,7 @@ typedef struct srcfile {
 	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	unsigned srclines;	/* no of lines in source */
 	size_t bufsize;
 	char *buf;
@@ -1963,7 +1971,7 @@ extern int os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
 extern int os_is_setuid(void);
 extern int os_setbinmode(fd_t fd, int mode);
 extern void os_restore_mode(fd_t fd);
-extern size_t optimal_bufsize(fd_t fd, struct stat *sbuf);
+extern size_t optimal_bufsize(fd_t fd, gawk_stat_t *sbuf);
 extern int ispath(const char *file);
 extern int isdirpunct(int c);
 #ifdef _MSC_VER
@@ -1994,7 +2002,7 @@ extern int close_rp(struct redirect *rp, two_way_close_type how);
 extern int devopen_simple(const char *name, const char *mode, bool try_real_open);
 extern fd_t devopen(const char *name, const char *mode);
 extern fd_t srcopen(SRCFILE *s);
-extern char *find_source(const char *src, struct stat *stb, int *errcode, bool is_extlib);
+extern char *find_source(const char *src, gawk_stat_t *stb, int *errcode, bool is_extlib);
 extern NODE *do_getline_redir(bool intovar, enum redirval redirtype);
 extern NODE *do_getline(bool intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, size_t len);
@@ -2005,7 +2013,11 @@ extern bool is_non_fatal_redirect(const char *str, size_t len);
 extern void ignore_sigpipe(void);
 extern void set_sigpipe_to_default(void);
 extern bool non_fatal_flush_std_file(FILE *fp);
+#ifdef _MSC_VER
 extern ssize_t read_wrap(fd_t fd, void *buf, size_t size);
+#else
+#define read_wrap	((ssize_t(*)(int, void*, size_t)) read)
+#endif
 
 /* main.c */
 extern bool arg_assign(char *arg, bool initing);
