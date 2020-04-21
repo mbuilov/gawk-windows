@@ -9,6 +9,7 @@
 
  /*
   * Michael M. Builov
+  * mbuilov@gmail.com
   * Ported to _MSC_VER April 2020
   */
 
@@ -509,7 +510,7 @@ read_value(FILE *fp, awk_value_t *value)
 			break;
 		default:
 			/* this cannot happen! */
-			warning(ext_id, _("treating recovered value with unknown type code %d as a string"), code);
+			warning(ext_id, _("treating recovered value with unknown type code %u as a string"), code);
 			value->val_type = AWK_STRING;
 			break;
 		}
