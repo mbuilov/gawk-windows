@@ -125,7 +125,7 @@ static awk_value_t *
 do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	fd_t fd;
 	int r;
 
