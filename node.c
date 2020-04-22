@@ -308,6 +308,7 @@ r_dupnode(NODE *n)
 	assert(n->type == Node_val);
 
 #ifdef GAWKDEBUG
+	/* Do the same as in awk.h:dupnode().  */
 	if ((n->flags & MALLOC) != 0) {
 		n->valref++;
 		return n;
@@ -500,20 +501,14 @@ void
 r_unref(NODE *tmp)
 {
 #ifdef GAWKDEBUG
-	if (tmp == NULL)
+	/* Do the same as in awk.h:unref().  */
+	assert(tmp == NULL || tmp->valref);
+	if (tmp == NULL || --tmp->valref)
 		return;
-	if ((tmp->flags & MALLOC) != 0) {
-		if (tmp->valref > 1u) {
-			tmp->valref--;
-			return;
-		}
-		if ((tmp->flags & STRCUR) != 0)
-			efree(tmp->stptr);
-	}
-#else
+#endif
+
 	if ((tmp->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(tmp->stptr);
-#endif
 
 	mpfr_unset(tmp);
 
