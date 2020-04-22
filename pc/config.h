@@ -105,7 +105,9 @@
 #endif
 
 /* Define to 1 if you have the `isblank' function. */
-#undef HAVE_ISBLANK
+#if defined(__MINGW32__) || defined(_MSC_VER)
+#define HAVE_ISBLANK 1
+#endif
 
 /* Define to 1 if you have the `iswctype' function. */
 #if defined(__MINGW32__) || defined(_MSC_VER)
@@ -145,10 +147,8 @@
 #endif
 
 /* Define to 1 if the system has the type 'long long int'. */
-#ifdef _MSC_VER
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_LONG_LONG_INT 1
-#else
-#undef HAVE_LONG_LONG_INT
 #endif
 
 /* Define to 1 if you have the `mbrlen' function. */
@@ -179,7 +179,7 @@
 #endif
 
 /* Define to 1 if you have the <memory.h> header file. */
-#ifdef __DJGPP__
+#if defined(__MINGW32__) || defined(__DJGPP__) || defined(_MSC_VER)
 #define HAVE_MEMORY_H 1
 #endif
 
@@ -416,10 +416,8 @@
 #endif
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
-#ifdef _MSC_VER
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define HAVE_UNSIGNED_LONG_LONG_INT 1
-#else
-#undef HAVE_UNSIGNED_LONG_LONG_INT
 #endif
 
 /* Define to 1 if you have the `usleep' function. */
