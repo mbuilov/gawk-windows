@@ -750,7 +750,7 @@ mod:
 
 			if (t1 != *lhs) {
 				unref(*lhs);
-				if (t1->valref == 1)
+				if (t1->valref == 1u)
 					*lhs = t1;
 				else
 					*lhs = dupnode(t1);
