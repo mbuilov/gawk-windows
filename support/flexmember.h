@@ -33,6 +33,17 @@
 # define FLEXALIGNOF(type) _Alignof (type)
 #endif
 
+/* MSVC C++ compiler has a bug with offsetof macro causing "error C2615".
+  Provide a workaround.  */
+#ifndef OFFSETOF
+# if defined _MSC_VER && defined __cplusplus
+template <typename T> class offsetof_class_ {public: typedef T t;};
+#  define OFFSETOF(type, member) offsetof(offsetof_class_<type>::t, member)
+# else
+#  define OFFSETOF(type, member) offsetof(type, member)
+# endif
+#endif
+
 /* Yield a properly aligned upper bound on the size of a struct of
    type TYPE with a flexible array member named MEMBER that is
    followed by N bytes of other data.  The result is suitable as an
@@ -56,5 +67,5 @@
    Yield a value less than N if and only if arithmetic overflow occurs.  */
 
 #define FLEXSIZEOF(type, member, n) \
-   ((offsetof (type, member) + FLEXALIGNOF (type) - 1 + (n)) \
+   ((OFFSETOF (type, member) + FLEXALIGNOF (type) - 1 + (n)) \
     & ~ (FLEXALIGNOF (type) - 1))
