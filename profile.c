@@ -680,7 +680,7 @@ cleanup:
 				// Avoid turning printf("hello\n") into printf(("hello\n"))
 				NODE *n = pp_top();
 
-				if (pc->expr_count == 1
+				if (pc->expr_count == 1u
 				    && n->pp_str[0] == '(' 
 				    && n->pp_str[n->pp_len - 1] == ')') {
 					n = pp_pop();
