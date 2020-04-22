@@ -694,7 +694,7 @@ value_info(NODE *n)
 	fprintf(output_fp, ":%s", flags2str(n->flags));
 
 	if ((n->flags & MALLOC) != 0)
-		fprintf(output_fp, ":%lu", TO_ULONG(n->valref));
+		fprintf(output_fp, ":%llu", 0ull + n->valref);
 	else
 		fprintf(output_fp, ":");
 
