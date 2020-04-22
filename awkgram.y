@@ -1834,9 +1834,14 @@ simp_exp
 		$5->nexti->opcode = Op_push_array;
 		$4->opcode = Op_in_array;
 		if ($2 == NULL) {	/* error */
+			INSTRUCTION *t = $4;
+			do {
+				INSTRUCTION *tn = t->nexti;
+				bcfree(t);
+				t = tn;
+			} while (t != NULL);
 			errcount++;
-			$4->expr_count = 0u;
-			$$ = list_merge($5, $4);
+			$$ = $5;
 		} else {
 			INSTRUCTION *t = $2;
 			$4->expr_count = count_expressions(&t, false);
