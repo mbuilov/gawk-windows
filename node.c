@@ -1036,10 +1036,10 @@ struct block_header nextfree[BLOCK_MAX] = {
 #ifdef MEMDEBUG
 
 void *
-r_getblock(enum block_id id)
+r_getblock(enum block_id id, const char *file, int line)
 {
 	void *res;
-	emalloc(res, void *, nextfree[id].size, "getblock");
+	emalloc_at(res, void *, nextfree[id].size, "getblock", file, line);
 	nextfree[id].active++;
 	if (nextfree[id].highwater < nextfree[id].active)
 		nextfree[id].highwater = nextfree[id].active;

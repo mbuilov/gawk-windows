@@ -1655,26 +1655,33 @@ DEREF(NODE *r)
 
 #ifdef MEMDEBUG
 
-extern void *r_getblock(enum block_id id);
+extern void *r_getblock(enum block_id id, const char *file, int line);
 extern void r_freeblock(void *, enum block_id id);
-#define getblock(p, id, ty)	(void) (p = (ty) r_getblock(id))
-#define freeblock(p, id)	(void) (r_freeblock(p, id))
+#define getblock_at(p, id, ty, file, line)	(void) (p = (ty) r_getblock(id, file, line))
+#define freeblock(p, id)			(void) (r_freeblock(p, id))
 
 #else /* MEMDEBUG */
 
-#define getblock(p, id, ty)  (void) (((p = (ty) nextfree[id].freep), p) ? \
-			(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
-			: (p = (ty) more_blocks(id)))
+#define getblock_at(p, id, ty, file, line) \
+	(void) (file), (void) (line), (void) (((p = (ty) nextfree[id].freep), p) ? \
+				(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
+				: (p = (ty) more_blocks(id)))
+
 #define freeblock(p, id)	 (void) (((struct block_item *) p)->freep = nextfree[id].freep, \
 					nextfree[id].freep = (struct block_item *) p)
 
 #endif /* MEMDEBUG */
 
-#define getnode(n)	getblock(n, BLOCK_NODE, NODE *)
-#define freenode(n)	freeblock(n, BLOCK_NODE)
+#define getblock(p, id, ty)	getblock_at(p, id, ty, __FILE__, __LINE__)
 
-#define getbucket(b) 	getblock(b, BLOCK_BUCKET, BUCKET *)
-#define freebucket(b)	freeblock(b, BLOCK_BUCKET)
+#define getnode_at(n,file,line)		getblock_at(n, BLOCK_NODE, NODE *, file, line)
+#define freenode(n)			freeblock(n, BLOCK_NODE)
+#define getnode(n)			getnode_at(n, __FILE__, __LINE__)
+
+#define getbucket_at(b,file,line) 	getblock_at(b, BLOCK_BUCKET, BUCKET *, file, line)
+#define freebucket(b)			freeblock(b, BLOCK_BUCKET)
+#define getbucket(b)	 		getbucket_at(b, __FILE__, __LINE__)
+
 
 #define	make_string(s, l)	make_str_node((s), (l), 0)
 
@@ -1686,11 +1693,15 @@ extern void r_freeblock(void *, enum block_id id);
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc(var,ty,x,str)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
-#define	ezalloc(var,ty,x,str)	(void) (var = (ty) ezalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
-#define	erealloc(var,ty,x,str)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, __FILE__, __LINE__))
+#define	emalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, file, line))
+#define	ezalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) ezalloc_real((size_t)(x), str, #var, file, line))
+#define	erealloc_at(var,ty,x,str,file,line)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, file, line))
 
 #define efree(p)	free(p)
+
+#define	emalloc(var,ty,x,str)	emalloc_at(var, ty, x, str, __FILE__, __LINE__)
+#define	ezalloc(var,ty,x,str)	ezalloc_at(var, ty, x, str, __FILE__, __LINE__)
+#define	erealloc(var,ty,x,str)	erealloc_at(var, ty, x, str, __FILE__, __LINE__)
 
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;
@@ -2431,11 +2442,13 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 
 /* make_number_node --- make node with the given flags */
 
+#define make_number_node(flags) make_number_node_real(flags, __FILE__, __LINE__)
+
 static inline NODE *
-make_number_node(int flags)
+make_number_node_real(int flags, const char *file, int line)
 {
 	NODE *r;
-	getnode(r);
+	getnode_at(r, file, line);
 	memset(r, 0, sizeof(*r));
 	r->type = Node_val;
 	r->valref = 1u;
