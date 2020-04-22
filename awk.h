@@ -665,13 +665,13 @@ typedef struct exp_node {
 #else
 			AWKNUM fltnum;
 #endif
-			char *sp;
-			size_t slen;
-			ulong_t sref;
-			unsigned idx;
-			wchar_t *wsp;
-			size_t wslen;
 			struct exp_node *typre;
+			char *sp;
+			wchar_t *wsp;
+			size_t slen;
+			size_t wslen;
+			size_t sref;
+			unsigned idx;
 			enum commenttype comtype;
 		} val;
 #ifdef __cplusplus
@@ -2438,7 +2438,7 @@ make_number_node(int flags)
 	getnode(r);
 	memset(r, 0, sizeof(*r));
 	r->type = Node_val;
-	r->valref = 1ul;
+	r->valref = 1u;
 	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
 	return r;
 }
