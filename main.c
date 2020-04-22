@@ -32,6 +32,9 @@
 
 #ifdef _MSC_VER
 #include <process.h> /* for getpid */
+#ifdef MEMDEBUG
+#include <crtdbg.h>
+#endif
 #endif
 
 #ifdef HAVE_MCHECK_H
@@ -300,6 +303,19 @@ wmain(int argc, wchar_t **wargv)
 #endif
 #if defined(LOCALEDEBUG)
 	const char *initial_locale;
+#endif
+
+#if defined(_MSC_VER) && (defined(MEMDEBUG) || defined(MEMDEBUGLEAKS))
+	int crtdbg_flag = _CrtSetDbgFlag(0
+		| _CRTDBG_ALLOC_MEM_DF
+		| _CRTDBG_CHECK_EVERY_1024_DF
+		| _CRTDBG_CHECK_CRT_DF
+		| _CRTDBG_DELAY_FREE_MEM_DF
+#ifdef MEMDEBUGLEAKS
+		| _CRTDBG_LEAK_CHECK_DF
+#endif
+	);
+	(void) crtdbg_flag;
 #endif
 
 	/* do these checks early */
