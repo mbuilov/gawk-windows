@@ -370,6 +370,8 @@ wmain(int argc, wchar_t **wargv)
 	if ((cp = getenv("GAWK_LOCALE_DIR")) != NULL)
 		locale_dir = cp;
 
+#if 0 /* M.B. It's a bad practice to redirect stderr to a file already opened
+	     by the app.  Must fix tests which require that.  */
 #if defined(F_GETFL) && defined(O_APPEND)
 	// 1/2018: This is needed on modern BSD systems so that the
 	// inplace tests pass. I think it's a bug in those kernels
@@ -379,6 +381,7 @@ wmain(int argc, wchar_t **wargv)
 		flags |= O_APPEND;
 		(void) fcntl(fileno(stderr), F_SETFL, flags);
 	}
+#endif
 #endif
 
 #if defined(LOCALEDEBUG)
