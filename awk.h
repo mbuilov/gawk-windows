@@ -1589,8 +1589,11 @@ static inline void
 DEREF(NODE *r)
 {
 	assert(r->valref);
-	if (!--r->valref)
-		r_unref(r);
+#ifndef GAWKDEBUG
+	if (--r->valref)
+		return;
+#endif
+	r_unref(r);
 }
 
 #define POP_NUMBER() force_number(POP_SCALAR())
