@@ -3467,7 +3467,7 @@ get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 					sourceline++;
 					tokadd((char)c);
 				}
-			} while (isspace(c) && c != END_FILE);
+			} while (c != END_FILE && isspace(c));
 			if (c == END_FILE)
 				break;
 			else if (c != '#') {
