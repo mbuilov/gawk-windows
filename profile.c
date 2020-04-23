@@ -676,7 +676,7 @@ cleanup:
 			if (pc->opcode == Op_K_print_rec)
 				// instead of `print $0', just `print'
 				tmp = strdup("");
-			else if (pc->redir_type != 0) {
+			else if (pc->redir_type != redirect_none) {
 				// Avoid turning printf("hello\n") into printf(("hello\n"))
 				NODE *n = pp_top();
 
@@ -694,7 +694,7 @@ cleanup:
 				tmp[strlen(tmp) - 1] = '\0';	/* remove trailing space */
 			}
 
-			if (pc->redir_type != 0) {
+			if (pc->redir_type != redirect_none) {
 				t1 = pp_pop();
 				if (is_binary((OPCODE) t1->type))
 					pp_parenthesize(t1);
@@ -767,7 +767,7 @@ cleanup:
 			} else
 				tmp = pp_group3(op2str(Op_K_getline), "", "");
 
-			if (pc->redir_type != 0) {
+			if (pc->redir_type != redirect_none) {
 				bool before = (pc->redir_type == redirect_pipein
 							|| pc->redir_type == redirect_twoway);
 
