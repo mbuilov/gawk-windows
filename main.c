@@ -306,15 +306,18 @@ wmain(int argc, wchar_t **wargv)
 #endif
 
 #if defined(_MSC_VER) && (defined(MEMDEBUG) || defined(MEMDEBUGLEAKS))
-	int crtdbg_flag = _CrtSetDbgFlag(0
-		| _CRTDBG_ALLOC_MEM_DF
-		| _CRTDBG_CHECK_EVERY_1024_DF
-		| _CRTDBG_CHECK_CRT_DF
-		| _CRTDBG_DELAY_FREE_MEM_DF
+	/* randtest.awk test takes too long time if tracking memory allocations,
+	   allow to disable this by setting GAWKTEST_NO_TRACK_MEM env variable.  */
+	int crtdbg_flag = getenv("GAWKTEST_NO_TRACK_MEM") != NULL ? 0 :
+		_CrtSetDbgFlag(0
+			| _CRTDBG_ALLOC_MEM_DF
+			| _CRTDBG_CHECK_EVERY_1024_DF
+			| _CRTDBG_CHECK_CRT_DF
+			| _CRTDBG_DELAY_FREE_MEM_DF
 #ifdef MEMDEBUGLEAKS
-		| _CRTDBG_LEAK_CHECK_DF
+			| _CRTDBG_LEAK_CHECK_DF
 #endif
-	);
+		);
 	(void) crtdbg_flag;
 #endif
 
@@ -752,7 +755,7 @@ usage(int exitval, FILE *fp)
 #ifdef NOSTALGIA
 	fputs(_("\t-W nostalgia\t\t--nostalgia\n"), fp);
 #endif
-#ifdef GAWKDEBUG
+#if defined(YYDEBUG) || defined(GAWKDEBUG)
 	fputs(_("\t-Y\t\t\t--parsedebug\n"), fp);
 #endif
 #if defined(LOCALEDEBUG) || defined(_MSC_VER)
