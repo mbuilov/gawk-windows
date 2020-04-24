@@ -1,21 +1,45 @@
 @echo off
 setlocal
 
+:: Supported build targets:
+::
+:: <no args>    - build everything, then run all tests
+:: awk          - build only the GAWK executable
+:: ext          - build only extension DLLs
+:: test         - run all tests
+:: test basic   - run only basic tests
+:: test unix    - run only unix tests
+:: test ext     - run only extension tests
+:: test cpu     - run only machine tests
+:: test locale  - run only locale tests
+:: test shlib   - run only tests of extension DLLs
+:: clean        - cleanup build results
+
+
+:: If needed, next variables may be redefined in this batch file:
+::
+:: COMPILE_AS_CXX  - undefine to compile with C compiler,
+:: DEBUG_BUILD     - define to build debug versions of gawk.exe and extension DLLs
+:: DO_ANALYZE      - define to enable static analysis of the sources during the compilation
+
+
 set DO_BUILD_GAWK=x
 set DO_BUILD_EXT=x
 set DO_TEST=x
+set DO_TEST_ONLY=
 
-if "test"=="%~1%" (
+if "test"=="%~1" (
   set DO_BUILD_GAWK=
   set DO_BUILD_EXT=
-) else (if "awk"=="%~1%" (
+  set "DO_TEST_ONLY=%~2"
+) else (if "awk"=="%~1" (
   set DO_BUILD_EXT=
   set DO_TEST=
 ) else (if "ext"=="%~1" (
   set DO_BUILD_GAWK=
   set DO_TEST=
 ) else (if "clean"=="%~1" (
-  del gawk.exe *.obj pc\*.obj support\*.obj extension\*.obj *.dll *.exp *.lib helpers\*.exe 2>NUL
+  del gawk.exe *.ilk *.pdb *.obj pc\*.obj support\*.obj extension\*.obj *.dll *.exp *.lib helpers\*.exe 2>NUL
   exit /b
 ))))
 
@@ -38,8 +62,14 @@ rem set ARRAYDEBUG=x
 if defined DEBUG_BUILD (set ARRAYDEBUG=x) else (set ARRAYDEBUG=)
 rem set MEMDEBUG=x
 if defined DEBUG_BUILD (set MEMDEBUG=x) else (set MEMDEBUG=)
+
+:: off by default, because is too noisy
 set REGEXDEBUG=
 rem if defined DEBUG_BUILD (set REGEXDEBUG=x) else (set REGEXDEBUG=)
+
+:: off by default, because is too slow
+set MEMDEBUGLEAKS=
+rem if defined DEBUG_BUILD (set MEMDEBUGLEAKS=x) else (set MEMDEBUGLEAKS=)
 
 :: disable deprecation warnings
 set "NODEPRECATE=/D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_DEPRECATE /D_WINSOCK_DEPRECATED_NO_WARNINGS"
@@ -100,10 +130,11 @@ if defined DEBUG_BUILD (
   set "EXTLINK=link /nologo /LTCG /DLL /SUBSYSTEM:CONSOLE /Entry:ExtDllMain /DEFAULTLIB:kernel32 /DEFAULTLIB:libvcruntime /DEFAULTLIB:libucrt"
 )
 
-if defined GAWKDEBUG  (set "GAWK_DEFINES=%GAWK_DEFINES% /DGAWKDEBUG")
-if defined ARRAYDEBUG (set "GAWK_DEFINES=%GAWK_DEFINES% /DARRAYDEBUG")
-if defined MEMDEBUG   (set "GAWK_DEFINES=%GAWK_DEFINES% /DMEMDEBUG")
-if defined REGEXDEBUG (set "GAWK_DEFINES=%GAWK_DEFINES% /DDEBUG")
+if defined GAWKDEBUG     (set "GAWK_DEFINES=%GAWK_DEFINES% /DGAWKDEBUG")
+if defined ARRAYDEBUG    (set "GAWK_DEFINES=%GAWK_DEFINES% /DARRAYDEBUG")
+if defined MEMDEBUG      (set "GAWK_DEFINES=%GAWK_DEFINES% /DMEMDEBUG")
+if defined REGEXDEBUG    (set "GAWK_DEFINES=%GAWK_DEFINES% /DDEBUG")
+if defined MEMDEBUGLEAKS (set "GAWK_DEFINES=%GAWK_DEFINES% /DMEMDEBUGLEAKS")
 
 set "GAWKCC=cl %CMNOPTS% %GAWK_DEFINES% /DHAVE___INLINE /DHAVE_CONFIG_H /DLOCALEDIR=\"\" /DDEFPATH=\".\" /DDEFLIBPATH=\"\" /DSHLIBEXT=\"dll\" /Isupport /Ipc /I."
 set "EXTCC=cl %CMNOPTS% /DGAWK_STATIC_CRT /DHAVE_CONFIG_H /Iextension /Ipc /I."
@@ -279,8 +310,11 @@ echo.===============================================================
 
 setlocal & set CALL_STAT=0
 
+:: don't call abort() in gawk.exe - it shows a message box window
+call :exec set GAWKTESTING=1 || goto :exit_local
+
 call :change_locale C || goto :exit_local
-gawk.exe -f "test\printlang.awk" || ((echo.failed to execute gawk.exe) & goto :exit_local)
+gawk.exe -f "test\printlang.awk" || ((echo.failed to execute: gawk.exe -f "test\printlang.awk") & goto :exit_local)
 
 call :exec cd test
 set err=%ERRORLEVEL%
@@ -295,18 +329,32 @@ endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b %err%
 
 :tests_in_directory
 call :execq "set AWKPATH=." || exit /b
+
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="basic" goto :try_unix_tests)
 echo.======== Starting basic tests ========
 call :basic_tests           || exit /b
 echo.======== Done with basic tests ========
+
+:try_unix_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="unix" goto :try_ext_tests)
 echo.======== Starting Unix tests ========
 call :unix_tests            || exit /b
 echo.======== Done with Unix tests ========
+
+:try_ext_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="ext" goto :try_cpu_tests)
 echo.======== Starting gawk extension tests ========
 call :ext_tests             || exit /b
 echo.======== Done with gawk extension tests ========
+
+:try_cpu_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="cpu" goto :try_locale_tests)
 echo.======== Starting machine-specific tests ========
 call :machine_tests         || exit /b
 echo.======== Done with machine-specific tests ========
+
+:try_locale_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="locale" goto :try_shlib_tests)
 echo.======== Starting tests that can vary based on character set or locale support ========
 echo.**************************************************************************
 echo.* Some or all of these tests may fail if you have inadequate or missing  *
@@ -315,11 +363,30 @@ echo.* ja_JP.UTF-8 are needed. The el_GR.iso88597 is optional but helpful.    *
 echo.**************************************************************************
 call :charset_tests         || exit /b
 echo.======== Done with tests that can vary based on character set or locale support ========
+
+:try_shlib_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="shlib" goto :end_of_tests)
 echo.======== Starting shared library tests ========
 call :shlib_tests           || exit /b
 echo.======== Done with shared library tests ========
-echo.ALL TESTS PASSED
 
+:end_of_tests
+if defined DO_TEST_ONLY (
+  if not "%DO_TEST_ONLY%"=="basic" (
+  if not "%DO_TEST_ONLY%"=="unix" (
+  if not "%DO_TEST_ONLY%"=="ext" (
+  if not "%DO_TEST_ONLY%"=="cpu" (
+  if not "%DO_TEST_ONLY%"=="locale" (
+  if not "%DO_TEST_ONLY%"=="shlib" (
+    echo.ERROR: unknown sub-test name: "%DO_TEST_ONLY%"
+    exit /b 1
+)))))))
+
+if defined DO_TEST_ONLY (
+  echo.%DO_TEST_ONLY% TESTS PASSED
+) else (
+  echo.ALL TESTS PASSED
+)
 exit /b
 
 :::::: BASIC TESTS :::::
@@ -546,7 +613,12 @@ call :runtest         prmreuse                                || exit /b
 call :runtest         prt1eval                                || exit /b
 call :runtest         prtoeval                                || exit /b
 call :runtest         rand                                    || exit /b
-call :runtest randtest "-vRANDOM=" "-vNSAMPLES=1024" "-vMAX_ALLOWED_SIGMA=5" "-vNRUNS=50" || exit /b
+
+setlocal & set CALL_STAT=0
+call :exec set GAWKTEST_NO_TRACK_MEM=1                        || goto :exit_local
+call :runtest randtest "-vRANDOM=" "-vNSAMPLES=1024" "-vMAX_ALLOWED_SIGMA=5" "-vNRUNS=50" || goto :exit_local
+endlocal & set /A CALL_STAT+=%CALL_STAT%
+
 call :runtest_in      range1                                  || exit /b
 
 setlocal & set CALL_STAT=0
@@ -593,6 +665,7 @@ set "COMMAND=%COMMAND% | ..\gawk.exe "" /^^[^^a]/; END { print NR }"""
 call :execq "%COMMAND% >_rsnulbig2" && call :cmpdel rsnulbig2 || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
+call :runtest_in      rsnulw                                  || exit /b
 call :runtest         rstest1                                 || exit /b
 call :runtest         rstest2                                 || exit /b
 call :runtest         rstest3                                 || exit /b
@@ -609,7 +682,7 @@ call :runtest         sortempty                               || exit /b
 call :runtest_in      sortglos                                || exit /b
 
 setlocal & set CALL_STAT=0
-call :exec set LC_ALL=C
+call :exec set LC_ALL=C                                       || goto :exit_local
 call :runtest         spacere                                 || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
@@ -716,7 +789,7 @@ endlocal & set /A CALL_STAT+=%CALL_STAT%
 call :runtest_fail_ space -f """ """ .\space.awk              || exit /b
 
 setlocal & set CALL_STAT=0
-call :exec set TZ=UTC
+call :exec set TZ=UTC                                         || goto :exit_local
 call :runtest strftlng                                        || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
@@ -738,7 +811,7 @@ call :runtest_in      backw                                   || exit /b
 
 setlocal & set CALL_STAT=0
 set OK_SUFFIX=_win
-call :execq "..\gawk.exe -f 2>&1 | find /v ""patchlevel"" > _badargs" && ^
+call :execq "..\gawk.exe -f 2>&1 | find /v ""patchlevel"" | find /v ""--parsedebug"" > _badargs" && ^
 call :cmpdel badargs                                          || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
@@ -789,7 +862,9 @@ call :runtest_fail    clos1way5                               || exit /b
 
 setlocal & set CALL_STAT=0
 set OK_SUFFIX=_win
-call :runtest         clos1way6                               || goto :exit_local
+call :execq "..\gawk.exe -f clos1way6.awk > _clos1way6.out 2> _clos1way6.err" && ^
+call :execq "copy /b _clos1way6.err + _clos1way6.out _clos1way6 >NUL" || goto :exit_local
+call :cmpdel clos1way6 && call :exec del /q _clos1way6.out _clos1way6.err || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
 call :runtest         crlf                                    || exit /b
@@ -831,6 +906,7 @@ call :runtest         fpat4                                   || exit /b
 call :runtest_in      fpat5                                   || exit /b
 call :runtest_in      fpat6                                   || exit /b
 call :runtest_in      fpat7                                   || exit /b
+call :runtest_in      fpat8                                   || exit /b
 call :runtest_in      fpatnull                                || exit /b
 call :runtest_in      fsfwfs                                  || exit /b
 call :runtest_in      funlen                                  || exit /b
@@ -995,8 +1071,9 @@ call :cmpdel profile3                                         || exit /b
 call :execq "..\gawk.exe -f profile4.awk --pretty-print=_profile4" || exit /b
 call :cmpdel profile4                                         || exit /b
 
-call :execq "..\gawk.exe -f profile5.awk --pretty-print=_profile5 2> NUL" || exit /b
-call :cmpdel profile5 /t                                      || exit /b
+call :execq "..\gawk.exe -f profile5.awk --pretty=_profile5.out 2> _profile5.err" || exit /b
+call :execq "copy /b _profile5.out + _profile5.err _profile5 >NUL" || exit /b
+call :cmpdel profile5 /t && call :exec del /q _profile5.out _profile5.err || exit /b
 
 call :execq "..\gawk.exe --profile=ap-profile6.out -f profile6.awk > NUL"   || exit /b
 call :execq "more +2 ap-profile6.out > _profile6 && del /q ap-profile6.out" || exit /b
@@ -1020,6 +1097,10 @@ call :cmpdel profile11                                        || exit /b
 
 call :runtest         profile12 "--profile=ap-profile12.out" profile12.in || exit /b
 call :exec del /q ap-profile12.out                            || exit /b
+
+call :execq "..\gawk.exe -f profile13.awk --pretty-print=_profile13.out 2> _profile13.err" || exit /b
+call :execq "copy /b _profile13.out + _profile13.err _profile13 >NUL"  || exit /b
+call :cmpdel profile13 && call :exec del /q _profile13.out _profile13.err || exit /b
 
 :: UNSUPPORTED tests: pseudo-terminal api is not supported yet on Windows
 ::call :runtest         pty1                                    || exit /b
@@ -1076,6 +1157,10 @@ endlocal & set /A CALL_STAT+=%CALL_STAT%
 
 call :runtest           strtonum                              || exit /b
 call :runtest           strtonum1                             || exit /b
+call :runtest           stupid1                               || exit /b
+call :runtest           stupid2                               || exit /b
+call :runtest           stupid3                               || exit /b
+call :runtest           stupid4                               || exit /b
 call :runtest           switch2                               || exit /b
 call :runtest           symtab1                               || exit /b
 call :runtest           symtab2                               || exit /b
@@ -1093,6 +1178,7 @@ call :runtest           symtab9                               || exit /b
 call :exec del /q testit.txt                                  || exit /b
 
 call :runtest_fail_in   symtab10 --debug                      || exit /b
+call :runtest           symtab11                              || exit /b
 
 :: UNSUPPORTED test: reading files with timeout is not supported yet on windows
 ::call :runtest           timeout                               || exit /b
@@ -1111,7 +1197,7 @@ call :runtest_in        typeof5                               || exit /b
 call :runtest watchpoint1 -D watchpoint1.in "< watchpoint1.script" || exit /b
 
 (echo.%GAWK_DEFINES%) | find "ARRAYDEBUG" > NUL || ^
-rem. && ((echo gawk is not compiled to support the array debug tests) & exit /b 0)
+rem. && ((echo gawk was not compiled to support the array debug tests) & exit /b 0)
 
 call :runtest           arrdbg -v "okfile=arrdbg.ok" "| find ""array_f""" && ^
 call :exec del /q arrdbg.ok                                   || exit /b
