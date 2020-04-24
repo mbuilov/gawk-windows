@@ -1495,6 +1495,9 @@ version(void)
 #ifdef HAVE_MPFR
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
+#ifdef _MSC_VER
+	printf(" (MSVC)");
+#endif
 	printf("\n");
 	print_ext_versions();
 
