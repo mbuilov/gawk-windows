@@ -3422,7 +3422,7 @@ out_free:
 
       /* For all characters ch...:  */
       for (i = 0; i < BITSET_WORDS; ++i)
-	for (ch = i * BITSET_WORD_BITS, elem = acceptable[i], mask = 1;
+	for (ch = (Idx) (i * BITSET_WORD_BITS), elem = acceptable[i], mask = 1;
 	     elem;
 	     mask <<= 1, elem >>= 1, ++ch)
 	  if (__glibc_unlikely (elem & 1))
@@ -3453,7 +3453,7 @@ out_free:
 
       /* For all characters ch...:  */
       for (i = 0; i < BITSET_WORDS; ++i)
-	for (ch = i * BITSET_WORD_BITS, elem = acceptable[i], mask = 1;
+	for (ch = (Idx) (i * BITSET_WORD_BITS), elem = acceptable[i], mask = 1;
 	     elem;
 	     mask <<= 1, elem >>= 1, ++ch)
 	  if (__glibc_unlikely (elem & 1))
