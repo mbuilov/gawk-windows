@@ -1734,7 +1734,7 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 	 * debugger hook if it exists.
 	 */
 	if (num_exec_hook > 0) {
-		pos = !! do_debug;
+		pos = (unsigned) !! do_debug;
 		if (num_exec_hook > pos)
 			memmove(pre_execute + pos + 1, pre_execute + pos,
 					(num_exec_hook - pos) * sizeof (pre_execute[0]));
