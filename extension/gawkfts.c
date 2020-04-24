@@ -1318,7 +1318,7 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 	_DIAGASSERT(name != NULL);
 
 #define FSTENT_HEAD_SIZE \
-	((sizeof(FTSENT) - 1) & ~(sizeof(long long) - 1))
+	((sizeof(FTSENT) - 1) & ~(sizeof(void*) - 1))
 
 	/* check that FSTENT_HEAD_SIZE == offsetof(FTSENT, fts_name) */
 	(void) sizeof(int[1-2*(FSTENT_HEAD_SIZE !=
