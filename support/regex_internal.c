@@ -63,7 +63,7 @@ re_string_allocate (re_string_t *pstr, const char *str, Idx len, Idx init_len,
     return ret;
 
   pstr->word_char = dfa->word_char;
-  pstr->word_ops_used = !!dfa->word_ops_used;
+  pstr->word_ops_used = (unsigned char) !!dfa->word_ops_used;
   pstr->mbs = pstr->mbs_allocated ? pstr->mbs : (unsigned char *) str;
   pstr->valid_len = (pstr->mbs_allocated || dfa->mb_cur_max > 1) ? 0 : len;
   pstr->valid_raw_len = pstr->valid_len;
@@ -185,11 +185,11 @@ re_string_construct_common (const char *str, Idx len, re_string_t *pstr,
   pstr->len = len;
   pstr->raw_len = len;
   pstr->trans = trans;
-  pstr->icase = icase;
-  pstr->mbs_allocated = (trans != NULL || icase);
+  pstr->icase = (unsigned char) icase;
+  pstr->mbs_allocated = (unsigned char) (trans != NULL || icase);
   pstr->mb_cur_max = dfa->mb_cur_max;
-  pstr->is_utf8 = !!dfa->is_utf8;
-  pstr->map_notascii = !!dfa->map_notascii;
+  pstr->is_utf8 = (unsigned char) !!dfa->is_utf8;
+  pstr->map_notascii = (unsigned char) !!dfa->map_notascii;
   pstr->stop = pstr->len;
   pstr->raw_stop = pstr->stop;
 }
@@ -1449,7 +1449,7 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
   dfa->nodes[dfa->nodes_len].constraint = 0;
 #ifdef RE_ENABLE_I18N
   dfa->nodes[dfa->nodes_len].accept_mb =
-    ((token.type == OP_PERIOD && dfa->mb_cur_max > 1)
+    (unsigned int) ((token.type == OP_PERIOD && dfa->mb_cur_max > 1)
      || token.type == COMPLEX_BRACKET);
 #endif
   dfa->nexts[dfa->nodes_len] = -1;

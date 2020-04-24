@@ -222,7 +222,7 @@ re_compile_pattern (const char *pattern, size_t length,
   /* And GNU code determines whether or not to get register information
      by passing null for the REGS argument to re_match, etc., not by
      setting no_sub, unless RE_NO_SUB is set.  */
-  bufp->no_sub = !!(re_syntax_options & RE_NO_SUB);
+  bufp->no_sub = (unsigned int) !!(re_syntax_options & RE_NO_SUB);
 
   /* Match anchors at newline.  */
   bufp->newline_anchor = 1;
@@ -485,7 +485,7 @@ regcomp (regex_t *__restrict preg, const char *__restrict pattern, int cflags)
     }
   else
     preg->newline_anchor = 0;
-  preg->no_sub = !!(cflags & REG_NOSUB);
+  preg->no_sub = (unsigned int) !!(cflags & REG_NOSUB);
   preg->translate = NULL;
 
   ret = re_compile_internal (preg, pattern, strlen (pattern), syntax);
@@ -1158,7 +1158,7 @@ optimize_utf8 (re_dfa_t *dfa)
   /* The search can be in single byte locale.  */
   dfa->mb_cur_max = 1;
   dfa->is_utf8 = 0;
-  dfa->has_mb_node = dfa->nbackref > 0 || has_period;
+  dfa->has_mb_node = (unsigned int) (dfa->nbackref > 0 || has_period);
 }
 #endif
 
@@ -1831,11 +1831,11 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 	{
 	  wint_t wc = re_string_wchar_at (input,
 					  re_string_cur_idx (input) + 1);
-	  token->word_char = IS_WIDE_WORD_CHAR (wc) != 0;
+	  token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
 	}
       else
 #endif
-	token->word_char = IS_WORD_CHAR (c2) != 0;
+	token->word_char = (unsigned int) (IS_WORD_CHAR (c2) != 0);
 
       switch (c2)
 	{
@@ -1944,11 +1944,11 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
   if (input->mb_cur_max > 1)
     {
       wint_t wc = re_string_wchar_at (input, re_string_cur_idx (input));
-      token->word_char = IS_WIDE_WORD_CHAR (wc) != 0;
+      token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
     }
   else
 #endif
-    token->word_char = IS_WORD_CHAR (token->opr.c);
+    token->word_char = (unsigned int) (IS_WORD_CHAR (token->opr.c));
 
   switch (c)
     {
@@ -3691,7 +3691,7 @@ build_charclass_op (re_dfa_t *dfa, RE_TRANSLATE_TYPE trans,
       *err = REG_ESPACE;
       return NULL;
     }
-  mbcset->non_match = non_match;
+  mbcset->non_match = (unsigned int) non_match;
 #endif /* RE_ENABLE_I18N */
 
   /* We don't care the syntax in this case.  */

@@ -641,7 +641,7 @@ re_search_internal (const regex_t *preg, const char *string, Idx length,
     goto free_return;
   mctx.input.stop = stop;
   mctx.input.raw_stop = stop;
-  mctx.input.newline_anchor = !!preg->newline_anchor;
+  mctx.input.newline_anchor = (unsigned char) !!preg->newline_anchor;
 
   err = match_ctx_init (&mctx, eflags, dfa->nbackref * 2);
   if (__glibc_unlikely (err != REG_NOERROR))
