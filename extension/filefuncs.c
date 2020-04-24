@@ -703,7 +703,7 @@ init_filefuncs(void)
 #ifndef __MINGW32__
 	/* at least right now, only FTS needs initializing */
 
-#define FTS_NON_RECURSIVE 0x8000 /* Don't step into directories.  */
+#define FTS_NON_RECURSIVE	FTS_STOP	/* Don't step into directories.  */
 	static const struct flagtab {
 		const char *name;
 		int value;
@@ -975,8 +975,8 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	size_t i, count;
 	int ret = -1;
 	static const int mask = (
-		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_PHYSICAL
-		| FTS_SEEDOT | FTS_XDEV | FTS_NON_RECURSIVE);
+		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT
+		| FTS_PHYSICAL | FTS_SEEDOT | FTS_XDEV | FTS_NON_RECURSIVE);
 
 	(void) unused;
 
@@ -1030,6 +1030,9 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 #endif
 	flags &= mask;	/* turn off anything else */
 
+	if (flags & FTS_NON_RECURSIVE)
+		flags |= FTS_NOCHDIR;
+
 	/* make pathvector */
 	count = path_array->count + 1;
 	ezalloc(pathvector, char **, count * sizeof(char *), "do_fts");
@@ -1044,7 +1047,8 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(clear_array(dest.array_cookie));
 
 	/* let's do it! */
-	if ((hierarchy = fts_open(pathvector, flags, NULL)) != NULL) {
+	hierarchy = fts_open(pathvector, flags & ~FTS_NON_RECURSIVE, NULL);
+	if (hierarchy != NULL) {
 		process(hierarchy, dest.array_cookie,
 			(flags & FTS_SEEDOT) != 0,
 			(flags & FTS_NON_RECURSIVE) != 0);
