@@ -527,7 +527,7 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 		char *buf;
 		ssize_t linksize;
 
-		if ((buf = read_symlink(h, name, sbuf->st_size, & linksize)) != NULL)
+		if ((buf = read_symlink(h, name, (size_t) sbuf->st_size, & linksize)) != NULL)
 			array_set(array, "linkval",
 				make_malloced_string(buf, (size_t) linksize, & tmp));
 		else
