@@ -4325,7 +4325,8 @@ dfamust (struct dfa const *d)
   struct dfamust *dm = NULL;
   if (*result)
     {
-      dm = (struct dfamust*) xmalloc (FLEXSIZEOF (struct dfamust, must, strlen (result) + 1));
+      typedef struct dfamust dfamust_t;
+      dm = (struct dfamust*) xmalloc (FLEXSIZEOF (dfamust_t, must, strlen (result) + 1));
       dm->exact = exact;
       dm->begline = begline;
       dm->endline = endline;
