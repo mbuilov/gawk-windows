@@ -1242,13 +1242,16 @@ call :runtest           fmttest                               || exit /b
 call :runtest           fnarydel                              || exit /b
 call :runtest           fnparydl                              || exit /b
 
-..\gawk "--locale=JAPANESE_japan.20932" --version > NUL 2>&1
-if ERRORLEVEL 1 (echo.JAPANESE_japan.20932 locale is not supported by the OS, skipping the test) else (
+"%GAWK%" "--locale=JAPANESE_japan.20932" --version > NUL 2>&1
+if ERRORLEVEL 1 (
+  echo.JAPANESE_japan.20932 locale is not supported by the OS, skipping the test
+  goto :skip_jp_test
+)
 setlocal & set CALL_STAT=0
 call :change_locale "JAPANESE_japan.20932"                    || goto :exit_local
 call :runtest           jarebug jarebug.in                    || goto :exit_local
 endlocal & set /A CALL_STAT+=%CALL_STAT%
-)
+:skip_jp_test
 
 setlocal & set CALL_STAT=0
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
