@@ -5,8 +5,8 @@ This is Edition 1.5 of 'TCP/IP Internetworking with 'gawk'', for the
 5.1.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
-Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019, 2020
+Free Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -33,8 +33,8 @@ END-INFO-DIR-ENTRY
 5.1.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
-Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019, 2020
+Free Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -64,8 +64,8 @@ This file documents the networking features in GNU Awk ('gawk') version
 5.1.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
-Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019, 2020
+Free Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -2337,7 +2337,31 @@ File: gawkinet.info,  Node: STATIST,  Next: MAZE,  Prev: WEBGRAB,  Up: Some Appl
 3.6 STATIST: Graphing a Statistical Distribution
 ================================================
 
-In the HTTP server examples we've shown thus far, we never present an
+      0.4 ,------------.------------_------------.------------,
+          |                        : :          sample 1 :::: |
+          |                       :   :         sample 2 ---- |
+      0.3 |-                     :     :_                    -|
+          |                      :    ,: `,                   |
+          |                     :    /  :  \                  |
+      0.2 |-                   :    /    :  \                -|
+          |                    :   /     :   \                |
+          |                   :   /       :   \               |
+      0.1 |-                 :   /         :   \             -|
+          |                  :  /          :    \             |
+          |                 : ,'            :    `,           |
+        0 |----------------'-'               `-----`----------|
+          |                                                   |
+          |                                                   |
+     -0.1 |-                    p(m1=m2) =0.0863798346775753 -|
+          |                                                   |
+          |                                                   |
+     -0.2 |-                    p(v1=v2) =0.31647637745891   -|
+          |                                                   |
+          |                                                   |
+     -0.3 `------------'------------'------------'------------'
+         -10           5            0            5           10
+
+   In the HTTP server examples we've shown thus far, we never present an
 image to the browser and its user.  Presenting images is one task.
 Generating images that reflect some user input and presenting these
 dynamically generated images is another.  In this node, we use GNUPlot
@@ -4242,7 +4266,7 @@ Index
 * input/output, two-way, See Also gawk, networking: Gawk Special Files.
                                                               (line  19)
 * Internet, See networks:                Interacting.         (line  48)
-* JavaScript:                            STATIST.             (line  56)
+* JavaScript:                            STATIST.             (line  80)
 * Linux:                                 Troubleshooting.     (line  54)
 * Linux <1>:                             Interacting.         (line  27)
 * Linux <2>:                             REMCONF.             (line   6)
@@ -4269,7 +4293,7 @@ Index
 * networks, ports, reserved:             Setting Up.          (line  37)
 * networks, ports, specifying:           Special File Fields. (line  24)
 * networks, See Also web pages:          PANIC.               (line   6)
-* Numerical Recipes:                     STATIST.             (line  24)
+* Numerical Recipes:                     STATIST.             (line  48)
 * ORS variable, HTTP and:                Web page.            (line  29)
 * ORS variable, POP and:                 Email.               (line  36)
 * PANIC program:                         PANIC.               (line   6)
@@ -4282,7 +4306,7 @@ Index
 * POP (Post Office Protocol):            Email.               (line   6)
 * POP (Post Office Protocol) <1>:        Email.               (line  36)
 * Post Office Protocol (POP):            Email.               (line   6)
-* PostScript:                            STATIST.             (line 138)
+* PostScript:                            STATIST.             (line 162)
 * PROLOG:                                Challenges.          (line  75)
 * PROTBASE:                              PROTBASE.            (line   6)
 * protocol field:                        Special File Fields. (line  17)
@@ -4354,60 +4378,60 @@ Index
 
 
 Tag Table:
-Node: Top2034
-Node: Preface5683
-Node: Introduction7058
-Node: Stream Communications8084
-Node: Datagram Communications9258
-Node: The TCP/IP Protocols10888
-Ref: The TCP/IP Protocols-Footnote-111572
-Node: Basic Protocols11729
-Ref: Basic Protocols-Footnote-113774
-Node: Ports13803
-Node: Making Connections15210
-Ref: Making Connections-Footnote-117768
-Ref: Making Connections-Footnote-217815
-Node: Using Networking17996
-Node: Gawk Special Files20319
-Node: Special File Fields22128
-Ref: table-inet-components26021
-Node: Comparing Protocols27332
-Node: File /inet/tcp27866
-Node: File /inet/udp28894
-Ref: File /inet/udp-Footnote-130593
-Node: TCP Connecting30847
-Node: Troubleshooting33193
-Ref: Troubleshooting-Footnote-136252
-Node: Interacting36825
-Node: Setting Up39565
-Node: Email43068
-Node: Web page45400
-Ref: Web page-Footnote-148217
-Node: Primitive Service48415
-Node: Interacting Service51156
-Ref: Interacting Service-Footnote-160323
-Node: CGI Lib60355
-Node: Simple Server67330
-Ref: Simple Server-Footnote-175075
-Node: Caveats75176
-Node: Challenges76321
-Ref: Challenges-Footnote-185063
-Node: Some Applications and Techniques85164
-Node: PANIC87629
-Node: GETURL89353
-Node: REMCONF91986
-Node: URLCHK97482
-Node: WEBGRAB101334
-Node: STATIST105798
-Ref: STATIST-Footnote-1117548
-Node: MAZE117993
-Node: MOBAGWHO124200
-Ref: MOBAGWHO-Footnote-1138218
-Node: STOXPRED138273
-Node: PROTBASE152561
-Node: Links165677
-Node: GNU Free Documentation License169110
-Node: Index194230
+Node: Top2046
+Node: Preface5701
+Node: Introduction7076
+Node: Stream Communications8102
+Node: Datagram Communications9276
+Node: The TCP/IP Protocols10906
+Ref: The TCP/IP Protocols-Footnote-111590
+Node: Basic Protocols11747
+Ref: Basic Protocols-Footnote-113792
+Node: Ports13821
+Node: Making Connections15228
+Ref: Making Connections-Footnote-117786
+Ref: Making Connections-Footnote-217833
+Node: Using Networking18014
+Node: Gawk Special Files20337
+Node: Special File Fields22146
+Ref: table-inet-components26039
+Node: Comparing Protocols27350
+Node: File /inet/tcp27884
+Node: File /inet/udp28912
+Ref: File /inet/udp-Footnote-130611
+Node: TCP Connecting30865
+Node: Troubleshooting33211
+Ref: Troubleshooting-Footnote-136270
+Node: Interacting36843
+Node: Setting Up39583
+Node: Email43086
+Node: Web page45418
+Ref: Web page-Footnote-148235
+Node: Primitive Service48433
+Node: Interacting Service51174
+Ref: Interacting Service-Footnote-160341
+Node: CGI Lib60373
+Node: Simple Server67348
+Ref: Simple Server-Footnote-175093
+Node: Caveats75194
+Node: Challenges76339
+Ref: Challenges-Footnote-185081
+Node: Some Applications and Techniques85182
+Node: PANIC87647
+Node: GETURL89371
+Node: REMCONF92004
+Node: URLCHK97500
+Node: WEBGRAB101352
+Node: STATIST105816
+Ref: STATIST-Footnote-1119042
+Node: MAZE119487
+Node: MOBAGWHO125694
+Ref: MOBAGWHO-Footnote-1139712
+Node: STOXPRED139767
+Node: PROTBASE154055
+Node: Links167171
+Node: GNU Free Documentation License170604
+Node: Index195724
 
 End Tag Table
 
