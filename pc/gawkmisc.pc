@@ -39,7 +39,7 @@ const char *deflibpath = DEFLIBPATH;
 static int _os2_is_abs_path(const char *dirname);
 static char* _os2_unixroot(const char *path);
 static const char* _os2_unixroot_path(const char *path);
-#endif
+#endif /* __EMX__ */
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #ifdef HAVE_SOCKETS
@@ -53,14 +53,29 @@ static const char* _os2_unixroot_path(const char *path);
 #undef accept
 #undef recvfrom
 #undef shutdown
-#endif
+#endif /* HAVE_SOCKETS */
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
+#endif /* __MINGW32__ || _MSC_VER */
 
 #if ! defined(S_ISREG) && defined(S_IFREG)
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#if ! defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
+#ifdef _MSC_VER
+/* S_IFSOCK is non-standard for _MSC_VER.  */
+#if ! defined(S_IFSOCK)
+#define S_IFSOCK (S_IFREG | S_IFDIR)
+#endif
+#endif /* _MSC_VER */
+
+#if ! defined(S_IFIFO) && defined(_S_IFIFO)
+#define S_IFIFO _S_IFIFO
 #endif
 
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
@@ -169,7 +184,7 @@ os_devopen(const char *name, int flag)
 /* optimal_bufsize --- determine optimal buffer size */
 
 size_t
-optimal_bufsize(fd_t fd, gawk_stat_t *stb)
+optimal_bufsize(fd_t fd, gawk_xstat_t *stb)
 {
 	/* force all members to zero in case OS doesn't use all of them. */
 	memset(stb, '\0', sizeof(*stb));
@@ -182,7 +197,7 @@ optimal_bufsize(fd_t fd, gawk_stat_t *stb)
 	 */
 #define	DEFBLKSIZE	BUFSIZ
 
-	if (gawk_fstat(fd, stb) == -1)
+	if (os_xfstat(fd, stb) == -1)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
 	if (S_ISREG(stb->st_mode)
 	    && 0 < stb->st_size && stb->st_size < DEFBLKSIZE) /* small file */
@@ -192,7 +207,7 @@ optimal_bufsize(fd_t fd, gawk_stat_t *stb)
 
 /* ispath --- return true if path has directory components */
 
-int
+bool
 ispath(const char *file)
 {
 #ifdef __EMX__
@@ -204,16 +219,16 @@ ispath(const char *file)
 		case '/':
 		case '\\':
 		case ':':
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 #endif
 }
 
 /* isdirpunct --- return true if char is a directory separator */
 
-int
+bool
 isdirpunct(int c)
 {
 	return (strchr(":\\/", c) != NULL);
@@ -233,9 +248,15 @@ os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 			what, dir, name, strerror(errno));
 #endif
 #if defined(__MINGW32__) || defined(_MSC_VER)
-	HANDLE fh = (HANDLE)_get_osfhandle(fd);
-
-	if (fh && fh != INVALID_HANDLE_VALUE)
+	HANDLE fh;
+#ifdef _MSC_VER
+	SOCKET s = valid_socket (fd);
+	if (s != INVALID_SOCKET)
+		fh = (HANDLE)s;
+	else
+#endif
+		fh = (HANDLE)_get_osfhandle(fd);
+	if (fh != INVALID_HANDLE_VALUE)
 		SetHandleInformation(fh, HANDLE_FLAG_INHERIT, 0);
 #endif
 	(void) name, (void) what, (void) dir;
@@ -243,21 +264,17 @@ os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 
 /* os_isdir --- is this an fd on a directory? */
 
-#if ! defined(S_ISDIR) && defined(S_IFDIR)
-#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
-int
+bool
 os_isdir(fd_t fd)
 {
 	gawk_stat_t sbuf;
 
-	return (gawk_fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
+	return (os_fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
 }
 
 /* os_isreadable --- fd can be read from */
 
-int
+bool
 os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 {
 	*isdir = false;
@@ -271,9 +288,6 @@ os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 #ifdef S_IFIFO
 	case S_IFIFO:
 #endif
-#ifdef _S_IFIFO
-	case _S_IFIFO:
-#endif
 		return true;
 	case S_IFDIR:
 		*isdir = true;
@@ -285,7 +299,7 @@ os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 
 /* os_is_setuid --- true if running setuid root */
 
-int
+bool
 os_is_setuid(void)
 {
 #ifdef __EMX__
@@ -296,7 +310,7 @@ os_is_setuid(void)
 
 	return (euid == 0 && euid != uid);
 #else
-	return 0;
+	return false;
 #endif
 }
 
@@ -311,7 +325,17 @@ static int orig_tty_mode = -1;
 int
 os_setbinmode(fd_t fd, int mode)
 {
-	int prev_mode = setmode(fd, mode);
+	int prev_mode;
+
+#ifdef _MSC_VER
+	if (is_socket(fd)) {
+		/* Only O_BINARY mode is supported.  */
+		assert(mode == O_BINARY);
+		return O_BINARY;
+	}
+#endif
+
+	prev_mode = setmode(fd, mode);
 
 #ifdef __DJGPP__
 	if ((mode & O_BINARY) != 0)
@@ -328,16 +352,23 @@ os_setbinmode(fd_t fd, int mode)
 void
 os_restore_mode(fd_t fd)
 {
-	if (orig_tty_mode != -1) {
+#ifdef _MSC_VER
+	if (is_socket(fd))
+		return;
+#endif
+	if (orig_tty_mode != -1)
 		(void) setmode(fd, orig_tty_mode);
-	}
 }
 
 /* os_isatty --- return true if fd is a tty */
 
-int
+bool
 os_isatty(fd_t fd)
 {
+#ifdef _MSC_VER
+	if (is_socket(fd))
+		return false;
+#endif
 #if defined(__MINGW32__) || defined(_MSC_VER)
 	return (isatty(fd) && lseek(fd, SEEK_CUR, 0) == -1);
 #else
@@ -347,37 +378,44 @@ os_isatty(fd_t fd)
 
 /* files_are_same --- return true if files are identical */
 
-int
+bool
 files_are_same(const char *path, SRCFILE *src)
 {
-	struct stat st;
 	size_t pathlen;
 	const char *p, *s;
 
-	if (stat (path, & st) == 0) {
-		/* If they have a working `stat', honor that.  */
-		if (!(st.st_dev == src->sbuf.st_dev
-		      && st.st_ino == src->sbuf.st_ino))
-			return 0;
+#ifdef _MSC_VER
+	struct xstat st;
+	int r = xstat (path, & st);
+#else
+	struct stat st;
+	int r = stat (path, & st);
+#endif
 
-		/* Compare modification times.  */
-		if (st.st_mtime != src->mtime)
-			return 0;
+	if (r != 0)
+		return false;
 
-		/* Compare absolute file names case-insensitively, and
-		   treat forward- and back-slashes as equal.  */
-		pathlen = strlen(path);
-		for (p = path, s = src->fullpath;
-		     p <= path + pathlen;
-		     p++, s++) {
-			if (tolower((unsigned char)*p) != tolower((unsigned char)*s)
-			    && !((*p == '/' || *p == '\\')
-				 && (*s == '/' || *s == '\\')))
-				return 0;
-		}
-		return 1;
+	/* If they have a working `stat', honor that.  */
+	if (!(st.st_dev == src->sbuf.st_dev
+	      && st.st_ino == src->sbuf.st_ino))
+		return false;
+
+	/* Compare modification times.  */
+	if (st.st_mtime != src->mtime)
+		return false;
+
+	/* Compare absolute file names case-insensitively, and
+	   treat forward- and back-slashes as equal.  */
+	pathlen = strlen(path);
+	for (p = path, s = src->fullpath;
+	     p <= path + pathlen;
+	     p++, s++) {
+		if (tolower((unsigned char)*p) != tolower((unsigned char)*s)
+		    && !((*p == '/' || *p == '\\')
+			 && (*s == '/' || *s == '\\')))
+			return false;
 	}
-	return 0;
+	return true;
 }
 
 
@@ -964,12 +1002,352 @@ dlsym (void *handle, const char *name)
 #endif	/* DYNAMIC */
 
 #ifdef HAVE_SOCKETS
+
+#ifdef _MSC_VER
+
+#ifndef SOCKET_TAB_MAX_ROWS
+#define SOCKET_TAB_MAX_ROWS  128
+#endif
+
+/* SOCKET_TAB_MAX_ROWS must be non-zero */
+typedef int socket_tab_max_rows_is_zero_[1 - 2*!SOCKET_TAB_MAX_ROWS];
+
+#ifndef SOCKET_ARRAY_SIZE
+#define SOCKET_ARRAY_SIZE    64
+#endif
+
+/* SOCKET_ARRAY_SIZE must be non-zero */
+typedef int socket_array_size_is_zero_[1 - 2*!SOCKET_ARRAY_SIZE];
+
+/* SOCKET_ARRAY_SIZE must be power of the two */
+typedef int socket_array_size_is_not_power_of_two_[1 -
+  2*!!((SOCKET_ARRAY_SIZE - 1) & SOCKET_ARRAY_SIZE)];
+
+typedef SOCKET socket_array_t[SOCKET_ARRAY_SIZE];
+static socket_array_t **socket_tab = NULL;
+static socket_array_t *socket_arr_cached = NULL;
+static size_t socket_tab_size = 0;
+static size_t socket_tab_capacity = 0;
+
+static socket_array_t *new_socket_array(void)
+{
+  socket_array_t *arr = (socket_array_t*) malloc(sizeof(*arr));
+  if (arr != NULL) {
+    size_t j = 0;
+    for (; j < SOCKET_ARRAY_SIZE; j++)
+      (*arr)[j] = INVALID_SOCKET;
+  }
+  return arr;
+}
+
+static int alloc_socket_fd(void)
+{
+  /* find free cell */
+  size_t i, j;
+  for (i = 0; i < socket_tab_size; i++) {
+    for (j = 0; j < SOCKET_ARRAY_SIZE; j++) {
+      if ((*socket_tab[i])[j] == INVALID_SOCKET)
+        return (int) (i*SOCKET_ARRAY_SIZE + j);
+    }
+  }
+
+  /* no free cells */
+  if (socket_tab_size == SOCKET_TAB_MAX_ROWS)
+    return -1;
+
+  /* add new row */
+  if (socket_tab_size == socket_tab_capacity) {
+    socket_array_t **new_tab = (socket_array_t**) realloc(
+      socket_tab, sizeof(*socket_tab)*(socket_tab_capacity + 1));
+    if (new_tab == NULL)
+      return -1;
+    socket_tab = new_tab;
+    socket_tab_capacity++;
+  }
+  if (socket_arr_cached == NULL) {
+    socket_arr_cached = new_socket_array();
+    if (socket_arr_cached == NULL)
+      return -1;
+  }
+  socket_tab[socket_tab_size++] = socket_arr_cached;
+  socket_arr_cached = NULL;
+  return (int) ((socket_tab_size - 1)*SOCKET_ARRAY_SIZE);
+}
+
+static int close_socket_fd(unsigned fd)
+{
+  int r = 0;
+  size_t row = fd/SOCKET_ARRAY_SIZE;
+  size_t idx = fd%SOCKET_ARRAY_SIZE;
+  SOCKET s = (*socket_tab[row])[idx];
+  size_t dup_row;
+
+  /* check if socket is not dup'ed */
+  for (dup_row = 0; dup_row < socket_tab_size; dup_row++) {
+    size_t dup_idx;
+    for (dup_idx = 0; dup_idx < SOCKET_ARRAY_SIZE; dup_idx++) {
+      if ((*socket_tab[dup_row])[dup_idx] == s &&
+          (dup_row != row || dup_idx != idx))
+        goto found_dup;
+    }
+  }
+found_dup:
+
+  /* don't close if socket was dup'ed */
+  if (dup_row == socket_tab_size)
+    r = closesocket(s);
+
+  (*socket_tab[row])[idx] = INVALID_SOCKET;
+  if (row != socket_tab_size - 1 || dup_row == row)
+    return r;
+
+  /* try to free tail rows */
+  for (;; row--) {
+    size_t j = 0;
+    for (; j < SOCKET_ARRAY_SIZE; j++) {
+      if ((*socket_tab[row])[j] != INVALID_SOCKET)
+        return r;
+    }
+    if (socket_arr_cached != NULL)
+      free(socket_arr_cached);
+    socket_arr_cached = socket_tab[row];
+    socket_tab_size = row;
+    if (socket_tab_size == 0)
+      return r;
+  }
+}
+
+static SOCKET *get_socket(unsigned fd)
+{
+  size_t row = fd/SOCKET_ARRAY_SIZE;
+  size_t idx = fd%SOCKET_ARRAY_SIZE;
+  return &(*socket_tab[row])[idx];
+}
+
+static void free_socket_tab(void)
+{
+  /* all FDs must be closed */
+  assert(socket_tab_size == 0);
+  if (socket_arr_cached != NULL) {
+    free(socket_arr_cached);
+    socket_arr_cached = NULL;
+  }
+  if (socket_tab != NULL) {
+    free(socket_tab);
+    socket_tab = NULL;
+  }
+  socket_tab_capacity = 0;
+}
+
+int ws_socket_dup(int oldfd)
+{
+  assert(is_socket(oldfd));
+  {
+    int fd = alloc_socket_fd();
+    if (fd != -1) {
+      SOCKET s = *get_socket((unsigned)oldfd & ~SOCKET_FD_BIT);
+      *get_socket((unsigned)fd) = s;
+      return (int)(fd | SOCKET_FD_BIT);
+    }
+    return INVALID_HANDLE;
+  }
+}
+
+#ifndef SOCKET_FILE_BUFFER_SIZE
+#define SOCKET_FILE_BUFFER_SIZE 4096
+#endif
+
+socket_file_t *socket_file_alloc(void)
+{
+  struct socket_file *sf = (struct socket_file*) malloc(sizeof(*sf));
+  if (sf != NULL) {
+    sf->buf = malloc(SOCKET_FILE_BUFFER_SIZE);
+    if (sf->buf != NULL) {
+      sf->buf_size = SOCKET_FILE_BUFFER_SIZE;
+      sf->filled = 0;
+      return sf;
+    }
+    free(sf);
+  }
+  return NULL;
+}
+
+void socket_file_free(socket_file_t *sf)
+{
+  free(sf->buf);
+  free(sf);
+}
+
+int socket_file_fflush(socket_file_t *sf, fd_t fd)
+{
+  int ret;
+  SOCKET s;
+  if (sf->filled == 0)
+    return 0;
+  if (sf->filled < 0) {
+    errno = EIO;
+    return EOF;
+  }
+  s = *get_socket(fd & ~SOCKET_FD_BIT);
+  ret = send(s, (const char*) sf->buf, sf->filled, 0);
+  if (ret == SOCKET_ERROR) {
+    errno = EIO;
+    sf->filled = 0 - sf->filled - 1;
+    return EOF;
+  }
+  sf->filled = 0;
+  return 0;
+}
+
+size_t socket_file_fwrite(socket_file_t *sf, fd_t fd,
+  const void *ptr, size_t size, size_t nmemb)
+{
+  int ret;
+  SOCKET s;
+  size_t n, result, to_send, rem;
+  unsigned space;
+  if (nmemb == 0 || size == 0 || sf->filled < 0)
+    return 0;
+  s = *get_socket(fd & ~SOCKET_FD_BIT);
+  n = nmemb;
+  space = sf->buf_size - sf->filled;
+  if (size == 1) {
+    to_send = n;
+    if (to_send > space) {
+      n = to_send - space;
+      to_send = space;
+    }
+    rem = 0;
+  }
+  else {
+    to_send = size;
+    while (--n && to_send < space)
+      to_send += size;
+    if (to_send > space) {
+      rem = to_send - space;
+      to_send = space;
+    }
+    else
+      rem = 0;
+  }
+  if (sf->filled || (unsigned) to_send != space) {
+    char *dest = (char*) sf->buf + sf->filled;
+    unsigned filled = (unsigned) (((char*) memcpy(dest, ptr, to_send)
+      - (char*) sf->buf) + (unsigned) to_send);
+    if (filled != sf->buf_size) {
+      sf->filled = (int) filled;
+      return nmemb;
+    }
+    ptr = (const char*) ptr + (unsigned) to_send;
+    ret = send(s, (const char*) sf->buf, (int) filled, 0);
+    if (ret == SOCKET_ERROR) {
+      errno = EIO;
+      sf->filled = 0 - (int) (filled - (unsigned) (size - rem)) - 1;
+      return nmemb - n - 1;
+    }
+    space = (unsigned) filled;
+    goto block_sent;
+  }
+  for (result = 0;;) {
+    ret = send(s, (const char*) ptr, (int) space, 0);
+    if (ret == SOCKET_ERROR) {
+      errno = EIO;
+      sf->filled = -1;
+      return result;
+    }
+    ptr = (const char*) ptr + space;
+block_sent:
+    result = nmemb - n - !!rem;
+    if (size == 1) {
+      to_send = n;
+      if (to_send > space) {
+        n = to_send - space;
+        to_send = space;
+      }
+      else if (to_send != space)
+        break;
+    }
+    else {
+      for (to_send = rem; n && to_send < space; n--)
+        to_send += size;
+      if (to_send > space) {
+        rem = to_send - space;
+        to_send = space;
+      }
+      else if (to_send != space)
+        break;
+      else
+        rem = 0;
+    }
+  }
+  sf->filled = (int) to_send;
+  if (to_send)
+    memcpy(sf->buf, ptr, to_send);
+  return nmemb;
+}
+
+void socket_file_clearerr(socket_file_t *sf)
+{
+  if (sf->filled < 0)
+    sf->filled = 0 - (sf->filled + 1);
+}
+
+int os_fstat(int fd, gawk_stat_t *buf)
+{
+  if (!is_socket(fd))
+    return _fstat64(fd, buf);
+  else {
+    memset(buf, 0, sizeof(*buf));
+    buf->st_mode = S_IFSOCK;
+    buf->st_dev = (dev_t)-1;
+    return 0;
+  }
+}
+
+int os_xfstat(int fd, gawk_xstat_t *buf)
+{
+  if (!is_socket(fd))
+    return xfstat((void*) _get_osfhandle(fd), NULL, buf);
+  else {
+    memset(buf, 0, sizeof(*buf));
+    buf->st_mode = S_IFSOCK;
+    buf->st_dev = (xdev_t)-1;
+    return 0;
+  }
+}
+
+#endif /* _MSC_VER */
+
+SOCKET
+fd_to_socket(int fd)
+{
+#ifndef _MSC_VER
+  if (fd != INVALID_HANDLE)
+    return _get_osfhandle(fd);
+#else /* _MSC_VER */
+  if (is_socket(fd))
+    return *get_socket(fd & ~SOCKET_FD_BIT);
+#endif /* _MSC_VER */
+  return INVALID_SOCKET;
+}
+
 int
 socket_to_fd(SOCKET s)
 {
-  return (s == INVALID_SOCKET
-          ? INVALID_HANDLE
-          : _open_osfhandle ((intptr_t)s, O_BINARY | O_NOINHERIT));
+  if (s == INVALID_SOCKET)
+    return INVALID_HANDLE;
+#ifndef _MSC_VER
+  return _open_osfhandle ((intptr_t)s, O_BINARY | O_NOINHERIT);
+#else /* _MSC_VER */
+  {
+    int fd = alloc_socket_fd();
+    if (fd != -1) {
+      *get_socket((unsigned)fd) = s;
+      return (int)(fd | SOCKET_FD_BIT);
+    }
+    return INVALID_HANDLE;
+  }
+#endif /* _MSC_VER */
 }
 
 int
@@ -1050,31 +1428,48 @@ SOCKET
 valid_socket (int fd)
 {
   SOCKET s = FD_TO_SOCKET (fd);
-  int ov, ol = 4;
+  if (s == INVALID_SOCKET)
+    return INVALID_SOCKET;
 
-  if (s == INVALID_SOCKET
-      || (getsockopt (s, SOL_SOCKET, SO_TYPE, (char *)&ov, &ol) == SOCKET_ERROR
-	  && WSAGetLastError() == WSAENOTSOCK))
-    return (SOCKET)0;
+#ifndef _MSC_VER
+  {
+    int ov, ol = 4;
+    if (getsockopt (s, SOL_SOCKET, SO_TYPE, (char *)&ov, &ol) == SOCKET_ERROR
+        && WSAGetLastError() == WSAENOTSOCK)
+      s = INVALID_SOCKET;
+  }
+#endif
+
   return s;
 }
 
 int
-w32_closesocket (int fd)
+w32_closemaybesocket (int fd)
 {
+  int res;
+
+#ifdef _MSC_VER
+
+  if (is_socket (fd)) {
+    int res2 = close_socket_fd (fd & ~SOCKET_FD_BIT);
+    res = res2 == SOCKET_ERROR ? -1 : 0;
+  }
+  else
+    res = close (fd);
+
+#else /* !_MSC_VER */
+
   SOCKET s = valid_socket (fd);
-  int res1, res2 = 0;
+  res = close (fd);
+  if (s != INVALID_SOCKET) {
+    int res2 = closesocket (s);
+    if (res2 == SOCKET_ERROR)
+      res = -1;
+  }
 
-  if (!s && fd == FAKE_FD_VALUE)
-    return 0;
+#endif /* !_MSC_VER */
 
-  res1 = close (fd);
-  if (s)
-    res2 = closesocket (s);
-
-  if (res1 == -1 || res2 == SOCKET_ERROR)
-    return -1;
-  return 0;
+  return res;
 }
 
 int
@@ -1114,6 +1509,7 @@ gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
 
   return buf;
 }
+
 #endif	/* HAVE_SOCKETS */
 
 /* Translate abnormal exit status of Windows programs into the signal
@@ -1296,6 +1692,7 @@ gawk_free_argv(void)
 			efree(*a);
 		efree(gawk_argv);
 	}
+	free_socket_tab();
 }
 
 #endif /* _MSC_VER */
