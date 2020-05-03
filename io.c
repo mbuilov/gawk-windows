@@ -134,17 +134,12 @@
 #define ENFILE EMFILE
 #endif
 
-#if defined(__DJGPP__)
-#define closemaybesocket(fd)	close(fd)
-#endif
-
 #if defined(VMS)
 #include <ssdef.h>
 #ifndef SS$_EXBYTLM
 #define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
 #endif
 #include <rmsdef.h>
-#define closemaybesocket(fd)	close(fd)
 #endif
 
 #ifdef HAVE_SOCKETS
@@ -173,28 +168,19 @@
 # endif
 #endif
 
-/* MinGW defines non-trivial macros on pc/socket.h.  */
-#ifndef FD_TO_SOCKET
-# define FD_TO_SOCKET(fd)	(fd)
-# define closemaybesocket(fd)	close(fd)
+#ifndef socket_dup
+# define socket_dup(oldfd)	dup(oldfd)
 #endif
 
-#ifndef SOCKET_TO_FD
-# define SOCKET_TO_FD(s)	(s)
-# define SOCKET			int
-#endif
-
-#else /* HAVE_SOCKETS */
+#endif /* HAVE_SOCKETS */
 
 #ifndef closemaybesocket
 # define closemaybesocket(fd)	close(fd)
 #endif
 
-#endif /* HAVE_SOCKETS */
-
 #ifndef HAVE_SETSID
 #define setsid()	/* nothing */
-#endif /* HAVE_SETSID */
+#endif
 
 #if defined(_AIX)
 #undef TANDEM	/* AIX defines this in one of its header files */
@@ -227,7 +213,8 @@ extern int usleep(unsigned int usec);
 #define at_eof(iop)     (((iop)->flag & IOP_AT_EOF) != 0)
 #define has_no_data(iop)        ((iop)->dataend == NULL)
 #define no_data_left(iop)	((iop)->off >= (iop)->dataend)
-#define buffer_has_all_data(iop) ((iop)->dataend - (iop)->off == (iop)->publ.sbuf.st_size)
+#define buffer_has_all_data(iop) \
+	((size_t) ((iop)->dataend - (iop)->off) == (iop)->publ.sbuf.st_size)
 
 /*
  * The key point to the design is to split out the code that searches through
@@ -903,7 +890,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		str = rp->value;	/* get \0 terminated string */
 	save_rp = rp;
 
-	while (rp->output.fp == NULL && rp->iop == NULL) {
+	while (rp->output.file == NULL && rp->iop == NULL) {
 		if (! new_rp && (rp->flag & RED_EOF) != 0) {
 			/*
 			 * Encountered EOF on file or pipe -- must be cleared
@@ -939,13 +926,13 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			 * using a non-existant program will still succeed the
 			 * popen().
 			 */
-			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
+			if ((rp->output.file = popen(str, binmode("w"))) == NULL)
 				fatal(_("cannot open pipe `%s' for output: %s"),
 						str, strerror(errno));
 			ignore_sigpipe();
 
 			/* set close-on-exec */
-			os_close_on_exec(fileno(rp->output.fp), str, "pipe", "to");
+			os_close_on_exec(fileno((FILE*) rp->output.file), str, "pipe", "to");
 			rp->flag |= RED_NOBUF;
 			break;
 		case redirect_pipein:
@@ -1005,28 +992,41 @@ redirect_string(const char *str, size_t explen, bool not_string,
 
 			if (fd > INVALID_HANDLE) {
 				if (fd == fileno(stdin))
-					rp->output.fp = stdin;
+					rp->output.file = stdin;
 				else if (fd == fileno(stdout))
-					rp->output.fp = stdout;
+					rp->output.file = stdout;
 				else if (fd == fileno(stderr))
-					rp->output.fp = stderr;
+					rp->output.file = stderr;
 				else {
 					const char *omode = mode;
-#if defined(F_GETFL) && defined(O_APPEND)
-					int fd_flags;
-
-					fd_flags = fcntl(fd, F_GETFL);
-					if (fd_flags != -1 && (fd_flags & O_APPEND) == O_APPEND)
-						omode = binmode("a");
+#ifdef _MSC_VER
+					if (!is_socket(fd))
 #endif
+					{
+#if defined(F_GETFL) && defined(O_APPEND)
+						int fd_flags = fcntl(fd, F_GETFL);
+						if (fd_flags != -1 &&
+						    (fd_flags & O_APPEND) == O_APPEND)
+							omode = binmode("a");
+#endif
+					}
+
 					os_close_on_exec(fd, str, "file", "");
-					rp->output.fp = fdopen(fd, (const char *) omode);
-					rp->mode = (const char *) mode;
+#ifdef _MSC_VER
+					if (is_socket(fd)) {
+						rp->output.file = socket_file_alloc();
+						if (rp->output.file != NULL)
+							rp->output.socket_fd = fd;
+					}
+					else
+#endif
+						rp->output.file = fdopen(fd, omode);
 					/* don't leak file descriptors */
-					if (rp->output.fp == NULL)
-						close(fd);
+					if (rp->output.file == NULL)
+						closemaybesocket(fd);
+					rp->mode = mode;
 				}
-				if (rp->output.fp != NULL && os_isatty(fd))
+				if (rp->output.file != NULL && os_isatty(fd))
 					rp->flag |= RED_NOBUF;
 
 				/* Move rp to the head of the list. */
@@ -1042,7 +1042,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			find_output_wrapper(& rp->output);
 		}
 
-		if (rp->output.fp == NULL && rp->iop == NULL) {
+		if (rp->output.file == NULL && rp->iop == NULL) {
 			/* too many files open -- close one and try again */
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
@@ -1170,6 +1170,13 @@ is_non_fatal_redirect(const char *str, size_t len)
 	return ret;
 }
 
+#ifdef _MSC_VER
+#define awk_output_buf_reset(outbuf) \
+		((void) ((outbuf)->file = NULL, (outbuf)->socket_fd = INVALID_HANDLE))
+#else
+#define awk_output_buf_reset(outbuf)		((outbuf)->file = NULL)
+#endif
+
 /* close_one --- temporarily close an open file to re-use the fd */
 
 static void
@@ -1190,17 +1197,25 @@ close_one(void)
 		rplast = rp;
 	/* now work back up through the list */
 	for (rp = rplast; rp != NULL; rp = rp->prev) {
-		/* don't close standard files! */
-		if (rp->output.fp == NULL || rp->output.fp == stderr || rp->output.fp == stdout)
+		if (rp->output.file == NULL)
 			continue;
+
+#ifdef _MSC_VER
+		if (rp->output.socket_fd == INVALID_HANDLE)
+#endif
+		{
+			/* don't close standard files! */
+			if (rp->output.file == stderr || rp->output.file == stdout)
+				continue;
+		}
 
 		if ((rp->flag & (RED_FILE|RED_WRITE)) == (RED_FILE|RED_WRITE)) {
 			rp->flag |= RED_USED;
 			errno = 0;
-			if (rp->output.gawk_fclose(rp->output.fp, rp->output.opaque) != 0)
+			if (rp->output.gawk_fclose(&rp->output) != 0)
 				awkwarn(_("close of `%s' failed: %s."),
 					rp->value, strerror(errno));
-			rp->output.fp = NULL;
+			awk_output_buf_reset(&rp->output);
 			break;
 		}
 	}
@@ -1290,18 +1305,25 @@ close_rp(struct redirect *rp, two_way_close_type how)
 	errno = 0;
 	if ((rp->flag & RED_TWOWAY) != 0) {	/* two-way pipe */
 		/* write end: */
-		if ((how == CLOSE_ALL || how == CLOSE_TO) && rp->output.fp != NULL) {
+		if ((how == CLOSE_ALL || how == CLOSE_TO) && rp->output.file != NULL) {
 #ifdef HAVE_SOCKETS
-			if ((rp->flag & RED_TCP) != 0)
-				(void) shutdown(fileno(rp->output.fp), SHUT_WR);
+			if ((rp->flag & RED_TCP) != 0) {
+				fd_t fd;
+#ifdef _MSC_VER
+				fd = rp->output.socket_fd;
+#else
+				fd = fileno((FILE*) rp->output.file);
+#endif
+				(void) shutdown(fd, SHUT_WR);
+			}
 #endif /* HAVE_SOCKETS */
 
 			if ((rp->flag & RED_PTY) != 0) {
-				rp->output.gawk_fwrite("\004\n", sizeof("\004\n") - 1, 1, rp->output.fp, rp->output.opaque);
-				rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
+				rp->output.gawk_fwrite("\004\n", sizeof("\004\n") - 1, 1, &rp->output);
+				rp->output.gawk_fflush(&rp->output);
 			}
-			status = rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
-			rp->output.fp = NULL;
+			status = rp->output.gawk_fclose(&rp->output);
+			awk_output_buf_reset(&rp->output);
 		}
 
 		/* read end: */
@@ -1320,14 +1342,14 @@ close_rp(struct redirect *rp, two_way_close_type how)
 		}
 	} else if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE)) {
 		/* write to pipe */
-		status = sanitize_exit_status(pclose(rp->output.fp));
+		status = sanitize_exit_status(pclose((FILE*) rp->output.file));
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
-		rp->output.fp = NULL;
-	} else if (rp->output.fp != NULL) {	/* write to file */
-		status = rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
-		rp->output.fp = NULL;
+		rp->output.file = NULL;
+	} else if (rp->output.file != NULL) {	/* write to file */
+		status = rp->output.gawk_fclose(&rp->output);
+		awk_output_buf_reset(&rp->output);
 	} else if (rp->iop != NULL) {	/* read from pipe/file */
 		if ((rp->flag & RED_PIPE) != 0)		/* read from pipe */
 			status = gawk_pclose(rp);
@@ -1350,8 +1372,13 @@ close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 
 	if (rp == NULL)
 		return 0;
-	if (rp->output.fp == stdout || rp->output.fp == stderr)
-		goto checkwarn;		/* bypass closing, remove from list */
+#ifdef _MSC_VER
+	if (rp->output.socket_fd == INVALID_HANDLE)
+#endif
+	{
+		if (rp->output.file == stdout || rp->output.file == stderr)
+			goto checkwarn;		/* bypass closing, remove from list */
+	}
 
 	if (do_lint && (rp->flag & RED_TWOWAY) == 0 && how != CLOSE_ALL)
 		lintwarn(_("close: redirection `%s' not opened with `|&', second argument ignored"),
@@ -1408,7 +1435,7 @@ checkwarn:
 	}
 
 	/* remove it from the list if closing both or both ends have been closed */
-	if (how == CLOSE_ALL || (rp->iop == NULL && rp->output.fp == NULL)) {
+	if (how == CLOSE_ALL || (rp->iop == NULL && rp->output.file == NULL)) {
 		if (rp->next != NULL)
 			rp->next->prev = rp->prev;
 		if (rp->prev != NULL)
@@ -1478,8 +1505,8 @@ flush_io(void)
 		void (*messagefunc)(const char *mesg, ...) = r_fatal;
 
 		/* flush both files and pipes, what the heck */
-		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
-			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque) != 0) {
+		if ((rp->flag & RED_WRITE) != 0 && rp->output.file != NULL) {
+			if (rp->output.gawk_fflush(&rp->output) != 0) {
 				update_ERRNO_int(errno);
 
 				if (is_non_fatal_redirect(rp->value, strlen(rp->value)))
@@ -1623,7 +1650,7 @@ socketopen(int family, int type, const char *localpname,
 
 	int lerror, rerror;
 
-	socket_t socket_fd = INVALID_HANDLE;
+	int socket_fd;
 	bool any_remote_host = (strcmp(remotehostname, "0") == 0);
 
 #ifdef HAVE_GAI_STRERROR_BUF
@@ -1639,14 +1666,14 @@ socketopen(int family, int type, const char *localpname,
 	lhints.ai_family = family;
 
 	/*
-         * If only the loopback interface is up and hints.ai_flags has
+	 * If only the loopback interface is up and hints.ai_flags has
 	 * AI_ADDRCONFIG, getaddrinfo() will succeed and return all wildcard
 	 * addresses, but only if hints.ai_family == AF_UNSPEC
 	 *
 	 * Do return the wildcard address in case the loopback interface
 	 * is the only one that is up (and
 	 * hints.ai_family == either AF_INET4 or AF_INET6)
-         */
+	 */
 	lhints.ai_flags = AI_PASSIVE;
 	if (lhints.ai_family == AF_UNSPEC)
 		lhints.ai_flags |= AI_ADDRCONFIG;
@@ -1668,7 +1695,7 @@ socketopen(int family, int type, const char *localpname,
 	} else
 		lres0 = lres;
 
-	while (lres != NULL) {
+	do {
 		memset (& rhints, '\0', sizeof (rhints));
 		rhints.ai_flags = lhints.ai_flags;
 		rhints.ai_socktype = lhints.ai_socktype;
@@ -1690,8 +1717,7 @@ socketopen(int family, int type, const char *localpname,
 			return INVALID_HANDLE;
 		}
 		rres0 = rres;
-		socket_fd = INVALID_HANDLE;
-		while (rres != NULL) {
+		do {
 			socket_fd = socket(rres->ai_family,
 				rres->ai_socktype, rres->ai_protocol);
 			if (socket_fd < 0 || socket_fd == INVALID_HANDLE)
@@ -1753,17 +1779,16 @@ socketopen(int family, int type, const char *localpname,
 			}
 
 nextrres:
-			if (socket_fd != INVALID_HANDLE)
+			if (socket_fd != INVALID_HANDLE) {
 				closemaybesocket(socket_fd);
-			socket_fd = INVALID_HANDLE;
-			rres = rres->ai_next;
-		}
+				socket_fd = INVALID_HANDLE;
+			}
+		} while ((rres = rres->ai_next) != NULL);
 		freeaddrinfo(rres0);
 		if (socket_fd != INVALID_HANDLE)
 			break;
-		lres = lres->ai_next;
-	}
-	if (lres0)
+	} while ((lres = lres->ai_next) != NULL);
+	if (lres0 != NULL)
 		freeaddrinfo(lres0);
 
 	return socket_fd;
@@ -1827,7 +1852,7 @@ devopen_simple(const char *name, const char *mode, bool try_real_open)
 			cp += 3;
 			openfd = (fd_t) strtoul(cp, & ptr, 10);
 			if (openfd <= INVALID_HANDLE || ptr == cp
-			    || gawk_fstat(openfd, & sbuf) < 0)
+			    || os_fstat(openfd, & sbuf) < 0)
 				openfd = INVALID_HANDLE;
 		}
 		/* do not set close-on-exec for inherited fd's */
@@ -1948,7 +1973,7 @@ strictopen:
 		gawk_stat_t buf;
 
 		if (! inetfile(name, strlen(name), NULL)
-		    && gawk_stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
+		    && os_stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
 			errno = EISDIR;
 	}
 #endif
@@ -2174,14 +2199,20 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 			return false;
 		if ((BINMODE & BINMODE_OUTPUT) != 0)
 			os_setbinmode(fd, O_BINARY);
-		rp->output.fp = fdopen(fd, binmode("wb"));
-		if (rp->output.fp == NULL) {
-			close(fd);
+#ifdef _MSC_VER
+		rp->output.file = socket_file_alloc();
+		if (rp->output.file != NULL)
+			rp->output.socket_fd = fd;
+#else
+		rp->output.file = fdopen(fd, binmode("wb"));
+#endif
+		if (rp->output.file == NULL) {
+			closemaybesocket(fd);
 			return false;
 		}
-		newfd = dup(fd);
+		newfd = socket_dup(fd);
 		if (newfd < 0) {
-			rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
+			rp->output.gawk_fclose(&rp->output);
 			return false;
 		}
 		if ((BINMODE & BINMODE_INPUT) != 0)
@@ -2197,7 +2228,7 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 				update_ERRNO_int(rp->iop->errcode);
 			(void) iop_close(rp->iop);
 			rp->iop = NULL;
-			rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
+			rp->output.gawk_fclose(&rp->output);
 			return false;
 		}
 		rp->flag |= RED_SOCKET;
@@ -2229,13 +2260,13 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 			unsigned i;
 			initialized = true;
 #if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
-			have_dev_ptmx = (gawk_stat("/dev/ptmx", & statb) >= 0);
+			have_dev_ptmx = (os_stat("/dev/ptmx", & statb) >= 0);
 #endif
 			i = 0;
 			do {
 				c = pty_chars[i++];
 				sprintf(slavenam, "/dev/pty%c0", c);
-				if (gawk_stat(slavenam, & statb) >= 0) {
+				if (os_stat(slavenam, & statb) >= 0) {
 					first_pty_letter = c;
 					break;
 				}
@@ -2280,7 +2311,7 @@ two_way_open(const char *str, struct redirect *rp, fd_t extfd)
 
 				for (i = 0; i < 16; i++) {
 					sprintf(slavenam, "/dev/pty%c%x", c, i);
-					if (gawk_stat(slavenam, & statb) < 0) {
+					if (os_stat(slavenam, & statb) < 0) {
 						no_ptys = true;	/* bypass all this next time */
 						goto use_pipes;
 					}
@@ -2505,10 +2536,10 @@ use_pipes:
 
 		return false;
 	}
-	rp->output.fp = fdopen(ptoc[1], binmode("w"));
+	rp->output.file = fdopen(ptoc[1], binmode("w"));
 	rp->output.mode = "w";
 	rp->output.name = str;
-	if (rp->output.fp == NULL) {
+	if (rp->output.file == NULL) {
 		(void) iop_close(rp->iop);
 		rp->iop = NULL;
 		(void) close(ctop[0]);
@@ -3041,7 +3072,7 @@ init_awkpath(path_info *pi)
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */
 
 static char *
-do_find_source(const char *src, gawk_stat_t *stb, int *errcode, path_info *pi)
+do_find_source(const char *src, gawk_xstat_t *stb, int *errcode, path_info *pi)
 {
 	char *path;
 	unsigned i;
@@ -3052,7 +3083,7 @@ do_find_source(const char *src, gawk_stat_t *stb, int *errcode, path_info *pi)
 	if (ispath(src)) {
 		emalloc(path, char *, strlen(src) + 1, "do_find_source");
 		strcpy(path, src);
-		if (gawk_stat(path, stb) == 0)
+		if (os_xstat(path, stb) == 0)
 			return path;
 		*errcode = errno;
 		efree(path);
@@ -3069,7 +3100,7 @@ do_find_source(const char *src, gawk_stat_t *stb, int *errcode, path_info *pi)
 		else
 			strcpy(path, pi->awkpath[i]);
 		strcat(path, src);
-		if (gawk_stat(path, stb) == 0)
+		if (os_xstat(path, stb) == 0)
 			return path;
 	}
 
@@ -3082,7 +3113,7 @@ do_find_source(const char *src, gawk_stat_t *stb, int *errcode, path_info *pi)
 /* find_source --- find source file with default file extension handling */
 
 char *
-find_source(const char *src, gawk_stat_t *stb, int *errcode, bool is_extlib)
+find_source(const char *src, gawk_xstat_t *stb, int *errcode, bool is_extlib)
 {
 	char *path;
 	path_info *pi = (is_extlib ? & pi_awklibpath : & pi_awkpath);
@@ -3356,7 +3387,7 @@ find_two_way_processor(const char *name, struct redirect *rp)
 
 	/* if already associated with i/o, bail out early */
 	if (   (rp->iop != NULL && rp->iop->publ.fd != INVALID_HANDLE)
-	    || rp->output.fp != NULL)
+	    || rp->output.file != NULL)
 		return false;
 
 	tw = tw2 = NULL;
@@ -3442,7 +3473,7 @@ iop_alloc(fd_t fd, const char *name, int errno_val)
 	iop->errcode = errno_val;
 
 	if (fd != INVALID_HANDLE)
-		gawk_fstat(fd, & iop->publ.sbuf);
+		os_xfstat(fd, & iop->publ.sbuf);
 #if defined(__EMX__) || defined(__MINGW32__) || defined(_MSC_VER)
 	else if (errno_val == EISDIR) {
 		iop->publ.sbuf.st_mode = (_S_IFDIR | _S_IRWXU);
@@ -4447,7 +4478,7 @@ read_with_timeout(fd_t fd, void *buf, size_t size)
 	 */
 	SOCKET s = valid_socket(fd);
 
-	if (!s)
+	if (s == INVALID_SOCKET)
 		return read_wrap(fd, buf, size);
 #else
 	fd_t s = fd;
@@ -4497,11 +4528,14 @@ typedef long suseconds_t;
 ssize_t
 read_wrap(fd_t fd, void *buf, size_t size)
 {
+	SOCKET s = is_socket(fd) ? valid_socket(fd) : INVALID_SOCKET;
 	ssize_t ret = 0;
 	while (size > 0) {
 		/* Cannot read more than INT_MAX at once.  */
-		int n = size > INT_MAX ? INT_MAX : (int) size;
-		int x = _read(fd, buf, (unsigned) n);
+		int n = size <= INT_MAX ? (int) size : INT_MAX;
+		int x = s == INVALID_SOCKET ?
+			_read(fd, buf, (unsigned) n) :
+			recv(s, (char*) buf, n, 0);
 		if (x < 0)
 			return -1;
 		ret += x;
@@ -4520,48 +4554,64 @@ read_wrap(fd_t fd, void *buf, size_t size)
 
 /* gawk_fwrite --- like fwrite */
 
-static size_t
-gawk_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
+size_t
+gawk_fwrite(const void *ptr, size_t size, size_t nmemb, awk_output_buf_t *outbuf)
 {
-	(void) opaque;
-
-	return fwrite(buf, size, count, fp);
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE)
+		return socket_file_fwrite((socket_file_t*) outbuf->file,
+					outbuf->socket_fd, ptr, size, nmemb);
+#endif
+	return fwrite(ptr, size, nmemb, (FILE*) outbuf->file);
 }
 
 /* gawk_fflush --- like fflush */
 
-static int
-gawk_fflush(FILE *fp, void *opaque)
+int
+gawk_fflush(awk_output_buf_t *outbuf)
 {
-	(void) opaque;
-
-	return fflush(fp);
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE)
+		return socket_file_fflush((socket_file_t*) outbuf->file,
+					outbuf->socket_fd);
+#endif
+	return fflush((FILE*) outbuf->file);
 }
 
 /* gawk_ferror --- like ferror */
 
-static int
-gawk_ferror(FILE *fp, void *opaque)
+int
+gawk_ferror(awk_output_buf_t *outbuf)
 {
-	(void) opaque;
-
-	return ferror(fp);
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE)
+		return socket_file_ferror((socket_file_t*) outbuf->file);
+#endif
+	return ferror((FILE*) outbuf->file);
 }
 
 /* gawk_fclose --- like fclose */
 
 static int
-gawk_fclose(FILE *fp, void *opaque)
+gawk_fclose(awk_output_buf_t *outbuf)
 {
 	int result;
-#if defined(__MINGW32__) || defined(_MSC_VER)
-	SOCKET s = valid_socket (fileno(fp));
-#endif
-	(void) opaque;
 
-	result =  fclose(fp);
-#if defined(__MINGW32__) || defined(_MSC_VER)
-	if (s && closesocket(s) == SOCKET_ERROR)
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE) {
+		socket_file_free((socket_file_t*) outbuf->file);
+		return closemaybesocket(outbuf->socket_fd);
+	}
+#endif
+
+#ifdef __MINGW32__
+	SOCKET s = valid_socket(fileno((FILE*) outbuf->file));
+#endif
+
+	result = fclose((FILE*) outbuf->file);
+
+#ifdef __MINGW32__
+	if (s != INVALID_SOCKET && closesocket(s) == SOCKET_ERROR)
 		result = -1;
 #endif
 	return result;
@@ -4574,9 +4624,12 @@ init_output_wrapper(awk_output_buf_t *outbuf)
 {
 	outbuf->name = NULL;
 	outbuf->mode = NULL;
-	outbuf->fp = NULL;
-	outbuf->opaque = NULL;
+	outbuf->file = NULL;
+#ifdef _MSC_VER
+	outbuf->socket_fd = INVALID_HANDLE;
+#endif
 	outbuf->redirected = awk_false;
+	outbuf->opaque = NULL;
 	outbuf->gawk_fwrite = gawk_fwrite;
 	outbuf->gawk_fflush = gawk_fflush;
 	outbuf->gawk_ferror = gawk_ferror;
