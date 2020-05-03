@@ -26,9 +26,9 @@
 #include "awk.h"
 
 #ifdef _MSC_VER
-#include <io.h> /* open/close */
-#include <direct.h> /* mkdir/rmdir */
-#include "pc/xstat.h" /* xstat/xlstat */
+#include <io.h>		/* open/close */
+#include <direct.h>	/* mkdir/rmdir */
+#include "pc/socket.h"	/* socket_file_clearerr */
 #endif
 
 #ifdef HAVE_MPFR
@@ -57,16 +57,13 @@ static NODE *ns_lookup(const char *name_space, const char *name, char **full_nam
  */
 
 static awk_bool_t
-api_get_argument(awk_ext_id_t id, size_t count,
-			awk_valtype_t wanted, awk_value_t *result)
+api_get_argument(size_t count, awk_valtype_t wanted, awk_value_t *result)
 {
 #ifdef DYNAMIC
 	NODE *arg;
 
 	if (result == NULL)
 		return awk_false;
-
-	(void) id;
 
 	/* set up default result */
 	memset(result, 0, sizeof(*result));
@@ -124,15 +121,11 @@ scalar:
 /* api_set_argument --- convert an argument to an array */
 
 static awk_bool_t
-api_set_argument(awk_ext_id_t id,
-		size_t count,
-		awk_array_t new_array)
+api_set_argument(size_t count, awk_array_t new_array)
 {
 #ifdef DYNAMIC
 	NODE *arg;
 	NODE *array = (NODE *) new_array;
-
-	(void) id;
 
 	if (array == NULL || array->type != Node_var_array)
 		return awk_false;
@@ -241,11 +234,9 @@ awk_value_to_node(const awk_value_t *retval)
 /* api_fatal --- print a fatal message and exit */
 
 static void
-api_fatal(awk_ext_id_t id, const char *format, ...)
+api_fatal(const char *format, ...)
 {
 	va_list args;
-
-	(void) id;
 
 	va_start(args, format);
 	err(true, _("fatal: "), format, args);
@@ -255,11 +246,9 @@ api_fatal(awk_ext_id_t id, const char *format, ...)
 /* api_nonfatal --- print a non fatal error message */
 
 static void
-api_nonfatal(awk_ext_id_t id, const char *format, ...)
+api_nonfatal(const char *format, ...)
 {
 	va_list args;
-
-	(void) id;
 
 	va_start(args, format);
 	err(false, _("error: "), format, args);
@@ -269,11 +258,9 @@ api_nonfatal(awk_ext_id_t id, const char *format, ...)
 /* api_warning --- print a warning message */
 
 static void
-api_warning(awk_ext_id_t id, const char *format, ...)
+api_warning(const char *format, ...)
 {
 	va_list args;
-
-	(void) id;
 
 	va_start(args, format);
 	err(false, _("warning: "), format, args);
@@ -283,11 +270,9 @@ api_warning(awk_ext_id_t id, const char *format, ...)
 /* api_lintwarn --- print a lint warning message and exit if appropriate */
 
 static void
-api_lintwarn(awk_ext_id_t id, const char *format, ...)
+api_lintwarn(const char *format, ...)
 {
 	va_list args;
-
-	(void) id;
 
 	va_start(args, format);
 	if (lintwarn == r_fatal) {
@@ -301,10 +286,8 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 /* api_register_input_parser --- register an input_parser; for opening files read-only */
 
 static void
-api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
+api_register_input_parser(awk_input_parser_t *input_parser)
 {
-	(void) id;
-
 	if (input_parser == NULL)
 		return;
 
@@ -313,11 +296,8 @@ api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
 
 /* api_register_output_wrapper --- register an output wrapper, for writing files / two-way pipes */
 
-static void api_register_output_wrapper(awk_ext_id_t id,
-		awk_output_wrapper_t *output_wrapper)
+static void api_register_output_wrapper(awk_output_wrapper_t *output_wrapper)
 {
-	(void) id;
-
 	if (output_wrapper == NULL)
 		return;
 
@@ -327,11 +307,8 @@ static void api_register_output_wrapper(awk_ext_id_t id,
 /* api_register_two_way_processor --- register a processor for two way I/O */
 
 static void
-api_register_two_way_processor(awk_ext_id_t id,
-		awk_two_way_processor_t *two_way_processor)
+api_register_two_way_processor(awk_two_way_processor_t *two_way_processor)
 {
-	(void) id;
-
 	if (two_way_processor == NULL)
 		return;
 
@@ -343,21 +320,16 @@ api_register_two_way_processor(awk_ext_id_t id,
 /* api_update_ERRNO_int --- update ERRNO with an integer value */
 
 static void
-api_update_ERRNO_int(awk_ext_id_t id, int errno_val)
+api_update_ERRNO_int(int errno_val)
 {
-	(void) id;
-
 	update_ERRNO_int(errno_val);
 }
 
 /* api_update_ERRNO_string --- update ERRNO with a string value */
 
 static void
-api_update_ERRNO_string(awk_ext_id_t id,
-			const char *string)
+api_update_ERRNO_string(const char *string)
 {
-	(void) id;
-
 	if (string == NULL)
 		return;
 
@@ -367,10 +339,8 @@ api_update_ERRNO_string(awk_ext_id_t id,
 /* api_unset_ERRNO --- unset ERRNO */
 
 static void
-api_unset_ERRNO(awk_ext_id_t id)
+api_unset_ERRNO(void)
 {
-	(void) id;
-
 	unset_ERRNO();
 }
 
@@ -378,12 +348,8 @@ api_unset_ERRNO(awk_ext_id_t id)
 /* api_add_ext_func --- add a function to the interpreter, returns true upon success */
 
 static awk_bool_t
-api_add_ext_func(awk_ext_id_t id,
-		const char *name_space,
-		awk_ext_func_t *func)
+api_add_ext_func(const char *name_space, awk_ext_func_t *func)
 {
-	(void) id;
-
 	if (func == NULL)
 		return awk_false;
 
@@ -424,13 +390,9 @@ run_ext_exit_handlers(int exitval)
 /* api_awk_atexit --- add an exit call back */
 
 static void
-api_awk_atexit(awk_ext_id_t id,
-		void (*funcp)(void *data, int exit_status),
-		void *arg0)
+api_awk_atexit(void (*funcp)(void *data, int exit_status), void *arg0)
 {
 	struct ext_exit_handler *p;
-
-	(void) id;
 
 	if (funcp == NULL)
 		return;
@@ -755,15 +717,12 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 /* api_sym_lookup --- look up a symbol */
 
 static awk_bool_t
-api_sym_lookup(awk_ext_id_t id,
-		const char *name_space,
+api_sym_lookup(const char *name_space,
 		const char *name,
 		awk_valtype_t wanted,
 		awk_value_t *result)
 {
 	NODE *node;
-
-	(void) id;
 
 	update_global_values();		/* make sure stuff like NF, NR, are up to date */
 
@@ -787,14 +746,11 @@ api_sym_lookup(awk_ext_id_t id,
 /* api_sym_lookup_scalar --- retrieve the current value of a scalar */
 
 static awk_bool_t
-api_sym_lookup_scalar(awk_ext_id_t id,
-			awk_scalar_t cookie,
+api_sym_lookup_scalar(awk_scalar_t cookie,
 			awk_valtype_t wanted,
 			awk_value_t *result)
 {
 	NODE *node = (NODE *) cookie;
-
-	(void) id;
 
 	if (node == NULL
 	    || result == NULL
@@ -809,15 +765,12 @@ api_sym_lookup_scalar(awk_ext_id_t id,
 /* api_sym_update --- update a symbol's value, see gawkapi.h for semantics */
 
 static awk_bool_t
-api_sym_update(awk_ext_id_t id,
-		const char *name_space,
+api_sym_update(const char *name_space,
 		const char *name,
 		awk_value_t *value)
 {
 	NODE *node;
 	NODE *array_node;
-
-	(void) id;
 
 	if (   name == NULL
 	    || *name == '\0'
@@ -893,13 +846,10 @@ api_sym_update(awk_ext_id_t id,
 /* api_sym_update_scalar --- update a scalar cookie */
 
 static awk_bool_t
-api_sym_update_scalar(awk_ext_id_t id,
-			awk_scalar_t cookie,
+api_sym_update_scalar(awk_scalar_t cookie,
 			awk_value_t *value)
 {
 	NODE *node = (NODE *) cookie;
-
-	(void) id;
 
 	if (value == NULL
 	    || node == NULL
@@ -1009,8 +959,7 @@ valid_subscript_type(awk_valtype_t valtype)
  */
 
 static awk_bool_t
-api_get_array_element(awk_ext_id_t id,
-		awk_array_t a_cookie,
+api_get_array_element(awk_array_t a_cookie,
 		const awk_value_t *const index,
 		awk_valtype_t wanted,
 		awk_value_t *result)
@@ -1018,8 +967,6 @@ api_get_array_element(awk_ext_id_t id,
 	NODE *array = (NODE *) a_cookie;
 	NODE *subscript;
 	NODE **aptr;
-
-	(void) id;
 
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
@@ -1055,15 +1002,13 @@ api_get_array_element(awk_ext_id_t id,
  */
 
 static awk_bool_t
-api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
-					const awk_value_t *const index,
-					const awk_value_t *const value)
+api_set_array_element(awk_array_t a_cookie,
+			const awk_value_t *const index,
+			const awk_value_t *const value)
 {
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
 	NODE *elem;
-
-	(void) id;
 
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
@@ -1124,12 +1069,9 @@ remove_element(NODE *array, NODE *subscript)
  */
 
 static awk_bool_t
-api_del_array_element(awk_ext_id_t id,
-		awk_array_t a_cookie, const awk_value_t *const index)
+api_del_array_element(awk_array_t a_cookie, const awk_value_t *const index)
 {
 	NODE *array, *sub;
-
-	(void) id;
 
 	array = (NODE *) a_cookie;
 	if (   array == NULL
@@ -1152,12 +1094,9 @@ api_del_array_element(awk_ext_id_t id,
  */
 
 static awk_bool_t
-api_get_element_count(awk_ext_id_t id,
-		awk_array_t a_cookie, size_t *count)
+api_get_element_count(awk_array_t a_cookie, size_t *count)
 {
 	NODE *node = (NODE *) a_cookie;
-
-	(void) id;
 
 	if (count == NULL || node == NULL || node->type != Node_var_array)
 		return awk_false;
@@ -1169,11 +1108,9 @@ api_get_element_count(awk_ext_id_t id,
 /* api_create_array --- create a new array cookie to which elements may be added */
 
 static awk_array_t
-api_create_array(awk_ext_id_t id)
+api_create_array(void)
 {
 	NODE *n;
-
-	(void) id;
 
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
@@ -1185,11 +1122,9 @@ api_create_array(awk_ext_id_t id)
 /* api_clear_array --- clear out an array */
 
 static awk_bool_t
-api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
+api_clear_array(awk_array_t a_cookie)
 {
 	NODE *node = (NODE *) a_cookie;
-
-	(void) id;
 
 	if (   node == NULL
 	    || node->type != Node_var_array
@@ -1203,8 +1138,7 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 /* api_flatten_array_typed --- flatten out an array so that it can be looped over easily. */
 
 static awk_bool_t
-api_flatten_array_typed(awk_ext_id_t id,
-		awk_array_t a_cookie,
+api_flatten_array_typed(awk_array_t a_cookie,
 		awk_flat_array_t **data,
 		awk_valtype_t index_type, awk_valtype_t value_type)
 {
@@ -1212,8 +1146,6 @@ api_flatten_array_typed(awk_ext_id_t id,
 	ulong_t i, j;
 	NODE *array = (NODE *) a_cookie;
 	size_t alloc_size;
-
-	(void) id;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1261,15 +1193,11 @@ api_flatten_array_typed(awk_ext_id_t id,
  */
 
 static awk_bool_t
-api_release_flattened_array(awk_ext_id_t id,
-		awk_array_t a_cookie,
-		awk_flat_array_t *data)
+api_release_flattened_array(awk_array_t a_cookie, awk_flat_array_t *data)
 {
 	NODE *array = (NODE*) a_cookie;
 	NODE **list;
 	ulong_t i, j, k;
-
-	(void) id;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1300,11 +1228,8 @@ api_release_flattened_array(awk_ext_id_t id,
 /* api_create_value --- create a cached value */
 
 static awk_bool_t
-api_create_value(awk_ext_id_t id, awk_value_t *value,
-		awk_value_cookie_t *result)
+api_create_value(awk_value_t *value, awk_value_cookie_t *result)
 {
-	(void) id;
-
 	if (value == NULL || result == NULL)
 		return awk_false;
 
@@ -1325,11 +1250,9 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 /* api_release_value --- release a cached value */
 
 static awk_bool_t
-api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
+api_release_value(awk_value_cookie_t value)
 {
 	NODE *val = (NODE *) value;
-
-	(void) id;
 
 	if (val == NULL)
 		return awk_false;
@@ -1341,16 +1264,14 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 /* api_get_mpfr --- allocate an mpfr_ptr */
 
 static void *
-api_get_mpfr(awk_ext_id_t id)
+api_get_mpfr(void)
 {
 #ifdef HAVE_MPFR
 	mpfr_ptr p;
 	getmpfr(p);
 	mpfr_init(p);
-	(void) id;
 	return p;
 #else
-	(void) id;
 	fatal(_("api_get_mpfr: MPFR not supported"));
 #ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
@@ -1361,16 +1282,14 @@ api_get_mpfr(awk_ext_id_t id)
 /* api_get_mpz --- allocate an mpz_ptr */
 
 static void *
-api_get_mpz(awk_ext_id_t id)
+api_get_mpz(void)
 {
 #ifdef HAVE_MPFR
 	mpz_ptr p;
 	getmpz(p);
 	mpz_init(p);
-	(void) id;
 	return p;
 #else
-	(void) id;
 	fatal(_("api_get_mpfr: MPFR not supported"));
 #ifdef COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
@@ -1381,14 +1300,12 @@ api_get_mpz(awk_ext_id_t id)
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
-api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype,
+api_get_file(const char *name, size_t namelen, const char *filetype,
 		fd_t fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
 {
 	const struct redirect *f;
 	int flag;	/* not used, sigh */
 	enum redirval redirtype;
-
-	(void) id;
 
 	if (name == NULL || namelen == 0) {
 		if (curfile == NULL) {
@@ -1469,18 +1386,145 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 		return awk_false;
 
 	*ibufp = f->iop ? & f->iop->publ : NULL;
-	*obufp = f->output.fp ? & f->output : NULL;
+	*obufp = f->output.file ? & f->output : NULL;
 	return awk_true;
 }
 
-#ifdef GAWK_STATIC_CRT
+/*
+ * Register a version string for this extension with gawk.
+ */
+
+struct version_info {
+	const char *version;
+	struct version_info *next;
+};
+
+static struct version_info *vi_head;
+
+/* api_register_ext_version --- add an extension version string to the list */
+
+static void
+api_register_ext_version(const char *version)
+{
+	struct version_info *info;
+
+	if (version == NULL)
+		return;
+
+	emalloc(info, struct version_info *, sizeof(struct version_info), "register_ext_version");
+	info->version = version;
+	info->next = vi_head;
+	vi_head = info;
+}
+
+extern size_t
+gawk_fwrite(const void *ptr, size_t size, size_t nmemb, awk_output_buf_t *outbuf);
+
+extern int
+gawk_fflush(awk_output_buf_t *outbuf);
+
+extern int
+gawk_ferror(awk_output_buf_t *outbuf);
+
+static void
+api_ob_clearerr(awk_output_buf_t *outbuf)
+{
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE) {
+		socket_file_clearerr((socket_file_t*) outbuf->file);
+		return;
+	}
+#endif
+	clearerr((FILE*) outbuf->file);
+}
+
+static int
+api_ob_fputc(int c, awk_output_buf_t *outbuf)
+{
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE) {
+		unsigned char ch = (unsigned char) c;
+		size_t n = gawk_fwrite(&ch, 1, 1, outbuf);
+		if (n != 1)
+			return EOF;
+		return (unsigned char) c;
+	}
+#endif
+	return fputc(c, (FILE*) outbuf->file);
+}
+
+static int
+api_ob_fputs(const char *s, awk_output_buf_t *outbuf)
+{
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE) {
+		size_t len = strlen(s);
+		size_t n = gawk_fwrite(s, len, 1, outbuf);
+		if (n != 1)
+			return EOF;
+		return 0;
+	}
+#endif
+	return fputs(s, (FILE*) outbuf->file);
+}
+
+static int
+api_ob_vfprintf(awk_output_buf_t *outbuf, const char *format, va_list ap)
+{
+#ifdef _MSC_VER
+	if (outbuf->socket_fd != INVALID_HANDLE) {
+		char stack_buf[1024], *buf = stack_buf, *dbuf = NULL;
+		size_t buf_size = sizeof(stack_buf);
+		for (;;) {
+			int n = _vsnprintf(buf, buf_size, format, ap);
+			if (n != -1) {
+				size_t k = gawk_fwrite(buf, (size_t) n, 1, outbuf);
+				if (dbuf != NULL)
+					free(dbuf);
+				return k == 1 ? n : -1;
+			}
+			if (buf_size < 65536)
+				buf_size *= 2;
+			else if (buf_size > INT_MAX - 65536) {
+				if (dbuf != NULL)
+					free(dbuf);
+				errno = ENOMEM;
+				return -1;
+			}
+			else
+				buf_size += 65536;
+			buf = (char*) realloc(dbuf, buf_size);
+			if (buf == NULL) {
+				if (dbuf != NULL)
+					free(dbuf);
+				return -1;
+			}
+			dbuf = buf;
+		}
+	}
+#endif
+	return vfprintf((FILE*) outbuf->file, format, ap);
+}
+
+static int
+api_ob_fprintf(awk_output_buf_t *outbuf, const char *format, ...)
+{
+	va_list ap;
+	int r;
+	va_start(ap, format);
+	r = api_ob_vfprintf(outbuf, format, ap);
+	va_end(ap);
+	return r;
+}
+
+#ifdef GAWK_CRT_API
 
 #ifdef _MSC_VER
 
-/* api_printf --- print a message to stdout */
+/* crt_printf --- print a message to stdout */
 
 static int
-api_printf(const char *format, ...)
+crt_printf(const char *format, ...)
 {
 	int ret;
 	va_list args;
@@ -1497,17 +1541,17 @@ PRAGMA_WARNING_POP
 
 #endif /* _MSC_VER */
 
-/* api_assert_failed --- print error message and abort the program */
+/* crt_assert_failed --- print error message and abort the program */
 
 ATTRIBUTE_NORETURN
 static void
-api_assert_failed(const char *sexpr, const char *file, unsigned line)
+crt_assert_failed(const char *sexpr, const char *file, unsigned line)
 {
 	error("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
 }
 
 #ifdef _MSC_VER
-static ssize_t api_read(int fd, void *buf, size_t count)
+static ssize_t crt_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret = 0;
 	/* Don't overflow ssize_t.  */
@@ -1530,7 +1574,7 @@ static ssize_t api_read(int fd, void *buf, size_t count)
 	return ret;
 }
 
-static ssize_t api_write(int fd, const void *buf, size_t count)
+static ssize_t crt_write(int fd, const void *buf, size_t count)
 {
 	ssize_t ret;
 	/* Don't overflow ssize_t.  */
@@ -1553,7 +1597,7 @@ static ssize_t api_write(int fd, const void *buf, size_t count)
 #endif /* _MSC_VER */
 
 #ifndef _MSC_VER
-static long long api_lseek(int fd, long long offset, int whence)
+static long long crt_lseek(int fd, long long offset, int whence)
 {
 	/* Note:
 	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
@@ -1562,7 +1606,7 @@ static long long api_lseek(int fd, long long offset, int whence)
 	return (long long) ret;
 }
 
-static long long api_tell(int fd)
+static long long crt_tell(int fd)
 {
 	/* Note:
 	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
@@ -1572,20 +1616,20 @@ static long long api_tell(int fd)
 }
 #endif /* !_MSC_VER */
 
-static int api_mb_cur_max(void)
+static int crt_mb_cur_max(void)
 {
 	return MB_CUR_MAX;
 }
 
 #ifndef _MSC_VER
-static int *api_errno_p(void)
+static int *crt_errno_p(void)
 {
 	return &errno;
 }
 #endif
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
-static int api_mkstemp(char *templ)
+static int crt_mkstemp(char *templ)
 {
 	char *tmp_fname = _mktemp(templ);
 	if (tmp_fname)
@@ -1596,121 +1640,24 @@ static int api_mkstemp(char *templ)
 }
 #endif
 
-#endif /* GAWK_STATIC_CRT */
+static gawk_crt_api_t crt_api_impl = {
+	GAWK_CRT_MAJOR_VERSION,	/* major and minor versions */
+	GAWK_CRT_MINOR_VERSION,
 
-/*
- * Register a version string for this extension with gawk.
- */
-
-struct version_info {
-	const char *version;
-	struct version_info *next;
-};
-
-static struct version_info *vi_head;
-
-/* api_register_ext_version --- add an extension version string to the list */
-
-static void
-api_register_ext_version(awk_ext_id_t id, const char *version)
-{
-	struct version_info *info;
-
-	if (version == NULL)
-		return;
-
-	(void) id;
-
-	emalloc(info, struct version_info *, sizeof(struct version_info), "register_ext_version");
-	info->version = version;
-	info->next = vi_head;
-	vi_head = info;
-}
-
-/* the struct api */
-gawk_api_t api_impl = {
-	/* data */
-	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
-	GAWK_API_MINOR_VERSION,
-
-#ifdef HAVE_MPFR
-	__GNU_MP_VERSION,
-	__GNU_MP_VERSION_MINOR,
-	MPFR_VERSION_MAJOR,
-	MPFR_VERSION_MINOR,
-#else
-	0, 0, 0, 0,
-#endif
-
-	{ 0 },			/* do_flags */
-
-	/* registration functions */
-	api_add_ext_func,
-	api_register_input_parser,
-	api_register_output_wrapper,
-	api_register_two_way_processor,
-	api_awk_atexit,
-	api_register_ext_version,
-
-	/* message printing functions */
-	api_fatal,
-	api_warning,
-	api_lintwarn,
-	api_nonfatal,
-
-	/* updating ERRNO */
-	api_update_ERRNO_int,
-	api_update_ERRNO_string,
-	api_unset_ERRNO,
-
-	/* Function arguments */
-	api_get_argument,
-	api_set_argument,
-
-	/* Accessing and installing variables and constants */
-	api_sym_lookup,
-	api_sym_update,
-
-	/* Accessing and modifying variables via scalar cookies */
-	api_sym_lookup_scalar,
-	api_sym_update_scalar,
-
-	/* Cached values */
-	api_create_value,
-	api_release_value,
-
-	/* Array management */
-	api_get_element_count,
-	api_get_array_element,
-	api_set_array_element,
-	api_del_array_element,
-	api_create_array,
-	api_clear_array,
-	api_flatten_array_typed,
-	api_release_flattened_array,
-
-	/* Memory allocation */
 	malloc,
 	calloc,
 	realloc,
 	free,
-	api_get_mpfr,
-	api_get_mpz,
-
-	/* Find/open a file */
-	api_get_file,
-
-#ifdef GAWK_STATIC_CRT
 
 	/* print a message to stdout */
 #ifdef _MSC_VER
-	api_printf,
+	crt_printf,
 #else
 	printf,
 #endif
 
 	/* process failed assertion */
-	api_assert_failed,
+	crt_assert_failed,
 
 	/* Standard streams */
 	NULL,
@@ -1724,16 +1671,16 @@ gawk_api_t api_impl = {
 	dup2,
 
 #ifdef _MSC_VER
-	api_read,
-	api_write,
+	crt_read,
+	crt_write,
 	_lseeki64,
 	_telli64,
 	_commit,
 #else
 	read,
 	write,
-	api_lseek,
-	api_tell,
+	crt_lseek,
+	crt_tell,
 	fsync,
 #endif
 
@@ -1798,7 +1745,7 @@ gawk_api_t api_impl = {
 	strcoll,
 	wcscoll,
 
-	api_mb_cur_max,
+	crt_mb_cur_max,
 
 	btowc,
 
@@ -1820,12 +1767,12 @@ gawk_api_t api_impl = {
 #ifdef _MSC_VER
 	_errno,
 #else
-	api_errno_p,
+	crt_errno_p,
 #endif
 	strerror,
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
-	api_mkstemp,
+	crt_mkstemp,
 #else
 	mkstemp,
 #endif
@@ -1868,8 +1815,94 @@ gawk_api_t api_impl = {
 	iswctype,
 
 	/* Add more CRT replacements here.  */
+};
 
-#endif /* GAWK_STATIC_CRT */
+#endif /* GAWK_CRT_API */
+
+/* the struct api */
+gawk_api_t api_impl = {
+	/* data */
+	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
+	GAWK_API_MINOR_VERSION,
+
+#ifdef HAVE_MPFR
+	__GNU_MP_VERSION,
+	__GNU_MP_VERSION_MINOR,
+	MPFR_VERSION_MAJOR,
+	MPFR_VERSION_MINOR,
+#else
+	0, 0, 0, 0,
+#endif
+
+#ifdef GAWK_CRT_API
+	&crt_api_impl,
+#else
+	NULL,
+#endif
+
+	{ 0 },			/* do_flags */
+
+	/* registration functions */
+	api_add_ext_func,
+	api_register_input_parser,
+	api_register_output_wrapper,
+	api_register_two_way_processor,
+	api_awk_atexit,
+	api_register_ext_version,
+
+	/* message printing functions */
+	api_fatal,
+	api_warning,
+	api_lintwarn,
+	api_nonfatal,
+
+	/* updating ERRNO */
+	api_update_ERRNO_int,
+	api_update_ERRNO_string,
+	api_unset_ERRNO,
+
+	/* Function arguments */
+	api_get_argument,
+	api_set_argument,
+
+	/* Accessing and installing variables and constants */
+	api_sym_lookup,
+	api_sym_update,
+
+	/* Accessing and modifying variables via scalar cookies */
+	api_sym_lookup_scalar,
+	api_sym_update_scalar,
+
+	/* Cached values */
+	api_create_value,
+	api_release_value,
+
+	/* Array management */
+	api_get_element_count,
+	api_get_array_element,
+	api_set_array_element,
+	api_del_array_element,
+	api_create_array,
+	api_clear_array,
+	api_flatten_array_typed,
+	api_release_flattened_array,
+
+	/* Memory allocation */
+	api_get_mpfr,
+	api_get_mpz,
+
+	/* Find/open a file */
+	api_get_file,
+
+	/* Low-level IO for awk_output_buf_t.  */
+	gawk_fflush,
+	gawk_fwrite,
+	gawk_ferror,
+	api_ob_clearerr,
+	api_ob_fputc,
+	api_ob_fputs,
+	api_ob_fprintf,
+	api_ob_vfprintf,
 };
 
 /* init_ext_api --- init the extension API */
@@ -1885,10 +1918,10 @@ init_ext_api(void)
 	api_impl.do_flags[4] = (do_debug ? 1 : 0);
 	api_impl.do_flags[5] = (do_mpfr ? 1 : 0);
 
-#ifdef GAWK_STATIC_CRT
-	api_impl.api_stdin  = stdin;
-	api_impl.api_stdout = stdout;
-	api_impl.api_stderr = stderr;
+#ifdef GAWK_CRT_API
+	crt_api_impl.crt_stdin  = stdin;
+	crt_api_impl.crt_stdout = stdout;
+	crt_api_impl.crt_stderr = stderr;
 #endif
 }
 
