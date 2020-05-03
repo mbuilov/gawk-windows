@@ -21,18 +21,21 @@ set "minute=%minute:~-3,-1%"
 set "second=%second:~-3,-1%"
 set "year=%year:~0,-1%"
 
+rem replace leading 0 of 'day' with space
+if "%day:~-2,1%"=="0" set "day= %day:~-1%"
+
 (echo.%dow% %month% %day% %hour%:%minute%:%second% GMT %year%)
 exit /b
 
 :choose_day
 set "v=%~1"
+if "%v%"=="0"  (set dow=Sun) else (
 if "%v%"=="1"  (set dow=Mon) else (
 if "%v%"=="2"  (set dow=Tue) else (
 if "%v%"=="3"  (set dow=Wed) else (
 if "%v%"=="4"  (set dow=Thu) else (
 if "%v%"=="5"  (set dow=Fri) else (
-if "%v%"=="6"  (set dow=Sat) else (
-if "%v%"=="7"  (set dow=Sun)))))))
+if "%v%"=="6"  (set dow=Sat)))))))
 exit /b
 
 :choose_month
