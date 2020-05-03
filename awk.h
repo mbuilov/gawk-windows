@@ -222,80 +222,75 @@ typedef struct Regexp {
 
 #include "gawkapi.h"
 
-#ifdef _MSC_VER
-#define gawk_fstat(fd, buf) _fstat64(fd, buf)
-#define gawk_stat(path, buf) _stat64(path, buf)
-#else
-#define gawk_fstat(fd, buf) fstat(fd, buf)
-#define gawk_stat(path, buf) stat(path, buf)
-#endif
-
 /* Stuff for losing systems. */
 #if !defined(HAVE_STRTOD)
 extern double gawk_strtod();
 #define strtod gawk_strtod
 #endif
 
+/* Function attributes.  */
 #if !defined(__GNUC__) ||  __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(arg)
 #endif
 
 #ifndef ATTRIBUTE_UNUSED
-#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
-#endif /* ATTRIBUTE_UNUSED */
+# define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#endif
 
 #ifndef ATTRIBUTE_NORETURN
-#ifdef _MSC_VER
-#define ATTRIBUTE_NORETURN __declspec(noreturn)
-#else
-#define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+# ifdef _MSC_VER
+#  define ATTRIBUTE_NORETURN __declspec(noreturn)
+# else
+#  define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+# endif
 #endif
-#endif /* ATTRIBUTE_NORETURN */
 
 #ifndef ATTRIBUTE_PRINTF
-#define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
-#define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
-#define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
-#endif /* ATTRIBUTE_PRINTF */
+# define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
+# define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
+# define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
+#endif
 
 #ifndef ATTRIBUTE_PRINTF_AT
-#if defined(_MSC_VER) && defined(_PREFAST_)
-#define ATTRIBUTE_PRINTF_AT(fmt) _At_(fmt, _Printf_format_string_)
+# if defined(_MSC_VER) && defined(_PREFAST_)
+#  define ATTRIBUTE_PRINTF_AT(fmt) _At_(fmt, _Printf_format_string_)
+# endif
 #endif
-#endif /* ATTRIBUTE_PRINTF_AT */
 
 #ifndef ATTRIBUTE_PRINTF_AT1
-#if defined(_MSC_VER) && defined(_PREFAST_)
-#define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_AT(fmt)
-#else
-#define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_1
+# if defined(_MSC_VER) && defined(_PREFAST_)
+#  define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_AT(fmt)
+# else
+#  define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_1
+# endif
 #endif
-#endif /* ATTRIBUTE_PRINTF_AT1 */
 
 #ifndef ATTRIBUTE_PRINTF_AT2
-#if defined(_MSC_VER) && defined(_PREFAST_)
-#define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_AT(fmt)
-#else
-#define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_2
+# if defined(_MSC_VER) && defined(_PREFAST_)
+#  define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_AT(fmt)
+# else
+#  define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_2
+# endif
 #endif
-#endif /* ATTRIBUTE_PRINTF_AT2 */
 
+/* Pragmas.  */
 #ifdef _MSC_VER
-#define PRAGMA_WARNING_PUSH __pragma(warning(push))
-#define PRAGMA_WARNING_POP  __pragma(warning(pop))
+# define PRAGMA_WARNING_PUSH __pragma(warning(push))
+# define PRAGMA_WARNING_POP  __pragma(warning(pop))
 /* 4774 - 'sprintf' : format string expected in argument 2 is not a string literal */
-#define PRAGMA_WARNING_DISABLE_FORMAT_WARNING __pragma(warning(disable:4774))
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING __pragma(warning(disable:4774))
 /* 4127 - conditional expression is constant */
-#define PRAGMA_WARNING_DISABLE_COND_IS_CONST __pragma(warning(disable:4127))
-#else /* !_MSC_VER */
-#define PRAGMA_WARNING_PUSH
-#define PRAGMA_WARNING_POP
-#define PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-#define PRAGMA_WARNING_DISABLE_COND_IS_CONST
-#endif /* !_MSC_VER */
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST __pragma(warning(disable:4127))
+#else
+# define PRAGMA_WARNING_PUSH
+# define PRAGMA_WARNING_POP
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST
+#endif
 
+/* Do compile unreachable code only if COMPILE_UNREACHABLE_CODE is defined.  */
 #ifndef _MSC_VER
-#define COMPILE_UNREACHABLE_CODE
+# define COMPILE_UNREACHABLE_CODE
 #endif
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
@@ -1331,7 +1326,7 @@ typedef struct srcfile {
 	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
-	gawk_stat_t sbuf;
+	gawk_xstat_t sbuf;
 	unsigned srclines;	/* no of lines in source */
 	size_t bufsize;
 	char *buf;
@@ -1770,7 +1765,7 @@ extern void shadow_funcs(void);
 extern int check_special(const char *name);
 extern SRCFILE *add_srcfile(enum srctype stype, const char *src, SRCFILE *curr, bool *already_included, int *errcode);
 extern void free_srcfile(SRCFILE *thisfile);
-extern int files_are_same(const char *path, SRCFILE *src);
+extern bool files_are_same(const char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
 /* function that implements a built-in */
@@ -1964,7 +1959,7 @@ typedef enum {
 extern field_sep_type current_field_sep(void);
 extern const char *current_field_sep_str(void);
 
-/* gawkapi.c: */
+/* gawkapi.c */
 extern gawk_api_t api_impl;
 extern void init_ext_api(void);
 extern void update_ext_api(void);
@@ -1978,15 +1973,26 @@ extern const char *gawk_name(const char *filespec);
 extern void os_arg_fixup(int *argcp, char ***argvp);
 extern fd_t os_devopen(const char *name, int flag);
 extern void os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir);
-extern int os_isatty(fd_t fd);
-extern int os_isdir(fd_t fd);
-extern int os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
-extern int os_is_setuid(void);
+extern bool os_isatty(fd_t fd);
+extern bool os_isdir(fd_t fd);
+extern bool os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
+extern bool os_is_setuid(void);
 extern int os_setbinmode(fd_t fd, int mode);
+#ifdef _MSC_VER
+extern int os_fstat(int fd, gawk_stat_t *buf);
+#define os_stat(path, buf)	_stat64(path, buf)
+extern int os_xfstat(int fd, gawk_xstat_t *buf);
+#define os_xstat(path, buf)	xstat(path, buf)
+#else
+#define os_fstat(fd, buf)	fstat(fd, buf)
+#define os_stat(path, buf)	stat(path, buf)
+#define os_xfstat(fd, buf)	fstat(fd, buf)
+#define os_xstat(path, buf)	stat(path, buf)
+#endif
 extern void os_restore_mode(fd_t fd);
-extern size_t optimal_bufsize(fd_t fd, gawk_stat_t *sbuf);
-extern int ispath(const char *file);
-extern int isdirpunct(int c);
+extern size_t optimal_bufsize(fd_t fd, gawk_xstat_t *sbuf);
+extern bool ispath(const char *file);
+extern bool isdirpunct(int c);
 #ifdef _MSC_VER
 extern char **convert_wargv(int argc, wchar_t **wargv);
 extern void gawk_free_argv(void);
@@ -2015,7 +2021,7 @@ extern int close_rp(struct redirect *rp, two_way_close_type how);
 extern int devopen_simple(const char *name, const char *mode, bool try_real_open);
 extern fd_t devopen(const char *name, const char *mode);
 extern fd_t srcopen(SRCFILE *s);
-extern char *find_source(const char *src, gawk_stat_t *stb, int *errcode, bool is_extlib);
+extern char *find_source(const char *src, gawk_xstat_t *stb, int *errcode, bool is_extlib);
 extern NODE *do_getline_redir(bool intovar, enum redirval redirtype);
 extern NODE *do_getline(bool intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, size_t len);
@@ -2029,7 +2035,7 @@ extern bool non_fatal_flush_std_file(FILE *fp);
 #ifdef _MSC_VER
 extern ssize_t read_wrap(fd_t fd, void *buf, size_t size);
 #else
-#define read_wrap	((ssize_t(*)(int, void*, size_t)) read)
+#define read_wrap	((ssize_t(*)(fd_t, void*, size_t)) read)
 #endif
 
 /* main.c */
