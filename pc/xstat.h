@@ -35,6 +35,17 @@ typedef unsigned long long xino_t;
 
 struct xstat {
 	xdev_t             st_dev;
+	/* combination of
+	  type bits:
+	    _S_IFREG  = 0x8000 (1000000000000000)
+	    _S_IFDIR  = 0x4000 (0100000000000000)
+	    _S_IFCHR  = 0x2000 (0010000000000000)
+	    _S_IFIFO  = 0x1000 (0001000000000000)
+	  mode bits:
+	    _S_IREAD  = 0x0100 (0000000100100100) (repeated)
+	    _S_IWRITE = 0x0080 (0000000010010010) (repeated)
+	    _S_IEXEC  = 0x0040 (0000000001001001) (repeated)
+	*/
 	unsigned short     st_mode;
 	/* Number of links to this file.
 	   Not useful for directories.  */
@@ -61,11 +72,14 @@ struct xstat {
 
 /* Get stat info by file handle.
    Returns 0 on success, -1 if failed.
+   If 'path' is NULL, then
+    - st_dev will be set to 0,
+    - st_mode will not have _S_IEXEC bits set.
    On failure errno can be set to:
    EBADF        - handle is not a file/directory/pipe/character device handle,
    EACCES       - access to directory or file is denied,
    ENOTSUP      - path points to a volume device, like "\\.\C:"  */
-extern int xfstat(void *h, const wchar_t *path, struct xstat *buf);
+extern int xfstat(void *h, const wchar_t *path/*NULL?*/, struct xstat *buf);
 
 /* Get stat info by file path.
    Returns 0 on success, -1 if failed.

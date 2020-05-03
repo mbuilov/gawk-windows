@@ -302,7 +302,9 @@ xstat_file(HANDLE h, const wchar_t *wp, struct xstat *buf)
 		return -1;
 	}
 
-	if (wpath_get_dev(wp, &buf->st_dev)) {
+	if (wp == NULL)
+		buf->st_dev = 0;
+	else if (wpath_get_dev(wp, &buf->st_dev)) {
 		errno = ENOTSUP;
 		return -1;
 	}
@@ -312,7 +314,7 @@ xstat_file(HANDLE h, const wchar_t *wp, struct xstat *buf)
 	else {
 		buf->st_mode = (unsigned short) (
 			(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			? _S_IFDIR | _S_IEXEC : is_exe(wp)
+			? _S_IFDIR | _S_IEXEC : wp != NULL && is_exe(wp)
 			? _S_IFREG | _S_IEXEC : _S_IFREG);
 
 		buf->st_mode |= (unsigned short) (
