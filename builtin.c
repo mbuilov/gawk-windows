@@ -126,7 +126,7 @@ efwrite(const void *ptr,
 {
 	errno = 0;
 	if (rp != NULL) {
-		if (rp->output.gawk_fwrite(ptr, size, count, fp, rp->output.opaque) != count)
+		if (rp->output.gawk_fwrite(ptr, size, count, &rp->output) != count)
 			goto wrerror;
 	} else if (fwrite(ptr, size, count, fp) != count)
 		goto wrerror;
@@ -134,8 +134,8 @@ efwrite(const void *ptr,
 	  && ((fp == stdout && output_is_tty)
 	      || (rp != NULL && (rp->flag & RED_NOBUF) != 0))) {
 		if (rp != NULL) {
-			rp->output.gawk_fflush(fp, rp->output.opaque);
-			if (rp->output.gawk_ferror(fp, rp->output.opaque))
+			rp->output.gawk_fflush(&rp->output);
+			if (rp->output.gawk_ferror(&rp->output))
 				goto wrerror;
 		} else {
 			fflush(fp);
@@ -269,9 +269,8 @@ do_fflush(nargs_t nargs)
 			DEREF(tmp);
 			return make_number((AWKNUM) status);
 		}
-		fp = rp->output.fp;
-		if (fp != NULL) {
-			status = rp->output.gawk_fflush(fp, rp->output.opaque);
+		if (rp->output.file != NULL) {
+			status = rp->output.gawk_fflush(&rp->output);
 
 			if (status != 0) {
 				if (! is_non_fatal_redirect(tmp->stptr, tmp->stlen))
@@ -1813,7 +1812,7 @@ do_printf(ulong_t nargs, enum redirval redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
-			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.file == NULL) {
 				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
@@ -1821,7 +1820,6 @@ do_printf(ulong_t nargs, enum redirval redirtype)
 				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("printf: attempt to write to closed write end of two-way pipe"));
 			}
-			fp = rp->output.fp;
 		}
 		else if (errflg) {
 			update_ERRNO_int(errflg);
@@ -1838,13 +1836,13 @@ do_printf(ulong_t nargs, enum redirval redirtype)
 		decr_sp();
 	}
 	if (tmp != NULL) {
-		if (fp == NULL) {
+		if (fp == NULL && rp == NULL) {
 			DEREF(tmp);
 			return;
 		}
 		efwrite(tmp->stptr, sizeof(char), tmp->stlen, fp, "printf", rp, true);
 		if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-			rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
+			rp->output.gawk_fflush(&rp->output);
 		DEREF(tmp);
 	} else
 		gawk_exit(EXIT_FATAL);
@@ -2311,7 +2309,7 @@ do_print(nargs_t nargs, enum redirval redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
-			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.file == NULL) {
 				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
@@ -2319,7 +2317,6 @@ do_print(nargs_t nargs, enum redirval redirtype)
 				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
-			fp = rp->output.fp;
 		}
 		else if (errflg) {
 			update_ERRNO_int(errflg);
@@ -2349,7 +2346,7 @@ do_print(nargs_t nargs, enum redirval redirtype)
 		decr_sp();
 	}
 
-	if (fp == NULL) {
+	if (fp == NULL && rp == NULL) {
 		for (i = nargs; i; i--)
 			DEREF(args_array[i]);
 		return;
@@ -2361,13 +2358,13 @@ do_print(nargs_t nargs, enum redirval redirtype)
 		if (i != 1u && OFSlen > 0)
 			efwrite(OFS, sizeof(char), OFSlen,
 				fp, "print", rp, false);
-
 	}
+
 	if (ORSlen > 0)
 		efwrite(ORS, sizeof(char), ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
+		rp->output.gawk_fflush(&rp->output);
 }
 
 /* do_print_rec --- special case printing of $0, for speed */
@@ -2387,7 +2384,7 @@ do_print_rec(nargs_t nargs, enum redirval redirtype)
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
-			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.file == NULL) {
 				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
@@ -2395,7 +2392,6 @@ do_print_rec(nargs_t nargs, enum redirval redirtype)
 				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
-			fp = rp->output.fp;
 		}
 		DEREF(redir_exp);
 		decr_sp();
@@ -2407,7 +2403,7 @@ do_print_rec(nargs_t nargs, enum redirval redirtype)
 		return;
 	}
 
-	if (fp == NULL)
+	if (fp == NULL && rp == NULL)
 		return;
 
 	if (! field0_valid || do_lint)	// lint check for field access in END
@@ -2424,7 +2420,7 @@ do_print_rec(nargs_t nargs, enum redirval redirtype)
 		efwrite(ORS, sizeof(char), ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
+		rp->output.gawk_fflush(&rp->output);
 }
 
 
