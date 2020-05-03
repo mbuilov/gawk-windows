@@ -42,13 +42,12 @@ extern SRCFILE *srcfiles;
 void
 load_ext(const char *lib_name)
 {
-	int (*install_func)(const gawk_api_t *const, awk_ext_id_t);
+	int (*install_func)(const gawk_api_t *const, gawk_extension_api_ver_t *);
 	void *dl;
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
 	int ret;
-	gawk_extension_api_ver_t api_ver;
-	gawk_extension_api_ver_t *extension = &api_ver;
+	gawk_extension_api_ver_t ver;
 
 #ifdef HAVE_DLERROR_BUF
 	char dl_buf[1024];
@@ -76,19 +75,19 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible': %s"),
 				lib_name, dlerror_());
 
-	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
+	install_func = (int (*)(const gawk_api_t *const, gawk_extension_api_ver_t *))
 				dlsym(dl, INIT_FUNC);
 	if (install_func == NULL)
 		fatal(_("load_ext: library `%s': cannot call function `%s': %s"),
 				lib_name, INIT_FUNC, dlerror_());
 
-	ret = install_func(& api_impl, & extension /* ext_id */);
+	ret = install_func(& api_impl, & ver);
 	if (ret < 0) {
 		fatal("%s version mismatch with gawk!\n"
 			"\tmy version (API %d.%d), gawk version (API %d.%d)",
-			extension->api_name,
-			extension->need.major_version, extension->need.minor_version,
-			extension->have.major_version, extension->have.minor_version);
+			ver.api_name,
+			ver.need.major_version, ver.need.minor_version,
+			ver.have.major_version, ver.have.minor_version);
 	}
 	if (ret == 0)
 		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
