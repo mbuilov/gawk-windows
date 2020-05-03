@@ -348,7 +348,7 @@ api_unset_ERRNO(void)
 /* api_add_ext_func --- add a function to the interpreter, returns true upon success */
 
 static awk_bool_t
-api_add_ext_func(const char *name_space, awk_ext_func_t *func)
+api_add_ext_func(const char *name_space, const awk_ext_func_t *func)
 {
 	if (func == NULL)
 		return awk_false;
