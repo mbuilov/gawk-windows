@@ -74,17 +74,12 @@
 #endif
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "readfile extension: version 2.0";
-static awk_bool_t init_readfile(void);
-static awk_bool_t (*init_func)(void) = init_readfile;
+GAWK_PLUGIN("readfile extension: version 2.0");
 
 /* read_file_to_buffer --- handle the mechanics of reading the file */
 
 static char *
-read_file_to_buffer(fd_t fd, const gawk_stat_t *sbuf, size_t limit)
+read_file_to_buffer(fd_t fd, const gawk_xstat_t *sbuf, size_t limit)
 {
 	char *text;
 	size_t size;
@@ -120,7 +115,7 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
 	int ret;
-	gawk_stat_t sbuf;
+	gawk_xstat_t sbuf;
 	char *text;
 	fd_t fd;
 
@@ -132,7 +127,7 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	unset_ERRNO();
 
 	if (get_argument(0, AWK_STRING, &filename)) {
-		ret = stat(filename.str_value.str, & sbuf);
+		ret = xstat(filename.str_value.str, & sbuf);
 		if (ret < 0) {
 			update_ERRNO_int(errno);
 			goto done;
@@ -153,7 +148,7 @@ do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		make_malloced_string(text, (size_t) sbuf.st_size, result);
 		goto done;
 	} else if (do_lint)
-		lintwarn(ext_id, _("readfile: called with wrong kind of argument"));
+		lintwarn(_("readfile: called with wrong kind of argument"));
 
 done:
 	/* Set the return value */
@@ -266,4 +261,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, readfile, "")
+dl_load_func(init_readfile, func_table, readfile, "")
