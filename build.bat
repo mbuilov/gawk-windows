@@ -1,27 +1,41 @@
 @echo off
 setlocal
 
-:: Supported build targets:
-::
-:: <no args>    - build everything, then run all tests
-:: awk          - build only the GAWK executable
-:: ext          - build only extension DLLs
-:: test         - run all tests
-:: test basic   - run only basic tests
-:: test unix    - run only unix tests
-:: test ext     - run only extension tests
-:: test cpu     - run only machine tests
-:: test locale  - run only locale tests
-:: test shlib   - run only tests of extension DLLs
-:: clean        - cleanup intermediate build results
-:: distclean    - cleanup intermediate build results and contents of the "dist" directory
-
 :: If needed, next variables may be redefined in this batch file:
 ::
 :: COMPILE_AS_CXX  - undefine to compile with C compiler,
 :: DEBUG_BUILD     - define to build debug versions of gawk.exe and extension DLLs
 :: DO_ANALYZE      - define to enable static analysis of the sources during the compilation
 
+:: compile sources by the C++ compiler
+set COMPILE_AS_CXX=x
+rem set COMPILE_AS_CXX=
+
+:: do debug build with all debugging options enabled
+rem set DEBUG_BUILD=x
+set DEBUG_BUILD=
+
+:: enable static analysis of the sources
+rem set DO_ANALYZE=x
+set DO_ANALYZE=
+
+if ""=="%~1" (
+  echo Usage:
+  echo %~nx0 all            - build everything, then run all tests
+  echo %~nx0 awk            - build only the GAWK executable
+  echo %~nx0 ext            - build only extension DLLs
+  echo %~nx0 test           - run all tests
+  echo %~nx0 test basic     - run only basic tests
+  echo %~nx0 test unix      - run only unix tests
+  echo %~nx0 test ext       - run only extension tests
+  echo %~nx0 test cpu       - run only machine tests
+  echo %~nx0 test locale    - run only locale tests
+  echo %~nx0 test shlib     - run only tests of extension DLLs
+  echo %~nx0 test extra     - run only extra tests
+  echo %~nx0 clean          - cleanup intermediate build results
+  echo %~nx0 distclean      - cleanup intermediate build results and contents of the "dist" directory
+  exit /b 1
+)
 
 set DO_BUILD_GAWK=x
 set DO_BUILD_EXT=x
@@ -41,28 +55,18 @@ if "test"=="%~1" (
 ) else (
   if "clean"=="%~1" goto :do_clean
   if "distclean"=="%~1" (
+    echo del dist\gawk.exe dist\*.dll dist\*.pdb
     del dist\gawk.exe dist\*.dll dist\*.pdb 2>NUL
 :do_clean
+    echo del *.ilk *.pdb *.obj pc\*.obj support\*.obj extension\*.obj *.exp *.lib helpers\*.exe
     del *.ilk *.pdb *.obj pc\*.obj support\*.obj extension\*.obj *.exp *.lib helpers\*.exe 2>NUL
     exit /b
   )
-  if not ""=="%~1" (
+  if not "all"=="%~1" (
     echo ERROR: unknown build target: "%~1"
     exit /b 1
   )
 )))
-
-:: compile sources by the C++ compiler
-set COMPILE_AS_CXX=x
-rem set COMPILE_AS_CXX=
-
-:: do debug build with all debugging options enabled
-rem set DEBUG_BUILD=x
-set DEBUG_BUILD=
-
-:: enable static analysis of the sources
-rem set DO_ANALYZE=x
-set DO_ANALYZE=
 
 :: individual debugging options
 rem set GAWKDEBUG=x
@@ -305,7 +309,7 @@ call :ext_ld "%~1" "extension\%~1.obj"     || exit /b
 exit /b 0
 
 :helpers
-call :execq "cl /nologo /Fehelpers\tst_ls.exe helpers\tst_ls.c /MT" || exit /b
+if not exist helpers\tst_ls.exe call :execq "cl /nologo /Fehelpers\tst_ls.exe helpers\tst_ls.c /MT" || exit /b
 exit /b 0
 
 :::::: TESTSUITE :::::
@@ -321,6 +325,10 @@ echo.===============================================================
 
 setlocal & set CALL_STAT=0
 
+set TESTS_UNSUPPORTED=0
+set TESTS_INCOMPLETE=0
+set TESTS_SKIPPED=0
+
 :: don't call abort() in gawk.exe - it shows a message box window
 call :exec set GAWKTESTING=1 || goto :exit_local
 
@@ -329,12 +337,16 @@ dist\gawk.exe -f "test\printlang.awk" || ((echo.failed to execute: dist\gawk.exe
 
 call :exec cd test
 set err=%ERRORLEVEL%
-if not %err% equ 0 goto :test_no_cd
+if not %err% equ 0 goto :test_err_no_cd
 call :tests_in_directory
 set err=%ERRORLEVEL%
 call :exec cd ..
 if %err% equ 0 set err=%ERRORLEVEL%
-:test_no_cd
+:test_err_no_cd
+
+if %err% equ 0 echo Unsupported tests: %TESTS_UNSUPPORTED%
+if %err% equ 0 echo Incomplete tests:  %TESTS_INCOMPLETE%
+if %err% equ 0 echo Tests skipped:     %TESTS_SKIPPED%
 
 endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b %err%
 
@@ -377,12 +389,19 @@ call :charset_tests         || exit /b
 echo.======== Done with tests that can vary based on character set or locale support ========
 
 :try_shlib_tests
-if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="shlib" goto :end_of_tests)
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="shlib" goto :try_extra_tests)
 echo.======== Starting shared library tests ========
 call :shlib_tests           || exit /b
 echo.======== Done with shared library tests ========
 
+:try_extra_tests
+if defined DO_TEST_ONLY (if not "%DO_TEST_ONLY%"=="extra" goto :end_of_tests)
+echo.======== Starting extra tests ========
+call :extra_tests           || exit /b
+echo.======== Done with extra tests ========
+
 :end_of_tests
+
 if defined DO_TEST_ONLY (
   if not "%DO_TEST_ONLY%"=="basic" (
   if not "%DO_TEST_ONLY%"=="unix" (
@@ -390,9 +409,10 @@ if defined DO_TEST_ONLY (
   if not "%DO_TEST_ONLY%"=="cpu" (
   if not "%DO_TEST_ONLY%"=="locale" (
   if not "%DO_TEST_ONLY%"=="shlib" (
+  if not "%DO_TEST_ONLY%"=="extra" (
     echo.ERROR: unknown sub-test name: "%DO_TEST_ONLY%"
     exit /b 1
-)))))))
+))))))))
 
 if defined DO_TEST_ONLY (
   echo.%DO_TEST_ONLY% TESTS PASSED
@@ -782,6 +802,7 @@ call :runtest pipeio2 "-vSRCDIR=."                            || goto :exit_loca
 endlocal & set /A CALL_STAT+=%CALL_STAT%
 
 :: UNSUPPORTED test: poundbang - cannot be ported to windows
+set /A TESTS_UNSUPPORTED+=1
 
 setlocal & set CALL_STAT=0
 set "RTLENCMD=%GAWK% ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
@@ -891,6 +912,7 @@ call :runtest         delsub                                  || exit /b
 ::call :runtest_ devfd 1 /dev/fd/4 /dev/fd/5 "4<devfd.in4" "5<devfd.in5"  || exit /b
 ::call :runtest  devfd1 "4<devfd.in1" "5<devfd.in2"                       || exit /b
 ::call :runtest_ devfd2 1 /dev/fd/4 /dev/fd/5 "4<devfd.in1" "5<devfd.in2" || exit /b
+set /A TESTS_UNSUPPORTED+=3
 
 call :runtest_in      dfacheck1                               || exit /b
 
@@ -1117,6 +1139,7 @@ call :cmpdel profile13 && call :exec del /q _profile13.out _profile13.err || exi
 :: UNSUPPORTED tests: pseudo-terminal api is not supported yet on Windows
 ::call :runtest         pty1                                    || exit /b
 ::call :runtest         pty2                                    || exit /b
+set /A TESTS_UNSUPPORTED+=2
 
 setlocal & set CALL_STAT=0
 call :exec set AWKBUFSIZE=4096                                || goto :exit_local
@@ -1194,6 +1217,7 @@ call :runtest           symtab11                              || exit /b
 
 :: UNSUPPORTED test: reading files with timeout is not supported yet on windows
 ::call :runtest           timeout                               || exit /b
+set /A TESTS_UNSUPPORTED+=1
 
 call :runtest           typedregex1                           || exit /b
 call :runtest           typedregex2                           || exit /b
@@ -1245,6 +1269,7 @@ call :runtest           fnparydl                              || exit /b
 "%GAWK%" "--locale=JAPANESE_japan.20932" --version > NUL 2>&1
 if ERRORLEVEL 1 (
   echo.JAPANESE_japan.20932 locale is not supported by the OS, skipping the test
+  set /A TESTS_SKIPPED+=1
   goto :skip_jp_test
 )
 setlocal & set CALL_STAT=0
@@ -1337,6 +1362,7 @@ call :runtest           fnmatch_u8_en "--locale=en_US.UTF-8"  || exit /b
 :: UNSUPPORTED tests: fork is not available under Windows yet
 ::call :runtest           fork                                  || exit /b
 ::call :runtest           fork2                                 || exit /b
+set /A TESTS_UNSUPPORTED+=2
 
 call :execq "%GAWK% -f fts.awk" && ^
 call :cmpdel fts && call :exec del /q fts.ok                  || exit /b
@@ -1421,11 +1447,11 @@ call :runtest           ordchr                                || exit /b
 call :execq "%GAWK% --load ordchr ""BEGIN {print chr^(ord^(""""z""""^)^)}"" > _ordchr2 2>&1" && ^
 call :cmpdel ordchr2                                          || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal & set CALL_STAT=0 & set TESTS_INCOMPLETE=0
 call :get_top_srcdir
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (echo can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (echo can't create symbolic directory link, ignoring)
+call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic file link, ignoring)
+call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic directory link, ignoring)
 call :execq "%GAWK% -f readdir.awk ""%top_srcdir%"" > _readdir" || goto :exit_local
 call :execq "..\helpers\tst_ls -afi ""%top_srcdir%"" > _dirlist"   || goto :exit_local
 call :execq "..\helpers\tst_ls -lna ""%top_srcdir%"" > _longlist1" || goto :exit_local
@@ -1434,31 +1460,31 @@ call :execq "%GAWK% -f readdir0.awk -v extout=_readdir -v dirlist=_dirlist -v lo
 call :execq "del /q ""%top_srcdir%%\FFF"" 2>NUL"
 call :execq "rd /q ""%top_srcdir%%\DDD"" 2>NUL"
 call :cmpdel readdir && call :exec del /q readdir.ok _dirlist _longlist1 _longlist || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_INCOMPLETE+=%TESTS_INCOMPLETE%
 
-setlocal & set CALL_STAT=0
+setlocal & set CALL_STAT=0 & set TESTS_INCOMPLETE=0
 call :get_top_srcdir
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (echo can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (echo can't create symbolic directory link, ignoring)
+call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic file link, ignoring)
+call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic directory link, ignoring)
 call :execq "%GAWK% -lreaddir -F/ ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%top_srcdir%"" > readdir_test.ok" || goto :exit_local
 call :execq "%GAWK% -lreaddir_test ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%top_srcdir%"" > _readdir_test" || goto :exit_local
 call :execq "del /q ""%top_srcdir%%\FFF"" 2>NUL"
 call :execq "rd /q ""%top_srcdir%%\DDD"" 2>NUL"
 call :cmpdel readdir_test && call :exec del /q readdir_test.ok || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_INCOMPLETE+=%TESTS_INCOMPLETE%
 
-setlocal & set CALL_STAT=0
+setlocal & set CALL_STAT=0 & set TESTS_INCOMPLETE=0
 call :get_top_srcdir
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (echo can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (echo can't create symbolic directory link, ignoring)
+call :execq "mklink ""%top_srcdir%%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic file link, ignoring)
+call :execq "mklink ""%top_srcdir%%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_INCOMPLETE+=1 & echo can't create symbolic directory link, ignoring)
 call :execq "%GAWK% -lreaddir -F/ -f readdir_retest.awk ""%top_srcdir%"" > readdir_retest.ok" || goto :exit_local
 call :execq "%GAWK% -lreaddir_test -F/ -f readdir_retest.awk ""%top_srcdir%"" > _readdir_retest" || goto :exit_local
 call :execq "del /q ""%top_srcdir%%\FFF"" 2>NUL"
 call :execq "rd /q ""%top_srcdir%%\DDD"" 2>NUL"
 call :cmpdel readdir_retest && call :exec del /q readdir_retest.ok || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_INCOMPLETE+=%TESTS_INCOMPLETE%
 
 call :execq "%GAWK% -l readfile ""BEGIN {printf """"%%%%s"""", readfile^(""""Makefile.am""""^)}"" > _readfile 2>&1" || exit /b
 call :cmpdel_ Makefile.am _readfile                           || exit /b
@@ -1479,6 +1505,86 @@ endlocal & set /A CALL_STAT+=%CALL_STAT%
 call :runtest           time                                  || exit /b
 
 exit /b 0
+
+:::::: EXTRA TESTS :::::
+:extra_tests
+
+call :execq "%GAWK% -f inftest.awk > _inftest"                || exit /b
+call :execq "more inftest.ok > _inftest.ok"                   || exit /b
+call :cmpdel_ _inftest.ok _inftest /c && call :exec del _inftest.ok || exit /b
+
+::regtest
+call :execq "%GAWK% -f reg\exp-eq.awk < reg\exp-eq.in > reg\_exp-eq 2>&1" && ^
+call :cmpdel_ reg\exp-eq.good reg\_exp-eq                     || exit /b
+
+call :execq "(for /f ""tokens=1* delims=/"" %%%%a in (reg\func.good) do (echo %%%%a\%%%%b)) > reg\_func.good" || exit /b
+call :execq "%GAWK% -f reg\func.awk < reg\func.in > reg\_func 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
+call :cmpdel_ reg\_func.good reg\_func && call :exec del reg\_func.good || exit /b
+
+call :execq "cmd /s /c ""for /f ""tokens=1* delims=/"" %%%%a in ^(reg\func2.good^) do @^(^(echo %%%%a\%%%%b^)^&exit /b^)"" > reg\_func2.good" || exit /b
+call :execq "more +1 reg\func2.good >> reg\_func2.good" || exit /b
+call :execq "%GAWK% -f reg\func2.awk < reg\func2.in > reg\_func2 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
+call :cmpdel_ reg\_func2.good reg\_func2 && call :exec del reg\_func2.good || exit /b
+
+:: UNSUPPORTED
+:: this test fails under Windows - lower case greek letter 0xf2 (Greek_Greece.28597),
+:: when converting to upper case, do not maps to 0xd3 (Greek_Greece.28597)
+::setlocal & set CALL_STAT=0
+::call :change_locale "Greek_Greece.28597"                      || goto :exit_local
+::call :runtest ignrcas3                                        || goto :exit_local
+::endlocal & set /A CALL_STAT+=%CALL_STAT%
+set /A TESTS_UNSUPPORTED+=1
+
+call :inet_test  9 DISCARD inetdis || exit /b
+call :inet_test 13 DAYTIME inetday || exit /b
+call :inet_test  7 DAYTIME inetech || exit /b
+
+exit /b 0
+
+:inet_test
+:: %1 - 7, 9, 13
+:: %2 - ECHO, DISCARD, DAYTIME
+:: %3 - inetdis, inetday, inetech
+call :checksvc udp 4 "0.0.0.0" %1 %2 && (call :%3 udp "127.0.0.1" || exit /b)
+call :checksvc udp 6 "[::]"    %1 %2 && (call :%3 udp "[::1]" 6   || exit /b)
+call :checksvc tcp 4 "0.0.0.0" %1 %2 && (call :%3 tcp "127.0.0.1" || exit /b)
+call :checksvc tcp 6 "[::]"    %1 %2 && (call :%3 tcp "[::1]" 6   || exit /b)
+exit /b 0
+
+:inetdis
+:: %1 - udp, tcp
+:: %2 - "127.0.0.1" or "[::1]"
+:: %3 - <empty> or 6
+call :execq "%GAWK% ""BEGIN { print """"%1:%~2"""" ^|^& """"/inet%3/%1/0/%~2/9""""}"" > _inetdis 2>&1" || exit /b
+call :execq "rem.>inetdis.ok" && call :cmpdel inetdis && call :exec del /q inetdis.ok || exit /b
+exit /b
+
+:inetday
+:: %1 - udp, tcp
+:: %2 - "127.0.0.1" or "[::1]"
+:: %3 - <empty> or 6
+call :execq "%GAWK% ""BEGIN { print """""""" ^|^& """"/inet%3/%1/0/%~2/13""""; """"/inet%3/%1/0/%~2/13"""" ^|^& getline; print $0}"" > _inetday" || exit /b
+call :execq "type _inetday | find /v """"" && call :exec del /q _inetday || exit /b
+exit /b
+
+:inetech
+:: %1 - udp, tcp
+:: %2 - "127.0.0.1" or "[::1]"
+:: %3 - <empty> or 6
+call :execq "%GAWK% ""BEGIN { print """"[%1 %~2 %3]"""" ^|^& """"/inet%3/%1/0/%~2/7""""; """"/inet%3/%1/0/%~2/7"""" ^|^& getline; print $0}"" > _inetech" || exit /b
+call :execq "(echo.[%1 %~2 %3]) > inetech.ok" && call :cmpdel inetech && call :exec del /q inetech.ok || exit /b
+exit /b
+
+:checksvc
+:: %1 - udp, tcp
+:: %2 - 4 or 6
+:: %3 - "0.0.0.0" or "[::]"
+:: %4 - 7, 9, 13
+:: %5 - ECHO, DISCARD, DAYTIME
+(for /f "tokens=1,2" %%a in ('netstat -na') do (echo [%%a:%%b])) | find /i "[%1:%~3:%4]" >NUL && exit /b
+echo no %1 %5 service on local IPv%2 port %4, skipping test
+set /A TESTS_SKIPPED+=1
+exit /b 1
 
 ::::::::::::::::: support routines :::::::::::::
 
