@@ -218,7 +218,10 @@ static HANDLE open_dir(
 
 static int usage(const wchar_t *prog)
 {
-	fwprintf(stderr, L"Usage: %s [--locale=<locale>] (-afi|-lna) <dir>\n", prog);
+	const wchar_t *name = wcsrchr(prog, L'\\');
+	name = name != NULL ? name + 1 : prog;
+	fwprintf(stderr, L"%s - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
+	fwprintf(stderr, L"Usage: %s [--locale=<locale>] (-afi|-lna) <dir>\n", name);
 	return 2;
 }
 
