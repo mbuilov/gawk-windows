@@ -384,13 +384,8 @@ files_are_same(const char *path, SRCFILE *src)
 	size_t pathlen;
 	const char *p, *s;
 
-#ifdef _MSC_VER
-	struct xstat st;
-	int r = xstat (path, & st);
-#else
-	struct stat st;
-	int r = stat (path, & st);
-#endif
+	gawk_xstat_t st;
+	int r = os_xstat (path, & st);
 
 	if (r != 0)
 		return false;
