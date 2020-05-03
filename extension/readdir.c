@@ -87,17 +87,11 @@
 
 GAWK_PLUGIN_GPL_COMPATIBLE
 
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-
 #ifndef READDIR_TEST
-static const char *ext_version = "readdir extension: version 2.0";
+GAWK_PLUGIN("readdir extension: version 2.0");
 #else
-static const char *ext_version = "readdir extension: version 3.0";
+GAWK_PLUGIN("readdir extension: version 3.0");
 #endif
-
-static awk_bool_t init_readdir(void);
-static awk_bool_t (*init_func)(void) = init_readdir;
 
 /* data type for the opaque pointer: */
 
@@ -553,11 +547,11 @@ report_opendir_error(const char *dirname, const DWORD last_err)
 	}
 
 	if (n_chars)
-		warning(ext_id, _("dir_take_control_of: "
+		warning(_("dir_take_control_of: "
 			"couldn't open directory: %s, system error: 0x%x (%s)"),
 			dirname, last_err, msg_buf);
 	else
-		warning(ext_id, _("dir_take_control_of: "
+		warning(_("dir_take_control_of: "
 			"couldn't open directory: %s, system error: 0x%x"),
 			dirname, last_err);
 
@@ -594,8 +588,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		iobuf->fd = dirfd(dp);
 # endif
 	if (dp == NULL) {
-		warning(ext_id,
-			_("dir_take_control_of: opendir/fdopendir failed: %s"),
+		warning(_("dir_take_control_of: opendir/fdopendir failed: %s"),
 			strerror(errno));
 		update_ERRNO_int(errno);
 		return awk_false;
@@ -620,8 +613,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	size_t dir_len = mbstowcs(NULL, iobuf->name, 0);
 	if ((size_t)-1 == dir_len) {
 		errno = EILSEQ;
-		warning(ext_id,
-			_("dir_take_control_of: opendir/fdopendir failed: %s"),
+		warning(_("dir_take_control_of: opendir/fdopendir failed: %s"),
 			strerror(errno));
 		update_ERRNO_int(errno);
 		return awk_false;
@@ -629,8 +621,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 
 	/* Path should not exceed the limit of 32767 wide characters.  */
 	if (dir_len > 32767 - 3) {
-		warning(ext_id,
-			_("dir_take_control_of: too long directory path: \"%s\""),
+		warning(_("dir_take_control_of: too long directory path: \"%s\""),
 			iobuf->name);
 		update_ERRNO_int(ENAMETOOLONG);
 		return awk_false;
@@ -728,4 +719,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, readdir, "")
+dl_load_func(init_readdir, func_table, readdir, "")

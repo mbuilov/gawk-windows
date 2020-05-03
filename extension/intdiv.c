@@ -63,11 +63,7 @@
 #define N_(msgid) msgid
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "intdiv extension: version 1.0";
-static awk_bool_t (*init_func)(void) = NULL;
+GAWK_PLUGIN("intdiv extension: version 1.0");
 
 /* double_to_int --- get the integer part of a double */
 
@@ -112,7 +108,7 @@ mpz_conv(const awk_value_t *arg, mpz_ptr tmp)
 		mpz_set_d(tmp, double_to_int(arg->num_value));
 		return tmp;
 	default:	/* should never happen */
-		fatal(ext_id, _("intdiv: invalid numeric type `%d'"), arg->num_type);
+		fatal(_("intdiv: invalid numeric type `%d'"), arg->num_type);
 		return NULL;
 	}
 }
@@ -148,15 +144,15 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	(void) nargs, (void) unused;
 
 	if (! get_argument(0, AWK_NUMBER, & nv)) {
-		warning(ext_id, _("intdiv: first argument must be numeric"));
+		warning(_("intdiv: first argument must be numeric"));
 		return make_number(-1, result);
 	}
 	if (! get_argument(1, AWK_NUMBER, & dv)) {
-		warning(ext_id, _("intdiv: second argument must be numeric"));
+		warning(_("intdiv: second argument must be numeric"));
 		return make_number(-1, result);
 	}
 	if (! get_argument(2, AWK_ARRAY, & array_param)) {
-		warning(ext_id, _("intdiv: third argument must be an array"));
+		warning(_("intdiv: third argument must be an array"));
 		return make_number(-1, result);
 	}
 	array = array_param.array_cookie;
@@ -173,7 +169,7 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		if (nv.num_type != AWK_NUMBER_TYPE_DOUBLE || dv.num_type != AWK_NUMBER_TYPE_DOUBLE) {
 			static int warned = 0;
 			if (!warned) {
-				warning(ext_id, _("intdiv: MPFR arguments converted to IEEE because this extension was not compiled with MPFR support; loss of precision may occur"));
+				warning(_("intdiv: MPFR arguments converted to IEEE because this extension was not compiled with MPFR support; loss of precision may occur"));
 				warned = 1;
 			}
 		}
@@ -182,7 +178,7 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		denom = double_to_int(dv.num_value);
 
 		if (denom == 0.0) {
-			warning(ext_id, _("intdiv: division by zero attempted"));
+			warning(_("intdiv: division by zero attempted"));
 			return make_number(-1, result);
 		}
 
@@ -207,17 +203,17 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 		/* convert numerator and denominator to integer */
 		if (!(numer = mpz_conv(&nv, numer_tmp))) {
-			warning(ext_id, _("intdiv: numerator is not finite"));
+			warning(_("intdiv: numerator is not finite"));
 			return make_number(-1, result);
 		}
 		if (!(denom = mpz_conv(&dv, denom_tmp))) {
-			warning(ext_id, _("intdiv: denominator is not finite"));
+			warning(_("intdiv: denominator is not finite"));
 			if (numer == numer_tmp)
 				mpz_clear(numer);
 			return make_number(-1, result);
 		}
 		if (mpz_sgn(denom) == 0) {
-			warning(ext_id, _("intdiv: division by zero attempted"));
+			warning(_("intdiv: division by zero attempted"));
 			if (numer == numer_tmp)
 				mpz_clear(numer);
 			if (denom == denom_tmp)
@@ -252,4 +248,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, intdiv, "")
+dl_load_func(NULL, func_table, intdiv, "")

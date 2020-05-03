@@ -206,12 +206,7 @@ get_inode(const char *fname)
 #endif
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static awk_bool_t init_filefuncs(void);
-static awk_bool_t (*init_func)(void) = init_filefuncs;
-static const char *ext_version = "filefuncs extension: version 1.0";
+GAWK_PLUGIN("filefuncs extension: version 1.0");
 
 /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
@@ -531,7 +526,7 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 			array_set(array, "linkval",
 				make_malloced_string(buf, (size_t) linksize, & tmp));
 		else
-			warning(ext_id, _("stat: unable to read symbolic link `%s'"), name);
+			warning(_("stat: unable to read symbolic link `%s'"), name);
 	}
 
 	/* add a type field */
@@ -609,12 +604,12 @@ do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* file is first arg, array to hold results is second */
 	if (! get_argument(0, AWK_STRING, & file_param)) {
-		warning(ext_id, _("stat: first argument is not a string"));
+		warning(_("stat: first argument is not a string"));
 		return make_number(-1, result);
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array_param)) {
-		warning(ext_id, _("stat: second argument is not an array"));
+		warning(_("stat: second argument is not an array"));
 		return make_number(-1, result);
 	}
 
@@ -655,7 +650,7 @@ do_statvfs(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	/* file is first arg, array to hold results is second */
 	if (   ! get_argument(0, AWK_STRING, & file_param)
 	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
-		warning(ext_id, _("stat: bad parameters"));
+		warning(_("stat: bad parameters"));
 		return make_number(-1, result);
 	}
 
@@ -723,7 +718,7 @@ init_filefuncs(void)
 	for (i = 0; opentab[i].name != NULL; i++) {
 		(void) make_number(opentab[i].value, & value);
 		if (! sym_update(opentab[i].name, & value)) {
-			warning(ext_id, _("fts init: could not create variable %s"),
+			warning(_("fts init: could not create variable %s"),
 					opentab[i].name);
 			errors++;
 		}
@@ -745,7 +740,7 @@ init_filefuncs(void)
 static awk_value_t *
 do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
-	fatal(ext_id, _("fts is not supported on this system"));
+	fatal(_("fts is not supported on this system"));
 
 	return NULL;	/* for the compiler */
 }
@@ -764,7 +759,7 @@ fill_stat_element(awk_array_t element_array, const char *name, const fts_stat_t 
 
 	stat_array = create_array();
 	if (stat_array == NULL) {
-		warning(ext_id, _("fill_stat_element: could not create array, out of memory"));
+		warning(_("fill_stat_element: could not create array, out of memory"));
 		fts_errors++;
 		return;
 	}
@@ -773,7 +768,7 @@ fill_stat_element(awk_array_t element_array, const char *name, const fts_stat_t 
 	value.val_type = AWK_ARRAY;
 	value.array_cookie = stat_array;
 	if (! set_array_element(element_array, & index, & value)) {
-		warning(ext_id, _("fill_stat_element: could not set element"));
+		warning(_("fill_stat_element: could not set element"));
 		fts_errors++;
 	}
 }
@@ -788,7 +783,7 @@ fill_path_element(awk_array_t element_array, const char *path)
 	(void) make_const_string("path", 4, & index);
 	(void) make_const_string(path, strlen(path), & value);
 	if (! set_array_element(element_array, & index, & value)) {
-		warning(ext_id, _("fill_path_element: could not set element"));
+		warning(_("fill_path_element: could not set element"));
 		fts_errors++;
 	}
 }
@@ -804,7 +799,7 @@ fill_error_element(awk_array_t element_array, const int errcode)
 	(void) make_const_string("error", 5, & index);
 	(void) make_const_string(err, strlen(err), & value);
 	if (! set_array_element(element_array, & index, & value)) {
-		warning(ext_id, _("fill_error_element: could not set element"));
+		warning(_("fill_error_element: could not set element"));
 		fts_errors++;
 	}
 }
@@ -856,7 +851,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 			/* this will be empty if doing FTS_SKIP */
 			newdir_array = create_array();
 			if (newdir_array == NULL) {
-				warning(ext_id, _("fts-process: could not create array"));
+				warning(_("fts-process: could not create array"));
 				fts_errors++;
 				break;
 			}
@@ -866,7 +861,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 			value.val_type = AWK_ARRAY;
 			value.array_cookie = newdir_array;
 			if (! set_array_element(destarray, & index, & value)) {
-				warning(ext_id, _("fts-process: could not set element"));
+				warning(_("fts-process: could not set element"));
 				fts_errors++;
 				break;
 			}
@@ -874,7 +869,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 
 			/* push current directory */
 			if (! stack_push(destarray))
-				fatal(ext_id, _("fts-process: could not push an entry"));
+				fatal(_("fts-process: could not push an entry"));
 
 			/* new directory becomes current */
 			destarray = newdir_array;
@@ -905,7 +900,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 			 */
 			element_array = create_array();
 			if (element_array == NULL) {
-				warning(ext_id, _("fts-process: could not create array"));
+				warning(_("fts-process: could not create array"));
 				fts_errors++;
 				break;
 			}
@@ -915,7 +910,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 			value.val_type = AWK_ARRAY;
 			value.array_cookie = element_array;
 			if (! set_array_element(destarray, & index, & value)) {
-				warning(ext_id, _("fts-process: could not set element"));
+				warning(_("fts-process: could not set element"));
 				fts_errors++;
 				break;
 			}
@@ -933,7 +928,7 @@ process(FTS *hierarchy, awk_array_t destarray, int seedot, int nonrecursive)
 			value.val_type = AWK_ARRAY;
 			value.array_cookie = dot_array;
 			if (! set_array_element(destarray, & index, & value)) {
-				warning(ext_id, _("fts-process: could not set element"));
+				warning(_("fts-process: could not set element"));
 				fts_errors++;
 				break;
 			}
@@ -984,29 +979,29 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	fts_errors = 0;		/* ensure a fresh start */
 
 	if (nargs > 3)
-		lintwarn(ext_id, _("fts: called with incorrect number of arguments, expecting 3"));
+		lintwarn(_("fts: called with incorrect number of arguments, expecting 3"));
 
 	if (! get_argument(0, AWK_ARRAY, & pathlist)) {
-		warning(ext_id, _("fts: first argument is not an array"));
+		warning(_("fts: first argument is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(1, AWK_NUMBER, & flagval)) {
-		warning(ext_id, _("fts: second argument is not a number"));
+		warning(_("fts: second argument is not a number"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	if (! get_argument(2, AWK_ARRAY, & dest)) {
-		warning(ext_id, _("fts: third argument is not an array"));
+		warning(_("fts: third argument is not an array"));
 		update_ERRNO_int(EINVAL);
 		goto out;
 	}
 
 	/* flatten pathlist */
 	if (! flatten_array(pathlist.array_cookie, & path_array)) {
-		warning(ext_id, _("fts: could not flatten array\n"));
+		warning(_("fts: could not flatten array\n"));
 		goto out;
 	}
 
@@ -1025,7 +1020,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if ((flags & FTS_NOSTAT) != 0) {
 		flags &= ~FTS_NOSTAT;
 		if (do_lint)
-			lintwarn(ext_id, _("fts: ignoring sneaky FTS_NOSTAT flag. nyah, nyah, nyah."));
+			lintwarn(_("fts: ignoring sneaky FTS_NOSTAT flag. nyah, nyah, nyah."));
 	}
 #endif
 	flags &= mask;	/* turn off anything else */
@@ -1083,4 +1078,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, filefuncs, "")
+dl_load_func(init_filefuncs, func_table, filefuncs, "")

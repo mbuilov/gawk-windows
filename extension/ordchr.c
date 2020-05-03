@@ -59,11 +59,7 @@
 #define N_(msgid) msgid
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "ordchr extension: version 1.0";
-static awk_bool_t (*init_func)(void) = NULL;
+GAWK_PLUGIN("ordchr extension: version 1.0");
 
 /*  do_ord --- return numeric value of first char of string */
 
@@ -80,7 +76,7 @@ do_ord(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
 	} else if (do_lint)
-		lintwarn(ext_id, _("ord: first argument is not a string"));
+		lintwarn(_("ord: first argument is not a string"));
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -109,7 +105,7 @@ do_chr(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		str[0] = (char) ret;
 		str[1] = '\0';
 	} else if (do_lint)
-		lintwarn(ext_id, _("chr: first argument is not a number"));
+		lintwarn(_("chr: first argument is not a number"));
 
 	/* Set the return value */
 	return make_const_string(str, 1, result);
@@ -122,4 +118,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, ord_chr, "")
+dl_load_func(NULL, func_table, ord_chr, "")

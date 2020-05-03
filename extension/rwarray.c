@@ -75,11 +75,7 @@
 #define MINOR 1
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "rwarray extension: version 1.2";
-static awk_bool_t (*init_func)(void) = NULL;
+GAWK_PLUGIN("rwarray extension: version 1.2");
 
 static awk_bool_t write_array(FILE *fp, awk_array_t array);
 static awk_bool_t write_elem(FILE *fp, awk_element_t *element);
@@ -147,13 +143,13 @@ do_writea(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* filename is first arg, array to dump is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		warning(ext_id, _("do_writea: first argument is not a string"));
+		warning(_("do_writea: first argument is not a string"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		warning(ext_id, _("do_writea: second argument is not an array"));
+		warning(_("do_writea: second argument is not an array"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -199,7 +195,7 @@ write_array(FILE *fp, awk_array_t array)
 	awk_flat_array_t *flat_array;
 
 	if (! flatten_array(array, & flat_array)) {
-		warning(ext_id, _("write_array: could not flatten array"));
+		warning(_("write_array: could not flatten array"));
 		return awk_false;
 	}
 
@@ -217,7 +213,7 @@ write_array(FILE *fp, awk_array_t array)
 	}
 
 	if (! release_flattened_array(array, flat_array)) {
-		warning(ext_id, _("write_array: could not release flattened array"));
+		warning(_("write_array: could not release flattened array"));
 		return awk_false;
 	}
 
@@ -286,7 +282,7 @@ write_value(FILE *fp, awk_value_t *val)
 		default:
 			/* XXX can this happen? */
 			code = htonl(0);
-			warning(ext_id, _("array value has unknown type %d"), val->val_type);
+			warning(_("array value has unknown type %d"), val->val_type);
 			break;
 		}
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
@@ -325,13 +321,13 @@ do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* directory is first arg, array to read is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		warning(ext_id, _("do_reada: first argument is not a string"));
+		warning(_("do_reada: first argument is not a string"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		warning(ext_id, _("do_reada: second argument is not an array"));
+		warning(_("do_reada: second argument is not an array"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -375,7 +371,7 @@ do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	if (! clear_array(array.array_cookie)) {
 		errno = ENOMEM;
-		warning(ext_id, _("do_reada: clear_array failed"));
+		warning(_("do_reada: clear_array failed"));
 		goto done1;
 	}
 
@@ -414,7 +410,7 @@ read_array(FILE *fp, awk_array_t array)
 
 		/* add to array */
 		if (! set_array_element_by_elem(array, & new_elem)) {
-			warning(ext_id, _("read_array: set_array_element failed"));
+			warning(_("read_array: set_array_element failed"));
 			return awk_false;
 		}
 	}
@@ -510,7 +506,7 @@ read_value(FILE *fp, awk_value_t *value)
 			break;
 		default:
 			/* this cannot happen! */
-			warning(ext_id, _("treating recovered value with unknown type code %u as a string"), code);
+			warning(_("treating recovered value with unknown type code %u as a string"), code);
 			value->val_type = AWK_STRING;
 			break;
 		}
@@ -537,4 +533,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, rwarray, "")
+dl_load_func(NULL, func_table, rwarray, "")

@@ -45,10 +45,7 @@
 #include "gawkapi.h"
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "testext extension: version 1.0";
+GAWK_PLUGIN("testext extension: version 1.0");
 
 static void fill_in_array(awk_value_t *value);
 
@@ -956,7 +953,7 @@ do_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		awk_value_t idx, val;
 		set_array_element(res.array_cookie,
 				  make_const_string("output", 6, & idx),
-				  make_number(obuf->fp ? fileno(obuf->fp) : -1,
+				  make_number(obuf->file ? awk_output_buf_get_fd(obuf) : -1,
 				  	      & val));
 		if (obuf->name)
 			set_array_element(res.array_cookie,
@@ -1137,6 +1134,4 @@ BEGIN {
 	return awk_true;
 }
 
-static awk_bool_t (*init_func)(void) = init_testext;
-
-dl_load_func(func_table, testext, "")
+dl_load_func(init_testext, func_table, testext, "")

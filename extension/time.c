@@ -100,12 +100,7 @@ vms_fake_nanosleep(struct timespec *rqdly, struct timespec *rmdly)
 #define N_(msgid) msgid
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "time extension: version 1.0";
-
-static awk_bool_t (*init_func)(void) = NULL;
+GAWK_PLUGIN("time extension: version 1.0");
 
 /*
  * Returns time since 1/1/1970 UTC as a floating point value; should
@@ -226,4 +221,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, time, "")
+dl_load_func(NULL, func_table, time, "")

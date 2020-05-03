@@ -55,29 +55,23 @@
 #define N_(msgid) msgid
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "revoutput extension: version 1.1";
-
-static awk_bool_t init_revoutput(void);
-static awk_bool_t (*init_func)(void) = init_revoutput;
+GAWK_PLUGIN("revoutput extension: version 1.1");
 
 /* rev_fwrite --- write out characters in reverse order */
 
 static size_t
-rev_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
+rev_fwrite(const void *buf, size_t size, size_t count, awk_output_buf_t *fp)
 {
 	const char *cp = (const char*) buf;
 	size_t i = count;
 
 	assert(sizeof(char) == size);
 
-	(void) size, (void) opaque;
+	(void) size;
 
 	while (i) {
 		char c = cp[--i];
-		if (EOF == putc(c, fp))
+		if (EOF == outbuf_fputc(c, fp))
 			return count - i - 1;
 	}
 
@@ -138,7 +132,7 @@ init_revoutput(void)
 		/* only install it if not there, e.g. -v REVOUT=1 */
 		make_number(0.0, & value);	/* init to false */
 		if (! sym_update("REVOUT", & value)) {
-			warning(ext_id, _("revoutput: could not initialize REVOUT variable"));
+			warning(_("revoutput: could not initialize REVOUT variable"));
 
 			return awk_false;
 		}
@@ -153,4 +147,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, revoutput, "")
+dl_load_func(init_revoutput, func_table, revoutput, "")

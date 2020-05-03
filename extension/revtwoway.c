@@ -57,13 +57,7 @@
 #define N_(msgid) msgid
 
 GAWK_PLUGIN_GPL_COMPATIBLE
-
-static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t ext_id;
-static const char *ext_version = "revtwoway extension: version 1.0";
-
-static awk_bool_t init_revtwoway(void);
-static awk_bool_t (*init_func)(void) = init_revtwoway;
+GAWK_PLUGIN("revtwoway extension: version 1.0");
 
 /*
  * IMPORTANT NOTE: This is a NOT a true general purpose
@@ -163,18 +157,17 @@ rev2way_close(awk_input_buf_t *iobuf)
 /* rev2way_fwrite --- write out characters in reverse order */
 
 static size_t
-rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
+rev2way_fwrite(const void *buf, size_t size, size_t count, awk_output_buf_t *outbuf)
 {
 	two_way_proc_data_t *proc_data;
 	size_t amount;
 	const char *src;
 	char *dest;
 
-	(void) fp;	/* silence warnings */
-	if (opaque == NULL)
+	if (outbuf->opaque == NULL)
 		return 0;	/* error */
 
-	proc_data = (two_way_proc_data_t *) opaque;
+	proc_data = (two_way_proc_data_t *) outbuf->opaque;
 	amount = size * count;
 
 	/* do the dance */
@@ -200,43 +193,36 @@ rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaqu
 /* rev2way_fflush --- do nothing hook for fflush */
 
 static int
-rev2way_fflush(FILE *fp, void *opaque)
+rev2way_fflush(awk_output_buf_t *outbuf)
 {
-	(void) fp;
-	(void) opaque;
-
+	(void) outbuf;
 	return 0;
 }
 
 /* rev2way_ferror --- do nothing hook for ferror */
 
 static int
-rev2way_ferror(FILE *fp, void *opaque)
+rev2way_ferror(awk_output_buf_t *outbuf)
 {
-	(void) fp;
-	(void) opaque;
-
+	(void) outbuf;
 	return 0;
 }
 
 /* rev2way_fclose --- close output side of two-way processor */
 
 static int
-rev2way_fclose(FILE *fp, void *opaque)
+rev2way_fclose(awk_output_buf_t *outbuf)
 {
 	two_way_proc_data_t *proc_data;
 
-	if (opaque == NULL)
+	if (outbuf->opaque == NULL)
 		return EOF;	/* error */
 
-	(void) fp;
-
-	proc_data = (two_way_proc_data_t *) opaque;
+	proc_data = (two_way_proc_data_t *) outbuf->opaque;
 	close_two_proc_data(proc_data);
 
 	return 0;
 }
-
 
 /* revtwoway_can_two_way --- return true if we want the file */
 
@@ -275,7 +261,7 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 	inbuf->opaque = proc_data;
 
 	/* output side: */
-	outbuf->fp = (FILE *) &fake_file; 	/* must be != NULL.  */
+	outbuf->file = (FILE *) &fake_file; 	/* must be != NULL.  */
 	outbuf->opaque = proc_data;
 	outbuf->gawk_fwrite = rev2way_fwrite;
 	outbuf->gawk_fflush = rev2way_fflush;
@@ -309,4 +295,4 @@ static awk_ext_func_t func_table[] = {
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, revtwoway, "")
+dl_load_func(init_revtwoway, func_table, revtwoway, "")
