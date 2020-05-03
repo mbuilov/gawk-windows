@@ -397,8 +397,9 @@ rfind_slash(char *path)
 {
 	char *cp = strrchr(path, '/');
 #ifdef _MSC_VER
-	if (cp == NULL)
-		cp = strrchr(path, '\\');
+	char *cp2 = strrchr(path, '\\');
+	if (cp2 != NULL && (cp == NULL || cp < cp2))
+		cp = cp2;
 #endif
 	return cp;
 }
