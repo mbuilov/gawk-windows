@@ -562,7 +562,7 @@ typedef struct gawk_api {
 	 * points to, thus it's not const.
 	 */
 	awk_bool_t (*api_add_ext_func)(const char *name_space,
-			awk_ext_func_t *func);
+			const awk_ext_func_t *func);
 
 	/* Register an input parser, for opening files read-only */
 	void (*api_register_input_parser)(awk_input_parser_t *input_parser);
@@ -1697,35 +1697,52 @@ init_my_extension(void)
 dl_load_func(init_my_extension, func_table, extension_name, "name_space_in_quotes")
 #endif
 
-#ifndef GAWK_CRT_API
-#define dl_load_init_plugin_info(api_p) do { \
-	gawk_plugin_info.api = api_p; \
-} while ((void)0,0)
-#else
-#define dl_load_init_plugin_info(api_p) do { \
-	gawk_plugin_info.api = api_p; \
-	gawk_plugin_info.crt = api_p->crt_api; \
-} while ((void)0,0)
+static inline void dl_load_init_plugin_info(gawk_plugin_info_t *info,
+	const gawk_api_t *const api_p)
+{
+	info->api = api_p;
+#ifdef GAWK_CRT_API
+	info->crt = api_p->crt_api;
+#endif
+}
+
+static inline const gawk_api_t *gawk_api_(const gawk_plugin_info_t *info)
+{
+	return info->api;
+}
+
+#ifdef GAWK_CRT_API
+static inline const gawk_crt_api_t *gawk_crt_(const gawk_plugin_info_t *info)
+{
+	return info->crt;
+}
 #endif
 
 #ifndef GAWK_CRT_API
 #define dl_load_define_support_funcs \
-const gawk_api_t *gawk_api(void)	{return gawk_plugin_info.api;}
+const gawk_api_t *gawk_api(void)	{return gawk_api_(&gawk_plugin_info);}
 #else
 #define dl_load_define_support_funcs \
-const gawk_api_t *gawk_api(void)	{return gawk_plugin_info.api;} \
-const gawk_crt_api_t *gawk_crt(void)	{return gawk_plugin_info.crt;}
+const gawk_api_t *gawk_api(void)	{return gawk_api_(&gawk_plugin_info);} \
+const gawk_crt_api_t *gawk_crt(void)	{return gawk_crt_(&gawk_plugin_info);}
 #endif
 
-#define gawk_check_api_version(name_, MAJOR_, MINOR_, major_, minor_) \
-	if ((major_) != MAJOR_ || (minor_) < MINOR_) { \
-		ver->api_name = name_; \
-		ver->need.major_version = MAJOR_; \
-		ver->need.minor_version = MINOR_; \
-		ver->have.major_version = major_; \
-		ver->have.minor_version = minor_; \
-		return -1; \
-	} \
+static inline int gawk_check_api_version(
+	const char *api_name,
+	int need_major, int need_minor,
+	int have_major, int have_minor,
+	gawk_extension_api_ver_t *ver)
+{
+	if (have_major != need_major || have_minor < need_minor) {
+		ver->api_name = api_name;
+		ver->need.major_version = need_major;
+		ver->need.minor_version = need_minor;
+		ver->have.major_version = have_major;
+		ver->have.minor_version = have_minor;
+		return -1;
+	}
+	return 0;
+}
 
 static inline awk_bool_t
 dl_load_call_init_func(awk_bool_t (*func)(void))
@@ -1735,72 +1752,93 @@ dl_load_call_init_func(awk_bool_t (*func)(void))
 	return (*func)();
 }
 
+static inline int dl_load_func_impl(
+	const char *ext_name,
+	const char *gmp_ext_name,
+	const char *mpfr_ext_name,
+	const char *crt_ext_name,
+	gawk_plugin_info_t *info,
+	const gawk_api_t *const api_p,
+	gawk_extension_api_ver_t *ver,
+	const awk_ext_func_t func_table[],
+	const size_t func_table_size,
+	const char *name_space,
+	awk_bool_t (*init_func)(void))
+{
+	size_t i;
+	int errors = 0;
+
+	(void) gmp_ext_name, (void) mpfr_ext_name, (void) crt_ext_name;
+
+	if (gawk_check_api_version(ext_name,
+		GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
+		api_p->major_version, api_p->minor_version, ver))
+		return -1;
+
+#if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
+	if (gawk_check_api_version(gmp_ext_name,
+		__GNU_MP_VERSION, __GNU_MP_VERSION_MINOR,
+		api_p->gmp_major_version, api_p->gmp_minor_version, ver))
+		return -1;
+	if (gawk_check_api_version(mpfr_ext_name,
+		MPFR_VERSION_MAJOR, MPFR_VERSION_MINOR,
+		api_p->mpfr_major_version, api_p->mpfr_minor_version, ver))
+		return -1;
+#endif
+
+#ifdef GAWK_CRT_API
+	if (gawk_check_api_version(crt_ext_name,
+		GAWK_CRT_MAJOR_VERSION, GAWK_CRT_MINOR_VERSION,
+		api_p->crt_api ? api_p->crt_api->crt_major_version : -1,
+		api_p->crt_api ? api_p->crt_api->crt_minor_version : -1, ver))
+		return -1;
+#endif
+
+	dl_load_init_plugin_info(info, api_p);
+
+	/* load functions */
+	for (i = 0; i < func_table_size; i++) {
+		if (func_table[i].name == NULL)
+			break;
+		if (!api_p->api_add_ext_func(name_space, & func_table[i])) {
+			api_p->api_warning("%s: could not add %s", ext_name,
+					func_table[i].name);
+			errors++;
+		}
+	}
+
+	if (!dl_load_call_init_func(init_func)) {
+		api_p->api_warning("%s: initialization function failed", ext_name);
+		errors++;
+	}
+
+	if (info->ext_version != NULL)
+		api_p->api_register_ext_version(info->ext_version);
+
+	return (errors == 0);
+}
+
 #define dl_load_func(init_func, func_table, extension, name_space) \
 dl_load_define_support_funcs \
 GAWK_PLUGIN_EXTERN_C_BEGIN \
 EXTENSION_DLL_MAIN \
 GAWK_PLUGIN_EXPORT \
-int dl_load(const gawk_api_t *const api_p, gawk_extension_api_ver_t *ver)  \
+int dl_load(const gawk_api_t *const api_p, gawk_extension_api_ver_t *ver) \
 { \
-	size_t i, j; \
-	int errors = 0; \
-\
-	gawk_check_api_version(#extension, \
-		GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION, \
-		api_p->major_version, api_p->minor_version); \
-\
-	check_mpfr_version(api_p, extension); \
-\
-	check_crt_version(api_p, extension); \
-\
-	dl_load_init_plugin_info(api_p); \
-\
-	/* load functions */ \
-	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
-		if (func_table[i].name == NULL) \
-			break; \
-		if (! add_ext_func(name_space, & func_table[i])) { \
-			warning(#extension ": could not add %s", \
-					func_table[i].name); \
-			errors++; \
-		} \
-	} \
-\
-	if (!dl_load_call_init_func(init_func)) { \
-		warning(#extension ": initialization function failed"); \
-		errors++; \
-	} \
-\
-	if (gawk_plugin_info.ext_version != NULL) \
-		register_ext_version(gawk_plugin_info.ext_version); \
-\
-	return (errors == 0); \
+	return dl_load_func_impl( \
+		#extension, \
+		#extension ": GMP", \
+		#extension ": MPFR", \
+		#extension ": CRT", \
+		&gawk_plugin_info, \
+		api_p, \
+		ver, \
+		func_table, \
+		sizeof(func_table) / sizeof(func_table[0]), \
+		name_space, \
+		init_func); \
 } \
 GAWK_PLUGIN_EXTERN_C_END
-
-#if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
-#define check_mpfr_version(api_p, extension) do { \
-	gawk_check_api_version(#extension ": GMP", \
-		__GNU_MP_VERSION, __GNU_MP_VERSION_MINOR, \
-		api_p->gmp_major_version, api_p->gmp_minor_version); \
-	gawk_check_api_version(#extension ": MPFR", \
-		MPFR_VERSION_MAJOR, MPFR_VERSION_MINOR, \
-		api_p->mpfr_major_version, api_p->mpfr_minor_version); \
-} while (0)
-#else
-#define check_mpfr_version(api_p, extension) /* nothing */
-#endif
-
-#ifdef GAWK_CRT_API
-#define check_crt_version(api_p, extension) do { \
-	gawk_check_api_version(#extension ": CRT", \
-		GAWK_CRT_MAJOR_VERSION, GAWK_CRT_MINOR_VERSION, \
-		api_p->crt_api ? api_p->crt_api->crt_major_version : -1, \
-		api_p->crt_api ? api_p->crt_api->crt_minor_version : -1); \
-} while (0)
-#else
-#define check_crt_version(api_p, extension) /* nothing */
-#endif
 
 /* Forward declaration - to be able to use gawk API in inline functions in
   headers included between "gawkapi.h" and the definition of
