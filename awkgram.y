@@ -35,6 +35,15 @@
 #include <io.h>   /* for close */
 #endif
 
+#ifndef INT32_MAX
+# define INT32_MAX ((int32_t)((uint32_t)-1/2))
+#endif
+#ifndef INT32_MIN
+# if (INT_MIN + 2) == -(INT_MAX - 1)
+#  define INT32_MIN (-INT32_MAX - 1)
+# endif
+#endif
+
 #if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
 #define signed /**/
 #endif
@@ -311,7 +320,7 @@ rule
 		want_source = false;
 		at_seen = false;
 		if ($3 != NULL && $4 != NULL) {
-			SRCFILE *s = (SRCFILE *) $3;
+			SRCFILE *s = (SRCFILE *) (void *) $3;
 			s->comment = $4;
 		}
 		yyerrok;
@@ -321,7 +330,7 @@ rule
 		want_source = false;
 		at_seen = false;
 		if ($3 != NULL && $4 != NULL) {
-			SRCFILE *s = (SRCFILE *) $3;
+			SRCFILE *s = (SRCFILE *) (void *) $3;
 			s->comment = $4;
 		}
 		yyerrok;
@@ -2235,7 +2244,7 @@ struct token {
 	token_t cls;				/* lexical class */
 	unsigned flags;			/* # of args. allowed and compatability */
 #	define	ARGS	0xFF	/* 0, 1, 2, 3 args allowed (any combination */
-#	define	A(n)	(1<<(n))
+#	define	A(n)	(1u<<(n))
 #	define	VERSION_MASK	0xFF00	/* old awk is zero */
 #	define	NOT_OLD		0x0100	/* feature not in old awk */
 #	define	NOT_POSIX	0x0200	/* feature not in POSIX */
@@ -3320,7 +3329,7 @@ check_bad_char(int c)
 
 	if (iscntrl(c) && ! isspace(c))
 		// This is a PEBKAC error, but we'll be nice and not say so.
-		fatal(_("error: invalid character '\\%03o' in source code"), c & 0xFF);
+		fatal(_("error: invalid character '\\%03o' in source code"), (unsigned) c);
 }
 
 /* nextc --- get the next input character */
@@ -3390,7 +3399,7 @@ again:
 			cur_char_ring[work_ring_idx] = 0;
 		}
 		if (check_for_bad || *lexptr == '\0')
-			check_bad_char(*lexptr);
+			check_bad_char((unsigned char) *lexptr);
 
 		return (int) (unsigned char) *lexptr++;
 	} else {
@@ -3408,7 +3417,7 @@ again:
 #endif
 			if (lexptr && lexptr < lexend) {
 				if (check_for_bad || *lexptr == '\0')
-					check_bad_char(*lexptr);
+					check_bad_char((unsigned char) *lexptr);
 				return ((int) (unsigned char) *lexptr++);
 			}
 		} while (get_src_buf());
@@ -3865,10 +3874,11 @@ retry:
 	case '{':
 		if (++in_braces == 1)
 			firstline = sourceline;
+		// fall through
 	case ';':
 	case ',':
 	case '[':
-			return lasttok = c;
+		return lasttok = c;
 	case ']':
 		c = nextc(true);
 		pushback();
@@ -5280,7 +5290,7 @@ make_regnode(NODETYPE type, NODE *exp)
 
 	assert(type == Node_regex || type == Node_dynregex);
 	getnode(n);
-	memset(n, 0, sizeof(NODE));
+	clearnode(n);
 	n->type = type;
 	n->re_cnt = 1;
 
