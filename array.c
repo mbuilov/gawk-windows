@@ -27,6 +27,7 @@
 #include "awk.h"
 
 extern FILE *output_fp;
+extern void indent(unsigned indent_level);
 extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *success_node;
@@ -94,7 +95,7 @@ make_array(void)
 {
 	NODE *array;
 	getnode(array);
-	memset(array, '\0', sizeof(NODE));
+	clearnode(array);
 	array->type = Node_var_array;
 	array->array_funcs = & null_array_func;
 	/* vname, flags, and parent_array not set here */
