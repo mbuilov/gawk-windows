@@ -152,7 +152,7 @@
 /* <cdefs.h> __inline is too pessimistic for non-GCC.  */
 #undef __inline
 #ifndef HAVE___INLINE
-# if 199901 <= __STDC_VERSION__ || defined inline
+# if (defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__) || defined inline
 #  define __inline inline
 # else
 #  define __inline
