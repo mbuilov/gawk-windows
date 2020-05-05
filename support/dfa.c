@@ -37,6 +37,9 @@
    indexes into objects.  It is signed to help catch integer overflow.
    It has its own name because it is for nonnegative values only.  */
 typedef ptrdiff_t idx_t;
+#ifndef PTRDIFF_MAX
+#define PTRDIFF_MAX ((ptrdiff_t)-1 < 1 ? (ptrdiff_t) (size_t)-1/2 : (ptrdiff_t)-1)
+#endif
 static idx_t const IDX_MAX = PTRDIFF_MAX;
 
 static bool
@@ -195,11 +198,11 @@ other_constraint (unsigned int constraint)
 }
 
 static bool
-succeeds_in_context (unsigned int constraint, int prev, int curr)
+succeeds_in_context (unsigned int constraint, unsigned prev, unsigned curr)
 {
-  return !! (((curr & CTX_NONE      ? other_constraint (constraint) : 0) \
-              | (curr & CTX_LETTER  ? letter_constraint (constraint) : 0) \
-              | (curr & CTX_NEWLINE ? newline_constraint (constraint) : 0)) \
+  return !! (((curr & CTX_NONE      ? other_constraint (constraint) : 0)
+              | (curr & CTX_LETTER  ? letter_constraint (constraint) : 0)
+              | (curr & CTX_NEWLINE ? newline_constraint (constraint) : 0))
              & prev);
 }
 
@@ -531,7 +534,7 @@ struct dfa
   /* Fields filled by dfaanalyze.  */
   unsigned int *constraints;             /* Array of union of accepting constraints
                                    in the follow of a position.  */
-  int *separates;               /* Array of contexts on follow of a
+  unsigned *separates;          /* Array of contexts on follow of a
                                    position.  */
 
   /* Fields filled by dfaexec.  */
@@ -601,7 +604,7 @@ accepting (state_num s, struct dfa const *r)
 
 /* STATE accepts in the specified context.  */
 static bool
-accepts_in_context (int prev, int curr, state_num state, struct dfa const *dfa)
+accepts_in_context (unsigned prev, unsigned curr, state_num state, struct dfa const *dfa)
 {
   return succeeds_in_context (dfa->states[state].constraint, prev, curr);
 }
@@ -826,7 +829,8 @@ xpalloc (void *pa, idx_t *nitems, idx_t nitems_incr_min,
     n = nitems_max;
 
   idx_t adjusted_nbytes
-    = ((INT_MULTIPLY_WRAPV (n, item_size, &nbytes) || SIZE_MAX < nbytes)
+    = ((INT_MULTIPLY_WRAPV (n, item_size, &nbytes) || SIZE_MAX <
+						      (size_t)0 + nbytes)
        ? (idx_t) MIN (IDX_MAX, SIZE_MAX)
        : nbytes < DEFAULT_MXFAST ? DEFAULT_MXFAST : 0);
   if (adjusted_nbytes)
@@ -842,7 +846,7 @@ xpalloc (void *pa, idx_t *nitems, idx_t nitems_incr_min,
           || (0 <= nitems_max && nitems_max < n)
           || INT_MULTIPLY_WRAPV (n, item_size, &nbytes)))
     xalloc_die ();
-  pa = xrealloc (pa, (size_t) nbytes);
+  pa = xrealloc (pa, (size_t)0 + nbytes);
   *nitems = n;
   return pa;
 }
@@ -938,7 +942,7 @@ fetch_wc (struct dfa *dfa)
                                 (size_t) dfa->lex.left, dfa);
   int c = nbytes == 1 ? to_uchar (dfa->lex.ptr[0]) : EOF;
   dfa->lex.ptr += nbytes;
-  dfa->lex.left -= nbytes;
+  dfa->lex.left -= (idx_t) nbytes;
   return c;
 }
 
@@ -1485,7 +1489,7 @@ lex (struct dfa *dfa)
             }
           dfa->lex.laststart = false;
           return dfa->lex.lasttok = (dfa->localeinfo.multibyte
-                                     ? ANYCHAR
+                                     ? (token) ANYCHAR
                                      : CSET + dfa->canychar);
 
         case 's':
@@ -1776,7 +1780,7 @@ add_utf8_anychar (struct dfa *dfa)
         clrbit ('\0', &c);
       dfa->utf8_anychar_classes[0] = CSET + charclass_index (dfa, &c);
 
-      for (int i = 1; i < sizeof utf8_classes / sizeof *utf8_classes; i++)
+      for (unsigned i = 1; i < sizeof utf8_classes / sizeof *utf8_classes; i++)
         dfa->utf8_anychar_classes[i]
           = CSET + charclass_index (dfa, &utf8_classes[i]);
     }
@@ -2055,7 +2059,7 @@ copy (position_set const *src, position_set *dst)
     }
   dst->nelem = src->nelem;
   if (src->nelem != 0)
-    memcpy (dst->elems, src->elems, src->nelem * sizeof *dst->elems);
+    memcpy (dst->elems, src->elems, (size_t) src->nelem * sizeof *dst->elems);
 }
 
 static void
@@ -2213,7 +2217,7 @@ replace (position_set *dst, idx_t del, position_set *add,
    the given preceding context, or create a new state if there is no such
    state.  Context tells whether we got here on a newline or letter.  */
 static state_num
-state_index (struct dfa *d, position_set const *s, int context)
+state_index (struct dfa *d, position_set const *s, unsigned context)
 {
   size_t hash = 0;
   unsigned int constraint = 0;
@@ -2350,10 +2354,10 @@ epsclosure (struct dfa const *d)
 /* Returns the set of contexts for which there is at least one
    character included in C.  */
 
-static int
+static unsigned
 charclass_context (struct dfa const *dfa, charclass const *c)
 {
-  int context = 0;
+  unsigned context = 0;
 
   for (int j = 0; j < CHARCLASS_WORDS; j++)
     {
@@ -2374,10 +2378,10 @@ charclass_context (struct dfa const *dfa, charclass const *c)
    follow set of the complement set (sc ^ CTX_ANY).  However, all contexts
    in the complement set will have the same follow set.  */
 
-static int _GL_ATTRIBUTE_PURE
+static unsigned _GL_ATTRIBUTE_PURE
 state_separate_contexts (struct dfa *d, position_set const *s)
 {
-  int separate_contexts = 0;
+  unsigned separate_contexts = 0;
 
   for (idx_t j = 0; j < s->nelem; j++)
     separate_contexts |= d->separates[s->elems[j].index];
@@ -2841,7 +2845,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
   append (pos, &tmp);
 
-  d->separates = (int*) xnmalloc ((size_t) d->tindex, sizeof *d->separates);
+  d->separates = (unsigned*) xnmalloc ((size_t) d->tindex, sizeof *d->separates);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -2862,7 +2866,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
     }
 
   /* Context wanted by some position.  */
-  int separate_contexts = state_separate_contexts (d, &tmp);
+  unsigned separate_contexts = state_separate_contexts (d, &tmp);
 
   /* Build the initial state.  */
   if (separate_contexts & CTX_NEWLINE)
@@ -3159,8 +3163,8 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
       /* Find out if the new state will want any context information,
          by calculating possible contexts that the group can match,
          and separate contexts that the new state wants to know.  */
-      int possible_contexts = charclass_context (d, &label);
-      int separate_contexts = state_separate_contexts (d, &group);
+      unsigned possible_contexts = charclass_context (d, &label);
+      unsigned separate_contexts = state_separate_contexts (d, &group);
 
       /* Find the state(s) corresponding to the union of the follows.  */
       if (possible_contexts & ~separate_contexts)
@@ -3337,7 +3341,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   else
     merge (&d->states[s1].mbps, &d->states[s].elems, &d->mb_follows);
 
-  int separate_contexts = state_separate_contexts (d, &d->mb_follows);
+  unsigned separate_contexts = state_separate_contexts (d, &d->mb_follows);
   state_num s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
   realloc_trans_if_necessary (d);
 
@@ -3478,7 +3482,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
               s1 = s;
 
               if (d->states[s].mbps.nelem == 0
-                  || d->localeinfo.sbctowc[*p] != WEOF || (char *) p >= end)
+                  || d->localeinfo.sbctowc[*p] != WEOF || (const char *) p >= end)
                 {
                   /* If an input character does not match ANYCHAR, do it
                      like a single-byte character.  */
@@ -3518,7 +3522,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
               s = build_state (s1, d, p[-1]);
               trans = d->trans;
             }
-          else if ((char *) p <= end && p[-1] == eol && 0 <= d->newlines[s1])
+          else if ((const char *) p <= end && p[-1] == eol && 0 <= d->newlines[s1])
             {
               /* The previous character was a newline.  Count it, and skip
                  checking of multibyte character boundary until here.  */
@@ -3539,7 +3543,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
       else if (d->fails[s])
         {
           if ((d->success[s] & d->syntax.sbit[*p])
-              || ((char *) p == end
+              || ((const char *) p == end
                   && accepts_in_context (d->states[s].context, CTX_NEWLINE, s,
                                          d)))
             goto done;
@@ -3549,7 +3553,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
           s1 = s;
           if (!multibyte || d->states[s].mbps.nelem == 0
-              || d->localeinfo.sbctowc[*p] != WEOF || (char *) p >= end)
+              || d->localeinfo.sbctowc[*p] != WEOF || (const char *) p >= end)
             {
               /* If a input character does not match ANYCHAR, do it
                  like a single-byte character.  */
@@ -3663,6 +3667,8 @@ dfa_supported (struct dfa const *d)
         case BACKREF:
         case MBCSET:
           return false;
+        default:
+          break;
         }
     }
   return true;
@@ -3735,7 +3741,7 @@ dfassbuild (struct dfa *d)
   if (d->cindex)
     {
       memcpy (sup->charclasses, d->charclasses,
-              d->cindex * sizeof *sup->charclasses);
+              (size_t) d->cindex * sizeof *sup->charclasses);
     }
 
   sup->tokens = (token*) xnmalloc ((size_t) d->tindex,
@@ -4385,6 +4391,8 @@ dfasyntax (struct dfa *d, struct localeinfo const *linfo,
           break;
         case CTX_NEWLINE:
           setbit (uc, &d->syntax.newline);
+          break;
+        default:
           break;
         }
 
