@@ -44,11 +44,17 @@
 #ifdef _MSC_VER
 #define _GL_WARNING_PUSH __pragma(warning(push))
 #endif
+#ifndef _GL_WARNING_PUSH
+#define _GL_WARNING_PUSH
+#endif
 #endif
 
 #ifndef _GL_WARNING_POP
 #ifdef _MSC_VER
 #define _GL_WARNING_POP __pragma(warning(pop))
+#endif
+#ifndef _GL_WARNING_POP
+#define _GL_WARNING_POP
 #endif
 #endif
 
@@ -56,6 +62,9 @@
 #ifdef _MSC_VER
 #define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE \
   __pragma(warning(disable:4296)) /* expression is always true or false */
+#endif
+#ifndef _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
+#define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
 #endif
 #endif
 
@@ -250,7 +259,11 @@
 #endif
 
 /* True if __builtin_add_overflow_p (A, B, C) works.  */
-#define _GL_HAS_BUILTIN_OVERFLOW_P (defined __GNUC__ && 7 <= __GNUC__)
+#if defined __GNUC__ && 7 <= __GNUC__
+#define _GL_HAS_BUILTIN_OVERFLOW_P 1
+#else
+#define _GL_HAS_BUILTIN_OVERFLOW_P 0
+#endif
 
 /* The _GL*_OVERFLOW macros have the same restrictions as the
    *_RANGE_OVERFLOW macros, except that they do not assume that operands
