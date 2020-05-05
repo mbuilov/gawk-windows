@@ -25,10 +25,6 @@
 # if __GNUC_PREREQ (4, 6)
 #  pragma GCC diagnostic ignored "-Wsuggest-attribute=pure"
 # endif
-# if __GNUC_PREREQ (4, 3)
-#  pragma GCC diagnostic ignored "-Wold-style-definition"
-#  pragma GCC diagnostic ignored "-Wtype-limits"
-# endif
 #endif
 
 /* Make sure no one compiles this code with a C++ compiler.  */
