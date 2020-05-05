@@ -597,7 +597,11 @@ re_search_internal (const regex_t *preg, const char *string, Idx length,
   size_t extra_nmatch;
   bool sb;
   int ch;
-  re_match_context_t mctx = { 0 };
+  re_match_context_t mctx = {
+#ifndef __cplusplus
+    0
+#endif
+  };
   char *fastmap = ((preg->fastmap != NULL && preg->fastmap_accurate
 		    && start != last_start && !preg->can_be_null)
 		   ? preg->fastmap : NULL);
@@ -655,7 +659,7 @@ re_search_internal (const regex_t *preg, const char *string, Idx length,
     {
       /* Avoid overflow.  */
       if (__glibc_unlikely ((MIN (IDX_MAX, SIZE_MAX / sizeof (re_dfastate_t *))
-			     <= mctx.input.bufs_len)))
+			     <= (size_t)0 + mctx.input.bufs_len)))
 	{
 	  err = REG_ESPACE;
 	  goto free_return;
@@ -921,7 +925,7 @@ prune_impossible_nodes (re_match_context_t *mctx)
 
   /* Avoid overflow.  */
   if (__glibc_unlikely (MIN (IDX_MAX, SIZE_MAX / sizeof (re_dfastate_t *))
-			<= match_last))
+			<= (size_t)0 + match_last))
     return REG_ESPACE;
 
   sifted_states = re_malloc (re_dfastate_t *, match_last + 1);
@@ -1079,7 +1083,7 @@ check_matching (re_match_context_t *mctx, bool fl_longest_match,
 
       /* Check OP_OPEN_SUBEXP in the initial state in case that we use them
 	 later.  E.g. Processing back references.  */
-      if (__glibc_unlikely (dfa->nbackref))
+      if (__glibc_unlikely (dfa->nbackref != 0))
 	{
 	  at_init_state = false;
 	  err = check_subexp_matching_top (mctx, &cur_state->nodes, 0);
@@ -2094,7 +2098,11 @@ sift_states_bkref (const re_match_context_t *mctx, re_sift_context_t *sctx,
   const re_dfa_t *const dfa = mctx->dfa;
   reg_errcode_t err;
   Idx node_idx, node;
-  re_sift_context_t local_sctx = { 0 };
+  re_sift_context_t local_sctx = {
+#ifndef __cplusplus
+    0
+#endif
+  };
   Idx first_idx = search_cur_bkref_entry (mctx, str_idx);
 
   if (first_idx == -1)
@@ -2325,7 +2333,7 @@ merge_state_with_log (reg_errcode_t *err, re_match_context_t *mctx,
 	re_node_set_free (&next_nodes);
     }
 
-  if (__glibc_unlikely (dfa->nbackref) && next_state != NULL)
+  if (__glibc_unlikely (dfa->nbackref != 0) && next_state != NULL)
     {
       /* Check OP_OPEN_SUBEXP in the current state in case that we use them
 	 later.  We must check them here, since the back references in the
@@ -2854,7 +2862,7 @@ check_arrival (re_match_context_t *mctx, state_array_t *path, Idx top_node,
 
   subexp_num = dfa->nodes[top_node].opr.idx;
   /* Extend the buffer if we need.  */
-  if (__glibc_unlikely (path->alloc < last_str + mctx->max_mb_elem_len + 1))
+  if (__glibc_unlikely (path->alloc <= last_str + mctx->max_mb_elem_len))
     {
       re_dfastate_t **new_array;
       Idx old_alloc = path->alloc;
@@ -2863,7 +2871,8 @@ check_arrival (re_match_context_t *mctx, state_array_t *path, Idx top_node,
       if (__glibc_unlikely (IDX_MAX - old_alloc < incr_alloc))
 	return REG_ESPACE;
       new_alloc = old_alloc + incr_alloc;
-      if (__glibc_unlikely (SIZE_MAX / sizeof (re_dfastate_t *) < new_alloc))
+      if (__glibc_unlikely (SIZE_MAX / sizeof (re_dfastate_t *) <
+			    (size_t)0 + new_alloc))
 	return REG_ESPACE;
       new_array = re_realloc (path->array, re_dfastate_t *, new_alloc);
       if (__glibc_unlikely (new_array == NULL))
@@ -3333,11 +3342,13 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
     goto out_free;
 
   /* Avoid arithmetic overflow in size calculation.  */
-  size_t ndests_max
-    = ((SIZE_MAX - (sizeof (re_node_set) + sizeof (bitset_t)) * SBC_MAX)
-       / (3 * sizeof (re_dfastate_t *)));
-  if (__glibc_unlikely (ndests_max < (size_t)0 + ndests))
-    goto out_free;
+  {
+    size_t ndests_max
+      = ((SIZE_MAX - (sizeof (re_node_set) + sizeof (bitset_t)) * SBC_MAX)
+	 / (3 * sizeof (re_dfastate_t *)));
+    if (__glibc_unlikely (ndests_max < (size_t)0 + ndests))
+      goto out_free;
+  }
 
   if (__libc_use_alloca ((sizeof (re_node_set) + sizeof (bitset_t)) * SBC_MAX
 			 + ndests * 3 * sizeof (re_dfastate_t *)))
@@ -3715,7 +3726,7 @@ check_node_accept_bytes (const re_dfa_t *dfa, Idx node_idx,
       if (__glibc_likely (c < 0xc2))
 	return 0;
 
-      if (str_idx + 2 > input->len)
+      if (str_idx + 1 >= input->len)
 	return 0;
 
       d = re_string_byte_at (input, str_idx + 1);
@@ -4049,7 +4060,7 @@ extend_buffers (re_match_context_t *mctx, Idx min_len)
 
   /* Avoid overflow.  */
   if (__glibc_unlikely (MIN (IDX_MAX, SIZE_MAX / sizeof (re_dfastate_t *)) / 2
-			<= pstr->bufs_len))
+			<= (size_t)0 + pstr->bufs_len))
     return REG_ESPACE;
 
   /* Double the lengths of the buffers, but allocate at least MIN_LEN.  */
