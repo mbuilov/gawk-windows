@@ -150,13 +150,14 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
 			    < (size_t)0 + new_buf_len))
 	return REG_ESPACE;
 
-      new_wcs = re_realloc (pstr->wcs, wint_t, new_buf_len);
+      new_wcs = re_realloc (pstr->wcs, wint_t, (size_t) new_buf_len);
       if (__glibc_unlikely (new_wcs == NULL))
 	return REG_ESPACE;
       pstr->wcs = new_wcs;
       if (pstr->offsets != NULL)
 	{
-	  Idx *new_offsets = re_realloc (pstr->offsets, Idx, new_buf_len);
+	  Idx *new_offsets = re_realloc (pstr->offsets, Idx,
+					 (size_t) new_buf_len);
 	  if (__glibc_unlikely (new_offsets == NULL))
 	    return REG_ESPACE;
 	  pstr->offsets = new_offsets;
@@ -166,7 +167,7 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
   if (pstr->mbs_allocated)
     {
       unsigned char *new_mbs = re_realloc (pstr->mbs, unsigned char,
-					   new_buf_len);
+					   (size_t) new_buf_len);
       if (__glibc_unlikely (new_mbs == NULL))
 	return REG_ESPACE;
       pstr->mbs = new_mbs;
@@ -781,7 +782,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 				     : ((IS_WIDE_NEWLINE (wc)
 					 && pstr->newline_anchor)
 					? CONTEXT_NEWLINE : 0));
-	      if (__glibc_unlikely (pstr->valid_len))
+	      if (__glibc_unlikely (pstr->valid_len != 0))
 		{
 		  for (wcs_idx = 0; wcs_idx < pstr->valid_len; ++wcs_idx)
 		    pstr->wcs[wcs_idx] = WEOF;
@@ -1288,7 +1289,7 @@ re_node_set_insert (re_node_set *set, Idx elem)
   if (set->alloc == 0)
     return __glibc_likely (re_node_set_init_1 (set, elem) == REG_NOERROR);
 
-  if (__glibc_unlikely (set->nelem) == 0)
+  if (__glibc_unlikely (set->nelem == 0))
     {
       /* We already guaranteed above that set->alloc != 0.  */
       set->elems[0] = elem;
