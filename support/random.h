@@ -40,4 +40,7 @@ typedef          long gawk_int32_t;
 #define uint32_t gawk_uint32_t
 #define int32_t  gawk_int32_t
 
+extern uint32_t *initstate (unsigned long seed, uint32_t *arg_state, long n);
+extern uint32_t *setstate (uint32_t *new_state);
+extern void srandom (unsigned long seed);
 extern long random (void);

@@ -197,8 +197,8 @@ static long shuffle_buffer[SHUFFLE_MAX];
 #define NSHUFF 50       /* to drop some "seed -> 1st value" linearity */
 #endif  /* !USE_WEAK_SEEDING */
 
-static const int degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
-static const int seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
+static const unsigned int degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
+static const unsigned int seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
 
 /*
  * Initially, everything is set up as if from:
@@ -264,8 +264,8 @@ static uint32_t *rptr = &randtbl[1];
  */
 static uint32_t *state = &randtbl[1];
 static unsigned int rand_type = TYPE_3;
-static int rand_deg = DEG_3;
-static int rand_sep = SEP_3;
+static unsigned int rand_deg = DEG_3;
+static unsigned int rand_sep = SEP_3;
 static uint32_t *end_ptr = &randtbl[DEG_3 + 1];
 
 static inline uint32_t good_rand(uint32_t);
@@ -320,7 +320,7 @@ void
 srandom(
 	unsigned long x
 ) {
-	int i, lim;
+	unsigned i, lim;
 
 	shuffle_init = 1;
 
@@ -408,14 +408,13 @@ srandomdev()
  * word boundary; otherwise a bus error will occur. Even so, lint will
  * complain about mis-alignment, but you should disregard these messages.
  */
-char *
+uint32_t *
 initstate(
 	unsigned long seed,		/* seed for R.N.G. */
-	char *arg_state,		/* pointer to state array */
+	uint32_t *arg_state,	/* pointer to state array */
 	long n				/* # bytes of state info */
 ) {
-	char *ostate = (char *)(&state[-1]);
-	uint32_t *int_arg_state = (uint32_t *)arg_state;
+	uint32_t *ostate = &state[-1];
 
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
@@ -447,13 +446,13 @@ initstate(
 		rand_deg = DEG_4;
 		rand_sep = SEP_4;
 	}
-	state = int_arg_state + 1; /* first location */
+	state = arg_state + 1; /* first location */
 	end_ptr = &state[rand_deg];	/* must set end_ptr before srandom */
 	srandom(seed);
 	if (rand_type == TYPE_0)
-		int_arg_state[0] = rand_type;
+		arg_state[0] = rand_type;
 	else
-		int_arg_state[0] = MAX_TYPES * (uint32_t) (rptr - state) + rand_type;
+		arg_state[0] = MAX_TYPES * (uint32_t) (rptr - state) + rand_type;
 	return(ostate);
 }
 
@@ -476,14 +475,13 @@ initstate(
  * word boundary; otherwise a bus error will occur. Even so, lint will
  * complain about mis-alignment, but you should disregard these messages.
  */
-char *
+uint32_t *
 setstate(
-	char *arg_state		/* pointer to state array */
+	uint32_t *new_state		/* pointer to state array */
 ) {
-	uint32_t *new_state = (uint32_t *)arg_state;
 	uint32_t type = new_state[0] % MAX_TYPES;
 	uint32_t rear = new_state[0] / MAX_TYPES;
-	char *ostate = (char *)(&state[-1]);
+	uint32_t *ostate = &state[-1];
 
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
@@ -621,7 +619,7 @@ random(void)
 
 	int k;
 	long r;
-	static long s = 0xcafefeedL;
+	static long s = (long) 0xcafefeedL;
 
 	if (shuffle_init) {	/* first time, or seed changed by srand() */
 		for (k = 0; k < SHUFFLE_MAX; k++)
