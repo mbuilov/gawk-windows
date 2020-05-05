@@ -109,7 +109,7 @@ init_localeinfo (struct localeinfo *localeinfo)
       mbstate_t s = {0};
       wchar_t wc;
       size_t len = mbrtowc (&wc, &c, 1, &s);
-      signed char b = len <= 1 ? 1 : - (signed char)((size_t)0 - len);
+      signed char b = (signed char) (len <= 1 ? 1 : - (signed char)((size_t)0 - len));
       localeinfo->sbclen[uc] = b; /* 1, -1 or -2 */
       localeinfo->sbctowc[uc] = len <= 1 ? (wint_t) wc : WEOF;
     }
@@ -144,7 +144,7 @@ verify (1 + 1 + sizeof lonesome_lower / sizeof *lonesome_lower
 int
 case_folded_counterparts (wint_t c, wchar_t folded[CASE_FOLDED_BUFSIZE])
 {
-  int i;
+  unsigned i;
   int n = 0;
   wint_t uc = towupper (c);
   wint_t lc = towlower (uc);
