@@ -560,7 +560,7 @@ weak_alias (__regerror, regerror)
 static const bitset_t utf8_sb_map =
 {
   /* Set the first 128 bits.  */
-# if defined __GNUC__ && !defined __STRICT_ANSI__
+# if defined __GNUC__ && !defined __STRICT_ANSI__ && !defined __cplusplus
   [0 ... 0x80 / BITSET_WORD_BITS - 1] = BITSET_WORD_MAX
 # else
 #  if 4 * BITSET_WORD_BITS < ASCII_CHARS
@@ -1302,7 +1302,7 @@ optimize_subexps (void *extra, bin_tree_t *node)
     {
       Idx idx = node->token.opr.idx;
       node->token.opr.idx = dfa->subexp_map[idx];
-      dfa->used_bkref_map |= 1 << node->token.opr.idx;
+      dfa->used_bkref_map |= (bitset_word_t) 1 << node->token.opr.idx;
     }
 
   else if (node->token.type == SUBEXP
@@ -2301,12 +2301,13 @@ parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
       break;
 
     case OP_BACK_REF:
-      if (!__glibc_likely (dfa->completed_bkref_map & (1 << token->opr.idx)))
+      if (__glibc_unlikely (!(dfa->completed_bkref_map &
+			      ((bitset_word_t) 1 << token->opr.idx))))
 	{
 	  *err = REG_ESUBREG;
 	  return NULL;
 	}
-      dfa->used_bkref_map |= 1 << token->opr.idx;
+      dfa->used_bkref_map |= (bitset_word_t) 1 << token->opr.idx;
       tree = create_token_tree (dfa, NULL, NULL, token);
       if (__glibc_unlikely (tree == NULL))
 	{
@@ -2516,7 +2517,7 @@ parse_sub_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
     }
 
   if (cur_nsub <= '9' - '1')
-    dfa->completed_bkref_map |= 1 << cur_nsub;
+    dfa->completed_bkref_map |= (bitset_word_t) 1 << cur_nsub;
 
   tree = create_tree (dfa, tree, NULL, SUBEXP);
   if (__glibc_unlikely (tree == NULL))
@@ -3725,7 +3726,11 @@ build_charclass_op (re_dfa_t *dfa, RE_TRANSLATE_TYPE trans,
 #endif
 
   /* Build a tree for simple bracket.  */
-  re_token_t br_token = { 0 };
+  re_token_t br_token = {
+#ifndef __cplusplus
+    0
+#endif
+  };
   br_token.type = SIMPLE_BRACKET;
   br_token.opr.sbcset = sbcset;
   tree = create_token_tree (dfa, NULL, NULL, &br_token);
@@ -3818,7 +3823,11 @@ static bin_tree_t *
 create_tree (re_dfa_t *dfa, bin_tree_t *left, bin_tree_t *right,
 	     re_token_type_t type)
 {
-  re_token_t t = { 0 };
+  re_token_t t = {
+#ifndef __cplusplus
+    0
+#endif
+  };
   t.type = type;
   return create_token_tree (dfa, left, right, &t);
 }
