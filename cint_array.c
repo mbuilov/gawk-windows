@@ -544,10 +544,10 @@ cint_dump(NODE *symbol, NODE *ndump)
 		if (tn == NULL)
 			continue;
 		/* Node_array_tree  + HAT */
-		kb += (sizeof(NODE) + tree_kilobytes(tn)) / 1024.0;
+		kb += (double) (sizeof(NODE) + tree_kilobytes(tn)) / 1024.0;
 	}
 	kb += (INT32_BIT * sizeof(NODE *)) / 1024.0;	/* symbol->nodes */
-	kb += (symbol->array_capacity * sizeof(NODE *)) / 1024.0;	/* value nodes in Node_array_leaf(s) */
+	kb += (double) (symbol->array_capacity * sizeof(NODE *)) / 1024.0;	/* value nodes in Node_array_leaf(s) */
 	if (xn != NULL) {
 		if (xn->array_funcs == & int_array_func)
 			kb += int_kilobytes(xn);
@@ -732,7 +732,7 @@ make_node(NODETYPE type)
 {
 	NODE *n;
 	getnode(n);
-	memset(n, '\0', sizeof(NODE));
+	clearnode(n);
 	n->type = type;
 	return n;
 }
@@ -844,7 +844,7 @@ tree_clear(NODE *tree)
 	}
 
 	efree(tree->nodes);
-	memset(tree, '\0', sizeof(NODE));
+	clearnode(tree);
 	tree->type = Node_array_tree;
 }
 
@@ -878,7 +878,7 @@ tree_remove(NODE *symbol, NODE *tree, ulong_t k)
 	/* one less item in array */
 	if (!--tree->table_size) {
 		efree(tree->nodes);
-		memset(tree, '\0', sizeof(NODE));
+		clearnode(tree);
 		tree->type = Node_array_tree;
 	}
 	return true;
