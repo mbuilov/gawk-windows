@@ -217,6 +217,14 @@ hinfo_convert_time(const FILETIME file_time, const time_t fallback)
 	return t;
 }
 
+static unsigned short dup_mode_bits(unsigned short mode)
+{
+	return mode
+		| (unsigned short) ((mode & 0700) >> 3) /* group permissions */
+		| (unsigned short) ((mode & 0700) >> 6) /* other permissions */
+		;
+}
+
 int
 xstat_root(const wchar_t *wp, struct xstat *buf)
 {
@@ -232,9 +240,7 @@ xstat_root(const wchar_t *wp, struct xstat *buf)
 		return -1;
 	}
 
-	buf->st_mode = _S_IFDIR | _S_IEXEC | _S_IREAD | _S_IWRITE;
-	buf->st_mode |= (buf->st_mode & 0700) >> 3; /* group permissions */
-	buf->st_mode |= (buf->st_mode & 0700) >> 6; /* other permissions */
+	buf->st_mode = dup_mode_bits(_S_IFDIR | _S_IEXEC | _S_IREAD | _S_IWRITE);
 
 	buf->st_nlink = 1;
 	buf->st_ino   = 0;
@@ -285,11 +291,11 @@ is_exe(const wchar_t *wp)
 					CMP_DOT(3, L'm'))
 				)
 				&& dot[4] == L'\0';
+		default:
+			return 0;
 	}
 #undef CMP_DOT
 #undef CASE_LET
-
-	return 0;
 }
 
 static int
@@ -322,8 +328,7 @@ xstat_file(HANDLE h, const wchar_t *wp, struct xstat *buf)
 			? _S_IREAD : _S_IREAD | _S_IWRITE);
 	}
 
-	buf->st_mode |= (buf->st_mode & 0700) >> 3; /* group permissions */
-	buf->st_mode |= (buf->st_mode & 0700) >> 6; /* other permissions */
+	buf->st_mode = dup_mode_bits(buf->st_mode);
 
 	buf->st_nlink = info.nNumberOfLinks;
 	buf->st_ino   = hinfo_get_inode(&info);
