@@ -1275,7 +1275,7 @@ err:
 			r = make_number(strtod(tokstart, & lexptr));
 
 		if (errno != 0) {
-			yyerror(strerror(errno));
+			yyerror("%s", strerror(errno));
 			unref(r);
 			errno = 0;
 			return '\n';
