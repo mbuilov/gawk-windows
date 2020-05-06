@@ -14,7 +14,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#ifdef _MSC_VER
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #define popen(cmd, mode) _popen(cmd, mode)
 #define pclose(file)     _pclose(file)
 #endif
