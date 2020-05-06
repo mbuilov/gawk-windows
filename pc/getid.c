@@ -1,6 +1,6 @@
 #if defined(__MINGW32__) || defined(_MSC_VER)
 
-#include <process.h>
+#include "nonposix.h"
 
 unsigned int getuid (void)
 {
