@@ -625,6 +625,8 @@ EXTRA_DIST = \
 	lintold.awk \
 	lintold.in \
 	lintold.ok \
+	lintplus.awk \
+	lintplus.ok \
 	lintset.awk \
 	lintset.ok \
 	lintwarn.awk \
@@ -1396,7 +1398,7 @@ GAWK_EXT_TESTS = \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
 	indirectbuiltin indirectcall indirectcall2 intarray isarrayunset \
-	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
+	lint lintexp lintindex lintint lintlength lintplus lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
 	nsawk1a nsawk1b nsawk1c nsawk2a nsawk2b \
@@ -1446,7 +1448,7 @@ NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 dbugeval3 symtab10
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
-	defref fmtspcl lintexp lintindex lintint lintlength lintwarn \
+	defref fmtspcl lintexp lintindex lintint lintlength lintplus lintwarn \
 	noeffect nofmtch nonl shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:

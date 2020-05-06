@@ -5429,7 +5429,7 @@ dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 static INSTRUCTION *
 mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 {
-	INSTRUCTION *ip1,*ip2;
+	INSTRUCTION *ip1,*ip2, *lint_plus;
 	AWKNUM res;
 
 	ip2 = s2->nexti;
@@ -5508,6 +5508,8 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 				op->opcode = Op_mod_i;
 				break;
 			case Op_plus:
+				if (do_lint)
+					goto regular;
 				op->opcode = Op_plus_i;
 				break;
 			case Op_minus:
@@ -5530,6 +5532,10 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 regular:
 	/* append lists s1, s2 and add `op' bytecode */
 	(void) list_merge(s1, s2);
+	if (do_lint && op->opcode == Op_plus) {
+		lint_plus = instruction(Op_lint_plus);
+		(void) list_append(s1, lint_plus);
+	}
 	return list_append(s1, op);
 }
 

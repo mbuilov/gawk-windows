@@ -412,6 +412,15 @@ uninitialized_scalar:
 			}
 			break;
 
+		case Op_lint_plus:
+			// no need to check do_lint, this opcode won't
+			// be generated if that's not true
+			t1 = TOP();
+			t2 = PEEK(1);
+			if ((t1->flags & STRING) != 0 && (t2->flags & STRING) != 0)
+				lintwarn(_("operator `+' used on two string values"));
+			break;
+
 		case Op_K_break:
 		case Op_K_continue:
 		case Op_jmp:

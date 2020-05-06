@@ -1,3 +1,15 @@
+2020-05-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add lint check for string + string. It's not concatenation
+	in awk, but is in most other languages. Thanks to Roland Illig
+	<roland.illig@gmx.de> for the suggestion.
+
+	* awk.h (Op_lint_plus): New opcode.
+	* awkgram.y (mk_binary): Add it into the list in the right place
+	if do_lint.
+	* eval.c (optypes): Add case for Op_lint_plus.
+	* interpret.h (r_interpret): Ditto.
+
 2020-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 5.1.0: Release tar ball made.
