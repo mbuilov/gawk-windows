@@ -471,6 +471,12 @@
 /* Define to 1 if you have the `__etoa_l' function. */
 #undef HAVE___ETOA_L
 
+/* Define to 1 if you have the `isnan' function. */
+#define HAVE_ISNAN 1
+
+/* Define to 1 if you have the `isinf' function. */
+#define HAVE_ISINF 1
+
 /* disable lint checks */
 #undef NO_LINT
 
@@ -505,9 +511,15 @@
 
 /* The size of `unsigned int', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_INT 4
+#if defined(__GNUC__) || defined(_MSC_VER)
+typedef int check_sizeof_unsigned_int[1-2*!(sizeof(unsigned int) == SIZEOF_UNSIGNED_INT)];
+#endif
 
 /* The size of `unsigned long', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_LONG 4
+#if defined(__GNUC__) || defined(_MSC_VER)
+typedef int check_sizeof_unsigned_long[1-2*!(sizeof(unsigned long) == SIZEOF_UNSIGNED_LONG)];
+#endif
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
