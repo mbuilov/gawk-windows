@@ -54,7 +54,7 @@
 #  include <time.h>
 # endif
 #endif
-#if HAVE_TZNAME
+#ifdef HAVE_TZNAME
 #ifndef __MINGW32__
 extern char *tzname[];
 #endif
@@ -66,10 +66,14 @@ extern char *tzname[];
    conversion specifications.  The GNU C Library uses UTF8 multibyte
    encoding, which is safe for formats, but strftime.c can be used
    with other C libraries that use unsafe encodings.  */
-#define DO_MULTIBYTE (HAVE_MBLEN && ! MULTIBYTE_IS_FORMAT_SAFE)
+#if defined(HAVE_MBLEN) && (!defined(MULTIBYTE_IS_FORMAT_SAFE) || !MULTIBYTE_IS_FORMAT_SAFE)
+#define DO_MULTIBYTE 1
+#else
+#define DO_MULTIBYTE 0
+#endif
 
 #if DO_MULTIBYTE
-# if HAVE_MBRLEN
+# ifdef HAVE_MBRLEN
 #  include <wchar.h>
 # else
    /* Simulate mbrlen with mblen as best we can.  */
@@ -80,11 +84,11 @@ extern char *tzname[];
   static const mbstate_t mbstate_zero;
 #endif
 
-#if HAVE_LIMITS_H
+#ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
 
-#if STDC_HEADERS
+#ifdef STDC_HEADERS
 # include <stddef.h>
 # include <stdlib.h>
 # include <string.h>
@@ -188,12 +192,11 @@ extern char *tzname[];
    to gmtime_r, since many gmtime_r implementations are buggy.
    Similarly for localtime_r.  */
 
-# if ! HAVE_TM_GMTOFF
-static struct tm *my_strftime_gmtime_r __P ((const time_t *, struct tm *));
+# ifndef HAVE_TM_GMTOFF
 static struct tm *
-my_strftime_gmtime_r (t, tp)
-     const time_t *t;
-     struct tm *tp;
+my_strftime_gmtime_r (
+     const time_t *t,
+     struct tm *tp)
 {
   struct tm *l = gmtime (t);
   if (! l)
@@ -203,11 +206,10 @@ my_strftime_gmtime_r (t, tp)
 }
 # endif /* ! HAVE_TM_GMTOFF */
 
-static struct tm *my_strftime_localtime_r __P ((const time_t *, struct tm *));
 static struct tm *
-my_strftime_localtime_r (t, tp)
-     const time_t *t;
-     struct tm *tp;
+my_strftime_localtime_r (
+     const time_t *t,
+     struct tm *tp)
 {
   struct tm *l = localtime (t);
   if (! l)
@@ -282,24 +284,24 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
 	  if (_delta > 0)						      \
 	    {								      \
 	      if (pad == L_('0'))					      \
-		memset_zero (p, _delta);				      \
+		memset_zero (p, (unsigned) _delta);			      \
 	      else							      \
-		memset_space (p, _delta);				      \
+		memset_space (p, (unsigned) _delta);			      \
 	    }								      \
 	  f;								      \
 	  p += _n;							      \
 	}								      \
-      i += _incr;							      \
+      i += (size_t) _incr;						      \
     } while (0)
 
 #define cpy(n, s) \
     add ((n),								      \
 	 if (to_lowcase)						      \
-	   memcpy_lowcase (p, (s), _n LOCALE_ARG);			      \
+	   memcpy_lowcase (p, (s), (unsigned) _n LOCALE_ARG);		      \
 	 else if (to_uppcase)						      \
-	   memcpy_uppcase (p, (s), _n LOCALE_ARG);			      \
+	   memcpy_uppcase (p, (s), (unsigned) _n LOCALE_ARG);		      \
 	 else								      \
-	   MEMCPY ((PTR) p, (const PTR) (s), _n))
+	   MEMCPY ((PTR) p, (const PTR) (s), (unsigned) _n))
 
 #ifdef COMPILE_WIDE
 # ifndef USE_IN_EXTENDED_LOCALE_MODEL
@@ -334,14 +336,12 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
   (current->values[_NL_ITEM_INDEX (item)].string)
 # define LOCALE_PARAM , loc
 # define LOCALE_ARG , loc
-# define LOCALE_PARAM_DECL  __locale_t loc;
 # define LOCALE_PARAM_PROTO , __locale_t loc
 # define HELPER_LOCALE_ARG  , current
 #else
 # define LOCALE_PARAM
 # define LOCALE_PARAM_PROTO
 # define LOCALE_ARG
-# define LOCALE_PARAM_DECL
 # ifdef _LIBC
 #  define HELPER_LOCALE_ARG , _NL_CURRENT_DATA (LC_TIME)
 # else
@@ -377,46 +377,39 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
    more reliable way to accept other sets of digits.  */
 #define ISDIGIT(Ch) ((unsigned int) (Ch) - L_('0') <= 9)
 
-static CHAR_T *memcpy_lowcase __P ((CHAR_T *dest, const CHAR_T *src,
-				    size_t len LOCALE_PARAM_PROTO));
-
 static CHAR_T *
-memcpy_lowcase (dest, src, len LOCALE_PARAM)
-     CHAR_T *dest;
-     const CHAR_T *src;
-     size_t len;
-     LOCALE_PARAM_DECL
+memcpy_lowcase (
+     CHAR_T *dest,
+     const CHAR_T *src,
+     size_t len
+     LOCALE_PARAM_PROTO)
 {
   while (len-- > 0)
-    dest[len] = TOLOWER ((UCHAR_T) src[len], loc);
+    dest[len] = (CHAR_T) TOLOWER ((UCHAR_T) src[len], loc);
   return dest;
 }
 
-static CHAR_T *memcpy_uppcase __P ((CHAR_T *dest, const CHAR_T *src,
-				    size_t len LOCALE_PARAM_PROTO));
-
 static CHAR_T *
-memcpy_uppcase (dest, src, len LOCALE_PARAM)
-     CHAR_T *dest;
-     const CHAR_T *src;
-     size_t len;
-     LOCALE_PARAM_DECL
+memcpy_uppcase (
+     CHAR_T *dest,
+     const CHAR_T *src,
+     size_t len
+     LOCALE_PARAM_PROTO)
 {
   while (len-- > 0)
-    dest[len] = TOUPPER ((UCHAR_T) src[len], loc);
+    dest[len] = (CHAR_T) TOUPPER ((UCHAR_T) src[len], loc);
   return dest;
 }
 
 
-#if ! HAVE_TM_GMTOFF
+#ifndef HAVE_TM_GMTOFF
 /* Yield the difference between *A and *B,
    measured in seconds, ignoring leap seconds.  */
 # define tm_diff ftime_tm_diff
-static int tm_diff __P ((const struct tm *, const struct tm *));
 static int
-tm_diff (a, b)
-     const struct tm *a;
-     const struct tm *b;
+tm_diff (
+     const struct tm *a,
+     const struct tm *b)
 {
   /* Compute intervening leap days correctly even if year is negative.
      Take care to avoid int overflow in leap day calculations,
@@ -446,14 +439,13 @@ tm_diff (a, b)
 #define ISO_WEEK_START_WDAY 1 /* Monday */
 #define ISO_WEEK1_WDAY 4 /* Thursday */
 #define YDAY_MINIMUM (-366)
-static int iso_week_days __P ((int, int));
 #ifdef __GNUC__
 __inline__
 #endif
 static int
-iso_week_days (yday, wday)
-     int yday;
-     int wday;
+iso_week_days (
+     int yday,
+     int wday)
 {
   /* Add enough to the first operand of % to make it nonnegative.  */
   int big_enough_multiple_of_7 = (-YDAY_MINIMUM / 7 + 2) * 7;
@@ -463,7 +455,7 @@ iso_week_days (yday, wday)
 }
 
 
-#if !(defined _NL_CURRENT || HAVE_STRFTIME)
+#if !(defined _NL_CURRENT || defined HAVE_STRFTIME)
 static CHAR_T const weekday_name[][10] =
   {
     L_("Sunday"), L_("Monday"), L_("Tuesday"), L_("Wednesday"),
@@ -481,7 +473,6 @@ static CHAR_T const month_name[][10] =
 #ifdef emacs
 # define my_strftime emacs_strftimeu
 # define ut_argument , ut
-# define ut_argument_spec int ut;
 # define ut_argument_spec_iso , int ut
 #else
 # ifdef COMPILE_WIDE
@@ -492,24 +483,28 @@ static CHAR_T const month_name[][10] =
 #  define nl_get_alt_digit _nl_get_alt_digit
 # endif
 # define ut_argument
-# define ut_argument_spec
 # define ut_argument_spec_iso
 /* We don't have this information in general.  */
 # define ut 0
 #endif
 
-#if !defined _LIBC && HAVE_TZNAME && HAVE_TZSET
+#if !defined _LIBC && defined HAVE_TZNAME && defined HAVE_TZSET
   /* Solaris 2.5 tzset sometimes modifies the storage returned by localtime.
      Work around this bug by copying *tp before it might be munged.  */
-  size_t _strftime_copytm __P ((char *, size_t, const char *,
-			        const struct tm * ut_argument_spec_iso));
   size_t
-  my_strftime (s, maxsize, format, tp ut_argument)
-      CHAR_T *s;
-      size_t maxsize;
-      const CHAR_T *format;
-      const struct tm *tp;
-      ut_argument_spec
+  _strftime_copytm (
+      CHAR_T *s,
+      size_t maxsize,
+      const CHAR_T *format,
+      const struct tm *tp
+      ut_argument_spec_iso);
+  size_t
+  my_strftime (
+      CHAR_T *s,
+      size_t maxsize,
+      const CHAR_T *format,
+      const struct tm *tp
+      ut_argument_spec_iso)
   {
     struct tm tmcopy;
     tmcopy = *tp;
@@ -527,13 +522,13 @@ static CHAR_T const month_name[][10] =
    anywhere, so to determine how many characters would be
    written, use NULL for S and (size_t) UINT_MAX for MAXSIZE.  */
 size_t
-my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
-      CHAR_T *s;
-      size_t maxsize;
-      const CHAR_T *format;
-      const struct tm *tp;
-      ut_argument_spec
-      LOCALE_PARAM_DECL
+my_strftime (
+      CHAR_T *s,
+      size_t maxsize,
+      const CHAR_T *format,
+      const struct tm *tp
+      ut_argument_spec_iso
+      LOCALE_PARAM_PROTO)
 {
 #if defined _LIBC && defined USE_IN_EXTENDED_LOCALE_MODEL
   struct locale_data *const current = loc->__locales[LC_TIME];
@@ -563,7 +558,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 # define am_len STRLEN (a_month)
 # define ap_len STRLEN (ampm)
 #else
-# if !HAVE_STRFTIME
+# ifndef HAVE_STRFTIME
 #  define f_wkday (weekday_name[tp->tm_wday])
 #  define f_month (month_name[tp->tm_mon])
 #  define a_wkday f_wkday
@@ -584,7 +579,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 #endif
 
   zone = NULL;
-#if HAVE_TM_ZONE
+#ifdef HAVE_TM_ZONE
   /* The POSIX test suite assumes that setting
      the environment variable TZ to a new value before calling strftime()
      will influence the result (the %Z format) even if the information in
@@ -593,7 +588,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
      POSIX does not require it.  Do the right thing instead.  */
   zone = (const char *) tp->tm_zone;
 #endif
-#if HAVE_TZNAME
+#ifdef HAVE_TZNAME
   if (ut)
     {
       if (! (zone && *zone))
@@ -603,7 +598,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
     {
       /* POSIX.1 requires that local time zone information is used as
 	 though strftime called tzset.  */
-# if HAVE_TZSET
+# ifdef HAVE_TZSET
       tzset ();
 # endif
     }
@@ -754,7 +749,8 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	  do
 	    {
 	      if (width > INT_MAX / 10
-		  || (width == INT_MAX / 10 && *f - L_('0') > INT_MAX % 10))
+		  || (width == INT_MAX / 10 &&
+		      (unsigned) (*f - L_('0')) > INT_MAX % 10))
 		/* Avoid overflow.  */
 		width = INT_MAX;
 	      else
@@ -784,12 +780,12 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
       format_char = *f;
       switch (format_char)
 	{
-#define DO_NUMBER(d, v) \
+#define DO_NUMBER(d, v) do { \
 	  digits = d > width ? d : width;				      \
-	  number_value = v; goto do_number
-#define DO_NUMBER_SPACEPAD(d, v) \
+	  number_value = v; goto do_number;} while (0)
+#define DO_NUMBER_SPACEPAD(d, v) do { \
 	  digits = d > width ? d : width;				      \
-	  number_value = v; goto do_number_spacepad
+	  number_value = v; goto do_number_spacepad;} while (0)
 
 	case L_('%'):
 	  if (modifier != 0)
@@ -805,7 +801,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	      to_uppcase = 1;
 	      to_lowcase = 0;
 	    }
-#if defined _NL_CURRENT || !HAVE_STRFTIME
+#if defined _NL_CURRENT || !defined HAVE_STRFTIME
 	  cpy (aw_len, a_wkday);
 	  break;
 #else
@@ -820,7 +816,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	      to_uppcase = 1;
 	      to_lowcase = 0;
 	    }
-#if defined _NL_CURRENT || !HAVE_STRFTIME
+#if defined _NL_CURRENT || !defined HAVE_STRFTIME
 	  cpy (STRLEN (f_wkday), f_wkday);
 	  break;
 #else
@@ -836,7 +832,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    }
 	  if (modifier != 0)
 	    goto bad_format;
-#if defined _NL_CURRENT || !HAVE_STRFTIME
+#if defined _NL_CURRENT || !defined HAVE_STRFTIME
 	  cpy (am_len, a_month);
 	  break;
 #else
@@ -851,7 +847,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	      to_uppcase = 1;
 	      to_lowcase = 0;
 	    }
-#if defined _NL_CURRENT || !HAVE_STRFTIME
+#if defined _NL_CURRENT || !defined HAVE_STRFTIME
 	  cpy (STRLEN (f_month), f_month);
 	  break;
 #else
@@ -869,7 +865,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 		     != '\0')))
 	    subfmt = (const CHAR_T *) _NL_CURRENT (LC_TIME, NLW(D_T_FMT));
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	  goto underlying_strftime;
 # else
 	  subfmt = L_("%a %b %e %H:%M:%S %Y");
@@ -881,19 +877,19 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    CHAR_T *old_start = p;
 	    size_t len = my_strftime (NULL, (size_t) -1, subfmt,
 				      tp ut_argument LOCALE_ARG);
-	    add (len, my_strftime (p, maxsize - i, subfmt,
-				   tp ut_argument LOCALE_ARG));
+	    add ((int) len, my_strftime (p, maxsize - i, subfmt,
+					 tp ut_argument LOCALE_ARG));
 
 	    if (to_uppcase)
 	      while (old_start < p)
 		{
-		  *old_start = TOUPPER ((UCHAR_T) *old_start, loc);
+		  *old_start = (CHAR_T) TOUPPER ((UCHAR_T) *old_start, loc);
 		  ++old_start;
 		}
 	  }
 	  break;
 
-#if HAVE_STRFTIME && ! (defined _NL_CURRENT && HAVE_STRUCT_ERA_ENTRY)
+#if defined HAVE_STRFTIME && ! (defined _NL_CURRENT && defined HAVE_STRUCT_ERA_ENTRY)
 	underlying_strftime:
 	  {
 	    /* The relevant information is available only via the
@@ -907,18 +903,18 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	       "#define strftime rpl_strftime".  */
 # ifdef strftime
 #  undef strftime
-	    size_t strftime ();
+	    size_t strftime (char *, size_t, const char *, const struct tm *);
 # endif
 
 	    *u++ = '%';
 	    if (modifier != 0)
-	      *u++ = modifier;
-	    *u++ = format_char;
+	      *u++ = (char) modifier;
+	    *u++ = (char) format_char;
 	    *u = '\0';
 	    len = strftime (ubuf, sizeof ubuf, ufmt, tp);
 	    if (len == 0 && ubuf[0] != '\0')
 	      return 0;
-	    cpy (len, ubuf);
+	    cpy ((int) len, ubuf);
 	  }
 	  break;
 #endif
@@ -928,7 +924,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    goto bad_format;
 	  if (modifier == L_('E'))
 	    {
-#if HAVE_STRUCT_ERA_ENTRY
+#ifdef HAVE_STRUCT_ERA_ENTRY
 	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
@@ -942,7 +938,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 		  break;
 		}
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	      goto underlying_strftime;
 # endif
 #endif
@@ -964,7 +960,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    subfmt = (const CHAR_T *) _NL_CURRENT (LC_TIME, NLW(D_FMT));
 	  goto subformat;
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	  goto underlying_strftime;
 # else
 	  /* Fall through.  */
@@ -1017,22 +1013,22 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 		    }
 		}
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	      goto underlying_strftime;
 # endif
 #endif
 	    }
 	  {
-	    unsigned int u = number_value;
+	    unsigned int u = (unsigned int) number_value;
 
 	    bufp = buf + sizeof (buf) / sizeof (buf[0]);
 	    negative_number = number_value < 0;
 
 	    if (negative_number)
-	      u = -u;
+	      u = 0u - u;
 
 	    do
-	      *--bufp = u % 10 + L_('0');
+	      *--bufp = (CHAR_T) (u % 10 + L_('0'));
 	    while ((u /= 10) != 0);
   	  }
 
@@ -1042,9 +1038,9 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 
 	  if (pad != L_('-'))
 	    {
-	      int padding = digits - (buf + (sizeof (buf) / sizeof (buf[0]))
-				      - bufp);
-
+	      int padding = digits
+			    - (int) (buf + (sizeof (buf) / sizeof (buf[0]))
+				     - bufp);
 	      if (padding > 0)
 		{
 		  if (pad == L_('_'))
@@ -1053,7 +1049,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 			return 0;
 
 		      if (p)
-			memset_space (p, padding);
+			memset_space (p, (unsigned) padding);
 		      i += padding;
 		      width = width > padding ? width - padding : 0;
 		    }
@@ -1072,14 +1068,14 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 			}
 
 		      if (p)
-			memset_zero (p, padding);
+			memset_zero (p, (unsigned) padding);
 		      i += padding;
 		      width = 0;
 		    }
 		}
 	    }
 
-	  cpy (buf + sizeof (buf) / sizeof (buf[0]) - bufp, bufp);
+	  cpy ((int) (buf + sizeof (buf) / sizeof (buf[0]) - bufp), bufp);
 	  break;
 
 	case L_('F'):
@@ -1136,7 +1132,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 
 	case L_('P'):
 	  to_lowcase = 1;
-#if !defined _NL_CURRENT && HAVE_STRFTIME
+#if !defined _NL_CURRENT && defined HAVE_STRFTIME
 	  format_char = L_('p');
 #endif
 	  /* FALLTHROUGH */
@@ -1147,7 +1143,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	      to_uppcase = 0;
 	      to_lowcase = 1;
 	    }
-#if defined _NL_CURRENT || !HAVE_STRFTIME
+#if defined _NL_CURRENT || !defined HAVE_STRFTIME
 	  cpy (ap_len, ampm);
 	  break;
 #else
@@ -1191,7 +1187,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 
 	    do
 	      {
-		int d = t % 10;
+		int d = (int) (t % 10);
 		t /= 10;
 
 #ifndef TIME_T_UNSIGNED
@@ -1208,7 +1204,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 		  }
 #endif
 
-		*--bufp = d + L_('0');
+		*--bufp = (CHAR_T) (d + L_('0'));
 	      }
 	    while (t != 0);
 
@@ -1227,7 +1223,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    subfmt = (const CHAR_T *) _NL_CURRENT (LC_TIME, NLW(T_FMT));
 	  goto subformat;
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	  goto underlying_strftime;
 # else
 	  /* Fall through.  */
@@ -1306,7 +1302,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	case L_('Y'):
 	  if (modifier == 'E')
 	    {
-#if HAVE_STRUCT_ERA_ENTRY
+#ifdef HAVE_STRUCT_ERA_ENTRY
 	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
@@ -1318,7 +1314,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 		  goto subformat;
 		}
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	      goto underlying_strftime;
 # endif
 #endif
@@ -1331,7 +1327,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	case L_('y'):
 	  if (modifier == L_('E'))
 	    {
-#if HAVE_STRUCT_ERA_ENTRY
+#ifdef HAVE_STRUCT_ERA_ENTRY
 	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
@@ -1340,7 +1336,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 				 + delta * era->absolute_direction));
 		}
 #else
-# if HAVE_STRFTIME
+# ifdef HAVE_STRFTIME
 	      goto underlying_strftime;
 # endif
 #endif
@@ -1354,7 +1350,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	      to_lowcase = 1;
 	    }
 
-#if HAVE_TZNAME
+#ifdef HAVE_TZNAME
 	  /* The tzset() call might have changed the value.  */
 	  if (!(zone && *zone) && tp->tm_isdst >= 0)
 	    zone = tzname[tp->tm_isdst];
@@ -1372,7 +1368,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 	    cpy (len, wczone);
 	  }
 #else
-	  cpy (strlen (zone), zone);
+	  cpy ((int) strlen (zone), zone);
 #endif
 	  break;
 
@@ -1382,7 +1378,7 @@ my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
 
 	  {
 	    int diff;
-#if HAVE_TM_GMTOFF
+#ifdef HAVE_TM_GMTOFF
 	    diff = tp->tm_gmtoff;
 #else
 	    if (ut)
