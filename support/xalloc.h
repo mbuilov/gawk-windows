@@ -115,7 +115,7 @@ ATTRIBUTE_MALLOC char *xstrdup (char const *str);
 #define HAVE_INLINE	1	/* so there. nyah, nyah, nyah. */
 #endif
 
-# if HAVE_INLINE
+# ifdef HAVE_INLINE
 #  define static_inline static inline
 # else
 ATTRIBUTE_MALLOC void *xnmalloc (size_t n, size_t s);
@@ -345,6 +345,11 @@ xzalloc (size_t s)
 
 # ifdef __cplusplus
 
+# if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wtemplates"
+# endif
+
 /* C++ does not allow conversions from void * to other pointer types
    without a cast.  Use templates to work around the problem when
    possible.  */
@@ -379,6 +384,9 @@ xmemdup (T const *p, size_t s)
   return (T *) xmemdup ((void const *) p, s);
 }
 
+# if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+# endif
 # endif /* __cplusplus */
 
 
