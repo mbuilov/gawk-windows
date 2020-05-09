@@ -4313,7 +4313,7 @@ dfamust (struct dfa const *d)
           idx_t rj = ri + 2;
           if (d->tokens[ri + 1] == CAT)
             {
-              for (; rj < d->tindex - 1; rj += 2)
+              for (; rj + 1 < d->tindex; rj += 2)
                 {
                   if ((rj != ri && (d->tokens[rj] <= 0
                                     || NOTCHAR <= d->tokens[rj]))
