@@ -84,7 +84,6 @@ extern void dfaparse (char const *, ptrdiff_t, struct dfa *);
 
 /* Allocate and return a struct dfamust from a struct dfa that was
    initialized by dfaparse and not yet given to dfacomp.  */
-#define dfamust(dfa) dfamust_fn(dfa)
 extern struct dfamust *dfamust (struct dfa const *);
 
 /* Free the storage held by the components of a struct dfamust. */
