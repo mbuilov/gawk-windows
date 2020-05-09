@@ -39,7 +39,13 @@ struct dfa;
 
 /* Needed when Gnulib is not used.  */
 #ifndef _GL_ATTRIBUTE_MALLOC
-# define  _GL_ATTRIBUTE_MALLOC
+# ifdef _MSC_VER
+#  define _GL_ATTRIBUTE_MALLOC __declspec(restrict)
+# elif defined __GNUC__ && __GNUC__ >= 3
+#  define _GL_ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
+# else
+#  define _GL_ATTRIBUTE_MALLOC
+# endif
 #endif
 
 /* Entry points. */
@@ -48,7 +54,7 @@ struct dfa;
    It should be initialized via dfasyntax or dfacopysyntax before other use.
    The returned pointer should be passed directly to free() after
    calling dfafree() on it. */
-extern struct dfa *dfaalloc (void) _GL_ATTRIBUTE_MALLOC;
+ _GL_ATTRIBUTE_MALLOC extern struct dfa *dfaalloc (void);
 
 /* DFA options that can be ORed together, for dfasyntax's 4th arg.  */
 enum
