@@ -1244,6 +1244,25 @@ pop_lex_state (struct dfa *dfa, struct lexptr const *ls)
   dfa->lex.left = ls->left;
 }
 
+static int
+add_rep (int rep, char c)
+{
+  /* Make sure that both expressions does not overflow an integer:
+   1) RE_DUP_MAX + 1,
+   2) rep * 10 + c.  */
+  (void) sizeof(int[1-2*!(RE_DUP_MAX < INT_MAX)]);
+  (void) sizeof(int[1-2*!(RE_DUP_MAX + 1
+                          <= (INT_MAX - (unsigned char)-1) / 10)]);
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+  return rep < 0 ? c - '0' : MIN (RE_DUP_MAX + 1, rep * 10 + c - '0');
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+}
+
 static token
 lex (struct dfa *dfa)
 {
@@ -1400,10 +1419,7 @@ lex (struct dfa *dfa)
             char const *lim = p + dfa->lex.left;
             dfa->lex.minrep = dfa->lex.maxrep = -1;
             for (; p != lim && isasciidigit (*p); p++)
-              dfa->lex.minrep = (dfa->lex.minrep < 0
-                                 ? *p - '0'
-                                 : MIN (RE_DUP_MAX + 1,
-                                        dfa->lex.minrep * 10 + *p - '0'));
+              dfa->lex.minrep = add_rep (dfa->lex.minrep, *p);
             if (p != lim)
               {
                 if (*p != ',')
@@ -1413,11 +1429,7 @@ lex (struct dfa *dfa)
                     if (dfa->lex.minrep < 0)
                       dfa->lex.minrep = 0;
                     while (++p != lim && isasciidigit (*p))
-                      dfa->lex.maxrep
-                        = (dfa->lex.maxrep < 0
-                           ? *p - '0'
-                           : MIN (RE_DUP_MAX + 1,
-                                  dfa->lex.maxrep * 10 + *p - '0'));
+                      dfa->lex.maxrep = add_rep (dfa->lex.maxrep, *p);
                   }
               }
             if (! ((! backslash || (p != lim && *p++ == '\\'))
@@ -4355,7 +4367,7 @@ dfamustfree (struct dfamust *dm)
   free (dm);
 }
 
-struct dfa *
+_GL_ATTRIBUTE_MALLOC struct dfa *
 dfaalloc (void)
 {
   return (struct dfa*) xmalloc (sizeof (struct dfa));
