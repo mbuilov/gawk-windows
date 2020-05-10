@@ -36,7 +36,7 @@
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #define execvp(p,a) w32_execvp(p,a)
-int w32_execvp(const char *, char **);
+extern int w32_execvp(const char *, char **);
 #endif
 
 extern bool exiting;
@@ -51,6 +51,13 @@ extern const char *command_file;
 extern const char *get_spec_varname(Func_ptr fptr);
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
+
+/* needed by eval.c */
+void frame_popped(void);
+
+/* defined in eval.c */
+extern INSTRUCTION *unwind_stack(size_t n);
+
 
 extern const char *redir2str(enum redirval redirtype);
 
@@ -110,7 +117,9 @@ typedef struct break_point {
 
 } BREAKPOINT;
 
-static BREAKPOINT breakpoints = { &breakpoints, &breakpoints, 0 };
+static BREAKPOINT breakpoints = { &breakpoints, &breakpoints, 0, 0u, 0u, NULL, NULL,
+				  { NULL, NULL, D_illegal, NULL, NULL }, false,
+				  { NULL, NULL, NULL}, 0 };
 
 #ifdef HAVE_LIBREADLINE
 /* do_save -- save command */
@@ -168,10 +177,10 @@ struct list_item {
 #define WATCHING_ARRAY(d)	(((d)->flags & CUR_IS_ARRAY) != 0)
 
 static struct list_item display_list = { &display_list, &display_list, 0,
-	NULL, NULL, 0, NULL, 0ul, {NULL, NULL, D_illegal, NULL, NULL}, 0, {NULL, NULL, NULL}, {NULL, NULL}, 0 };
+	NULL, NULL, 0, NULL, 0ul, {NULL, NULL, D_illegal, NULL, NULL}, 0, {NULL, NULL, NULL}, {{NULL}, {NULL}}, 0 };
 
 static struct list_item watch_list = { &watch_list, &watch_list, 0,
-	NULL, NULL, 0, NULL, 0ul, {NULL, NULL, D_illegal, NULL, NULL}, 0, {NULL, NULL, NULL}, {NULL, NULL}, 0 };
+	NULL, NULL, 0, NULL, 0ul, {NULL, NULL, D_illegal, NULL, NULL}, 0, {NULL, NULL, NULL}, {{NULL}, {NULL}}, 0 };
 
 
 /* Structure to maintain data for processing debugger commands */
@@ -199,6 +208,18 @@ static struct {
 	enum argtype command;		 /* command type */
 } stop;
 
+static void reset_stop(void)
+{
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
+	memset(&stop, 0, sizeof(stop));
+	stop.command = D_illegal;
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+}
 
 /* restart related stuff */
 extern char **d_argv;	/* copy of argv array */
@@ -414,9 +435,7 @@ g_readline(const char *prompt)
 
 /* d_error --- print an error message */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_Use_decl_annotations_
-#endif
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 d_error(const char *mesg, ...)
 {
@@ -2896,8 +2915,7 @@ debug_prog(INSTRUCTION *pc)
 	dgawk_prompt = estrdup(DEFAULT_PROMPT, strlen(DEFAULT_PROMPT));
 	dbg_prompt = dgawk_prompt;
 
-	memset(&stop, 0, sizeof(stop));
-	stop.command = D_illegal;
+	reset_stop();
 
 	if ((run = getenv("DGAWK_RESTART")) != NULL) {
 		/* We are restarting; restore state (breakpoints, history etc.)
@@ -3405,7 +3423,7 @@ do_return(CMDARG *arg, enum argtype cmd)
 
 /* check_until --- process until, returns true if stopping */
 
-bool
+static bool
 check_until(INSTRUCTION **pi)
 {
 	if (fcall_count < stop.fcall_count) { /* current stack frame returned */
@@ -3915,10 +3933,10 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		print_func(fp, "\n");
 
 	if (pc->source_line <= 0)
-		print_func(fp, "[      :%p] %-20.20s: ", pc, opcode2str(pc->opcode));
+		print_func(fp, "[      :%p] %-20.20s: ", (void*) pc, opcode2str(pc->opcode));
 	else
 		print_func(fp, "[%6u:%p] %-20.20s: ",
-		                pc->source_line, pc, opcode2str(pc->opcode));
+		                pc->source_line, (void*) pc, opcode2str(pc->opcode));
 
 	if (prog_running && ! in_dump) {
 		/* find Node_func if in function */
@@ -3929,34 +3947,34 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 	switch (pc->opcode) {
 	case Op_K_if:
 		print_func(fp, "[branch_if = %p] [branch_else = %p] [branch_else->lasti = %p]\n",
-				pc->branch_if, pc->branch_else, pc->branch_else->lasti);
+				(void*) pc->branch_if, (void*) pc->branch_else, (void*) pc->branch_else->lasti);
 		break;
 
 	case Op_K_else:
-		print_func(fp, "[branch_end = %p]\n", pc->branch_end);
+		print_func(fp, "[branch_end = %p]\n", (void*) pc->branch_end);
 		break;
 
 	case Op_K_while:
-		print_func(fp, "[while_body = %p] [target_break = %p]\n", (pc+1)->while_body, pc->target_break);
+		print_func(fp, "[while_body = %p] [target_break = %p]\n", (void*) (pc+1)->while_body, (void*) pc->target_break);
 		break;
 
 	case Op_K_do:
-		print_func(fp, "[doloop_cond = %p] [target_break = %p]", (pc+1)->doloop_cond, pc->target_break);
+		print_func(fp, "[doloop_cond = %p] [target_break = %p]", (void*) (pc+1)->doloop_cond, (void*) pc->target_break);
 		if (pc->comment)
-			print_func(fp, " [comment = %p]", pc->comment);
+			print_func(fp, " [comment = %p]", (void*) pc->comment);
 		print_func(fp, "\n");
 		if (pc->comment)
 			print_instruction(pc->comment, print_func, fp, in_dump);
 		break;
 
 	case Op_K_for:
-		print_func(fp, "[forloop_cond = %p] ", (pc+1)->forloop_cond);
+		print_func(fp, "[forloop_cond = %p] ", (void*) (pc+1)->forloop_cond);
 		/* fall through */
 	case Op_K_arrayfor:
-		print_func(fp, "[forloop_body = %p] ", (pc+1)->forloop_body);
-		print_func(fp, "[target_break = %p] [target_continue = %p]", pc->target_break, pc->target_continue);
+		print_func(fp, "[forloop_body = %p] ", (void*) (pc+1)->forloop_body);
+		print_func(fp, "[target_break = %p] [target_continue = %p]", (void*) pc->target_break, (void*) pc->target_continue);
 		if (pc->comment != NULL) {
-			print_func(fp, " [comment = %p]\n", (pc)->comment);
+			print_func(fp, " [comment = %p]\n", (void*) (pc)->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -3965,15 +3983,15 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 	case Op_K_switch:
 	{
 		bool need_newline = false;
-		print_func(fp, "[switch_start = %p] [switch_end = %p]\n", (pc+1)->switch_start, (pc+1)->switch_end);
+		print_func(fp, "[switch_start = %p] [switch_end = %p]\n", (void*) (pc+1)->switch_start, (void*) (pc+1)->switch_end);
 		if (pc->comment || (pc+1)->switch_end->comment)
 			print_func(fp, "%*s", noffset, "");
 		if (pc->comment) {
-			print_func(fp, "[start_comment = %p]", pc->comment);
+			print_func(fp, "[start_comment = %p]", (void*) pc->comment);
 			need_newline = true;
 		}
 		if ((pc+1)->switch_end->comment) {
-			print_func(fp, "[end_comment = %p]", (pc + 1)->switch_end->comment);
+			print_func(fp, "[end_comment = %p]", (void*) (pc + 1)->switch_end->comment);
 			need_newline = true;
 		}
 		if (need_newline)
@@ -3986,9 +4004,9 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		break;
 
 	case Op_K_default:
-		print_func(fp, "[stmt_start = %p] [stmt_end = %p]", pc->stmt_start, pc->stmt_end);
+		print_func(fp, "[stmt_start = %p] [stmt_end = %p]", (void*) pc->stmt_start, (void*) pc->stmt_end);
 		if (pc->comment) {
-			print_func(fp, " [comment = %p]\n", pc->comment);
+			print_func(fp, " [comment = %p]\n", (void*) pc->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -4000,7 +4018,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	case Op_var_assign:
 		print_func(fp, "[set_%s()]", get_spec_varname(pc->assign_var));
-		if (pc->assign_ctxt != D_illegal)
+		if (pc->assign_ctxt != Op_illegal)
 			print_func(fp, " [assign_ctxt = %s]", opcode2str(pc->assign_ctxt));
 		print_func(fp, "\n");
 		break;
@@ -4012,14 +4030,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	case Op_field_spec_lhs:
 		print_func(fp, "[target_assign = %p] [do_reference = %s]\n",
-				pc->target_assign, pc->do_reference ? "true" : "false");
+				(void*) pc->target_assign, pc->do_reference ? "true" : "false");
 		break;
 
 	case Op_func:
 		print_func(fp, "[param_cnt = %lu] [source_file = %s]", TO_ULONG(pcount),
 				pc->source_file ? pc->source_file : "cmd. line");
 		if (pc[3].nexti != NULL) {
-			print_func(fp, "[ns_list = %p]\n", pc[3].nexti);
+			print_func(fp, "[ns_list = %p]\n", (void*) pc[3].nexti);
 			print_ns_list(pc[3].nexti, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -4035,7 +4053,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		print_func(fp, "[into_var = %s]\n", pc->into_var ? "true" : "false");
 		print_func(fp, "%*s[target_beginfile = %p] [target_endfile = %p]\n",
 		                noffset, "",
-		                (pc + 1)->target_beginfile, (pc + 1)->target_endfile);
+		                (void*) (pc + 1)->target_beginfile, (void*) (pc + 1)->target_endfile);
 		break;
 
 	case Op_K_print_rec:
@@ -4056,18 +4074,18 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	case Op_K_nextfile:
 		print_func(fp, "[target_newfile = %p] [target_endfile = %p]\n",
-		                pc->target_newfile, pc->target_endfile);
+		                (void*) pc->target_newfile, (void*) pc->target_endfile);
 		break;
 
 	case Op_newfile:
 		print_func(fp, "[target_jmp = %p] [target_endfile = %p]\n",
-		                pc->target_jmp, pc->target_endfile);
+		                (void*) pc->target_jmp, (void*) pc->target_endfile);
 		print_func(fp, "%*s[target_get_record = %p]\n",
-		                noffset, "", (pc + 1)->target_get_record);
+		                noffset, "", (void*) (pc + 1)->target_get_record);
 		break;
 
 	case Op_get_record:
-		print_func(fp, "[target_newfile = %p]\n", pc->target_newfile);
+		print_func(fp, "[target_newfile = %p]\n", (void*) pc->target_newfile);
 		break;
 
 	case Op_jmp:
@@ -4079,19 +4097,19 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 	case Op_arrayfor_init:
 	case Op_K_break:
 	case Op_K_continue:
-		print_func(fp, "[target_jmp = %p]\n", pc->target_jmp);
+		print_func(fp, "[target_jmp = %p]\n", (void*) pc->target_jmp);
 		break;
 
 	case Op_K_exit:
 		print_func(fp, "[target_end = %p] [target_atexit = %p]\n",
-						pc->target_end, pc->target_atexit);
+						(void*) pc->target_end, (void*) pc->target_atexit);
 		break;
 
 	case Op_K_case:
 		print_func(fp, "[target_jmp = %p] [match_exp = %s]",
-						pc->target_jmp,	(pc + 1)->match_exp ? "true" : "false");
+						(void*) pc->target_jmp,	(void*) (pc + 1)->match_exp ? "true" : "false");
 		if (pc->comment) {
-			print_func(fp, " [comment = %p]\n", pc->comment);
+			print_func(fp, " [comment = %p]\n", (void*) pc->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -4100,9 +4118,9 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 	case Op_K_namespace:
 		print_func(fp, "[namespace = %s]", pc->ns_name);
 		if (pc->nexti)
-			print_func(fp, "[nexti = %p]", pc->nexti);
+			print_func(fp, "[nexti = %p]", (void*) pc->nexti);
 		if (pc->comment)
-			print_func(fp, "[comment = %p]", pc->comment);
+			print_func(fp, "[comment = %p]", (void*) pc->comment);
 		print_func(fp, "\n");
 		break;
 
@@ -4110,17 +4128,17 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		print_func(fp, "[array_var = %s] [target_jmp = %p]\n",
 		                pc->array_var->type == Node_param_list ?
 		                   func->fparms[pc->array_var->param_cnt].vname : pc->array_var->vname,
-		                pc->target_jmp);
+		                (void*) pc->target_jmp);
 		break;
 
 	case Op_line_range:
 		print_func(fp, "[triggered = %s] [target_jmp = %p]\n",
-		                pc->triggered ? "true" : "false", pc->target_jmp);
+		                pc->triggered ? "true" : "false", (void*) pc->target_jmp);
 		break;
 
 	case Op_cond_pair:
 		print_func(fp, "[line_range = %p] [target_jmp = %p]\n",
-		                pc->line_range, pc->target_jmp);
+		                (void*) pc->line_range, (void*) pc->target_jmp);
 		break;
 
 	case Op_sub_builtin:
@@ -4186,7 +4204,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		                ruletab[pc->in_rule],
 		                pc->source_file ? pc->source_file : "cmd. line");
 		if (pc[3].nexti != NULL) {
-			print_func(fp, "[ns_list = %p]\n", pc[3].nexti);
+			print_func(fp, "[ns_list = %p]\n", (void*) pc[3].nexti);
 			print_ns_list(pc[3].nexti, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -4228,7 +4246,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 			pc->memory->comment_type == EOL_COMMENT ?
 						"EOL" : "BLOCK");
 		if (pc->comment) {
-			print_func(fp, " [comment = %p]\n", pc->comment);
+			print_func(fp, " [comment = %p]\n", (void*) pc->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
 		} else
 			print_func(fp, "\n");
@@ -4468,9 +4486,7 @@ prompt_continue(FILE *fp)
 
 /* gprintf --- like fprintf but allows paging */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_Use_decl_annotations_
-#endif
+ATTRIBUTE_PRINTF(format, 2, 3)
 int
 gprintf(FILE *fp, const char *format, ...)
 {
@@ -4839,12 +4855,10 @@ unserialize_commands(const char *str, size_t str_len)
 static struct list_item *
 unserialize_list_item(struct list_item *list, const char *const pstr[], const size_t pstr_len[], unsigned field_cnt)
 {
-	ulong_t num;
-	long_t type;
+	enum argtype type;
 	struct list_item *l;
 	NODE *symbol = NULL;
-	ulong_t i, sub_cnt = 0u;
-	unsigned cnt;
+	unsigned num, cnt, i, sub_cnt = 0;
 	NODE **subs = NULL;
 
 	/* subscript	-- number type sname num_subs subs [commands [condition]]
@@ -4852,8 +4866,8 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 	 * field		-- number type symbol(numbr) commands [commands [condition]]
 	 */
 
-	num = strtoul(pstr[0], NULL, 0);
-	type = strtol(pstr[1], NULL, 0);
+	num = (unsigned) strtoul(pstr[0], NULL, 0);
+	type = (enum argtype) strtol(pstr[1], NULL, 0);
 
 	if (type == D_field) {
 		ulong_t field_num = strtoul(pstr[2], NULL, 0);
@@ -4868,10 +4882,10 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 			return NULL;
 		cnt = 3;
 		if (type == D_subscript) {
-			sub_cnt = strtoul(pstr[3], NULL, 0);
+			sub_cnt = (unsigned) strtoul(pstr[3], NULL, 0);
 			emalloc(subs, NODE **, sub_cnt * sizeof(NODE *), "unserialize_list_item");
 			cnt++;
-			for (i = 0u; i < sub_cnt; i++) {
+			for (i = 0; i < sub_cnt; i++) {
 				ulong_t sub_len = strtoul(pstr[cnt], NULL, 0);
 				subs[i] = make_string(pstr[cnt + 1], sub_len);
 				cnt += 2;
@@ -4879,12 +4893,12 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 		}
 	}
 
-	l = add_item(list, (enum argtype) (int) type, symbol, NULL);
+	l = add_item(list, type, symbol, NULL);
 	if (type == D_subscript) {
-		l->num_subs = (unsigned) sub_cnt;
+		l->num_subs = sub_cnt;
 		l->subs = subs;
 	}
-	l->number = (unsigned) num;	/* keep same item number across executions */
+	l->number = num;	/* keep same item number across executions */
 
 	if (list == &watch_list) {
 		initialize_watch_item(l);
@@ -4897,10 +4911,10 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 			if (!parse_condition(D_watch, l->number, expr))
 				efree(expr);
 		}
-		if ((unsigned) num > list->number)   /* update list number counter */
-			list->number = (unsigned) num;
+		if (num > list->number)   /* update list number counter */
+			list->number = num;
 	} else
-		list->number = (unsigned) num;
+		list->number = num;
 
 	return l;
 }
@@ -4955,7 +4969,7 @@ unserialize_breakpoint(const char *const pstr[], const size_t pstr_len[], unsign
 
 /* unserialize_option --- set a debugger option from unserialized data. */
 
-static struct dbg_option *
+static const struct dbg_option *
 unserialize_option(const char *const pstr[], const size_t pstr_len[], unsigned field_cnt)
 {
 	const struct dbg_option *opt;
@@ -4968,7 +4982,7 @@ unserialize_option(const char *const pstr[], const size_t pstr_len[], unsigned f
 			value = estrdup(pstr[1], pstr_len[1]);
 			(*(opt->assign))(value);
 			efree(value);
-			return ((struct dbg_option *) opt);
+			return opt;
 		}
 	}
 	return NULL;
@@ -5225,7 +5239,7 @@ execute_commands(struct commands_item *commands)
 bool
 do_print_f(CMDARG *arg, enum argtype cmd)
 {
-	int count = 0;
+	unsigned count = 0;
 	ulong_t i;
 	CMDARG *a;
 	NODE **tmp;
@@ -5693,8 +5707,6 @@ pre_execute_code(INSTRUCTION **pi)
 	return (ei == *pi);
 }
 
-extern INSTRUCTION *unwind_stack(size_t n);
-
 static NODE *
 execute_code(volatile INSTRUCTION *code)
 {
@@ -5810,7 +5822,7 @@ do_eval(CMDARG *arg, enum argtype cmd)
 				np->param_cnt += pcount;	/* appending eval locals: fixup param_cnt */
 
 				getnode(r);
-				memset(r, 0, sizeof(NODE));
+				clearnode(r);
 				*sp++ = r;
 				/* local variable */
 				r->type = Node_var_new;
