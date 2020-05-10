@@ -150,14 +150,13 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
 			    < (size_t)0 + new_buf_len))
 	return REG_ESPACE;
 
-      new_wcs = re_realloc (pstr->wcs, wint_t, (size_t) new_buf_len);
+      new_wcs = re_realloc (pstr->wcs, wint_t, new_buf_len);
       if (__glibc_unlikely (new_wcs == NULL))
 	return REG_ESPACE;
       pstr->wcs = new_wcs;
       if (pstr->offsets != NULL)
 	{
-	  Idx *new_offsets = re_realloc (pstr->offsets, Idx,
-					 (size_t) new_buf_len);
+	  Idx *new_offsets = re_realloc (pstr->offsets, Idx, new_buf_len);
 	  if (__glibc_unlikely (new_offsets == NULL))
 	    return REG_ESPACE;
 	  pstr->offsets = new_offsets;
@@ -167,7 +166,7 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
   if (pstr->mbs_allocated)
     {
       unsigned char *new_mbs = re_realloc (pstr->mbs, unsigned char,
-					   (size_t) new_buf_len);
+					   new_buf_len);
       if (__glibc_unlikely (new_mbs == NULL))
 	return REG_ESPACE;
       pstr->mbs = new_mbs;
@@ -638,7 +637,8 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 		  && mid == offset && pstr->offsets[mid] == offset)
 		{
 		  memmove (pstr->wcs, pstr->wcs + offset,
-			   (pstr->valid_len - offset) * sizeof (wint_t));
+			   (size_t) (pstr->valid_len - offset)
+			   * sizeof (wint_t));
 		  memmove (pstr->mbs, pstr->mbs + offset,
 			   (size_t) (pstr->valid_len - offset));
 		  pstr->valid_len -= offset;
@@ -683,7 +683,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 #ifdef RE_ENABLE_I18N
 	      if (pstr->mb_cur_max > 1)
 		memmove (pstr->wcs, pstr->wcs + offset,
-			 (pstr->valid_len - offset) * sizeof (wint_t));
+			 (size_t) (pstr->valid_len - offset) * sizeof (wint_t));
 #endif /* RE_ENABLE_I18N */
 	      if (__glibc_unlikely (pstr->mbs_allocated))
 		memmove (pstr->mbs, pstr->mbs + offset,
@@ -1042,7 +1042,7 @@ re_node_set_init_copy (re_node_set *dest, const re_node_set *src)
 	  dest->alloc = dest->nelem = 0;
 	  return REG_ESPACE;
 	}
-      memcpy (dest->elems, src->elems, src->nelem * sizeof (Idx));
+      memcpy (dest->elems, src->elems, (size_t) src->nelem * sizeof (Idx));
     }
   else
     re_node_set_init_empty (dest);
@@ -1136,7 +1136,7 @@ re_node_set_add_intersect (re_node_set *dest, const re_node_set *src1,
       }
 
   /* Copy remaining SRC elements.  */
-  memcpy (dest->elems, dest->elems + sbase, delta * sizeof (Idx));
+  memcpy (dest->elems, dest->elems + sbase, (size_t) delta * sizeof (Idx));
 
   return REG_NOERROR;
 }
@@ -1181,13 +1181,13 @@ re_node_set_init_union (re_node_set *dest, const re_node_set *src1,
   if (i1 < src1->nelem)
     {
       memcpy (dest->elems + id, src1->elems + i1,
-	     (src1->nelem - i1) * sizeof (Idx));
+	     (size_t) (src1->nelem - i1) * sizeof (Idx));
       id += src1->nelem - i1;
     }
   else if (i2 < src2->nelem)
     {
       memcpy (dest->elems + id, src2->elems + i2,
-	     (src2->nelem - i2) * sizeof (Idx));
+	     (size_t) (src2->nelem - i2) * sizeof (Idx));
       id += src2->nelem - i2;
     }
   dest->nelem = id;
@@ -1217,7 +1217,7 @@ re_node_set_merge (re_node_set *dest, const re_node_set *src)
   if (__glibc_unlikely (dest->nelem == 0))
     {
       dest->nelem = src->nelem;
-      memcpy (dest->elems, src->elems, src->nelem * sizeof (Idx));
+      memcpy (dest->elems, src->elems, (size_t) src->nelem * sizeof (Idx));
       return REG_NOERROR;
     }
 
@@ -1238,7 +1238,8 @@ re_node_set_merge (re_node_set *dest, const re_node_set *src)
     {
       /* If DEST is exhausted, the remaining items of SRC must be unique.  */
       sbase -= is + 1;
-      memcpy (dest->elems + sbase, src->elems, (is + 1) * sizeof (Idx));
+      memcpy (dest->elems + sbase, src->elems,
+	      (size_t) (is + 1) * sizeof (Idx));
     }
 
   id = dest->nelem - 1;
@@ -1267,7 +1268,7 @@ re_node_set_merge (re_node_set *dest, const re_node_set *src)
 	    {
 	      /* Copy remaining SRC elements.  */
 	      memcpy (dest->elems, dest->elems + sbase,
-		      delta * sizeof (Idx));
+		      (size_t) delta * sizeof (Idx));
 	      break;
 	    }
 	}
@@ -1423,14 +1424,14 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
 			    < new_nodes_alloc))
 	return -1;
 
-      new_nodes = re_realloc (dfa->nodes, re_token_t, new_nodes_alloc);
+      new_nodes = re_realloc_sz (dfa->nodes, re_token_t, new_nodes_alloc);
       if (__glibc_unlikely (new_nodes == NULL))
 	return -1;
       dfa->nodes = new_nodes;
-      new_nexts = re_realloc (dfa->nexts, Idx, new_nodes_alloc);
-      new_indices = re_realloc (dfa->org_indices, Idx, new_nodes_alloc);
-      new_edests = re_realloc (dfa->edests, re_node_set, new_nodes_alloc);
-      new_eclosures = re_realloc (dfa->eclosures, re_node_set, new_nodes_alloc);
+      new_nexts = re_realloc_sz (dfa->nexts, Idx, new_nodes_alloc);
+      new_indices = re_realloc_sz (dfa->org_indices, Idx, new_nodes_alloc);
+      new_edests = re_realloc_sz (dfa->edests, re_node_set, new_nodes_alloc);
+      new_eclosures = re_realloc_sz (dfa->eclosures, re_node_set, new_nodes_alloc);
       if (__glibc_unlikely (new_nexts == NULL || new_indices == NULL
 			    || new_edests == NULL || new_eclosures == NULL))
 	{
@@ -1465,7 +1466,7 @@ calc_state_hash (const re_node_set *nodes, unsigned int context)
   re_hashval_t hash = (re_hashval_t) (nodes->nelem + context);
   Idx i;
   for (i = 0 ; i < nodes->nelem ; i++)
-    hash += nodes->elems[i];
+    hash += (re_hashval_t) nodes->elems[i];
   return hash;
 }
 
