@@ -28,8 +28,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _MSC_VER
-#error for _MSC_VER only!
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
+#error for _MSC_VER or __MINGW32__ only!
 #endif
 
 #define WIN32_LEAN_AND_MEAN
@@ -38,6 +38,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <locale.h>
+#include <wchar.h>
+
+/* printf-format string for printing "long long unsigned int" */
+#ifndef LLUFMT
+# ifdef PRIu64
+#  define LLUFMT PRIu64
+# else
+#  define LLUFMT "llu"
+# endif
+#endif
 
 static unsigned long long
 file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
@@ -130,7 +140,7 @@ set_lcat_from_env(const wchar_t prog[], int cat, const wchar_t name[])
 {
 	const wchar_t *lc = _wgetenv(name);
 	if (lc && lc[0] && !_wsetlocale(cat, lc)) {
-		fwprintf(stderr, L"%s: bad locale: %s=%s\n", prog, name, lc);
+		fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", prog, name, lc);
 		return -1;
 	}
 	return 0;
@@ -143,7 +153,7 @@ set_locale_from_env(const wchar_t prog[], const wchar_t def[])
 	const wchar_t *lc = _wgetenv(L"LC_ALL");
 	if (lc && lc[0]) {
 		if (!_wsetlocale(LC_ALL, lc)) {
-			fwprintf(stderr, L"%s: bad locale: LC_ALL=%s\n",
+			fwprintf(stderr, L"%ls: bad locale: LC_ALL=%ls\n",
 				prog, lc);
 			return -1;
 		}
@@ -159,7 +169,7 @@ set_locale_from_env(const wchar_t prog[], const wchar_t def[])
 		lc = def;
 
 	if (!_wsetlocale(LC_ALL, lc)) {
-		fwprintf(stderr, L"%s: bad locale: LANG=%s\n", prog, lc);
+		fwprintf(stderr, L"%ls: bad locale: LANG=%ls\n", prog, lc);
 		return -1;
 	}
 
@@ -186,7 +196,7 @@ static HANDLE open_dir(
 
 	/* Path should not exceed the limit of 32767 wide characters.  */
 	if (dir_len > 32767 - 3) {
-		fwprintf(stderr, L"%s: too long directory path: \"%s\"\n",
+		fwprintf(stderr, L"%ls: too long directory path: \"%ls\"\n",
 			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
@@ -195,7 +205,7 @@ static HANDLE open_dir(
 		size_t sz = sizeof(wchar_t)*(dir_len + 3);
 		path = (wchar_t*) malloc(sz);
 		if (path == NULL) {
-			fwprintf(stderr, L"%s: can't allocate memory of %u bytes\n",
+			fwprintf(stderr, L"%ls: can't allocate memory of %u bytes\n",
 				prog, (unsigned) sz);
 			return INVALID_HANDLE_VALUE;
 		}
@@ -208,7 +218,7 @@ static HANDLE open_dir(
 	if (path != path_buf)
 		free(path);
 	if (INVALID_HANDLE_VALUE == h) {
-		fwprintf(stderr, L"%s: can't open directory \"%s\"\n",
+		fwprintf(stderr, L"%ls: can't open directory \"%ls\"\n",
 			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
@@ -216,14 +226,18 @@ static HANDLE open_dir(
 	return h;
 }
 
-static int usage(const wchar_t *prog)
+static int usage(const wchar_t prog[])
 {
 	const wchar_t *name = wcsrchr(prog, L'\\');
 	name = name != NULL ? name + 1 : prog;
-	fwprintf(stderr, L"%s - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
-	fwprintf(stderr, L"Usage: %s [--locale=<locale>] (-afi|-lna) <dir>\n", name);
+	fwprintf(stderr, L"%ls - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
+	fwprintf(stderr, L"Usage: %ls [--locale=<locale>] (-afi|-lna) <dir>\n", name);
 	return 2;
 }
+
+#ifdef __MINGW32__
+int wmain(int argc, wchar_t *wargv[]);
+#endif
 
 int wmain(int argc, wchar_t *wargv[])
 {
@@ -233,16 +247,16 @@ int wmain(int argc, wchar_t *wargv[])
 	int afi;
 	const wchar_t *dirname;
 	const wchar_t *locale = NULL;	/* optional */
+	const wchar_t *const prog = wargv[0];
 	wchar_t **w = wargv + 1;
 	size_t dir_len;
 
 	if (argc < 3 || argc > 4)
-		return usage(wargv[0]);
-
+		return usage(prog);
 	for (;; w++) {
 		if (!wcsncmp(*w, L"--locale=", wcslen(L"--locale="))) {
 			if (locale)
-				return usage(wargv[0]);
+				return usage(prog);
 			locale = *w + wcslen(L"--locale=");
 			continue;
 		}
@@ -254,25 +268,25 @@ int wmain(int argc, wchar_t *wargv[])
 			afi = 0;
 			break;
 		}
-		return usage(wargv[0]);
+		return usage(prog);
 	}
 
 	dirname = *++w;
 	if (!dirname || w[1])
-		return usage(wargv[0]);
+		return usage(prog);
 
 	if (locale) {
 		if (!_wsetlocale(LC_ALL, locale)) {
-			fwprintf(stderr, L" %s: bad locale: %s\n", wargv[0], locale);
+			fwprintf(stderr, L"%ls: bad locale: %ls\n", prog, locale);
 			return 2;
 		}
 	}
-	else if (set_locale_from_env(wargv[0], L""))
+	else if (set_locale_from_env(prog, L""))
 		return 2;
 
 	dir_len = wcslen(dirname);
 
-	h = open_dir(wargv[0], dirname, dir_len, &ffd);
+	h = open_dir(prog, dirname, dir_len, &ffd);
 	if (INVALID_HANDLE_VALUE == h)
 		return 2;
 
@@ -287,12 +301,12 @@ int wmain(int argc, wchar_t *wargv[])
 
 		if (afi) {
 			/* ls -afi */
-			fwprintf(stdout, L"%llu %s\n", ino, ffd.cFileName);
+			fwprintf(stdout, L"%" LLUFMT " %ls\n", ino, ffd.cFileName);
 		}
 		else {
 			/* ls -lna */
 			unsigned name_len = (unsigned) wcslen(ffd.cFileName);
-			fwprintf(stdout, L"%c%s %2.u 1000 1000 %8.u Mar 27 2016 %s%s\n",
+			fwprintf(stdout, L"%c%ls %2.u 1000 1000 %8.u Mar 27 2016 %ls%ls\n",
 				'd' == ftype ? L'd' :
 				'l' == ftype ? L'l' :
 				L'-',
@@ -312,8 +326,8 @@ int wmain(int argc, wchar_t *wargv[])
 		FindClose(h);
 
 		if (ERROR_NO_MORE_FILES != err) {
-			fwprintf(stderr, L"%s: FindNextFileW() failed with error: %lx\n",
-				wargv[0], err);
+			fwprintf(stderr, L"%ls: FindNextFileW() failed with error: %lx\n",
+				prog, (unsigned long) err);
 			return 2;
 		}
 	}
