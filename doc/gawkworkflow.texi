@@ -28,10 +28,10 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH February, 2019
+@set UPDATE-MONTH May, 2020
 
 @set TITLE Participating in @command{gawk} Development
-@set EDITION 0.72
+@set EDITION 0.73
 
 @iftex
 @set DOCUMENT booklet
@@ -688,7 +688,7 @@ upstream. You use the branch name without the leading @samp{origin/}
 prefix. For example, @samp{git checkout gawk-4.1-stable}.
 
 @cindex @code{git push}
-You can then work on this branch, making commitments to it as you wish.
+You can then work on this branch, making commits to it as you wish.
 Once things are ready to move upstream, you simply use @samp{git push},
 and your changes will be pushed up to the main repo.@footnote{Assuming
 you have permission to do so, of course.}
@@ -1048,12 +1048,13 @@ Let's check what's happening in the @code{gawk-4.1-stable} branch:
 @cindex @code{git checkout}
 @cindex @code{git pull}
 @example
-$ @kbd{make distclean}                                          @ii{Clean up}
-$ @kbd{git checkout gawk-4.1-stable}                            @ii{Checkout a different branch}
+$ @kbd{make distclean}                          @ii{Clean up}
+$ @kbd{git checkout gawk-4.1-stable}            @ii{Checkout a different branch}
 @print{} ...
-$ @kbd{git pull}                                                @ii{Get up to date}
+$ @kbd{git pull}                                @ii{Get up to date}
 @print{} ...
-$ @kbd{./bootstrap.sh && ./configure && make -j && make check}  @ii{Start working}
+$ @kbd{./bootstrap.sh && ./configure &&}        @ii{Start working}
+> @kbd{make -j && make check}
 @end example
 
 @node Starting A New Branch
@@ -1466,7 +1467,7 @@ Here's how to commit your changes:
 @example
 $ @kbd{git diff}            @ii{Review the patch one more time}
 $ @kbd{git add @dots{}}         @ii{Add any files for committing}
-$ @kbd{git commit}          @ii{Commit the files. Include a commit message.}
+$ @kbd{git commit}          @ii{Commit the files, with a commit message}
 $ @kbd{git push}            @ii{Push the files up to the repo. Ta da!}
 @end example
 
@@ -1509,7 +1510,7 @@ To push your branch up initially:
 @example
 $ @kbd{git diff}                                @ii{Review your changes}
 $ @kbd{git add @dots{}}                             @ii{Add any files for committing}
-$ @kbd{git commit}                              @ii{Commit the files. Include a commit message}
+$ @kbd{git commit}                              @ii{Commit the files with a commit message}
 $ @kbd{git push -u origin feature/python}       @ii{Push the branch up to the repo}
 @end example
 
@@ -1552,7 +1553,7 @@ $ @kbd{git pull}                @ii{Make sure we're up to date with the maintain
 $ @kbd{gvim @dots{}}                @ii{Make any fixes, compile, test}
 $ @kbd{git diff}                @ii{Review your changes}
 $ @kbd{git add @dots{}}             @ii{Add any files for committing}
-$ @kbd{git commit}              @ii{Commit the files. Include a commit message.}
+$ @kbd{git commit}              @ii{Commit the files with a commit message.}
 @end example
 
 When you're ready to push your changes:
@@ -1682,8 +1683,11 @@ gotten rid of:
 @cindex @code{git branch}
 @cindex @code{git push}
 @example
-$ @kbd{git branch -d feature/python}                 @ii{Still on} master@ii{, delete feature branch}
-$ @kbd{git push -u origin --delete feature/python}   @ii{Delete the branch on Savannah}
+$ @kbd{git branch}                                  @ii{Still on} master
+  @dots{}
+* master
+$ @kbd{git branch -d feature/python}                @ii{Delete feature branch}
+$ @kbd{git push -u origin --delete feature/python}  @ii{Delete on Savannah}
 @end example
 
 The @samp{git push} command deletes the @code{feature/python}
@@ -1767,7 +1771,7 @@ $ @kbd{du -s .}                               @ii{Check disk usage again}
 Occasionally you may want to rename a branch.@footnote{This discussion
 adopted from
 @uref{https://multiplestates.wordpress.com/2015/02/05/rename-a-local-and-remote-branch-in-git, here}.}
-If your branch is local and you are on it, us:
+If your branch is local and you are on it, use:
 
 @example
 $ @kbd{git branch -m feature/@var{new-name}}
@@ -1999,7 +2003,9 @@ for instructions about obtaining the code using CVS and building it.
 @cindex @command{pcc} compiler, Git mirror
 An alternative location for the source is the @command{gawk}
 maintainer's @uref{https://github.com/arnoldrobbins/pcc-revived,
-Git mirror} of the code.
+Git mirror} of the code.  If you're using Ubuntu GNU/Linux 18.04 
+or later, you need to use the @code{ubuntu-18} branch from this
+Git mirror.
 @end table
 
 @node Debugging
@@ -2019,6 +2025,7 @@ named @file{.developing} in the @command{gawk} source code directory
 @emph{before} running @command{configure}.  Doing so enables additional
 conditionally-compiled debugging code within @command{gawk}, and adds
 additional warning and debugging options if compiling with GCC.
+It also disables optimization.
 
 @node Cheat Sheet
 @appendix Git Command Cheat Sheet
