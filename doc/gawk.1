@@ -90,7 +90,6 @@ and
 options.
 The debugger is documented in \*(EP.
 .SH OPTION FORMAT
-.PP
 .I Gawk
 options may be either traditional \*(PX-style one letter options,
 or \*(GN-style long options.  \*(PX options start with a single \*(lq\-\*(rq,
@@ -114,7 +113,6 @@ within
 .B #!
 executable scripts.
 .SH OPTIONS
-.PP
 .I Gawk
 accepts the following options.
 Standard options are listed first, followed by options for
@@ -173,7 +171,7 @@ Treat all input data as single-byte characters. In other words,
 don't pay any attention to the locale information when attempting to
 process strings as multibyte characters.
 The
-.B "\-\^\-posix"
+.B \-\^\-posix
 option overrides this one.
 .bp
 .TP
@@ -353,7 +351,8 @@ development of cleaner \*(AK programs.
 With an optional argument of
 .BR invalid ,
 only warnings about things that are
-actually invalid are issued. (This is not fully implemented yet.)
+actually invalid are issued.
+(This is not fully implemented yet.)
 With an optional argument of
 .BR no-ext ,
 warnings about
@@ -377,7 +376,7 @@ issues a warning.)
 .B \-n
 .TP
 .PD
-.B "\-\^\-non\-decimal\-data"
+.B \-\^\-non\-decimal\-data
 Recognize octal and hexadecimal values in input data.
 .I "Use this option with great caution!"
 .TP
@@ -587,7 +586,6 @@ For \*(PX compatibility, the
 .B \-W
 option may be used, followed by the name of a long option.
 .SH AWK PROGRAM EXECUTION
-.PP
 An \*(AK program consists of a sequence of
 optional directives,
 pattern-action statements,
@@ -742,7 +740,6 @@ executes the code in the
 .B END
 rule(s) (if any).
 .SS Command Line Directories
-.PP
 According to POSIX, files named on the
 .I awk
 command line must be
@@ -803,7 +800,6 @@ a field separator, in addition to whatever value
 .B FS
 may have.
 .SS Fields
-.PP
 As each input record is read,
 .I gawk
 splits the record into
@@ -839,7 +835,7 @@ If the
 variable is set to a space-separated list of numbers, each field is
 expected to have fixed width, and
 .I gawk
-splits up the record using the specified widths. 
+splits up the record using the specified widths.
 Each field width may optionally be preceded by a colon-separated
 value specifying the number of characters to skip before the field starts.
 The value of
@@ -917,7 +913,6 @@ Similarly, assigning a value to
 causes the record to be resplit, creating new
 values for the fields.
 .SS Built-in Variables
-.PP
 .IR Gawk\^ "'s"
 built-in variables are:
 .PP
@@ -1473,7 +1468,6 @@ not a variable name.
 The text domain of the \*(AK program; used to find the localized
 translations for the program's strings.
 .SS Arrays
-.PP
 Arrays are subscripted with an expression between square brackets
 .RB ( [ " and " ] ).
 If the expression is an expression list
@@ -1593,7 +1587,6 @@ may be used as namespace names or as simple identifiers in other
 namespaces.
 For more details, see \*(EP.
 .SS Variable Typing And Conversion
-.PP
 Variables and fields
 may be (floating point) numbers, or strings, or both.
 They may also be regular expressions. How the
@@ -1685,7 +1678,6 @@ and the hexadecimal value
 .B 0x11
 is equal to decimal 17.
 .SS String Constants
-.PP
 String constants in \*(AK are sequences of characters enclosed
 between double quotes (like \fB"value"\fR).  Within strings, certain
 .I "escape sequences"
@@ -1937,13 +1929,13 @@ Matches the end of a string.
 .TP
 .BI [ abc.\|.\|. ]
 A character list: matches any of the characters
-.IR abc.\|.\|. .
+.IR abc.\|.\|.\& .
 You may include a range of characters by separating them with a dash.
 To include a literal dash in the list, put it first or last.
 .TP
 \fB[^\fIabc.\|.\|.\fB]\fR
 A negated character list: matches any character except
-.IR abc.\|.\|. .
+.IR abc.\|.\|.\& .
 .TP
 .IB r1 | r2
 Alternation: matches either
@@ -2213,7 +2205,6 @@ statements found in most languages.  The operators, control statements,
 and input/output statements
 available are patterned after those in C.
 .SS Operators
-.PP
 The operators in \*(AK, in order of decreasing precedence, are:
 .PP
 .TP "\w'\fB*= /= %= ^=\fR'u+1n"
@@ -2298,14 +2289,13 @@ Assignment.  Both absolute assignment
 .BI ( var " = " value )
 and operator-assignment (the other forms) are supported.
 .SS Control Statements
-.PP
 The control statements are
 as follows:
 .PP
 .RS
 .nf
 \fBif (\fIcondition\fB) \fIstatement\fR [ \fBelse\fI statement \fR]
-\fBwhile (\fIcondition\fB) \fIstatement \fR
+\fBwhile (\fIcondition\fB) \fIstatement\fR
 \fBdo \fIstatement \fBwhile (\fIcondition\fB)\fR
 \fBfor (\fIexpr1\fB; \fIexpr2\fB; \fIexpr3\fB) \fIstatement\fR
 \fBfor (\fIvar \fBin\fI array\fB) \fIstatement\fR
@@ -2323,7 +2313,6 @@ as follows:
 .fi
 .RE
 .SS "I/O Statements"
-.PP
 The input/output statements are as follows:
 .PP
 .TP "\w'\fBprintf \fIfmt, expr-list\fR'u+1n"
@@ -2408,7 +2397,7 @@ execute any
 .B END
 rule(s).
 .TP
-.B "nextfile"
+.B nextfile
 Stop processing the current input file.  The next input record read
 comes from the next input file.
 Update
@@ -2475,14 +2464,14 @@ Additional output redirections are allowed for
 and
 .BR printf .
 .TP
-.BI "print .\|.\|. >>" " file"
+.BI "print .\|.\|.\& >>" " file"
 Append output to the
 .IR file .
 .TP
-.BI "print .\|.\|. |" " command"
+.BI "print .\|.\|.\& |" " command"
 Write on a pipe.
 .TP
-.BI "print .\|.\|. |&" " command"
+.BI "print .\|.\|.\& |&" " command"
 Send data to a coprocess or socket.
 (See also the subsection
 .BR "Special File Names" ,
@@ -2518,7 +2507,6 @@ to create new instances of the command or socket.
 \*(AK does not automatically close pipes, sockets, or coprocesses when
 they return EOF.
 .SS The \fIprintf\fP\^ Statement
-.PP
 The \*(AK versions of the
 .B printf
 statement and
@@ -2692,7 +2680,7 @@ with spaces.  With the
 .B 0
 flag, it is padded with zeroes.
 .TP
-.BI \&. prec
+.BI \&.\& prec
 A number that specifies the precision to use when printing.
 For the
 .BR %e ,
@@ -2717,7 +2705,7 @@ and
 .B %X
 formats, it specifies the minimum number of
 digits to print.  For the
-.B %s 
+.B %s
 format,
 it specifies the maximum number of
 characters from the string that should be printed.
@@ -2748,7 +2736,6 @@ after the
 in the format string.
 For example, \fB"%3$*2$.*1$s"\fP.
 .SS Special File Names
-.PP
 When doing I/O redirection from either
 .B print
 or
@@ -2842,7 +2829,6 @@ two-way I/O operator.
 .BI /inet6/udp/ lport / rhost / rport
 Similar, but use UDP/IP instead of TCP/IP.
 .SS Numeric Functions
-.PP
 \*(AK has the following built-in arithmetic functions:
 .PP
 .TP "\w'\fBsrand(\fR[\fIexpr\^\fR]\fB)\fR'u+1n"
@@ -2874,7 +2860,7 @@ divided by
 .I denom
 in \fIresult\fB["quotient"]\fR
 and the remainder in
-in \fIresult\fB["remainder"]\fR.
+\fIresult\fB["remainder"]\fR.
 This is a
 .I gawk
 extension, primarily of value when working with
@@ -2908,7 +2894,6 @@ is provided, use the time of day.
 Return the previous seed for the random
 number generator.
 .SS String Functions
-.PP
 .I Gawk
 has the following built-in string functions:
 .PP
@@ -3518,7 +3503,7 @@ function  f(p, q,     a, b)	# a and b are local
 	\&.\|.\|.
 }
 
-/abc/	{ .\|.\|. ; f(1, 2) ; .\|.\|. }
+/abc/	{ .\|.\|.\& ; f(1, 2) ; .\|.\|.\& }
 .fi
 .ft R
 .RE
@@ -3750,7 +3735,8 @@ and fed back into the Bell Laboratories version); the
 .B tolower()
 and
 .B toupper()
-built-in functions (from the Bell Laboratories version); and the ISO C conversion specifications in
+built-in functions (from the Bell Laboratories version);
+and the ISO C conversion specifications in
 .B printf
 (done first in the Bell Laboratories version).
 .SH HISTORICAL FEATURES
@@ -4222,7 +4208,7 @@ it remains only for backwards compatibility.
 .IR usleep (3)
 .PP
 .IR "The AWK Programming Language" ,
-Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
+Alfred V.\& Aho, Brian W.\& Kernighan, Peter J.\& Weinberger,
 Addison-Wesley, 1988.  ISBN 0-201-07981-X.
 .PP
 \*(EP,
