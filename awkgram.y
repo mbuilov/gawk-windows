@@ -1094,7 +1094,7 @@ non_compound_stmt
 	  {
 		if (! in_function)
 			yyerror(_("`return' used outside function context"));
-	  } opt_exp statement_term {
+	  } opt_fcall_exp statement_term {
 		if (called_from_eval)
 			$1->opcode = Op_K_return_from_eval;
 
@@ -1612,6 +1612,12 @@ fcall_expression_list
 fcall_exp
 	: exp { $$ = $1; }
 	| typed_regexp { $$ = list_create($1); }
+	;
+
+opt_fcall_exp
+	: /* empty */
+	  { $$ = NULL; }
+	| fcall_exp { $$ = $1; }
 	;
 
 /* Expressions, not including the comma operator.  */

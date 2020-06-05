@@ -11721,6 +11721,9 @@ As a parameter in a call to a user-defined function
 (@pxref{User-defined}).
 
 @item
+As the return value of a user-defined function.
+
+@item
 On the righthand side of an assignment to a variable: @samp{some_var = @@/foo/}.
 In this case, the type of @code{some_var} is regexp. Additionally, @code{some_var}
 can be used with @samp{~} and @samp{!~}, passed to one of the built-in functions
@@ -15102,13 +15105,14 @@ the execution of statements based on a @code{case} match. Case statements
 are checked for a match in the order they are defined.  If no suitable
 @code{case} is found, the @code{default} section is executed, if supplied.
 
-Each @code{case} contains a single constant, be it numeric, string, or
-regexp.  The @code{switch} expression is evaluated, and then each
-@code{case}'s constant is compared against the result in turn. The type of constant
-determines the comparison: numeric or string do the usual comparisons.
-A regexp constant does a regular expression match against the string
-value of the original expression.  The general form of the @code{switch}
-statement looks like this:
+Each @code{case} contains a single constant, be it numeric, string,
+or regexp.  The @code{switch} expression is evaluated, and then each
+@code{case}'s constant is compared against the result in turn. The
+type of constant determines the comparison: numeric or string do the
+usual comparisons.  A regexp constant (either regular, @code{/foo/}, or
+strongly typed, @code{@@/foo/}) does a regular expression match against
+the string value of the original expression.  The general form of the
+@code{switch} statement looks like this:
 
 @example
 switch (@var{expression}) @{
