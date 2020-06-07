@@ -487,7 +487,6 @@ struct dfa
   bool fast;			/* The DFA is fast.  */
   token utf8_anychar_classes[9]; /* To lower ANYCHAR in UTF-8 locales.  */
   mbstate_t mbs;		/* Multibyte conversion state.  */
-  bool epsilon;
 
   /* The following are valid only if MB_CUR_MAX > 1.  */
 
@@ -1615,21 +1614,13 @@ addtok_mb (struct dfa *dfa, token t, char mbprop)
       dfa->parse.depth--;
       break;
 
-    case BEGLINE:
-    case ENDLINE:
-    case BEGWORD:
-    case ENDWORD:
-    case LIMWORD:
-    case NOTLIMWORD:
-    case EMPTY:
-      dfa->epsilon = true;
+    case BACKREF:
+      dfa->fast = false;
       FALLTHROUGH;
-
     default:
-      if (t == BACKREF)
-        dfa->fast = false;
-      if (t != EMPTY)
-        dfa->nleaves++;
+      dfa->nleaves++;
+      FALLTHROUGH;
+    case EMPTY:
       dfa->parse.depth++;
       break;
     }
@@ -2305,15 +2296,14 @@ state_index (struct dfa *d, position_set const *s, int context)
    constraint.  Repeat exhaustively until no funny positions are left.
    S->elems must be large enough to hold the result.  */
 static void
-epsclosure (struct dfa const *d, position_set *backword)
+epsclosure (struct dfa const *d)
 {
   position_set tmp;
   alloc_position_set (&tmp, d->nleaves);
   for (idx_t i = 0; i < d->tindex; i++)
     if (d->follows[i].nelem > 0 && d->tokens[i] >= NOTCHAR
         && d->tokens[i] != BACKREF && d->tokens[i] != ANYCHAR
-        && d->tokens[i] != MBCSET && d->tokens[i] < CSET
-        && d->tokens[i] != BEG)
+        && d->tokens[i] != MBCSET && d->tokens[i] < CSET)
       {
         unsigned int constraint;
         switch (d->tokens[i])
@@ -2336,21 +2326,16 @@ epsclosure (struct dfa const *d, position_set *backword)
           case NOTLIMWORD:
             constraint = NOTLIMWORD_CONSTRAINT;
             break;
-          case EMPTY:
+          default:
             constraint = NO_CONSTRAINT;
             break;
-          default:
-            abort ();
           }
 
         delete (i, &d->follows[i]);
 
-        for (idx_t j = 0; j < backword[i].nelem; j++)
-          replace (&d->follows[backword[i].elems[j].index], i, &d->follows[i],
-                   constraint, &tmp);
-        for (idx_t j = 0; j < d->follows[i].nelem; j++)
-          replace (&backword[d->follows[i].elems[j].index], i, &backword[i],
-                   NO_CONSTRAINT, &tmp);
+        for (idx_t j = 0; j < d->tindex; j++)
+          if (i != j && d->follows[j].nelem > 0)
+            replace (&d->follows[j], i, &d->follows[i], constraint, &tmp);
       }
   free (tmp.elems);
 }
@@ -2657,7 +2642,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
   /* Firstpos and lastpos elements.  */
   position *firstpos = posalloc;
   position *lastpos = firstpos + d->nleaves;
-  position_set *backword = NULL;
   position pos;
   position_set tmp;
 
@@ -2689,9 +2673,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
   d->searchflag = searchflag;
   alloc_position_set (&merged, d->nleaves);
   d->follows = xcalloc (d->tindex, sizeof *d->follows);
-
-  if (d->epsilon)
-    backword = xcalloc (d->tindex, sizeof *backword);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -2730,17 +2711,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
         case CAT:
           /* Every element in the firstpos of the second argument is in the
              follow of every element in the lastpos of the first argument.  */
-          if (d->epsilon)
-            {
-              tmp.nelem = stk[-2].nlastpos;
-              tmp.elems = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
-              position *p = firstpos - stk[-1].nfirstpos;
-              for (idx_t j = 0; j < stk[-1].nfirstpos; j++)
-                {
-                  merge (&tmp, &backword[p[j].index], &merged);
-                  copy (&merged, &backword[p[j].index]);
-                }
-            }
           {
             tmp.nelem = stk[-1].nfirstpos;
             tmp.elems = firstpos - stk[-1].nfirstpos;
@@ -2830,15 +2800,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
 #endif
     }
 
-  if (d->epsilon)
-    {
-      /* For each follow set that is the follow set of a real position,
-         replace it with its epsilon closure.  */
-      epsclosure (d, backword);
-
-      for (idx_t i = 0; i < d->tindex; i++)
-        free (backword[i].elems);
-    }
+  /* For each follow set that is the follow set of a real position, replace
+     it with its epsilon closure.  */
+  epsclosure (d);
 
   dfaoptimize (d);
 
@@ -2900,7 +2864,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
   d->min_trcount++;
   d->trcount = 0;
 
-  free (backword);
   free (posalloc);
   free (stkalloc);
   free (merged.elems);
