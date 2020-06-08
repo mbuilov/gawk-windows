@@ -175,7 +175,8 @@ BASIC_TESTS = \
 	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
-	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
+	splitdef splitvar splitwht status-close \
+	strcat1 strfieldnum strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
@@ -2293,6 +2294,11 @@ status-close:
 strcat1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+strfieldnum:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strnum1:

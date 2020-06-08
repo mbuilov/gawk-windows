@@ -758,7 +758,7 @@ typedef struct exp_instruction {
 		awk_value_t *(*efptr)(int num_actual_args,
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
-		long dl;
+		long long dl;
 		char *name;
 	} d;
 

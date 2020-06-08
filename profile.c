@@ -135,7 +135,7 @@ init_profiling_signals()
 /* indent --- print out enough tabs */
 
 static void
-indent(long count)
+indent(long long count)
 {
 	int i;
 
@@ -143,7 +143,7 @@ indent(long count)
 		if (count == 0)
 			fprintf(prof_fp, "\t");
 		else
-			fprintf(prof_fp, "%6ld  ", count);
+			fprintf(prof_fp, "%6lld  ", count);
 	}
 
 	assert(indent_level >= 0);
