@@ -1165,6 +1165,9 @@ EXTRA_DIST = \
 	status-close.ok \
 	strcat1.awk \
 	strcat1.ok \
+	strfieldnum.awk \
+	strfieldnum.in \
+	strfieldnum.ok \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
@@ -1371,7 +1374,8 @@ BASIC_TESTS = \
 	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
-	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
+	splitdef splitvar splitwht status-close \
+	strcat1 strfieldnum strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \

@@ -1154,7 +1154,7 @@ simple_stmt
 			if ($3 != NULL) {
 				NODE *n = $3->nexti->nexti->memory;
 
-				if (! iszero(n))
+				if ((n->flags & (STRING|STRCUR)) != 0 || ! iszero(n))
 					goto regular_print;
 
 				bcfree($3->lasti);			/* Op_field_spec */

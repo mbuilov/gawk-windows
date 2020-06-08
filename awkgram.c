@@ -3071,7 +3071,7 @@ regular_loop:
 			if (yyvsp[-1] != NULL) {
 				NODE *n = yyvsp[-1]->nexti->nexti->memory;
 
-				if (! iszero(n))
+				if ((n->flags & (STRING|STRCUR)) != 0 || ! iszero(n))
 					goto regular_print;
 
 				bcfree(yyvsp[-1]->lasti);			/* Op_field_spec */
