@@ -3390,7 +3390,7 @@ mbprintf1:
 
 mbprintf2:
 	@echo $@ $(ZOS_FAIL)
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=; export GAWKLOCALE; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=JPN_JPN.932; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
