@@ -1,3 +1,12 @@
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Thanks to Andrew Schorr for suggestion of better way to
+	handle exec_count being a long long.
+
+	* awk.h (INSTRUCTION): Make new ldl member be the long long.
+	(exec_count): Is now ldl.
+	* profile.c (pprint): Fix printf of exec_count.
+
 2020-06-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y: Fix `print $"2"' case. Thanks to Ed Morton

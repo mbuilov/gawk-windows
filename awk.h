@@ -758,7 +758,8 @@ typedef struct exp_instruction {
 		awk_value_t *(*efptr)(int num_actual_args,
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
-		long long dl;
+		long dl;
+		long long ldl;	// for exec_count
 		char *name;
 	} d;
 
@@ -899,7 +900,7 @@ typedef struct exp_instruction {
 
 /*------------------ pretty printing/profiling --------*/
 /* Op_exec_count */
-#define exec_count      d.dl
+#define exec_count      d.ldl
 
 /* Op_K_while */
 #define while_body      d.di

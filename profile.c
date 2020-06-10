@@ -297,7 +297,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 					ip2 = (pc + 1)->lasti;
 
 					if (do_profile && ip1->exec_count > 0)
-						fprintf(prof_fp, " # %ld", ip1->exec_count);
+						fprintf(prof_fp, " # %lld", ip1->exec_count);
 
 					end_line(ip1);
 					skip_comment = true;
