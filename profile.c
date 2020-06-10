@@ -1043,7 +1043,7 @@ cleanup:
 
 			ip1 = pc->branch_if;
 			if (ip1->exec_count > 0)
-				fprintf(prof_fp, " # %ld", ip1->exec_count);
+				fprintf(prof_fp, " # %lld", ip1->exec_count);
 			ip1 = end_line(ip1);
 			indent_in();
 			if (pc->comment != NULL)
