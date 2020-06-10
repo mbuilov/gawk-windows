@@ -759,7 +759,7 @@ typedef struct exp_instruction {
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
 		long dl;
-		long long ldl;	// for exec_count
+		unsigned long long ldl;	// for exec_count
 		char *name;
 	} d;
 

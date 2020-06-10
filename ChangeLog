@@ -1,3 +1,12 @@
+2020-06-10         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Convert exec_count from long long to unsigned long long.
+	* awk.h (INSTRUCTION): Change ldl type from long long to unsigned
+	long long.
+	* debug.c (print_instruction): Fix printf format for exec_count.
+	* profile.c (indent): The argument is now an unsigned long long,
+	and fix the printf format to match.
+
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Thanks to Andrew Schorr for suggestion of better way to

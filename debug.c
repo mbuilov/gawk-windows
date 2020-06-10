@@ -4074,7 +4074,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_exec_count:
-		print_func(fp, "[exec_count = %ld]\n", pc->exec_count);
+		print_func(fp, "[exec_count = %llu]\n", pc->exec_count);
 		break;
 
  	case Op_store_var:
