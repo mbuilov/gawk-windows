@@ -41821,18 +41821,18 @@ different limits.
 @multitable @columnfractions .40 .60
 @headitem Item @tab Limit
 @item Characters in a character class @tab 2^(number of bits per byte)
-@item Length of input record @tab @code{MAX_INT}
+@item Length of input record in bytes @tab @code{ULONG_MAX}
 @item Length of output record @tab Unlimited
 @item Length of source line @tab Unlimited
-@item Number of fields in a record @tab @code{MAX_LONG}
+@item Number of fields in a record @tab @code{ULONG_MAX}
 @item Number of file redirections @tab Unlimited
 @item Number of input records in one file @tab @code{MAX_LONG}
 @item Number of input records total @tab @code{MAX_LONG}
 @item Number of pipe redirections @tab min(number of processes per user, number of open files)
 @item Numeric values @tab Double-precision floating point (if not using MPFR)
-@item Size of a field @tab @code{MAX_INT}
-@item Size of a literal string @tab @code{MAX_INT}
-@item Size of a printf string @tab @code{MAX_INT}
+@item Size of a field in bytes @tab @code{ULONG_MAX}
+@item Size of a literal string in bytes @tab @code{ULONG_MAX}
+@item Size of a printf string in bytes @tab @code{ULONG_MAX}
 @end multitable
 
 @node Extension Design

@@ -3270,7 +3270,7 @@ get_src_buf()
 static char *
 tokexpand()
 {
-	static int toksize;
+	static size_t toksize;
 	int tokoffset;
 
 	if (tokstart != NULL) {
