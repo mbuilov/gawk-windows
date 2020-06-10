@@ -3997,6 +3997,9 @@ do_bindtextdomain(int nargs)
 		DEREF(t2);
 	}
 
+	if (the_result == NULL)
+		the_result = "";
+
 	return make_string(the_result, strlen(the_result));
 }
 

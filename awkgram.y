@@ -167,7 +167,7 @@ const char awk_namespace[] = "awk";
 const char *current_namespace = awk_namespace;
 bool namespace_changed = false;
 
-static INSTRUCTION *rule_block[sizeof(ruletab)];
+static INSTRUCTION *rule_block[sizeof(ruletab)/sizeof(ruletab[0])];
 
 static INSTRUCTION *ip_rec;
 static INSTRUCTION *ip_newfile;
@@ -2779,7 +2779,7 @@ parse_program(INSTRUCTION **pcode, bool from_eval)
 	lexeof = false;
 	lexptr = NULL;
 	lasttok = 0;
-	memset(rule_block, 0, sizeof(ruletab) * sizeof(INSTRUCTION *));
+	memset(rule_block, 0, sizeof(rule_block));
 	errcount = 0;
 	tok = tokstart != NULL ? tokstart : tokexpand();
 
@@ -3460,7 +3460,7 @@ get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 					sourceline++;
 					tokadd(c);
 				}
-			} while (isspace(c) && c != END_FILE);
+			} while (c != END_FILE && isspace(c));
 			if (c == END_FILE)
 				break;
 			else if (c != '#') {

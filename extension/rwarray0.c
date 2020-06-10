@@ -425,7 +425,7 @@ read_value(int fd, awk_value_t *value)
 	if (code == 2) {
 		awk_array_t array = create_array();
 
-		if (read_array(fd, array) != 0)
+		if (! read_array(fd, array))
 			return awk_false;
 
 		/* hook into value */

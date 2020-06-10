@@ -144,6 +144,7 @@ get_inode(struct dirent *entry, const char *dirname)
 #ifdef __MINGW32__
 	char fname[PATH_MAX];
 	HANDLE fh;
+	BOOL ok;
 	BY_HANDLE_FILE_INFORMATION info;
 
 	sprintf(fname, "%s\\%s", dirname, entry->d_name);
@@ -151,7 +152,9 @@ get_inode(struct dirent *entry, const char *dirname)
 			FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	if (fh == INVALID_HANDLE_VALUE)
 		return 0;
-	if (GetFileInformationByHandle(fh, &info)) {
+	ok = GetFileInformationByHandle(fh, &info);
+	CloseHandle(fh);
+	if (ok) {
 		long long inode = info.nFileIndexHigh;
 
 		inode <<= 32;

@@ -304,6 +304,7 @@ r_dupnode(NODE *n)
 	assert(n->type == Node_val);
 
 #ifdef GAWKDEBUG
+	/* Do the same as in awk.h:dupnode().  */
 	if ((n->flags & MALLOC) != 0) {
 		n->valref++;
 		return n;
@@ -496,20 +497,14 @@ void
 r_unref(NODE *tmp)
 {
 #ifdef GAWKDEBUG
-	if (tmp == NULL)
+	/* Do the same as in awk.h:unref().  */
+	assert(tmp == NULL || tmp->valref > 0);
+	if (tmp == NULL || --tmp->valref > 0)
 		return;
-	if ((tmp->flags & MALLOC) != 0) {
-		if (tmp->valref > 1) {
-			tmp->valref--;
-			return;
-		}
-		if ((tmp->flags & STRCUR) != 0)
-			efree(tmp->stptr);
-	}
-#else
+#endif
+
 	if ((tmp->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(tmp->stptr);
-#endif
 
 	mpfr_unset(tmp);
 
@@ -615,7 +610,7 @@ parse_escape(const char **string_ptr)
 		start = *string_ptr;
 		for (i = j = 0; j < 2; j++) {
 			/* do outside test to avoid multiple side effects */
-			c = *(*string_ptr)++;
+			c = (unsigned char) *(*string_ptr)++;
 			if (isxdigit(c)) {
 				i *= 16;
 				if (isdigit(c))
@@ -629,8 +624,8 @@ parse_escape(const char **string_ptr)
 				break;
 			}
 		}
-		if (do_lint && j > 2)
-			lintwarn(_("hex escape \\x%.*s of %d characters probably not interpreted the way you expect"), j, start, j);
+		if (do_lint && j == 2 && isxdigit((unsigned char)*(*string_ptr)))
+			lintwarn(_("hex escape \\x%.*s of %d characters probably not interpreted the way you expect"), 3, start, 3);
 		return i;
 	case '\\':
 	case '"':
@@ -1018,7 +1013,7 @@ void init_btowc_cache()
 {
 	int i;
 
-	for (i = 0; i < 255; i++) {
+	for (i = 0; i <= 255; i++) {
 		btowc_cache[i] = btowc(i);
 	}
 }

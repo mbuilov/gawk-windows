@@ -1267,8 +1267,11 @@ static inline void
 DEREF(NODE *r)
 {
 	assert(r->valref > 0);
-	if (--r->valref == 0)
-		r_unref(r);
+#ifndef GAWKDEBUG
+	if (--r->valref > 0)
+		return;
+#endif
+	r_unref(r);
 }
 
 #define POP_NUMBER() force_number(POP_SCALAR())
@@ -1926,6 +1929,7 @@ force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
 static inline void
 unref(NODE *r)
 {
+	assert(r == NULL || r->valref > 0);
 	if (r != NULL && --r->valref <= 0)
 		r_unref(r);
 }

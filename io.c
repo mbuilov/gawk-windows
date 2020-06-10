@@ -2681,8 +2681,8 @@ gawk_popen(const char *cmd, struct redirect *rp)
 		close(p[0]);
 		fatal(_("close of pipe failed: %s"), strerror(errno));
 	}
-#endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
+#endif
 	if ((BINMODE & BINMODE_INPUT) != 0)
 		os_setbinmode(p[0], O_BINARY);
 	rp->iop = iop_alloc(p[0], cmd, 0);

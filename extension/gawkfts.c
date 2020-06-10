@@ -228,7 +228,7 @@ fts_open(char * const *argv, int options,
 	 * so that everything about the "current" node is ignored.
 	 */
 	if ((sp->fts_cur = fts_alloc(sp, "", 0)) == NULL)
-		goto mem3;
+		goto mem4;
 	sp->fts_cur->fts_link = root;
 	sp->fts_cur->fts_info = FTS_INIT;
 
@@ -252,6 +252,8 @@ fts_open(char * const *argv, int options,
 
 	return (sp);
 
+mem4:   if (sp->fts_array != NULL)
+		free(sp->fts_array);
 mem3:	fts_lfree(root);
 	fts_free(parent);
 mem2:	free(sp->fts_path);
@@ -916,6 +918,7 @@ mem1:				saved_errno = errno;
 	    (cur->fts_level == FTS_ROOTLEVEL ?
 	    FCHDIR(sp, sp->fts_rfd) :
 	    fts_safe_changedir(sp, cur->fts_parent, -1, ".."))) {
+		fts_lfree(head);
 		cur->fts_info = FTS_ERR;
 		SET(FTS_STOP);
 		return (NULL);

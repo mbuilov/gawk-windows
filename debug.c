@@ -2403,9 +2403,11 @@ func:
 		if ((b = set_breakpoint_at(rp, rp->source_line, false)) == NULL)
 			fprintf(out_fp, _("cannot set breakpoint in function `%s'\n"),
 						func->vname);
-		else if (temporary)
-			b->flags |= BP_TEMP;
-		lineno = b->bpi->source_line;
+		else {
+			if (temporary)
+				b->flags |= BP_TEMP;
+			lineno = b->bpi->source_line;
+		}
 		break;
 
 	default:
@@ -4605,10 +4607,10 @@ enlarge_buffer:
 			}
 
 			if (nchar > 0) {	/* non-empty commands list */
-				nchar += (strlen("commands ") + 20 + strlen("end") + 1); /* 20 for cnum (an int) */
-				if (nchar > buflen - bl) {
-					buflen = bl + nchar;
-					erealloc(buf, char *, buflen + 3, "serialize_list");
+				nchar += (strlen("commands ") + 20/*cnum*/ + 1/*CSEP*/ + strlen("end") + 1/*FSEP*/);
+				if (nchar >= buflen - bl) {
+					buflen = bl + nchar + 1/*RSEP*/;
+					erealloc(buf, char *, buflen + 1, "serialize_list");
 				}
 				nchar = sprintf(buf + bl, "commands %d", cnum);
 				bl += nchar;
@@ -4634,8 +4636,8 @@ enlarge_buffer:
 				nchar = strlen("end");	/* end of 'commands' */
 				memcpy(buf + bl, "end", nchar);
 				bl += nchar;
+				buf[bl++] = FSEP;		/* field */
 			}
-			buf[bl++] = FSEP;		/* field */
 			buf[bl++] = RSEP;		/* record */
 			buf[bl] = '\0';
 
@@ -4643,9 +4645,9 @@ enlarge_buffer:
 			if (cndn->expr) {
 				bl--;	/* undo RSEP from above */
 				nchar = strlen(cndn->expr);
-				if (nchar > buflen - bl) {
-					buflen = bl + nchar;
-					erealloc(buf, char *, buflen + 3, "serialize_list");
+				if (nchar + 1/*FSEP*/ >= buflen - bl) {
+					buflen = bl + nchar + 1/*FSEP*/ + 1/*RSEP*/;
+					erealloc(buf, char *, buflen + 1, "serialize_list");
 				}
 				memcpy(buf + bl, cndn->expr, nchar);
 				bl += nchar;
