@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.6.  */
+/* A Bison parser, made by GNU Bison 3.6.3.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -49,7 +49,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.6"
+#define YYBISON_VERSION "3.6.3"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -2382,7 +2382,7 @@ yyerrorlab:
 yyerrlab1:
   yyerrstatus = 3;      /* Each real token shifted decrements this.  */
 
-  // Pop stack until we find a state that shifts the error token.
+  /* Pop stack until we find a state that shifts the error token.  */
   for (;;)
     {
       yyn = yypact[yystate];

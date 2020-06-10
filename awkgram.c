@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.5.1.  */
+/* A Bison parser, made by GNU Bison 3.6.3.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -34,6 +34,10 @@
 /* C LALR(1) parser skeleton written by Richard Stallman, by
    simplifying the original so-called "semantic" parser.  */
 
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
 /* All symbols defined below should begin with yy or YY, to avoid
    infringing on user name space.  This should be done even for local
    variables, as they might otherwise be expanded by user macros.
@@ -41,14 +45,11 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
-
 /* Identify Bison output.  */
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.5.1"
+#define YYBISON_VERSION "3.6.3"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -231,7 +232,7 @@ extern double fmod(double x, double y);
 
 #define YYSTYPE INSTRUCTION *
 
-#line 235 "awkgram.c"
+#line 236 "awkgram.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -254,14 +255,6 @@ extern double fmod(double x, double y);
 #  endif
 # endif
 
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
 
 /* Debug traces.  */
 #ifndef YYDEBUG
@@ -271,67 +264,75 @@ extern double fmod(double x, double y);
 extern int yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    FUNC_CALL = 258,
-    NAME = 259,
-    REGEXP = 260,
-    FILENAME = 261,
-    YNUMBER = 262,
-    YSTRING = 263,
-    TYPED_REGEXP = 264,
-    RELOP = 265,
-    IO_OUT = 266,
-    IO_IN = 267,
-    ASSIGNOP = 268,
-    ASSIGN = 269,
-    MATCHOP = 270,
-    CONCAT_OP = 271,
-    SUBSCRIPT = 272,
-    LEX_BEGIN = 273,
-    LEX_END = 274,
-    LEX_IF = 275,
-    LEX_ELSE = 276,
-    LEX_RETURN = 277,
-    LEX_DELETE = 278,
-    LEX_SWITCH = 279,
-    LEX_CASE = 280,
-    LEX_DEFAULT = 281,
-    LEX_WHILE = 282,
-    LEX_DO = 283,
-    LEX_FOR = 284,
-    LEX_BREAK = 285,
-    LEX_CONTINUE = 286,
-    LEX_PRINT = 287,
-    LEX_PRINTF = 288,
-    LEX_NEXT = 289,
-    LEX_EXIT = 290,
-    LEX_FUNCTION = 291,
-    LEX_BEGINFILE = 292,
-    LEX_ENDFILE = 293,
-    LEX_GETLINE = 294,
-    LEX_NEXTFILE = 295,
-    LEX_IN = 296,
-    LEX_AND = 297,
-    LEX_OR = 298,
-    INCREMENT = 299,
-    DECREMENT = 300,
-    LEX_BUILTIN = 301,
-    LEX_LENGTH = 302,
-    LEX_EOF = 303,
-    LEX_INCLUDE = 304,
-    LEX_EVAL = 305,
-    LEX_LOAD = 306,
-    LEX_NAMESPACE = 307,
-    NEWLINE = 308,
-    SLASH_BEFORE_EQUAL = 309,
-    UNARY = 310
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    FUNC_CALL = 258,               /* FUNC_CALL  */
+    NAME = 259,                    /* NAME  */
+    REGEXP = 260,                  /* REGEXP  */
+    FILENAME = 261,                /* FILENAME  */
+    YNUMBER = 262,                 /* YNUMBER  */
+    YSTRING = 263,                 /* YSTRING  */
+    TYPED_REGEXP = 264,            /* TYPED_REGEXP  */
+    RELOP = 265,                   /* RELOP  */
+    IO_OUT = 266,                  /* IO_OUT  */
+    IO_IN = 267,                   /* IO_IN  */
+    ASSIGNOP = 268,                /* ASSIGNOP  */
+    ASSIGN = 269,                  /* ASSIGN  */
+    MATCHOP = 270,                 /* MATCHOP  */
+    CONCAT_OP = 271,               /* CONCAT_OP  */
+    SUBSCRIPT = 272,               /* SUBSCRIPT  */
+    LEX_BEGIN = 273,               /* LEX_BEGIN  */
+    LEX_END = 274,                 /* LEX_END  */
+    LEX_IF = 275,                  /* LEX_IF  */
+    LEX_ELSE = 276,                /* LEX_ELSE  */
+    LEX_RETURN = 277,              /* LEX_RETURN  */
+    LEX_DELETE = 278,              /* LEX_DELETE  */
+    LEX_SWITCH = 279,              /* LEX_SWITCH  */
+    LEX_CASE = 280,                /* LEX_CASE  */
+    LEX_DEFAULT = 281,             /* LEX_DEFAULT  */
+    LEX_WHILE = 282,               /* LEX_WHILE  */
+    LEX_DO = 283,                  /* LEX_DO  */
+    LEX_FOR = 284,                 /* LEX_FOR  */
+    LEX_BREAK = 285,               /* LEX_BREAK  */
+    LEX_CONTINUE = 286,            /* LEX_CONTINUE  */
+    LEX_PRINT = 287,               /* LEX_PRINT  */
+    LEX_PRINTF = 288,              /* LEX_PRINTF  */
+    LEX_NEXT = 289,                /* LEX_NEXT  */
+    LEX_EXIT = 290,                /* LEX_EXIT  */
+    LEX_FUNCTION = 291,            /* LEX_FUNCTION  */
+    LEX_BEGINFILE = 292,           /* LEX_BEGINFILE  */
+    LEX_ENDFILE = 293,             /* LEX_ENDFILE  */
+    LEX_GETLINE = 294,             /* LEX_GETLINE  */
+    LEX_NEXTFILE = 295,            /* LEX_NEXTFILE  */
+    LEX_IN = 296,                  /* LEX_IN  */
+    LEX_AND = 297,                 /* LEX_AND  */
+    LEX_OR = 298,                  /* LEX_OR  */
+    INCREMENT = 299,               /* INCREMENT  */
+    DECREMENT = 300,               /* DECREMENT  */
+    LEX_BUILTIN = 301,             /* LEX_BUILTIN  */
+    LEX_LENGTH = 302,              /* LEX_LENGTH  */
+    LEX_EOF = 303,                 /* LEX_EOF  */
+    LEX_INCLUDE = 304,             /* LEX_INCLUDE  */
+    LEX_EVAL = 305,                /* LEX_EVAL  */
+    LEX_LOAD = 306,                /* LEX_LOAD  */
+    LEX_NAMESPACE = 307,           /* LEX_NAMESPACE  */
+    NEWLINE = 308,                 /* NEWLINE  */
+    SLASH_BEFORE_EQUAL = 309,      /* SLASH_BEFORE_EQUAL  */
+    UNARY = 310                    /* UNARY  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Tokens.  */
+/* Token kinds.  */
+#define YYEOF 0
+#define YYerror 256
+#define YYUNDEF 257
 #define FUNC_CALL 258
 #define NAME 259
 #define REGEXP 260
@@ -398,6 +399,162 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
+
+/* Symbol kind.  */
+enum yysymbol_kind_t
+{
+  YYSYMBOL_YYEMPTY = -2,
+  YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
+  YYSYMBOL_YYerror = 1,                    /* error  */
+  YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
+  YYSYMBOL_FUNC_CALL = 3,                  /* FUNC_CALL  */
+  YYSYMBOL_NAME = 4,                       /* NAME  */
+  YYSYMBOL_REGEXP = 5,                     /* REGEXP  */
+  YYSYMBOL_FILENAME = 6,                   /* FILENAME  */
+  YYSYMBOL_YNUMBER = 7,                    /* YNUMBER  */
+  YYSYMBOL_YSTRING = 8,                    /* YSTRING  */
+  YYSYMBOL_TYPED_REGEXP = 9,               /* TYPED_REGEXP  */
+  YYSYMBOL_RELOP = 10,                     /* RELOP  */
+  YYSYMBOL_IO_OUT = 11,                    /* IO_OUT  */
+  YYSYMBOL_IO_IN = 12,                     /* IO_IN  */
+  YYSYMBOL_ASSIGNOP = 13,                  /* ASSIGNOP  */
+  YYSYMBOL_ASSIGN = 14,                    /* ASSIGN  */
+  YYSYMBOL_MATCHOP = 15,                   /* MATCHOP  */
+  YYSYMBOL_CONCAT_OP = 16,                 /* CONCAT_OP  */
+  YYSYMBOL_SUBSCRIPT = 17,                 /* SUBSCRIPT  */
+  YYSYMBOL_LEX_BEGIN = 18,                 /* LEX_BEGIN  */
+  YYSYMBOL_LEX_END = 19,                   /* LEX_END  */
+  YYSYMBOL_LEX_IF = 20,                    /* LEX_IF  */
+  YYSYMBOL_LEX_ELSE = 21,                  /* LEX_ELSE  */
+  YYSYMBOL_LEX_RETURN = 22,                /* LEX_RETURN  */
+  YYSYMBOL_LEX_DELETE = 23,                /* LEX_DELETE  */
+  YYSYMBOL_LEX_SWITCH = 24,                /* LEX_SWITCH  */
+  YYSYMBOL_LEX_CASE = 25,                  /* LEX_CASE  */
+  YYSYMBOL_LEX_DEFAULT = 26,               /* LEX_DEFAULT  */
+  YYSYMBOL_LEX_WHILE = 27,                 /* LEX_WHILE  */
+  YYSYMBOL_LEX_DO = 28,                    /* LEX_DO  */
+  YYSYMBOL_LEX_FOR = 29,                   /* LEX_FOR  */
+  YYSYMBOL_LEX_BREAK = 30,                 /* LEX_BREAK  */
+  YYSYMBOL_LEX_CONTINUE = 31,              /* LEX_CONTINUE  */
+  YYSYMBOL_LEX_PRINT = 32,                 /* LEX_PRINT  */
+  YYSYMBOL_LEX_PRINTF = 33,                /* LEX_PRINTF  */
+  YYSYMBOL_LEX_NEXT = 34,                  /* LEX_NEXT  */
+  YYSYMBOL_LEX_EXIT = 35,                  /* LEX_EXIT  */
+  YYSYMBOL_LEX_FUNCTION = 36,              /* LEX_FUNCTION  */
+  YYSYMBOL_LEX_BEGINFILE = 37,             /* LEX_BEGINFILE  */
+  YYSYMBOL_LEX_ENDFILE = 38,               /* LEX_ENDFILE  */
+  YYSYMBOL_LEX_GETLINE = 39,               /* LEX_GETLINE  */
+  YYSYMBOL_LEX_NEXTFILE = 40,              /* LEX_NEXTFILE  */
+  YYSYMBOL_LEX_IN = 41,                    /* LEX_IN  */
+  YYSYMBOL_LEX_AND = 42,                   /* LEX_AND  */
+  YYSYMBOL_LEX_OR = 43,                    /* LEX_OR  */
+  YYSYMBOL_INCREMENT = 44,                 /* INCREMENT  */
+  YYSYMBOL_DECREMENT = 45,                 /* DECREMENT  */
+  YYSYMBOL_LEX_BUILTIN = 46,               /* LEX_BUILTIN  */
+  YYSYMBOL_LEX_LENGTH = 47,                /* LEX_LENGTH  */
+  YYSYMBOL_LEX_EOF = 48,                   /* LEX_EOF  */
+  YYSYMBOL_LEX_INCLUDE = 49,               /* LEX_INCLUDE  */
+  YYSYMBOL_LEX_EVAL = 50,                  /* LEX_EVAL  */
+  YYSYMBOL_LEX_LOAD = 51,                  /* LEX_LOAD  */
+  YYSYMBOL_LEX_NAMESPACE = 52,             /* LEX_NAMESPACE  */
+  YYSYMBOL_NEWLINE = 53,                   /* NEWLINE  */
+  YYSYMBOL_SLASH_BEFORE_EQUAL = 54,        /* SLASH_BEFORE_EQUAL  */
+  YYSYMBOL_55_ = 55,                       /* '?'  */
+  YYSYMBOL_56_ = 56,                       /* ':'  */
+  YYSYMBOL_57_ = 57,                       /* ','  */
+  YYSYMBOL_58_ = 58,                       /* '<'  */
+  YYSYMBOL_59_ = 59,                       /* '>'  */
+  YYSYMBOL_60_ = 60,                       /* '+'  */
+  YYSYMBOL_61_ = 61,                       /* '-'  */
+  YYSYMBOL_62_ = 62,                       /* '*'  */
+  YYSYMBOL_63_ = 63,                       /* '/'  */
+  YYSYMBOL_64_ = 64,                       /* '%'  */
+  YYSYMBOL_65_ = 65,                       /* '!'  */
+  YYSYMBOL_UNARY = 66,                     /* UNARY  */
+  YYSYMBOL_67_ = 67,                       /* '^'  */
+  YYSYMBOL_68_ = 68,                       /* '$'  */
+  YYSYMBOL_69_ = 69,                       /* '('  */
+  YYSYMBOL_70_ = 70,                       /* ')'  */
+  YYSYMBOL_71_ = 71,                       /* '@'  */
+  YYSYMBOL_72_ = 72,                       /* '['  */
+  YYSYMBOL_73_ = 73,                       /* ']'  */
+  YYSYMBOL_74_ = 74,                       /* '{'  */
+  YYSYMBOL_75_ = 75,                       /* '}'  */
+  YYSYMBOL_76_ = 76,                       /* ';'  */
+  YYSYMBOL_YYACCEPT = 77,                  /* $accept  */
+  YYSYMBOL_program = 78,                   /* program  */
+  YYSYMBOL_rule = 79,                      /* rule  */
+  YYSYMBOL_source = 80,                    /* source  */
+  YYSYMBOL_library = 81,                   /* library  */
+  YYSYMBOL_namespace = 82,                 /* namespace  */
+  YYSYMBOL_pattern = 83,                   /* pattern  */
+  YYSYMBOL_action = 84,                    /* action  */
+  YYSYMBOL_func_name = 85,                 /* func_name  */
+  YYSYMBOL_lex_builtin = 86,               /* lex_builtin  */
+  YYSYMBOL_function_prologue = 87,         /* function_prologue  */
+  YYSYMBOL_88_1 = 88,                      /* $@1  */
+  YYSYMBOL_regexp = 89,                    /* regexp  */
+  YYSYMBOL_90_2 = 90,                      /* $@2  */
+  YYSYMBOL_typed_regexp = 91,              /* typed_regexp  */
+  YYSYMBOL_a_slash = 92,                   /* a_slash  */
+  YYSYMBOL_statements = 93,                /* statements  */
+  YYSYMBOL_statement_term = 94,            /* statement_term  */
+  YYSYMBOL_statement = 95,                 /* statement  */
+  YYSYMBOL_non_compound_stmt = 96,         /* non_compound_stmt  */
+  YYSYMBOL_97_3 = 97,                      /* $@3  */
+  YYSYMBOL_simple_stmt = 98,               /* simple_stmt  */
+  YYSYMBOL_99_4 = 99,                      /* $@4  */
+  YYSYMBOL_100_5 = 100,                    /* $@5  */
+  YYSYMBOL_opt_simple_stmt = 101,          /* opt_simple_stmt  */
+  YYSYMBOL_case_statements = 102,          /* case_statements  */
+  YYSYMBOL_case_statement = 103,           /* case_statement  */
+  YYSYMBOL_case_value = 104,               /* case_value  */
+  YYSYMBOL_print = 105,                    /* print  */
+  YYSYMBOL_print_expression_list = 106,    /* print_expression_list  */
+  YYSYMBOL_output_redir = 107,             /* output_redir  */
+  YYSYMBOL_108_6 = 108,                    /* $@6  */
+  YYSYMBOL_if_statement = 109,             /* if_statement  */
+  YYSYMBOL_nls = 110,                      /* nls  */
+  YYSYMBOL_opt_nls = 111,                  /* opt_nls  */
+  YYSYMBOL_input_redir = 112,              /* input_redir  */
+  YYSYMBOL_opt_param_list = 113,           /* opt_param_list  */
+  YYSYMBOL_param_list = 114,               /* param_list  */
+  YYSYMBOL_opt_exp = 115,                  /* opt_exp  */
+  YYSYMBOL_opt_expression_list = 116,      /* opt_expression_list  */
+  YYSYMBOL_expression_list = 117,          /* expression_list  */
+  YYSYMBOL_opt_fcall_expression_list = 118, /* opt_fcall_expression_list  */
+  YYSYMBOL_fcall_expression_list = 119,    /* fcall_expression_list  */
+  YYSYMBOL_fcall_exp = 120,                /* fcall_exp  */
+  YYSYMBOL_opt_fcall_exp = 121,            /* opt_fcall_exp  */
+  YYSYMBOL_exp = 122,                      /* exp  */
+  YYSYMBOL_assign_operator = 123,          /* assign_operator  */
+  YYSYMBOL_relop_or_less = 124,            /* relop_or_less  */
+  YYSYMBOL_a_relop = 125,                  /* a_relop  */
+  YYSYMBOL_common_exp = 126,               /* common_exp  */
+  YYSYMBOL_simp_exp = 127,                 /* simp_exp  */
+  YYSYMBOL_simp_exp_nc = 128,              /* simp_exp_nc  */
+  YYSYMBOL_non_post_simp_exp = 129,        /* non_post_simp_exp  */
+  YYSYMBOL_func_call = 130,                /* func_call  */
+  YYSYMBOL_direct_func_call = 131,         /* direct_func_call  */
+  YYSYMBOL_opt_variable = 132,             /* opt_variable  */
+  YYSYMBOL_delete_subscript_list = 133,    /* delete_subscript_list  */
+  YYSYMBOL_delete_subscript = 134,         /* delete_subscript  */
+  YYSYMBOL_delete_exp_list = 135,          /* delete_exp_list  */
+  YYSYMBOL_bracketed_exp_list = 136,       /* bracketed_exp_list  */
+  YYSYMBOL_subscript = 137,                /* subscript  */
+  YYSYMBOL_subscript_list = 138,           /* subscript_list  */
+  YYSYMBOL_simple_variable = 139,          /* simple_variable  */
+  YYSYMBOL_variable = 140,                 /* variable  */
+  YYSYMBOL_opt_incdec = 141,               /* opt_incdec  */
+  YYSYMBOL_l_brace = 142,                  /* l_brace  */
+  YYSYMBOL_r_brace = 143,                  /* r_brace  */
+  YYSYMBOL_r_paren = 144,                  /* r_paren  */
+  YYSYMBOL_opt_semi = 145,                 /* opt_semi  */
+  YYSYMBOL_semi = 146,                     /* semi  */
+  YYSYMBOL_colon = 147,                    /* colon  */
+  YYSYMBOL_comma = 148                     /* comma  */
+};
+typedef enum yysymbol_kind_t yysymbol_kind_t;
 
 
 
@@ -498,6 +655,7 @@ typedef int yytype_uint16;
 
 #define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
 
+
 /* Stored state numbers (used for stacks). */
 typedef yytype_int16 yy_state_t;
 
@@ -515,6 +673,7 @@ typedef int yy_state_fast_t;
 #  define YY_(Msgid) Msgid
 # endif
 #endif
+
 
 #ifndef YY_ATTRIBUTE_PURE
 # if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
@@ -573,7 +732,7 @@ typedef int yy_state_fast_t;
 
 #define YY_ASSERT(E) ((void) (0 && (E)))
 
-#if ! defined yyoverflow || YYERROR_VERBOSE
+#if !defined yyoverflow
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -638,8 +797,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-#endif /* ! defined yyoverflow || YYERROR_VERBOSE */
-
+#endif /* !defined yyoverflow */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -715,14 +873,15 @@ union yyalloc
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  356
 
-#define YYUNDEFTOK  2
 #define YYMAXUTOK   310
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex, with out-of-bounds checking.  */
-#define YYTRANSLATE(YYX)                                                \
-  (0 <= (YYX) && (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+#define YYTRANSLATE(YYX)                                \
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK                     \
+   ? YY_CAST (yysymbol_kind_t, yytranslate[YYX])        \
+   : YYSYMBOL_YYUNDEF)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex.  */
@@ -790,26 +949,33 @@ static const yytype_int16 yyrline[] =
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+/** Accessing symbol of state STATE.  */
+#define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
+
+#if YYDEBUG || 0
+/* The user-facing name of the symbol whose (internal) number is
+   YYSYMBOL.  No bounds checking.  */
+static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
+
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "FUNC_CALL", "NAME", "REGEXP",
-  "FILENAME", "YNUMBER", "YSTRING", "TYPED_REGEXP", "RELOP", "IO_OUT",
-  "IO_IN", "ASSIGNOP", "ASSIGN", "MATCHOP", "CONCAT_OP", "SUBSCRIPT",
-  "LEX_BEGIN", "LEX_END", "LEX_IF", "LEX_ELSE", "LEX_RETURN", "LEX_DELETE",
-  "LEX_SWITCH", "LEX_CASE", "LEX_DEFAULT", "LEX_WHILE", "LEX_DO",
-  "LEX_FOR", "LEX_BREAK", "LEX_CONTINUE", "LEX_PRINT", "LEX_PRINTF",
-  "LEX_NEXT", "LEX_EXIT", "LEX_FUNCTION", "LEX_BEGINFILE", "LEX_ENDFILE",
-  "LEX_GETLINE", "LEX_NEXTFILE", "LEX_IN", "LEX_AND", "LEX_OR",
-  "INCREMENT", "DECREMENT", "LEX_BUILTIN", "LEX_LENGTH", "LEX_EOF",
-  "LEX_INCLUDE", "LEX_EVAL", "LEX_LOAD", "LEX_NAMESPACE", "NEWLINE",
-  "SLASH_BEFORE_EQUAL", "'?'", "':'", "','", "'<'", "'>'", "'+'", "'-'",
-  "'*'", "'/'", "'%'", "'!'", "UNARY", "'^'", "'$'", "'('", "')'", "'@'",
-  "'['", "']'", "'{'", "'}'", "';'", "$accept", "program", "rule",
-  "source", "library", "namespace", "pattern", "action", "func_name",
-  "lex_builtin", "function_prologue", "$@1", "regexp", "$@2",
+  "\"end of file\"", "error", "\"invalid token\"", "FUNC_CALL", "NAME",
+  "REGEXP", "FILENAME", "YNUMBER", "YSTRING", "TYPED_REGEXP", "RELOP",
+  "IO_OUT", "IO_IN", "ASSIGNOP", "ASSIGN", "MATCHOP", "CONCAT_OP",
+  "SUBSCRIPT", "LEX_BEGIN", "LEX_END", "LEX_IF", "LEX_ELSE", "LEX_RETURN",
+  "LEX_DELETE", "LEX_SWITCH", "LEX_CASE", "LEX_DEFAULT", "LEX_WHILE",
+  "LEX_DO", "LEX_FOR", "LEX_BREAK", "LEX_CONTINUE", "LEX_PRINT",
+  "LEX_PRINTF", "LEX_NEXT", "LEX_EXIT", "LEX_FUNCTION", "LEX_BEGINFILE",
+  "LEX_ENDFILE", "LEX_GETLINE", "LEX_NEXTFILE", "LEX_IN", "LEX_AND",
+  "LEX_OR", "INCREMENT", "DECREMENT", "LEX_BUILTIN", "LEX_LENGTH",
+  "LEX_EOF", "LEX_INCLUDE", "LEX_EVAL", "LEX_LOAD", "LEX_NAMESPACE",
+  "NEWLINE", "SLASH_BEFORE_EQUAL", "'?'", "':'", "','", "'<'", "'>'",
+  "'+'", "'-'", "'*'", "'/'", "'%'", "'!'", "UNARY", "'^'", "'$'", "'('",
+  "')'", "'@'", "'['", "']'", "'{'", "'}'", "';'", "$accept", "program",
+  "rule", "source", "library", "namespace", "pattern", "action",
+  "func_name", "lex_builtin", "function_prologue", "$@1", "regexp", "$@2",
   "typed_regexp", "a_slash", "statements", "statement_term", "statement",
   "non_compound_stmt", "$@3", "simple_stmt", "$@4", "$@5",
   "opt_simple_stmt", "case_statements", "case_statement", "case_value",
@@ -824,9 +990,15 @@ static const char *const yytname[] =
   "subscript_list", "simple_variable", "variable", "opt_incdec", "l_brace",
   "r_brace", "r_paren", "opt_semi", "semi", "colon", "comma", YY_NULLPTR
 };
+
+static const char *
+yysymbol_name (yysymbol_kind_t yysymbol)
+{
+  return yytname[yysymbol];
+}
 #endif
 
-# ifdef YYPRINT
+#ifdef YYPRINT
 /* YYTOKNUM[NUM] -- (External) token number corresponding to the
    (internal) symbol number NUM (which must be that of a token).  */
 static const yytype_int16 yytoknum[] =
@@ -840,7 +1012,7 @@ static const yytype_int16 yytoknum[] =
       43,    45,    42,    47,    37,    33,   310,    94,    36,    40,
       41,    64,    91,    93,   123,   125,    59
 };
-# endif
+#endif
 
 #define YYPACT_NINF (-276)
 
@@ -1311,10 +1483,10 @@ static const yytype_int8 yyr2[] =
 };
 
 
+enum { YYENOMEM = -2 };
+
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (yychar = YYEMPTY)
-#define YYEMPTY         (-2)
-#define YYEOF           0
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -1340,10 +1512,9 @@ static const yytype_int8 yyr2[] =
       }                                                           \
   while (0)
 
-/* Error token number */
-#define YYTERROR        1
-#define YYERRCODE       256
-
+/* Backward compatibility with an undocumented macro.
+   Use YYerror or YYUNDEF. */
+#define YYERRCODE YYUNDEF
 
 
 /* Enable debugging if requested.  */
@@ -1361,18 +1532,18 @@ do {                                            \
 } while (0)
 
 /* This macro is provided for backward compatibility. */
-#ifndef YY_LOCATION_PRINT
-# define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-#endif
+# ifndef YY_LOCATION_PRINT
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
 
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)                    \
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
 do {                                                                      \
   if (yydebug)                                                            \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Type, Value); \
+                  Kind, Value); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
@@ -1383,18 +1554,19 @@ do {                                                                      \
 `-----------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_value_print (FILE *yyo,
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
   YYUSE (yyoutput);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
-  if (yytype < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yytype], *yyvaluep);
+  if (yykind < YYNTOKENS)
+    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
 # endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yytype);
+  YYUSE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1404,12 +1576,13 @@ yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
 `---------------------------*/
 
 static void
-yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_print (FILE *yyo,
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   YYFPRINTF (yyo, "%s %s (",
-             yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
+             yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  yy_symbol_value_print (yyo, yytype, yyvaluep);
+  yy_symbol_value_print (yyo, yykind, yyvaluep);
   YYFPRINTF (yyo, ")");
 }
 
@@ -1442,7 +1615,8 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule)
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
+                 int yyrule)
 {
   int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
@@ -1454,9 +1628,8 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
-                       yystos[+yyssp[yyi + 1 - yynrhs]],
-                       &yyvsp[(yyi + 1) - (yynrhs)]
-                                              );
+                       YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
+                       &yyvsp[(yyi + 1) - (yynrhs)]);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -1471,8 +1644,8 @@ do {                                    \
    multiple parsers can coexist.  */
 int yydebug;
 #else /* !YYDEBUG */
-# define YYDPRINTF(Args)
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
+# define YYDPRINTF(Args) ((void) 0)
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -1495,256 +1668,27 @@ int yydebug;
 #endif
 
 
-#if YYERROR_VERBOSE
 
-# ifndef yystrlen
-#  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen(S) (YY_CAST (YYPTRDIFF_T, strlen (S)))
-#  else
-/* Return the length of YYSTR.  */
-static YYPTRDIFF_T
-yystrlen (const char *yystr)
-{
-  YYPTRDIFF_T yylen;
-  for (yylen = 0; yystr[yylen]; yylen++)
-    continue;
-  return yylen;
-}
-#  endif
-# endif
 
-# ifndef yystpcpy
-#  if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
-#   define yystpcpy stpcpy
-#  else
-/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
-   YYDEST.  */
-static char *
-yystpcpy (char *yydest, const char *yysrc)
-{
-  char *yyd = yydest;
-  const char *yys = yysrc;
 
-  while ((*yyd++ = *yys++) != '\0')
-    continue;
-
-  return yyd - 1;
-}
-#  endif
-# endif
-
-# ifndef yytnamerr
-/* Copy to YYRES the contents of YYSTR after stripping away unnecessary
-   quotes and backslashes, so that it's suitable for yyerror.  The
-   heuristic is that double-quoting is unnecessary unless the string
-   contains an apostrophe, a comma, or backslash (other than
-   backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
-   null, do not copy; instead, return the length of what the result
-   would have been.  */
-static YYPTRDIFF_T
-yytnamerr (char *yyres, const char *yystr)
-{
-  if (*yystr == '"')
-    {
-      YYPTRDIFF_T yyn = 0;
-      char const *yyp = yystr;
-
-      for (;;)
-        switch (*++yyp)
-          {
-          case '\'':
-          case ',':
-            goto do_not_strip_quotes;
-
-          case '\\':
-            if (*++yyp != '\\')
-              goto do_not_strip_quotes;
-            else
-              goto append;
-
-          append:
-          default:
-            if (yyres)
-              yyres[yyn] = *yyp;
-            yyn++;
-            break;
-
-          case '"':
-            if (yyres)
-              yyres[yyn] = '\0';
-            return yyn;
-          }
-    do_not_strip_quotes: ;
-    }
-
-  if (yyres)
-    return yystpcpy (yyres, yystr) - yyres;
-  else
-    return yystrlen (yystr);
-}
-# endif
-
-/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
-   about the unexpected token YYTOKEN for the state stack whose top is
-   YYSSP.
-
-   Return 0 if *YYMSG was successfully written.  Return 1 if *YYMSG is
-   not large enough to hold the message.  In that case, also set
-   *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
-   required number of bytes is too large to store.  */
-static int
-yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
-                yy_state_t *yyssp, int yytoken)
-{
-  enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
-  /* Internationalized format string. */
-  const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat: reported tokens (one for the "unexpected",
-     one per "expected"). */
-  char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Actual size of YYARG. */
-  int yycount = 0;
-  /* Cumulated lengths of YYARG.  */
-  YYPTRDIFF_T yysize = 0;
-
-  /* There are many possibilities here to consider:
-     - If this state is a consistent state with a default action, then
-       the only way this function was invoked is if the default action
-       is an error action.  In that case, don't check for expected
-       tokens because there are none.
-     - The only way there can be no lookahead present (in yychar) is if
-       this state is a consistent state with a default action.  Thus,
-       detecting the absence of a lookahead is sufficient to determine
-       that there is no unexpected or expected token to report.  In that
-       case, just report a simple "syntax error".
-     - Don't assume there isn't a lookahead just because this state is a
-       consistent state with a default action.  There might have been a
-       previous inconsistent state, consistent state with a non-default
-       action, or user semantic action that manipulated yychar.
-     - Of course, the expected token list depends on states to have
-       correct lookahead information, and it depends on the parser not
-       to perform extra reductions after fetching a lookahead from the
-       scanner and before detecting a syntax error.  Thus, state merging
-       (from LALR or IELR) and default reductions corrupt the expected
-       token list.  However, the list is correct for canonical LR with
-       one exception: it will still contain any token that will not be
-       accepted due to an error action in a later state.
-  */
-  if (yytoken != YYEMPTY)
-    {
-      int yyn = yypact[+*yyssp];
-      YYPTRDIFF_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-      yysize = yysize0;
-      yyarg[yycount++] = yytname[yytoken];
-      if (!yypact_value_is_default (yyn))
-        {
-          /* Start YYX at -YYN if negative to avoid negative indexes in
-             YYCHECK.  In other words, skip the first -YYN actions for
-             this state because they are default actions.  */
-          int yyxbegin = yyn < 0 ? -yyn : 0;
-          /* Stay within bounds of both yycheck and yytname.  */
-          int yychecklim = YYLAST - yyn + 1;
-          int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-          int yyx;
-
-          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR
-                && !yytable_value_is_error (yytable[yyx + yyn]))
-              {
-                if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                  {
-                    yycount = 1;
-                    yysize = yysize0;
-                    break;
-                  }
-                yyarg[yycount++] = yytname[yyx];
-                {
-                  YYPTRDIFF_T yysize1
-                    = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
-                    yysize = yysize1;
-                  else
-                    return 2;
-                }
-              }
-        }
-    }
-
-  switch (yycount)
-    {
-# define YYCASE_(N, S)                      \
-      case N:                               \
-        yyformat = S;                       \
-      break
-    default: /* Avoid compiler warnings. */
-      YYCASE_(0, YY_("syntax error"));
-      YYCASE_(1, YY_("syntax error, unexpected %s"));
-      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
-# undef YYCASE_
-    }
-
-  {
-    /* Don't count the "%s"s in the final size, but reserve room for
-       the terminator.  */
-    YYPTRDIFF_T yysize1 = yysize + (yystrlen (yyformat) - 2 * yycount) + 1;
-    if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
-      yysize = yysize1;
-    else
-      return 2;
-  }
-
-  if (*yymsg_alloc < yysize)
-    {
-      *yymsg_alloc = 2 * yysize;
-      if (! (yysize <= *yymsg_alloc
-             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
-        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
-      return 1;
-    }
-
-  /* Avoid sprintf, as that infringes on the user's name space.
-     Don't have undefined behavior even if the translation
-     produced a string with the wrong number of "%s"s.  */
-  {
-    char *yyp = *yymsg;
-    int yyi = 0;
-    while ((*yyp = *yyformat) != '\0')
-      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
-        {
-          yyp += yytnamerr (yyp, yyarg[yyi++]);
-          yyformat += 2;
-        }
-      else
-        {
-          ++yyp;
-          ++yyformat;
-        }
-  }
-  return 0;
-}
-#endif /* YYERROR_VERBOSE */
 
 /*-----------------------------------------------.
 | Release the memory associated to this symbol.  |
 `-----------------------------------------------*/
 
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg,
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
   YYUSE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
-  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
+  YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yytype);
+  YYUSE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
-
-
 
 
 /* The lookahead symbol.  */
@@ -1754,6 +1698,8 @@ int yychar;
 YYSTYPE yylval;
 /* Number of syntax errors so far.  */
 int yynerrs;
+
+
 
 
 /*----------.
@@ -1774,6 +1720,9 @@ yyparse (void)
        Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
 
+    /* Their size.  */
+    YYPTRDIFF_T yystacksize;
+
     /* The state stack.  */
     yy_state_t yyssa[YYINITDEPTH];
     yy_state_t *yyss;
@@ -1784,22 +1733,16 @@ yyparse (void)
     YYSTYPE *yyvs;
     YYSTYPE *yyvsp;
 
-    YYPTRDIFF_T yystacksize;
-
   int yyn;
+  /* The return value of yyparse.  */
   int yyresult;
   /* Lookahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  yysymbol_kind_t yytoken = YYSYMBOL_YYEMPTY;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
 
-#if YYERROR_VERBOSE
-  /* Buffer for error messages, and its allocated size.  */
-  char yymsgbuf[128];
-  char *yymsg = yymsgbuf;
-  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
-#endif
+
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
@@ -1807,15 +1750,17 @@ yyparse (void)
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
+  yynerrs = 0;
+  yystate = 0;
+  yyerrstatus = 0;
+
+  yystacksize = YYINITDEPTH;
   yyssp = yyss = yyssa;
   yyvsp = yyvs = yyvsa;
-  yystacksize = YYINITDEPTH;
+
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
-  yystate = 0;
-  yyerrstatus = 0;
-  yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
   goto yysetstate;
 
@@ -1838,6 +1783,7 @@ yysetstate:
   YY_IGNORE_USELESS_CAST_BEGIN
   *yyssp = YY_CAST (yy_state_t, yystate);
   YY_IGNORE_USELESS_CAST_END
+  YY_STACK_PRINT (yyss, yyssp);
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
@@ -1883,7 +1829,7 @@ yysetstate:
           goto yyexhaustedlab;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
-# undef YYSTACK_RELOCATE
+#  undef YYSTACK_RELOCATE
         if (yyss1 != yyssa)
           YYSTACK_FREE (yyss1);
       }
@@ -1922,17 +1868,28 @@ yybackup:
 
   /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either empty, or end-of-input, or a valid lookahead.  */
   if (yychar == YYEMPTY)
     {
-      YYDPRINTF ((stderr, "Reading a token: "));
+      YYDPRINTF ((stderr, "Reading a token\n"));
       yychar = yylex ();
     }
 
   if (yychar <= YYEOF)
     {
-      yychar = yytoken = YYEOF;
+      yychar = YYEOF;
+      yytoken = YYSYMBOL_YYEOF;
       YYDPRINTF ((stderr, "Now at end of input.\n"));
+    }
+  else if (yychar == YYerror)
+    {
+      /* The scanner already issued an error message, process directly
+         to error recovery.  But do not keep the error token as
+         lookahead, it is too special and may lead us to an endless
+         loop in error recovery. */
+      yychar = YYUNDEF;
+      yytoken = YYSYMBOL_YYerror;
+      goto yyerrlab1;
     }
   else
     {
@@ -2005,7 +1962,7 @@ yyreduce:
   case 2:
 #line 232 "awkgram.y"
           { yyval = NULL; }
-#line 2009 "awkgram.c"
+#line 1966 "awkgram.c"
     break;
 
   case 3:
@@ -2014,7 +1971,7 @@ yyreduce:
 		rule = 0;
 		yyerrok;
 	  }
-#line 2018 "awkgram.c"
+#line 1975 "awkgram.c"
     break;
 
   case 4:
@@ -2028,7 +1985,7 @@ yyreduce:
 		}
 		yyval = yyvsp[-1];
 	  }
-#line 2032 "awkgram.c"
+#line 1989 "awkgram.c"
     break;
 
   case 5:
@@ -2036,7 +1993,7 @@ yyreduce:
           {
 		next_sourcefile();
 	  }
-#line 2040 "awkgram.c"
+#line 1997 "awkgram.c"
     break;
 
   case 6:
@@ -2049,7 +2006,7 @@ yyreduce:
 		 */
   		/* yyerrok; */
 	  }
-#line 2053 "awkgram.c"
+#line 2010 "awkgram.c"
     break;
 
   case 7:
@@ -2061,7 +2018,7 @@ yyreduce:
 			pending_comment = NULL;
 		}
 	  }
-#line 2065 "awkgram.c"
+#line 2022 "awkgram.c"
     break;
 
   case 8:
@@ -2079,7 +2036,7 @@ yyreduce:
 			(void) append_rule(yyvsp[-1], NULL);
 		}
 	  }
-#line 2083 "awkgram.c"
+#line 2040 "awkgram.c"
     break;
 
   case 9:
@@ -2094,7 +2051,7 @@ yyreduce:
 		}
 		yyerrok;
 	  }
-#line 2098 "awkgram.c"
+#line 2055 "awkgram.c"
     break;
 
   case 10:
@@ -2108,7 +2065,7 @@ yyreduce:
 		}
 		yyerrok;
 	  }
-#line 2112 "awkgram.c"
+#line 2069 "awkgram.c"
     break;
 
   case 11:
@@ -2122,7 +2079,7 @@ yyreduce:
 		}
 		yyerrok;
 	  }
-#line 2126 "awkgram.c"
+#line 2083 "awkgram.c"
     break;
 
   case 12:
@@ -2136,7 +2093,7 @@ yyreduce:
 
 		yyerrok;
 	  }
-#line 2140 "awkgram.c"
+#line 2097 "awkgram.c"
     break;
 
   case 13:
@@ -2150,19 +2107,19 @@ yyreduce:
 		bcfree(yyvsp[0]);
 		yyval = (INSTRUCTION *) srcfile;
 	  }
-#line 2154 "awkgram.c"
+#line 2111 "awkgram.c"
     break;
 
   case 14:
 #line 341 "awkgram.y"
           { yyval = NULL; }
-#line 2160 "awkgram.c"
+#line 2117 "awkgram.c"
     break;
 
   case 15:
 #line 343 "awkgram.y"
           { yyval = NULL; }
-#line 2166 "awkgram.c"
+#line 2123 "awkgram.c"
     break;
 
   case 16:
@@ -2176,37 +2133,37 @@ yyreduce:
 		bcfree(yyvsp[0]);
 		yyval = (INSTRUCTION *) srcfile;
 	  }
-#line 2180 "awkgram.c"
+#line 2137 "awkgram.c"
     break;
 
   case 17:
 #line 358 "awkgram.y"
           { yyval = NULL; }
-#line 2186 "awkgram.c"
+#line 2143 "awkgram.c"
     break;
 
   case 18:
 #line 360 "awkgram.y"
           { yyval = NULL; }
-#line 2192 "awkgram.c"
+#line 2149 "awkgram.c"
     break;
 
   case 19:
 #line 365 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 2198 "awkgram.c"
+#line 2155 "awkgram.c"
     break;
 
   case 20:
 #line 367 "awkgram.y"
           { yyval = NULL; }
-#line 2204 "awkgram.c"
+#line 2161 "awkgram.c"
     break;
 
   case 21:
 #line 369 "awkgram.y"
           { yyval = NULL; }
-#line 2210 "awkgram.c"
+#line 2167 "awkgram.c"
     break;
 
   case 22:
@@ -2215,7 +2172,7 @@ yyreduce:
 		rule = Rule;
 		yyval = NULL;
 	  }
-#line 2219 "awkgram.c"
+#line 2176 "awkgram.c"
     break;
 
   case 23:
@@ -2223,7 +2180,7 @@ yyreduce:
           {
 		rule = Rule;
 	  }
-#line 2227 "awkgram.c"
+#line 2184 "awkgram.c"
     break;
 
   case 24:
@@ -2257,7 +2214,7 @@ yyreduce:
 			yyval = list_append(list_merge(yyvsp[-2], yyvsp[0]), tp);
 		rule = Rule;
 	  }
-#line 2261 "awkgram.c"
+#line 2218 "awkgram.c"
     break;
 
   case 25:
@@ -2273,7 +2230,7 @@ yyreduce:
 		yyvsp[0]->source_file = source;
 		yyval = yyvsp[0];
 	  }
-#line 2277 "awkgram.c"
+#line 2234 "awkgram.c"
     break;
 
   case 26:
@@ -2289,7 +2246,7 @@ yyreduce:
 		yyvsp[0]->source_file = source;
 		yyval = yyvsp[0];
 	  }
-#line 2293 "awkgram.c"
+#line 2250 "awkgram.c"
     break;
 
   case 27:
@@ -2299,7 +2256,7 @@ yyreduce:
 		yyvsp[0]->source_file = source;
 		yyval = yyvsp[0];
 	  }
-#line 2303 "awkgram.c"
+#line 2260 "awkgram.c"
     break;
 
   case 28:
@@ -2309,7 +2266,7 @@ yyreduce:
 		yyvsp[0]->source_file = source;
 		yyval = yyvsp[0];
 	  }
-#line 2313 "awkgram.c"
+#line 2270 "awkgram.c"
     break;
 
   case 29:
@@ -2328,7 +2285,7 @@ yyreduce:
 
 		yyval = ip;
 	  }
-#line 2332 "awkgram.c"
+#line 2289 "awkgram.c"
     break;
 
   case 31:
@@ -2343,7 +2300,7 @@ yyreduce:
 		}
 		yyval = yyvsp[0];
 	  }
-#line 2347 "awkgram.c"
+#line 2304 "awkgram.c"
     break;
 
   case 32:
@@ -2353,7 +2310,7 @@ yyreduce:
 					tokstart);
 		YYABORT;
 	  }
-#line 2357 "awkgram.c"
+#line 2314 "awkgram.c"
     break;
 
   case 33:
@@ -2362,13 +2319,13 @@ yyreduce:
 		yyval = yyvsp[0];
 		at_seen = false;
 	  }
-#line 2366 "awkgram.c"
+#line 2323 "awkgram.c"
     break;
 
   case 36:
 #line 501 "awkgram.y"
                                      { want_param_names = FUNC_HEADER; }
-#line 2372 "awkgram.c"
+#line 2329 "awkgram.c"
     break;
 
   case 37:
@@ -2398,13 +2355,13 @@ yyreduce:
 		yyval = yyvsp[-6];
 		want_param_names = FUNC_BODY;
 	  }
-#line 2402 "awkgram.c"
+#line 2359 "awkgram.c"
     break;
 
   case 38:
 #line 535 "awkgram.y"
                 { want_regexp = true; }
-#line 2408 "awkgram.c"
+#line 2365 "awkgram.c"
     break;
 
   case 39:
@@ -2437,7 +2394,7 @@ yyreduce:
 		  yyval->opcode = Op_match_rec;
 		  yyval->memory = n;
 		}
-#line 2441 "awkgram.c"
+#line 2398 "awkgram.c"
     break;
 
   case 40:
@@ -2454,19 +2411,19 @@ yyreduce:
 		  yyval->opcode = Op_push_re;
 		  yyval->memory = make_typed_regex(re, len);
 		}
-#line 2458 "awkgram.c"
+#line 2415 "awkgram.c"
     break;
 
   case 41:
 #line 584 "awkgram.y"
           { bcfree(yyvsp[0]); }
-#line 2464 "awkgram.c"
+#line 2421 "awkgram.c"
     break;
 
   case 43:
 #line 590 "awkgram.y"
           { yyval = NULL; }
-#line 2470 "awkgram.c"
+#line 2427 "awkgram.c"
     break;
 
   case 44:
@@ -2490,25 +2447,25 @@ yyreduce:
 
 		yyerrok;
 	  }
-#line 2494 "awkgram.c"
+#line 2451 "awkgram.c"
     break;
 
   case 45:
 #line 612 "awkgram.y"
           {	yyval = NULL; }
-#line 2500 "awkgram.c"
+#line 2457 "awkgram.c"
     break;
 
   case 46:
 #line 616 "awkgram.y"
                         { yyval = yyvsp[0]; }
-#line 2506 "awkgram.c"
+#line 2463 "awkgram.c"
     break;
 
   case 47:
 #line 617 "awkgram.y"
                         { yyval = yyvsp[0]; }
-#line 2512 "awkgram.c"
+#line 2469 "awkgram.c"
     break;
 
   case 48:
@@ -2523,7 +2480,7 @@ yyreduce:
 		} else
 			yyval = NULL;
 	  }
-#line 2527 "awkgram.c"
+#line 2484 "awkgram.c"
     break;
 
   case 49:
@@ -2532,7 +2489,7 @@ yyreduce:
 		trailing_comment = yyvsp[0];	// NULL or comment
 		yyval = make_braced_statements(yyvsp[-2], yyvsp[-1], yyvsp[0]);
 	  }
-#line 2536 "awkgram.c"
+#line 2493 "awkgram.c"
     break;
 
   case 50:
@@ -2543,7 +2500,7 @@ yyreduce:
 		else
 			yyval = yyvsp[0];
  	  }
-#line 2547 "awkgram.c"
+#line 2504 "awkgram.c"
     break;
 
   case 51:
@@ -2655,7 +2612,7 @@ yyreduce:
 		break_allowed--;
 		fix_break_continue(ip, tbreak, NULL);
 	  }
-#line 2659 "awkgram.c"
+#line 2616 "awkgram.c"
     break;
 
   case 52:
@@ -2710,7 +2667,7 @@ yyreduce:
 		continue_allowed--;
 		fix_break_continue(ip, tbreak, tcont);
 	  }
-#line 2714 "awkgram.c"
+#line 2671 "awkgram.c"
     break;
 
   case 53:
@@ -2764,7 +2721,7 @@ yyreduce:
 		/* else
 			$1 and $4 are NULLs */
 	  }
-#line 2768 "awkgram.c"
+#line 2725 "awkgram.c"
     break;
 
   case 54:
@@ -2894,7 +2851,7 @@ regular_loop:
 		break_allowed--;
 		continue_allowed--;
 	  }
-#line 2898 "awkgram.c"
+#line 2855 "awkgram.c"
     break;
 
   case 55:
@@ -2920,7 +2877,7 @@ regular_loop:
 		break_allowed--;
 		continue_allowed--;
 	  }
-#line 2924 "awkgram.c"
+#line 2881 "awkgram.c"
     break;
 
   case 56:
@@ -2945,7 +2902,7 @@ regular_loop:
 		break_allowed--;
 		continue_allowed--;
 	  }
-#line 2949 "awkgram.c"
+#line 2906 "awkgram.c"
     break;
 
   case 57:
@@ -2956,7 +2913,7 @@ regular_loop:
 		else
 			yyval = yyvsp[0];
 	  }
-#line 2960 "awkgram.c"
+#line 2917 "awkgram.c"
     break;
 
   case 58:
@@ -2970,7 +2927,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 2974 "awkgram.c"
+#line 2931 "awkgram.c"
     break;
 
   case 59:
@@ -2984,7 +2941,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 2988 "awkgram.c"
+#line 2945 "awkgram.c"
     break;
 
   case 60:
@@ -2999,7 +2956,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 3003 "awkgram.c"
+#line 2960 "awkgram.c"
     break;
 
   case 61:
@@ -3016,7 +2973,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 3020 "awkgram.c"
+#line 2977 "awkgram.c"
     break;
 
   case 62:
@@ -3037,7 +2994,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 3041 "awkgram.c"
+#line 2998 "awkgram.c"
     break;
 
   case 63:
@@ -3046,7 +3003,7 @@ regular_loop:
 		if (! in_function)
 			yyerror(_("`return' used outside function context"));
 	  }
-#line 3050 "awkgram.c"
+#line 3007 "awkgram.c"
     break;
 
   case 64:
@@ -3064,7 +3021,7 @@ regular_loop:
 		if (yyvsp[0] != NULL)
 			yyval = list_append(yyval, yyvsp[0]);
 	  }
-#line 3068 "awkgram.c"
+#line 3025 "awkgram.c"
     break;
 
   case 65:
@@ -3075,13 +3032,13 @@ regular_loop:
 		else
 			yyval = yyvsp[-1];
 	  }
-#line 3079 "awkgram.c"
+#line 3036 "awkgram.c"
     break;
 
   case 66:
 #line 1128 "awkgram.y"
                 { in_print = true; in_parens = 0; }
-#line 3085 "awkgram.c"
+#line 3042 "awkgram.c"
     break;
 
   case 67:
@@ -3186,13 +3143,13 @@ regular_print:
 			}
 		}
 	  }
-#line 3190 "awkgram.c"
+#line 3147 "awkgram.c"
     break;
 
   case 68:
 #line 1230 "awkgram.y"
                           { sub_counter = 0; }
-#line 3196 "awkgram.c"
+#line 3153 "awkgram.c"
     break;
 
   case 69:
@@ -3229,7 +3186,7 @@ regular_print:
 			yyval = list_append(list_append(yyvsp[0], yyvsp[-2]), yyvsp[-3]);
 		}
 	  }
-#line 3233 "awkgram.c"
+#line 3190 "awkgram.c"
     break;
 
   case 70:
@@ -3259,7 +3216,7 @@ regular_print:
 				fatal(_("`delete' is not allowed with FUNCTAB"));
 		}
 	  }
-#line 3263 "awkgram.c"
+#line 3220 "awkgram.c"
     break;
 
   case 71:
@@ -3267,25 +3224,25 @@ regular_print:
           {
 		yyval = optimize_assignment(yyvsp[0]);
 	  }
-#line 3271 "awkgram.c"
+#line 3228 "awkgram.c"
     break;
 
   case 72:
 #line 1301 "awkgram.y"
           { yyval = NULL; }
-#line 3277 "awkgram.c"
+#line 3234 "awkgram.c"
     break;
 
   case 73:
 #line 1303 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3283 "awkgram.c"
+#line 3240 "awkgram.c"
     break;
 
   case 74:
 #line 1308 "awkgram.y"
           { yyval = NULL; }
-#line 3289 "awkgram.c"
+#line 3246 "awkgram.c"
     break;
 
   case 75:
@@ -3296,13 +3253,13 @@ regular_print:
 		else
 			yyval = list_prepend(yyvsp[-1], yyvsp[0]);
 	  }
-#line 3300 "awkgram.c"
+#line 3257 "awkgram.c"
     break;
 
   case 76:
 #line 1317 "awkgram.y"
           { yyval = NULL; }
-#line 3306 "awkgram.c"
+#line 3263 "awkgram.c"
     break;
 
   case 77:
@@ -3319,7 +3276,7 @@ regular_print:
 		bcfree(yyvsp[-2]);
 		yyval = yyvsp[-4];
 	  }
-#line 3323 "awkgram.c"
+#line 3280 "awkgram.c"
     break;
 
   case 78:
@@ -3335,13 +3292,13 @@ regular_print:
 		yyvsp[-3]->comment = yyvsp[-1];
 		yyval = yyvsp[-3];
 	  }
-#line 3339 "awkgram.c"
+#line 3296 "awkgram.c"
     break;
 
   case 79:
 #line 1350 "awkgram.y"
           {	yyval = yyvsp[0]; }
-#line 3345 "awkgram.c"
+#line 3302 "awkgram.c"
     break;
 
   case 80:
@@ -3353,7 +3310,7 @@ regular_print:
 		bcfree(yyvsp[-1]);
 		yyval = yyvsp[0];
 	  }
-#line 3357 "awkgram.c"
+#line 3314 "awkgram.c"
     break;
 
   case 81:
@@ -3364,13 +3321,13 @@ regular_print:
 		add_sign_to_num(n, '+');
 		yyval = yyvsp[0];
 	  }
-#line 3368 "awkgram.c"
+#line 3325 "awkgram.c"
     break;
 
   case 82:
 #line 1367 "awkgram.y"
           {	yyval = yyvsp[0]; }
-#line 3374 "awkgram.c"
+#line 3331 "awkgram.c"
     break;
 
   case 83:
@@ -3382,7 +3339,7 @@ regular_print:
 			yyvsp[0]->opcode = Op_push;
 		yyval = yyvsp[0];
 	  }
-#line 3386 "awkgram.c"
+#line 3343 "awkgram.c"
     break;
 
   case 84:
@@ -3392,19 +3349,19 @@ regular_print:
 		yyvsp[0]->opcode = Op_push_re;
 		yyval = yyvsp[0];
 	  }
-#line 3396 "awkgram.c"
+#line 3353 "awkgram.c"
     break;
 
   case 85:
 #line 1386 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3402 "awkgram.c"
+#line 3359 "awkgram.c"
     break;
 
   case 86:
 #line 1388 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3408 "awkgram.c"
+#line 3365 "awkgram.c"
     break;
 
   case 88:
@@ -3412,7 +3369,7 @@ regular_print:
           {
 		yyval = yyvsp[-1];
 	  }
-#line 3416 "awkgram.c"
+#line 3373 "awkgram.c"
     break;
 
   case 89:
@@ -3422,13 +3379,13 @@ regular_print:
 		in_parens = 0;
 		yyval = NULL;
 	  }
-#line 3426 "awkgram.c"
+#line 3383 "awkgram.c"
     break;
 
   case 90:
 #line 1410 "awkgram.y"
                  { in_print = false; in_parens = 0; }
-#line 3432 "awkgram.c"
+#line 3389 "awkgram.c"
     break;
 
   case 91:
@@ -3442,7 +3399,7 @@ regular_print:
 			lintwarn(_("concatenation as I/O `>' redirection target is ambiguous"));
 		yyval = list_prepend(yyvsp[0], yyvsp[-2]);
 	  }
-#line 3446 "awkgram.c"
+#line 3403 "awkgram.c"
     break;
 
   case 92:
@@ -3453,7 +3410,7 @@ regular_print:
 		add_lint(yyvsp[-3], LINT_assign_in_cond);
 		yyval = mk_condition(yyvsp[-3], yyvsp[-5], yyvsp[0], NULL, NULL);
 	  }
-#line 3457 "awkgram.c"
+#line 3414 "awkgram.c"
     break;
 
   case 93:
@@ -3466,7 +3423,7 @@ regular_print:
 		add_lint(yyvsp[-6], LINT_assign_in_cond);
 		yyval = mk_condition(yyvsp[-6], yyvsp[-8], yyvsp[-3], yyvsp[-2], yyvsp[0]);
 	  }
-#line 3470 "awkgram.c"
+#line 3427 "awkgram.c"
     break;
 
   case 94:
@@ -3474,7 +3431,7 @@ regular_print:
           {
 		yyval = yyvsp[0];
 	  }
-#line 3478 "awkgram.c"
+#line 3435 "awkgram.c"
     break;
 
   case 95:
@@ -3496,25 +3453,25 @@ regular_print:
 		} else
 			yyval = NULL;
 	  }
-#line 3500 "awkgram.c"
+#line 3457 "awkgram.c"
     break;
 
   case 96:
 #line 1469 "awkgram.y"
           { yyval = NULL; }
-#line 3506 "awkgram.c"
+#line 3463 "awkgram.c"
     break;
 
   case 97:
 #line 1471 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3512 "awkgram.c"
+#line 3469 "awkgram.c"
     break;
 
   case 98:
 #line 1476 "awkgram.y"
           { yyval = NULL; }
-#line 3518 "awkgram.c"
+#line 3475 "awkgram.c"
     break;
 
   case 99:
@@ -3523,19 +3480,19 @@ regular_print:
 		bcfree(yyvsp[-1]);
 		yyval = yyvsp[0];
 	  }
-#line 3527 "awkgram.c"
+#line 3484 "awkgram.c"
     break;
 
   case 100:
 #line 1486 "awkgram.y"
           { yyval = NULL; }
-#line 3533 "awkgram.c"
+#line 3490 "awkgram.c"
     break;
 
   case 101:
 #line 1488 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3539 "awkgram.c"
+#line 3496 "awkgram.c"
     break;
 
   case 102:
@@ -3544,7 +3501,7 @@ regular_print:
 		yyvsp[0]->param_count = 0;
 		yyval = list_create(yyvsp[0]);
 	  }
-#line 3548 "awkgram.c"
+#line 3505 "awkgram.c"
     break;
 
   case 103:
@@ -3565,55 +3522,55 @@ regular_print:
 		} else
 			yyval = NULL;
 	  }
-#line 3569 "awkgram.c"
+#line 3526 "awkgram.c"
     break;
 
   case 104:
 #line 1515 "awkgram.y"
           { yyval = NULL; }
-#line 3575 "awkgram.c"
+#line 3532 "awkgram.c"
     break;
 
   case 105:
 #line 1517 "awkgram.y"
           { yyval = yyvsp[-1]; }
-#line 3581 "awkgram.c"
+#line 3538 "awkgram.c"
     break;
 
   case 106:
 #line 1519 "awkgram.y"
           { yyval = yyvsp[-2]; }
-#line 3587 "awkgram.c"
+#line 3544 "awkgram.c"
     break;
 
   case 107:
 #line 1525 "awkgram.y"
           { yyval = NULL; }
-#line 3593 "awkgram.c"
+#line 3550 "awkgram.c"
     break;
 
   case 108:
 #line 1527 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3599 "awkgram.c"
+#line 3556 "awkgram.c"
     break;
 
   case 109:
 #line 1532 "awkgram.y"
           { yyval = NULL; }
-#line 3605 "awkgram.c"
+#line 3562 "awkgram.c"
     break;
 
   case 110:
 #line 1534 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3611 "awkgram.c"
+#line 3568 "awkgram.c"
     break;
 
   case 111:
 #line 1539 "awkgram.y"
           {	yyval = mk_expression_list(NULL, yyvsp[0]); }
-#line 3617 "awkgram.c"
+#line 3574 "awkgram.c"
     break;
 
   case 112:
@@ -3624,13 +3581,13 @@ regular_print:
 		yyval = mk_expression_list(yyvsp[-2], yyvsp[0]);
 		yyerrok;
 	  }
-#line 3628 "awkgram.c"
+#line 3585 "awkgram.c"
     break;
 
   case 113:
 #line 1548 "awkgram.y"
           { yyval = NULL; }
-#line 3634 "awkgram.c"
+#line 3591 "awkgram.c"
     break;
 
   case 114:
@@ -3642,7 +3599,7 @@ regular_print:
 		 */
 		yyval = yyvsp[-1];
 	  }
-#line 3646 "awkgram.c"
+#line 3603 "awkgram.c"
     break;
 
   case 115:
@@ -3651,7 +3608,7 @@ regular_print:
 		/* Ditto */
 		yyval = mk_expression_list(yyvsp[-2], yyvsp[0]);
 	  }
-#line 3655 "awkgram.c"
+#line 3612 "awkgram.c"
     break;
 
   case 116:
@@ -3662,25 +3619,25 @@ regular_print:
 			yyvsp[-2]->lasti->comment = yyvsp[-1];
 		yyval = yyvsp[-2];
 	  }
-#line 3666 "awkgram.c"
+#line 3623 "awkgram.c"
     break;
 
   case 117:
 #line 1573 "awkgram.y"
           { yyval = NULL; }
-#line 3672 "awkgram.c"
+#line 3629 "awkgram.c"
     break;
 
   case 118:
 #line 1575 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3678 "awkgram.c"
+#line 3635 "awkgram.c"
     break;
 
   case 119:
 #line 1580 "awkgram.y"
           {	yyval = mk_expression_list(NULL, yyvsp[0]); }
-#line 3684 "awkgram.c"
+#line 3641 "awkgram.c"
     break;
 
   case 120:
@@ -3691,13 +3648,13 @@ regular_print:
 		yyval = mk_expression_list(yyvsp[-2], yyvsp[0]);
 		yyerrok;
 	  }
-#line 3695 "awkgram.c"
+#line 3652 "awkgram.c"
     break;
 
   case 121:
 #line 1589 "awkgram.y"
           { yyval = NULL; }
-#line 3701 "awkgram.c"
+#line 3658 "awkgram.c"
     break;
 
   case 122:
@@ -3709,7 +3666,7 @@ regular_print:
 		 */
 		yyval = yyvsp[-1];
 	  }
-#line 3713 "awkgram.c"
+#line 3670 "awkgram.c"
     break;
 
   case 123:
@@ -3718,7 +3675,7 @@ regular_print:
 		/* Ditto */
 		yyval = mk_expression_list(yyvsp[-2], yyvsp[0]);
 	  }
-#line 3722 "awkgram.c"
+#line 3679 "awkgram.c"
     break;
 
   case 124:
@@ -3729,31 +3686,31 @@ regular_print:
 			yyvsp[-2]->comment = yyvsp[-1];
 		yyval = yyvsp[-2];
 	  }
-#line 3733 "awkgram.c"
+#line 3690 "awkgram.c"
     break;
 
   case 125:
 #line 1613 "awkgram.y"
               { yyval = yyvsp[0]; }
-#line 3739 "awkgram.c"
+#line 3696 "awkgram.c"
     break;
 
   case 126:
 #line 1614 "awkgram.y"
                        { yyval = list_create(yyvsp[0]); }
-#line 3745 "awkgram.c"
+#line 3702 "awkgram.c"
     break;
 
   case 127:
 #line 1619 "awkgram.y"
           { yyval = NULL; }
-#line 3751 "awkgram.c"
+#line 3708 "awkgram.c"
     break;
 
   case 128:
 #line 1620 "awkgram.y"
                     { yyval = yyvsp[0]; }
-#line 3757 "awkgram.c"
+#line 3714 "awkgram.c"
     break;
 
   case 129:
@@ -3764,7 +3721,7 @@ regular_print:
 				_("regular expression on right of assignment"));
 		yyval = mk_assignment(yyvsp[-2], yyvsp[0], yyvsp[-1]);
 	  }
-#line 3768 "awkgram.c"
+#line 3725 "awkgram.c"
     break;
 
   case 130:
@@ -3772,19 +3729,19 @@ regular_print:
           {
 		yyval = mk_assignment(yyvsp[-2], list_create(yyvsp[0]), yyvsp[-1]);
 	  }
-#line 3776 "awkgram.c"
+#line 3733 "awkgram.c"
     break;
 
   case 131:
 #line 1637 "awkgram.y"
           {	yyval = mk_boolean(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 3782 "awkgram.c"
+#line 3739 "awkgram.c"
     break;
 
   case 132:
 #line 1639 "awkgram.y"
           {	yyval = mk_boolean(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 3788 "awkgram.c"
+#line 3745 "awkgram.c"
     break;
 
   case 133:
@@ -3801,7 +3758,7 @@ regular_print:
 		bcfree(yyvsp[0]);
 		yyval = list_append(yyvsp[-2], yyvsp[-1]);
 	  }
-#line 3805 "awkgram.c"
+#line 3762 "awkgram.c"
     break;
 
   case 134:
@@ -3822,7 +3779,7 @@ regular_print:
 			yyval = list_append(list_merge(yyvsp[-2], yyvsp[0]), yyvsp[-1]);
 		}
 	  }
-#line 3826 "awkgram.c"
+#line 3783 "awkgram.c"
     break;
 
   case 135:
@@ -3836,7 +3793,7 @@ regular_print:
 		yyvsp[-1]->expr_count = 1;
 		yyval = list_append(list_merge(yyvsp[-2], yyvsp[0]), yyvsp[-1]);
 	  }
-#line 3840 "awkgram.c"
+#line 3797 "awkgram.c"
     break;
 
   case 136:
@@ -3847,31 +3804,31 @@ regular_print:
 				_("regular expression on right of comparison"));
 		yyval = list_append(list_merge(yyvsp[-2], yyvsp[0]), yyvsp[-1]);
 	  }
-#line 3851 "awkgram.c"
+#line 3808 "awkgram.c"
     break;
 
   case 137:
 #line 1688 "awkgram.y"
           { yyval = mk_condition(yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]); }
-#line 3857 "awkgram.c"
+#line 3814 "awkgram.c"
     break;
 
   case 138:
 #line 1690 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3863 "awkgram.c"
+#line 3820 "awkgram.c"
     break;
 
   case 139:
 #line 1695 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3869 "awkgram.c"
+#line 3826 "awkgram.c"
     break;
 
   case 140:
 #line 1697 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3875 "awkgram.c"
+#line 3832 "awkgram.c"
     break;
 
   case 141:
@@ -3880,43 +3837,43 @@ regular_print:
 		yyvsp[0]->opcode = Op_assign_quotient;
 		yyval = yyvsp[0];
 	  }
-#line 3884 "awkgram.c"
+#line 3841 "awkgram.c"
     break;
 
   case 142:
 #line 1707 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3890 "awkgram.c"
+#line 3847 "awkgram.c"
     break;
 
   case 143:
 #line 1709 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3896 "awkgram.c"
+#line 3853 "awkgram.c"
     break;
 
   case 144:
 #line 1714 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3902 "awkgram.c"
+#line 3859 "awkgram.c"
     break;
 
   case 145:
 #line 1716 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3908 "awkgram.c"
+#line 3865 "awkgram.c"
     break;
 
   case 146:
 #line 1721 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3914 "awkgram.c"
+#line 3871 "awkgram.c"
     break;
 
   case 147:
 #line 1723 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 3920 "awkgram.c"
+#line 3877 "awkgram.c"
     break;
 
   case 148:
@@ -3974,43 +3931,43 @@ regular_print:
 				max_args = count;
 		}
 	  }
-#line 3978 "awkgram.c"
+#line 3935 "awkgram.c"
     break;
 
   case 150:
 #line 1784 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 3984 "awkgram.c"
+#line 3941 "awkgram.c"
     break;
 
   case 151:
 #line 1786 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 3990 "awkgram.c"
+#line 3947 "awkgram.c"
     break;
 
   case 152:
 #line 1788 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 3996 "awkgram.c"
+#line 3953 "awkgram.c"
     break;
 
   case 153:
 #line 1790 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4002 "awkgram.c"
+#line 3959 "awkgram.c"
     break;
 
   case 154:
 #line 1792 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4008 "awkgram.c"
+#line 3965 "awkgram.c"
     break;
 
   case 155:
 #line 1794 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4014 "awkgram.c"
+#line 3971 "awkgram.c"
     break;
 
   case 156:
@@ -4028,7 +3985,7 @@ regular_print:
 				_("non-redirected `getline' undefined inside END action"));
 		yyval = mk_getline(yyvsp[-2], yyvsp[-1], yyvsp[0], redirect_input);
 	  }
-#line 4032 "awkgram.c"
+#line 3989 "awkgram.c"
     break;
 
   case 157:
@@ -4037,7 +3994,7 @@ regular_print:
 		yyvsp[0]->opcode = Op_postincrement;
 		yyval = mk_assignment(yyvsp[-1], NULL, yyvsp[0]);
 	  }
-#line 4041 "awkgram.c"
+#line 3998 "awkgram.c"
     break;
 
   case 158:
@@ -4046,7 +4003,7 @@ regular_print:
 		yyvsp[0]->opcode = Op_postdecrement;
 		yyval = mk_assignment(yyvsp[-1], NULL, yyvsp[0]);
 	  }
-#line 4050 "awkgram.c"
+#line 4007 "awkgram.c"
     break;
 
   case 159:
@@ -4071,7 +4028,7 @@ regular_print:
 			yyval = list_append(list_merge(t, yyvsp[0]), yyvsp[-1]);
 		}
 	  }
-#line 4075 "awkgram.c"
+#line 4032 "awkgram.c"
     break;
 
   case 160:
@@ -4080,43 +4037,43 @@ regular_print:
 		  yyval = mk_getline(yyvsp[-1], yyvsp[0], yyvsp[-3], yyvsp[-2]->redir_type);
 		  bcfree(yyvsp[-2]);
 		}
-#line 4084 "awkgram.c"
+#line 4041 "awkgram.c"
     break;
 
   case 161:
 #line 1852 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4090 "awkgram.c"
+#line 4047 "awkgram.c"
     break;
 
   case 162:
 #line 1854 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4096 "awkgram.c"
+#line 4053 "awkgram.c"
     break;
 
   case 163:
 #line 1856 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4102 "awkgram.c"
+#line 4059 "awkgram.c"
     break;
 
   case 164:
 #line 1858 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4108 "awkgram.c"
+#line 4065 "awkgram.c"
     break;
 
   case 165:
 #line 1860 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4114 "awkgram.c"
+#line 4071 "awkgram.c"
     break;
 
   case 166:
 #line 1862 "awkgram.y"
           { yyval = mk_binary(yyvsp[-2], yyvsp[0], yyvsp[-1]); }
-#line 4120 "awkgram.c"
+#line 4077 "awkgram.c"
     break;
 
   case 167:
@@ -4124,7 +4081,7 @@ regular_print:
           {
 		yyval = list_create(yyvsp[0]);
 	  }
-#line 4128 "awkgram.c"
+#line 4085 "awkgram.c"
     break;
 
   case 168:
@@ -4160,7 +4117,7 @@ regular_print:
 			}
 		}
 	   }
-#line 4164 "awkgram.c"
+#line 4121 "awkgram.c"
     break;
 
   case 169:
@@ -4172,7 +4129,7 @@ regular_print:
 		// print "foo" > ("bar" 1)
 		yyval = list_append(yyvsp[-1], bcalloc(Op_parens, 1, sourceline));
 	  }
-#line 4176 "awkgram.c"
+#line 4133 "awkgram.c"
     break;
 
   case 170:
@@ -4182,7 +4139,7 @@ regular_print:
 		if (yyval == NULL)
 			YYABORT;
 	  }
-#line 4186 "awkgram.c"
+#line 4143 "awkgram.c"
     break;
 
   case 171:
@@ -4192,7 +4149,7 @@ regular_print:
 		if (yyval == NULL)
 			YYABORT;
 	  }
-#line 4196 "awkgram.c"
+#line 4153 "awkgram.c"
     break;
 
   case 172:
@@ -4209,7 +4166,7 @@ regular_print:
 		if (yyval == NULL)
 			YYABORT;
 	  }
-#line 4213 "awkgram.c"
+#line 4170 "awkgram.c"
     break;
 
   case 175:
@@ -4218,7 +4175,7 @@ regular_print:
 		yyvsp[-1]->opcode = Op_preincrement;
 		yyval = mk_assignment(yyvsp[0], NULL, yyvsp[-1]);
 	  }
-#line 4222 "awkgram.c"
+#line 4179 "awkgram.c"
     break;
 
   case 176:
@@ -4227,7 +4184,7 @@ regular_print:
 		yyvsp[-1]->opcode = Op_predecrement;
 		yyval = mk_assignment(yyvsp[0], NULL, yyvsp[-1]);
 	  }
-#line 4231 "awkgram.c"
+#line 4188 "awkgram.c"
     break;
 
   case 177:
@@ -4235,7 +4192,7 @@ regular_print:
           {
 		yyval = list_create(yyvsp[0]);
 	  }
-#line 4239 "awkgram.c"
+#line 4196 "awkgram.c"
     break;
 
   case 178:
@@ -4243,7 +4200,7 @@ regular_print:
           {
 		yyval = list_create(yyvsp[0]);
 	  }
-#line 4247 "awkgram.c"
+#line 4204 "awkgram.c"
     break;
 
   case 179:
@@ -4262,7 +4219,7 @@ regular_print:
 			yyval = list_append(yyvsp[0], yyvsp[-1]);
 		}
 	  }
-#line 4266 "awkgram.c"
+#line 4223 "awkgram.c"
     break;
 
   case 180:
@@ -4284,7 +4241,7 @@ regular_print:
 			yyval = list_append(yyvsp[0], yyvsp[-1]);
 		}
 	  }
-#line 4288 "awkgram.c"
+#line 4245 "awkgram.c"
     break;
 
   case 181:
@@ -4293,7 +4250,7 @@ regular_print:
 		func_use(yyvsp[0]->lasti->func_name, FUNC_USE);
 		yyval = yyvsp[0];
 	  }
-#line 4297 "awkgram.c"
+#line 4254 "awkgram.c"
     break;
 
   case 182:
@@ -4331,7 +4288,7 @@ regular_print:
 		yyval = list_prepend(yyvsp[0], t);
 		at_seen = false;
 	  }
-#line 4335 "awkgram.c"
+#line 4292 "awkgram.c"
     break;
 
   case 183:
@@ -4368,37 +4325,37 @@ regular_print:
 			yyval = list_append(t, yyvsp[-3]);
 		}
 	  }
-#line 4372 "awkgram.c"
+#line 4329 "awkgram.c"
     break;
 
   case 184:
 #line 2070 "awkgram.y"
           { yyval = NULL; }
-#line 4378 "awkgram.c"
+#line 4335 "awkgram.c"
     break;
 
   case 185:
 #line 2072 "awkgram.y"
           { yyval = yyvsp[0]; }
-#line 4384 "awkgram.c"
+#line 4341 "awkgram.c"
     break;
 
   case 186:
 #line 2077 "awkgram.y"
           { yyval = NULL; }
-#line 4390 "awkgram.c"
+#line 4347 "awkgram.c"
     break;
 
   case 187:
 #line 2079 "awkgram.y"
           { yyval = yyvsp[-1]; }
-#line 4396 "awkgram.c"
+#line 4353 "awkgram.c"
     break;
 
   case 188:
 #line 2084 "awkgram.y"
           {	yyval = yyvsp[0]; }
-#line 4402 "awkgram.c"
+#line 4359 "awkgram.c"
     break;
 
   case 189:
@@ -4406,7 +4363,7 @@ regular_print:
           {
 		yyval = list_merge(yyvsp[-1], yyvsp[0]);
 	  }
-#line 4410 "awkgram.c"
+#line 4367 "awkgram.c"
     break;
 
   case 190:
@@ -4424,7 +4381,7 @@ regular_print:
 		sub_counter++;	/* count # of dimensions */
 		yyval = yyvsp[0];
 	  }
-#line 4428 "awkgram.c"
+#line 4385 "awkgram.c"
     break;
 
   case 191:
@@ -4442,13 +4399,13 @@ regular_print:
 			yyvsp[0]->sub_count = count_expressions(&t, false);
 		yyval = list_append(t, yyvsp[0]);
 	  }
-#line 4446 "awkgram.c"
+#line 4403 "awkgram.c"
     break;
 
   case 192:
 #line 2127 "awkgram.y"
           {	yyval = yyvsp[0]; }
-#line 4452 "awkgram.c"
+#line 4409 "awkgram.c"
     break;
 
   case 193:
@@ -4456,13 +4413,13 @@ regular_print:
           {
 		yyval = list_merge(yyvsp[-1], yyvsp[0]);
 	  }
-#line 4460 "awkgram.c"
+#line 4417 "awkgram.c"
     break;
 
   case 194:
 #line 2136 "awkgram.y"
           { yyval = yyvsp[-1]; }
-#line 4466 "awkgram.c"
+#line 4423 "awkgram.c"
     break;
 
   case 195:
@@ -4472,7 +4429,7 @@ regular_print:
 		yyvsp[0]->memory = variable(yyvsp[0]->source_line, yyvsp[0]->lextok, Node_var_new);
 		yyval = list_create(yyvsp[0]);
 	  }
-#line 4476 "awkgram.c"
+#line 4433 "awkgram.c"
     break;
 
   case 196:
@@ -4484,7 +4441,7 @@ regular_print:
 		yyvsp[-1]->opcode = Op_push_array;
 		yyval = list_prepend(yyvsp[0], yyvsp[-1]);
 	  }
-#line 4488 "awkgram.c"
+#line 4445 "awkgram.c"
     break;
 
   case 197:
@@ -4500,7 +4457,7 @@ regular_print:
 		} else
 			yyval = yyvsp[0];
 	  }
-#line 4504 "awkgram.c"
+#line 4461 "awkgram.c"
     break;
 
   case 198:
@@ -4510,7 +4467,7 @@ regular_print:
 		if (yyvsp[0] != NULL)
 			mk_assignment(yyvsp[-1], NULL, yyvsp[0]);
 	  }
-#line 4514 "awkgram.c"
+#line 4471 "awkgram.c"
     break;
 
   case 199:
@@ -4518,7 +4475,7 @@ regular_print:
           {
 		yyvsp[0]->opcode = Op_postincrement;
 	  }
-#line 4522 "awkgram.c"
+#line 4479 "awkgram.c"
     break;
 
   case 200:
@@ -4526,59 +4483,59 @@ regular_print:
           {
 		yyvsp[0]->opcode = Op_postdecrement;
 	  }
-#line 4530 "awkgram.c"
+#line 4487 "awkgram.c"
     break;
 
   case 201:
 #line 2187 "awkgram.y"
           { yyval = NULL; }
-#line 4536 "awkgram.c"
+#line 4493 "awkgram.c"
     break;
 
   case 202:
 #line 2191 "awkgram.y"
                       { yyval = yyvsp[0]; }
-#line 4542 "awkgram.c"
+#line 4499 "awkgram.c"
     break;
 
   case 203:
 #line 2195 "awkgram.y"
                         { yyval = yyvsp[0]; yyerrok; }
-#line 4548 "awkgram.c"
+#line 4505 "awkgram.c"
     break;
 
   case 204:
 #line 2199 "awkgram.y"
               { yyerrok; }
-#line 4554 "awkgram.c"
+#line 4511 "awkgram.c"
     break;
 
   case 205:
 #line 2204 "awkgram.y"
           { yyval = NULL; }
-#line 4560 "awkgram.c"
+#line 4517 "awkgram.c"
     break;
 
   case 207:
 #line 2209 "awkgram.y"
                 { yyerrok; }
-#line 4566 "awkgram.c"
+#line 4523 "awkgram.c"
     break;
 
   case 208:
 #line 2213 "awkgram.y"
                 { yyval = yyvsp[0]; yyerrok; }
-#line 4572 "awkgram.c"
+#line 4529 "awkgram.c"
     break;
 
   case 209:
 #line 2217 "awkgram.y"
                         { yyval = yyvsp[0]; yyerrok; }
-#line 4578 "awkgram.c"
+#line 4535 "awkgram.c"
     break;
 
 
-#line 4582 "awkgram.c"
+#line 4539 "awkgram.c"
 
       default: break;
     }
@@ -4593,11 +4550,10 @@ regular_print:
      case of YYERROR or YYBACKUP, subsequent parser actions might lead
      to an incorrect destructor call or verbose syntax error message
      before the lookahead is translated.  */
-  YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
+  YY_SYMBOL_PRINT ("-> $$ =", YY_CAST (yysymbol_kind_t, yyr1[yyn]), &yyval, &yyloc);
 
   YYPOPSTACK (yylen);
   yylen = 0;
-  YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
 
@@ -4621,49 +4577,13 @@ regular_print:
 yyerrlab:
   /* Make sure we have latest lookahead translation.  See comments at
      user semantic actions for why this is necessary.  */
-  yytoken = yychar == YYEMPTY ? YYEMPTY : YYTRANSLATE (yychar);
-
+  yytoken = yychar == YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (yychar);
   /* If not already recovering from an error, report this error.  */
   if (!yyerrstatus)
     {
       ++yynerrs;
-#if ! YYERROR_VERBOSE
       yyerror (YY_("syntax error"));
-#else
-# define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
-                                        yyssp, yytoken)
-      {
-        char const *yymsgp = YY_("syntax error");
-        int yysyntax_error_status;
-        yysyntax_error_status = YYSYNTAX_ERROR;
-        if (yysyntax_error_status == 0)
-          yymsgp = yymsg;
-        else if (yysyntax_error_status == 1)
-          {
-            if (yymsg != yymsgbuf)
-              YYSTACK_FREE (yymsg);
-            yymsg = YY_CAST (char *, YYSTACK_ALLOC (YY_CAST (YYSIZE_T, yymsg_alloc)));
-            if (!yymsg)
-              {
-                yymsg = yymsgbuf;
-                yymsg_alloc = sizeof yymsgbuf;
-                yysyntax_error_status = 2;
-              }
-            else
-              {
-                yysyntax_error_status = YYSYNTAX_ERROR;
-                yymsgp = yymsg;
-              }
-          }
-        yyerror (yymsgp);
-        if (yysyntax_error_status == 2)
-          goto yyexhaustedlab;
-      }
-# undef YYSYNTAX_ERROR
-#endif
     }
-
-
 
   if (yyerrstatus == 3)
     {
@@ -4713,13 +4633,14 @@ yyerrorlab:
 yyerrlab1:
   yyerrstatus = 3;      /* Each real token shifted decrements this.  */
 
+  /* Pop stack until we find a state that shifts the error token.  */
   for (;;)
     {
       yyn = yypact[yystate];
       if (!yypact_value_is_default (yyn))
         {
-          yyn += YYTERROR;
-          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
+          yyn += YYSYMBOL_YYerror;
+          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYSYMBOL_YYerror)
             {
               yyn = yytable[yyn];
               if (0 < yyn)
@@ -4733,7 +4654,7 @@ yyerrlab1:
 
 
       yydestruct ("Error: popping",
-                  yystos[yystate], yyvsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -4745,7 +4666,7 @@ yyerrlab1:
 
 
   /* Shift the error token.  */
-  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
+  YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (yyn), yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -4767,7 +4688,7 @@ yyabortlab:
   goto yyreturn;
 
 
-#if !defined yyoverflow || YYERROR_VERBOSE
+#if !defined yyoverflow
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -4797,19 +4718,17 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[+*yyssp], yyvsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-#if YYERROR_VERBOSE
-  if (yymsg != yymsgbuf)
-    YYSTACK_FREE (yymsg);
-#endif
+
   return yyresult;
 }
+
 #line 2219 "awkgram.y"
 
 
