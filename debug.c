@@ -4433,8 +4433,8 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
 }
 
 
-
-/* serialize_list--- convert a list structure to a byte stream and
+/*
+ * serialize_list--- convert a list structure to a byte stream and
  *               save in environment.
  */
 
@@ -4607,9 +4607,9 @@ enlarge_buffer:
 			}
 
 			if (nchar > 0) {	/* non-empty commands list */
-				nchar += (strlen("commands ") + 20/*cnum*/ + 1/*CSEP*/ + strlen("end") + 1/*FSEP*/);
+				nchar += (strlen("commands ") + 20 /*cnum*/ + 1 /*CSEP*/ + strlen("end") + 1 /*FSEP*/);
 				if (nchar >= buflen - bl) {
-					buflen = bl + nchar + 1/*RSEP*/;
+					buflen = bl + nchar + 1 /*RSEP*/;
 					erealloc(buf, char *, buflen + 1, "serialize_list");
 				}
 				nchar = sprintf(buf + bl, "commands %d", cnum);
@@ -4645,8 +4645,8 @@ enlarge_buffer:
 			if (cndn->expr) {
 				bl--;	/* undo RSEP from above */
 				nchar = strlen(cndn->expr);
-				if (nchar + 1/*FSEP*/ >= buflen - bl) {
-					buflen = bl + nchar + 1/*FSEP*/ + 1/*RSEP*/;
+				if (nchar + 1 /*FSEP*/ >= buflen - bl) {
+					buflen = bl + nchar + 1 /*FSEP*/ + 1 /*RSEP*/;
 					erealloc(buf, char *, buflen + 1, "serialize_list");
 				}
 				memcpy(buf + bl, cndn->expr, nchar);

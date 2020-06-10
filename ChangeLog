@@ -14,6 +14,18 @@
 
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Miscellanious fixes from Michael Builov <mbuilov@gmail.com>.
+
+	* awkgram.y (rule_block): Fix size declaration
+	(parse_program): Adjust memset call.
+	(get_comment): Check for end of file before checking for space.
+	* io.c (gawk_popen): Move os_close_on_exec call inside #endif.
+	* builtin.c (do_bindtextdomain): Don't pass NULL to strlen.
+	* debug.c (set_breakpoint): Don't dereference NULL pointer in D_func.
+	(serialize_list): Get the buffer management right to avoid overrun.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
 	Thanks to Andrew Schorr for suggestion of better way to
 	handle exec_count being a long long.
 

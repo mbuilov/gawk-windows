@@ -329,6 +329,8 @@ internal_fnmatch (pattern, string, no_leading_period, flags)
 
 		    if (c == fn)
 		      goto matched;
+
+		    c = *p++;
 		  }
 		else if (c == '[' && *p == ':')
 		  {
@@ -353,7 +355,7 @@ internal_fnmatch (pattern, string, no_leading_period, flags)
 			    p += 2;
 			    break;
 			  }
-			if (c < 'a' || c >= 'z')
+			if (c < 'a' || c > 'z')
 			  {
 			    /* This cannot possibly be a character class name.
 			       Match it as a normal range.  */
@@ -388,6 +390,7 @@ internal_fnmatch (pattern, string, no_leading_period, flags)
 			|| (STREQ (str, "xdigit") && ISXDIGIT ((unsigned char) *n)))
 		      goto matched;
 # endif
+		    c = *p++;
 		  }
 		else if (c == '\0')
 		  /* [ (unterminated) loses.  */
@@ -398,7 +401,7 @@ internal_fnmatch (pattern, string, no_leading_period, flags)
 		    if (FOLD (c) == fn)
 		      goto matched;
 
-		    cold = c;
+		    cold = FOLD(c);
 		    c = *p++;
 
 		    if (c == '-' && *p != ']')
