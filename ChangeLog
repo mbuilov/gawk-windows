@@ -1,5 +1,20 @@
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
+	More miscellaneous fixes from Michael Builov <mbuilov@gmail.com>.
+
+	* node.c (r_unref): Handle GAWKDEBUG same as in awk.h:unref.
+	(parse_escape): isxdigit/isdigit/isupper called with possible negative
+	int: fixed. Dead code under "if (do_lint && j > 2)" eliminated,
+	j cannot be > 2.
+	(init_btowc_cache): Also initialize wide-char at index 255.
+
+	And so that `make check' passes with GAWKDEBUG defined:
+
+	* msg.c (err): Remvoe abort() call if fatal. Didn't really do
+	anything special for us.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awkgram.c, command.c: Regenerated with bison 3.6.3.
 	* NEWS: Updated.
 
@@ -14,7 +29,7 @@
 
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
-	Miscellanious fixes from Michael Builov <mbuilov@gmail.com>.
+	Miscellaneous fixes from Michael Builov <mbuilov@gmail.com>.
 
 	* awkgram.y (rule_block): Fix size declaration
 	(parse_program): Adjust memset call.
