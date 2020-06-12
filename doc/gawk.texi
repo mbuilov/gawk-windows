@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH March, 2020
+@set UPDATE-MONTH June, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -18423,10 +18423,10 @@ a[3] = "middle"
 @end example
 
 @quotation NOTE
-Due to implementation limitations, you may not use either @code{SYMTAB}
-or @code{FUNCTAB} as arguments to these functions, even if providing a
-second array to use for the actual sorting.  Attempting to do so produces
-a fatal error.  This restriction may be lifted in the future.
+You may not use either @code{SYMTAB} or @code{FUNCTAB} as the second
+argument to these functions.  Attempting to do so produces a fatal error.
+You may use them as the first argument, but only if providing a second
+array to use for the actual sorting.
 @end quotation
 
 @item @code{gensub(@var{regexp}, @var{replacement}, @var{how}} [@code{, @var{target}}]@code{) #}
