@@ -824,12 +824,9 @@ asort_actual(int nargs, sort_context_t ctxt)
 			fatal(_("%s: second argument is not an array"),
 				ctxt == ASORT ? "asort" : "asorti");
 		}
-		if (dest == symbol_table)
-			fatal(_("%s: SYMTAB cannot be used as second argument"),
-				ctxt == ASORT ? "asort" : "asorti");
-		else if (dest == func_table)
-			fatal(_("%s: FUNCTAB cannot be used as second argument"),
-				ctxt == ASORT ? "asort" : "asorti");
+		check_symtab_functab(dest,
+				ctxt == ASORT ? "asort" : "asorti",
+				_("%s: cannot use %s as second argument"));
 	}
 
 	array = POP_PARAM();

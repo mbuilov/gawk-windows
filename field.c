@@ -980,6 +980,8 @@ do_split(int nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("split: fourth argument is not an array"));
+		check_symtab_functab(sep_arr, "split",
+				_("%s: cannot use %s as fourth argument"));
 		if ((do_lint_extensions || do_lint_old) && ! warned) {
 			warned = true;
 			lintwarn(_("split: fourth argument is a gawk extension"));
@@ -990,6 +992,8 @@ do_split(int nargs)
 	arr = POP_PARAM();
 	if (arr->type != Node_var_array)
 		fatal(_("split: second argument is not an array"));
+	check_symtab_functab(arr, "split",
+			_("%s: cannot use %s as second argument"));
 
 	if (sep_arr != NULL) {
 		if (sep_arr == arr)
@@ -1073,11 +1077,15 @@ do_patsplit(int nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("patsplit: fourth argument is not an array"));
+		check_symtab_functab(sep_arr, "patsplit",
+				_("%s: cannot use %s as fourth argument"));
 	}
 	sep = POP();
 	arr = POP_PARAM();
 	if (arr->type != Node_var_array)
 		fatal(_("patsplit: second argument is not an array"));
+	check_symtab_functab(arr, "patsplit",
+			_("%s: cannot use %s as second argument"));
 
 	src = TOP_STRING();
 

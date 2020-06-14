@@ -2678,6 +2678,8 @@ do_match(int nargs)
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array)
 			fatal(_("match: third argument is not an array"));
+		check_symtab_functab(dest, "match", 
+				_("%s: cannot use %s as third argument"));
 		assoc_clear(dest);
 	}
 	tre = POP();
@@ -4327,4 +4329,16 @@ fmt:
 			buf[i] = toupper(buf[i]);
 	}
 	return buf;
+}
+
+
+/* check_symtab_functab --- check if dest is SYMTAB or FUNCTAB, fatal if so */
+
+void
+check_symtab_functab(NODE *dest, const char *fname, const char *msg)
+{
+	if (dest == symbol_table)
+		fatal(msg, fname, "SYMTAB");
+	else if (dest == func_table)
+		fatal(msg, fname, "FUNCTAB");
 }

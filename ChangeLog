@@ -1,3 +1,15 @@
+2020-06-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Disallow SYMTAB and FUNCTAB as destination arguments to builtin
+	functions that clear arrays:
+
+	* awk.h (check_symtab_functab): Add declaration.
+	* array.c (asort_actual): Call it in check for second argument.
+	* builtin.c (check_symtab_functab): New function.
+	(do_match): Call it in check for third argument.
+	* field.c (do_patsplit, do_split): Call it in checks for fourth and
+	second arguments.
+
 2020-06-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* array.c (asort_actual): If SYMTAB or FUNCTAB is the second argument,
