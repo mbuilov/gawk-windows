@@ -915,7 +915,6 @@ values for the fields.
 .SS Built-in Variables
 .IR Gawk\^ "'s"
 built-in variables are:
-.PP
 .TP "\w'\fBFIELDWIDTHS\fR'u+1n"
 .B ARGC
 The number of command line arguments (does not include options to
@@ -1682,7 +1681,6 @@ String constants in \*(AK are sequences of characters enclosed
 between double quotes (like \fB"value"\fR).  Within strings, certain
 .I "escape sequences"
 are recognized, as in C.  These are:
-.PP
 .TP "\w'\fB\e\^\fIddd\fR'u+1n"
 .B \e\e
 A literal backslash.
@@ -2206,7 +2204,6 @@ and input/output statements
 available are patterned after those in C.
 .SS Operators
 The operators in \*(AK, in order of decreasing precedence, are:
-.PP
 .TP "\w'\fB*= /= %= ^=\fR'u+1n"
 .BR ( \&.\|.\|. )
 Grouping
@@ -2314,7 +2311,6 @@ as follows:
 .RE
 .SS "I/O Statements"
 The input/output statements are as follows:
-.PP
 .TP "\w'\fBprintf \fIfmt, expr-list\fR'u+1n"
 \fBclose(\fIfile \fR[\fB, \fIhow\fR]\fB)\fR
 Close file, pipe or coprocess.
@@ -2830,7 +2826,6 @@ two-way I/O operator.
 Similar, but use UDP/IP instead of TCP/IP.
 .SS Numeric Functions
 \*(AK has the following built-in arithmetic functions:
-.PP
 .TP "\w'\fBsrand(\fR[\fIexpr\^\fR]\fB)\fR'u+1n"
 .BI atan2( y , " x" )
 Return the arctangent of
@@ -2896,7 +2891,6 @@ number generator.
 .SS String Functions
 .I Gawk
 has the following built-in string functions:
-.PP
 .TP "\w'\fBsprintf(\^\fIfmt\fB\^, \fIexpr-list\^\fB)\fR'u+1n"
 \fBasort(\fIs \fR[\fB, \fId\fR [\fB, \fIhow\fR] ]\fB)\fR
 Return the number of elements in the source
@@ -3253,7 +3247,6 @@ that contain time stamp information,
 .I gawk
 provides the following functions for obtaining time stamps and
 formatting them.
-.PP
 .TP "\w'\fBsystime()\fR'u+1n"
 \fBmktime(\fIdatespec\fR [\fB, \fIutc-flag\fR]\fB)\fR
 Turn
@@ -3373,7 +3366,6 @@ bits.
 \fBxor(\fIv1\fB, \fIv2 \fR[, ...]\fB)\fR
 Return the bitwise XOR of the values provided in the argument list.
 There must be at least two.
-.PP
 .SS Type Functions
 The following functions provide type related information about
 their arguments.
@@ -3588,7 +3580,6 @@ causes
 .I gawk
 to dump the profile and function call stack and then exit.
 .SH INTERNATIONALIZATION
-.PP
 String constants are sequences of characters enclosed in double
 quotes.  In non-English speaking environments, it is possible to mark
 strings in the \*(AK program as requiring translation to the local
