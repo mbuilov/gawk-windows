@@ -614,9 +614,8 @@ File: gawkinet.info,  Node: File /inet/tcp,  Next: File /inet/udp,  Prev: Compar
 2.1.2.1 '/inet/tcp'
 ...................
 
-Once again, always use TCP. (Use UDP when low overhead is a necessity,
-and use RAW for network experimentation.)  The first example is the
-sender program:
+Once again, always use TCP. (Use UDP when low overhead is a necessity.)
+The first example is the sender program:
 
      # Server
      BEGIN {
@@ -4178,13 +4177,12 @@ Index
 * BLAST, Basic Local Alignment Search Tool: PROTBASE.         (line   6)
 * blocking:                              Making Connections.  (line  35)
 * Boutell, Thomas:                       STATIST.             (line   6)
-* CGI (Common Gateway Interface):        MOBAGWHO.            (line  42)
 * CGI (Common Gateway Interface), dynamic web pages and: Web page.
                                                               (line  45)
 * CGI (Common Gateway Interface), library: CGI Lib.           (line  11)
+* CGI (Common Gateway Interface):        MOBAGWHO.            (line  42)
 * clients:                               Making Connections.  (line  21)
 * Clinton, Bill:                         Challenges.          (line  58)
-* Common Gateway Interface, See CGI:     Web page.            (line  45)
 * Computational Biology:                 PROTBASE.            (line 227)
 * contest:                               Challenges.          (line   6)
 * cron utility:                          STOXPRED.            (line  23)
@@ -4205,13 +4203,13 @@ Index
                                                               (line   6)
 * FTP (File Transfer Protocol):          Basic Protocols.     (line  45)
 * gawk, networking:                      Using Networking.    (line   6)
+* gawk, networking, filenames:           Gawk Special Files.  (line  29)
 * gawk, networking, connections:         Special File Fields. (line  53)
 * gawk, networking, connections <1>:     TCP Connecting.      (line   6)
-* gawk, networking, filenames:           Gawk Special Files.  (line  29)
-* gawk, networking, See Also email:      Email.               (line   6)
 * gawk, networking, service, establishing: Setting Up.        (line   6)
+* gawk, networking, email:               Email.               (line   6)
+* gawk, web and:                         Interacting Service. (line   6)
 * gawk, networking, troubleshooting:     Caveats.             (line   6)
-* gawk, web and, See web service:        Interacting Service. (line   6)
 * getline command:                       TCP Connecting.      (line  11)
 * GETURL program:                        GETURL.              (line   6)
 * GIF image format:                      Web page.            (line  45)
@@ -4235,13 +4233,10 @@ Index
 * HTTP server, core logic <1>:           Interacting Service. (line  24)
 * Humphrys, Mark:                        Simple Server.       (line 178)
 * Hypertext Markup Language (HTML):      Web page.            (line  29)
-* Hypertext Transfer Protocol, See HTTP: Web page.            (line   6)
 * image format:                          STATIST.             (line   6)
-* images, in web pages:                  Interacting Service. (line 189)
 * images, retrieving over networks:      Web page.            (line  45)
-* input/output, two-way, See Also gawk, networking: Gawk Special Files.
-                                                              (line  19)
-* Internet, See networks:                Interacting.         (line  48)
+* images, in web pages:                  Interacting Service. (line 189)
+* input/output, two-way,:                Gawk Special Files.  (line  19)
 * JavaScript:                            STATIST.             (line  57)
 * Linux:                                 Troubleshooting.     (line  54)
 * Linux <1>:                             Interacting.         (line  27)
@@ -4251,27 +4246,26 @@ Index
 * Loebner, Hugh:                         Challenges.          (line   6)
 * Loui, Ronald:                          Challenges.          (line  75)
 * MAZE:                                  MAZE.                (line   6)
-* Microsoft Windows:                     WEBGRAB.             (line  43)
 * Microsoft Windows, networking:         Troubleshooting.     (line  54)
 * Microsoft Windows, networking, ports:  Setting Up.          (line  37)
+* Microsoft Windows:                     WEBGRAB.             (line  43)
 * MiniSQL:                               REMCONF.             (line 109)
 * MOBAGWHO program:                      MOBAGWHO.            (line   6)
 * NCBI, National Center for Biotechnology Information: PROTBASE.
                                                               (line   6)
 * network type field:                    Special File Fields. (line  11)
 * networks, gawk and:                    Using Networking.    (line   6)
+* networks, gawk and, filenames:         Gawk Special Files.  (line  29)
+* networks, ports, specifying:           Special File Fields. (line  24)
 * networks, gawk and, connections:       Special File Fields. (line  53)
 * networks, gawk and, connections <1>:   TCP Connecting.      (line   6)
-* networks, gawk and, filenames:         Gawk Special Files.  (line  29)
-* networks, gawk and, See Also email:    Email.               (line   6)
 * networks, gawk and, service, establishing: Setting Up.      (line   6)
-* networks, gawk and, troubleshooting:   Caveats.             (line   6)
 * networks, ports, reserved:             Setting Up.          (line  37)
-* networks, ports, specifying:           Special File Fields. (line  24)
-* networks, See Also web pages:          PANIC.               (line   6)
-* Numerical Recipes:                     STATIST.             (line  25)
-* ORS variable, HTTP and:                Web page.            (line  29)
+* networks, gawk and, email:             Email.               (line   6)
+* networks, gawk and, troubleshooting:   Caveats.             (line   6)
+* Numerical Recipes:                     STATIST.             (line  13)
 * ORS variable, POP and:                 Email.               (line  36)
+* ORS variable, HTTP and:                Web page.            (line  29)
 * PANIC program:                         PANIC.               (line   6)
 * Perl:                                  Using Networking.    (line  14)
 * Perl, gawk networking and:             Using Networking.    (line  24)
@@ -4289,8 +4283,8 @@ Index
 * PS image format:                       STATIST.             (line   6)
 * Python:                                Using Networking.    (line  14)
 * Python, gawk networking and:           Using Networking.    (line  24)
-* record separators, HTTP and:           Web page.            (line  29)
 * record separators, POP and:            Email.               (line  36)
+* record separators, HTTP and:           Web page.            (line  29)
 * REMCONF program:                       REMCONF.             (line   6)
 * remoteport field:                      Gawk Special Files.  (line  34)
 * RFC 1939:                              Email.               (line   6)
@@ -4302,14 +4296,15 @@ Index
 * RFC 821:                               Email.               (line   6)
 * robot:                                 Challenges.          (line  84)
 * robot <1>:                             WEBGRAB.             (line   6)
-* RS variable, HTTP and:                 Web page.            (line  29)
 * RS variable, POP and:                  Email.               (line  36)
+* RS variable, HTTP and:                 Web page.            (line  29)
 * servers:                               Making Connections.  (line  14)
-* servers <1>:                           Setting Up.          (line  22)
 * servers, as hosts:                     Special File Fields. (line  34)
+* servers <1>:                           Setting Up.          (line  22)
 * servers, HTTP:                         Interacting Service. (line   6)
 * servers, web:                          Simple Server.       (line   6)
-* Simple Mail Transfer Protocol (SMTP):  Email.               (line   6)
+* Simple Mail Transfer Protocol (SMTP):  Basic Protocols.     (line  45)
+* Simple Mail Transfer Protocol (SMTP) <1>: Email.            (line   6)
 * SMTP (Simple Mail Transfer Protocol):  Basic Protocols.     (line  45)
 * SMTP (Simple Mail Transfer Protocol) <1>: Email.            (line   6)
 * STATIST program:                       STATIST.             (line   6)
@@ -4324,21 +4319,18 @@ Index
 * TCP (Transmission Control Protocol), connection, establishing: TCP Connecting.
                                                               (line   6)
 * TCP (Transmission Control Protocol), UDP and: Interacting.  (line  48)
+* TCP/IP, sockets and:                   Gawk Special Files.  (line  19)
 * TCP/IP, network type, selecting:       Special File Fields. (line  11)
 * TCP/IP, protocols, selecting:          Special File Fields. (line  17)
-* TCP/IP, sockets and:                   Gawk Special Files.  (line  19)
-* Transmission Control Protocol, See TCP: Using Networking.   (line  29)
-* troubleshooting, gawk, networks:       Caveats.             (line   6)
 * troubleshooting, networks, connections: Troubleshooting.    (line   6)
+* troubleshooting, gawk, networks:       Caveats.             (line   6)
 * troubleshooting, networks, timeouts:   Caveats.             (line  18)
 * UDP (User Datagram Protocol):          File /inet/udp.      (line   6)
 * UDP (User Datagram Protocol), TCP and: Interacting.         (line  48)
 * Unix, network ports and:               Setting Up.          (line  37)
 * URLCHK program:                        URLCHK.              (line   6)
-* User Datagram Protocol, See UDP:       File /inet/udp.      (line   6)
 * vertical bar (|), |& operator (I/O):   TCP Connecting.      (line  25)
 * VRML:                                  MAZE.                (line   6)
-* web browsers, See web service:         Interacting Service. (line   6)
 * web pages:                             Web page.            (line   6)
 * web pages, images in:                  Interacting Service. (line 189)
 * web pages, retrieving:                 GETURL.              (line   6)
@@ -4373,41 +4365,41 @@ Node: Special File Fields21202
 Ref: table-inet-components25095
 Node: Comparing Protocols26406
 Node: File /inet/tcp26940
-Node: File /inet/udp27968
-Ref: File /inet/udp-Footnote-129667
-Node: TCP Connecting29921
-Node: Troubleshooting32267
-Ref: Troubleshooting-Footnote-135326
-Node: Interacting35899
-Node: Setting Up38639
-Node: Email42142
-Node: Web page44474
-Ref: Web page-Footnote-147291
-Node: Primitive Service47489
-Node: Interacting Service50230
-Ref: Interacting Service-Footnote-159397
-Node: CGI Lib59429
-Node: Simple Server66404
-Ref: Simple Server-Footnote-174149
-Node: Caveats74250
-Node: Challenges75395
-Ref: Challenges-Footnote-184137
-Node: Some Applications and Techniques84238
-Node: PANIC86703
-Node: GETURL88427
-Node: REMCONF91060
-Node: URLCHK96556
-Node: WEBGRAB100408
-Node: STATIST104872
-Ref: STATIST-Footnote-1118024
-Node: MAZE118469
-Node: MOBAGWHO124676
-Ref: MOBAGWHO-Footnote-1138694
-Node: STOXPRED138749
-Node: PROTBASE153037
-Node: Links166153
-Node: GNU Free Documentation License169586
-Node: Index194706
+Node: File /inet/udp27926
+Ref: File /inet/udp-Footnote-129625
+Node: TCP Connecting29879
+Node: Troubleshooting32225
+Ref: Troubleshooting-Footnote-135284
+Node: Interacting35857
+Node: Setting Up38597
+Node: Email42100
+Node: Web page44432
+Ref: Web page-Footnote-147249
+Node: Primitive Service47447
+Node: Interacting Service50188
+Ref: Interacting Service-Footnote-159355
+Node: CGI Lib59387
+Node: Simple Server66362
+Ref: Simple Server-Footnote-174107
+Node: Caveats74208
+Node: Challenges75353
+Ref: Challenges-Footnote-184095
+Node: Some Applications and Techniques84196
+Node: PANIC86661
+Node: GETURL88385
+Node: REMCONF91018
+Node: URLCHK96514
+Node: WEBGRAB100366
+Node: STATIST104830
+Ref: STATIST-Footnote-1117982
+Node: MAZE118427
+Node: MOBAGWHO124634
+Ref: MOBAGWHO-Footnote-1138652
+Node: STOXPRED138707
+Node: PROTBASE152995
+Node: Links166111
+Node: GNU Free Documentation License169544
+Node: Index194664
 
 End Tag Table
 

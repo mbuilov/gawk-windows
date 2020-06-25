@@ -62,7 +62,7 @@
 
 @set TITLE TCP/IP Internetworking with @command{gawk}
 @set EDITION 1.5
-@set UPDATE-MONTH April, 2020
+@set UPDATE-MONTH June, 2020
 @c gawk versions:
 @set VERSION 5.1
 @set PATCHLEVEL 0
@@ -405,6 +405,7 @@ All other user-level protocols use either TCP or UDP to do their basic
 communications.  Examples are SMTP (Simple Mail Transfer Protocol),
 FTP (File Transfer Protocol), and HTTP (HyperText Transfer Protocol).
 @cindex SMTP (Simple Mail Transfer Protocol)
+@cindex Simple Mail Transfer Protocol (SMTP)
 @cindex FTP (File Transfer Protocol)
 @cindex HTTP (Hypertext Transfer Protocol)
 
@@ -513,9 +514,9 @@ UDP&&X&\cr
 @chapter Networking With @command{gawk}
 
 @c STARTOFRANGE netgawk
-@cindex networks, @command{gawk} and
+@cindex networks @subentry @command{gawk} and
 @c STARTOFRANGE gawknet
-@cindex @command{gawk}, networking
+@cindex @command{gawk} @subentry networking
 The @command{awk} programming language was originally developed as a
 pattern-matching language for writing short programs to perform
 data manipulation tasks.
@@ -546,14 +547,14 @@ is very similar to what is described in books such as
 or
 @cite{Web Client Programming with Perl}.
 
-@cindex Perl, @command{gawk} networking and
-@cindex Python, @command{gawk} networking and
-@cindex Tcl/Tk, @command{gawk} and
+@cindex Perl @subentry @command{gawk} networking and
+@cindex Python @subentry @command{gawk} networking and
+@cindex Tcl/Tk @subentry @command{gawk} and
 However, you can do the programming here without first having to learn object-oriented
 ideology; underlying languages such as Tcl/Tk, Perl, Python; or all of
 the libraries necessary to extend these languages before they are ready for the Internet.
 
-@cindex Transmission Control Protocol, See TCP
+@cindex Transmission Control Protocol @seeentry{TCP}
 @cindex TCP (Transmission Control Protocol)
 This @value{CHAPTER} demonstrates how to use the TCP protocol. The
 UDP protocol is much less important for most users.
@@ -592,8 +593,8 @@ is started, @command{gawk} creates the appropriate network
 connection, and then two-way I/O proceeds as usual.
 
 @c last comma is part of see-also
-@cindex input/output, two-way, See Also @command{gawk}@comma{} networking
-@cindex TCP/IP, sockets and
+@cindex input/output, two-way, @seealso{@command{gawk}, networking}
+@cindex TCP/IP @subentry sockets and
 At the C, C++, and Perl level, networking is accomplished
 via @dfn{sockets}, an Application Programming Interface (API) originally
 developed at the University of California at Berkeley that is now used
@@ -608,9 +609,9 @@ the programmer, making things much simpler and easier to use.
 @c STARTOFRANGE filenet
 @cindex filenames, for network access
 @c STARTOFRANGE gawnetf
-@cindex @command{gawk}, networking, filenames
+@cindex @command{gawk} @subentry networking @subentry filenames
 @c STARTOFRANGE netgawf
-@cindex networks, @command{gawk} and, filenames
+@cindex networks @subentry @command{gawk} and @subentry filenames
 The special @value{FN} for network access is made up of several fields, all
 of which are mandatory:
 
@@ -619,7 +620,7 @@ of which are mandatory:
 @end example
 
 @cindex @code{/inet/} files (@command{gawk})
-@cindex files, @code{/inet/} (@command{gawk})
+@cindex files @subentry @code{/inet/} (@command{gawk})
 @cindex localport field
 @cindex remoteport field
 The @var{net-type} field lets you specify IPv4 versus IPv6, or lets
@@ -640,7 +641,7 @@ or if the field doesn't apply to the protocol, specify it as @samp{0}:
 @table @var
 @cindex network type field
 @c last comma is part of secondary
-@cindex TCP/IP, network type, selecting
+@cindex TCP/IP @subentry network type, selecting
 @item net-type
 This is one of @samp{inet4} for IPv4, @samp{inet6} for IPv6,
 or @samp{inet} to use the system default (which is likely to be IPv4).
@@ -649,7 +650,7 @@ in our descriptions of how @command{gawk}'s networking works.
 
 @cindex protocol field
 @c last comma is part of secondary
-@cindex TCP/IP, protocols, selecting
+@cindex TCP/IP @subentry protocols, selecting
 @item protocol
 Determines which member of the TCP/IP
 family of protocols is selected to transport the data across the
@@ -658,7 +659,7 @@ network. There are two possible values (always written in lowercase):
 explained later in this @value{SECTION}.
 
 @item localport
-@cindex networks, ports, specifying
+@cindex networks @subentry ports @subentry specifying
 Determines which port on the local
 machine is used to communicate across the network.  Application-level clients
 usually use @samp{0} to indicate they do not care which local port is
@@ -669,7 +670,7 @@ port number. It is possible to use a name from @file{/etc/services} here.
 
 @item hostname
 @cindex hostname field
-@cindex servers, as hosts
+@cindex servers @subentry as hosts
 Determines which remote host is to
 be at the other end of the connection. Application-level servers must fill
 this field with a @samp{0} to indicate their being open for all other hosts
@@ -691,8 +692,8 @@ a @samp{0}. Instead they specify a local port to which clients connect.
 It is possible to use a name from @file{/etc/services} here.
 @end table
 
-@cindex networks, @command{gawk} and, connections
-@cindex @command{gawk}, networking, connections
+@cindex networks @subentry @command{gawk} and @subentry connections
+@cindex @command{gawk} @subentry networking @subentry connections
 Experts in network programming will notice that the usual
 client/server asymmetry found at the level of the socket API is not visible
 here. This is for the sake of simplicity of the high-level concept. If this
@@ -767,11 +768,10 @@ available and demonstrate the differences between them.
 @node File /inet/tcp, File /inet/udp, Comparing Protocols, Comparing Protocols
 @subsubsection @file{/inet/tcp}
 @cindex @code{/inet/tcp} special files (@command{gawk})
-@cindex files, @code{/inet/tcp} (@command{gawk})
+@cindex files @subentry @code{/inet/tcp} (@command{gawk})
 @cindex TCP (Transmission Control Protocol)
 Once again, always use TCP.
-(Use UDP when low overhead is a necessity, and use RAW for
-network experimentation.)
+(Use UDP when low overhead is a necessity.)
 The first example is the sender
 program:
 
@@ -805,9 +805,9 @@ first, and it waits for the receiver to read a line.
 @node File /inet/udp, , File /inet/tcp, Comparing Protocols
 @subsubsection @file{/inet/udp}
 @cindex @code{/inet/udp} special files (@command{gawk})
-@cindex files, @code{/inet/udp} (@command{gawk})
+@cindex files @subentry @code{/inet/udp} (@command{gawk})
 @cindex UDP (User Datagram Protocol)
-@cindex User Datagram Protocol, See UDP
+@cindex User Datagram Protocol @seeentry{UDP}
 The server and client programs that use UDP are almost identical to their TCP counterparts;
 only the @var{protocol} has changed. As before, it does matter which side
 starts first. The receiving side blocks and waits for the sender.
@@ -858,11 +858,11 @@ the original versions of NFS.
 @section Establishing a TCP Connection
 
 @c STARTOFRANGE tcpcon
-@cindex TCP (Transmission Control Protocol), connection, establishing
+@cindex TCP (Transmission Control Protocol) @subentry connection, establishing
 @c STARTOFRANGE netcon
-@cindex networks, @command{gawk} and, connections
+@cindex networks @subentry @command{gawk} and @subentry connections
 @c STARTOFRANGE gawcon
-@cindex @command{gawk}, networking, connections
+@cindex @command{gawk} @subentry networking @subentry connections
 Let's observe a network connection at work. Type in the following program
 and watch the output. Within a second, it connects via TCP (@file{/inet/tcp})
 to the machine it is running on (@samp{localhost}) and asks the service
@@ -928,7 +928,7 @@ we are pedantic and always explicitly close the connections.)
 @section Troubleshooting Connection Problems
 @cindex advanced features, network connections
 @c last comma is part of secondary
-@cindex troubleshooting, networks, connections
+@cindex troubleshooting @subentry networks @subentry connections
 It may well be that for some reason the program shown in the previous example does not run on your
 machine. When looking at possible reasons for this, you will learn much
 about typical problems that arise in network programming. First of all,
@@ -983,7 +983,7 @@ irc         194/udp
 
 @cindex Linux
 @cindex GNU/Linux
-@cindex Microsoft Windows, networking
+@cindex Microsoft Windows @subentry networking
 Here, you find a list of services that traditional Unix machines usually
 support. If your GNU/Linux machine does not do so, it may be that these
 services are switched off in some startup script. Systems running some
@@ -1062,9 +1062,9 @@ remember the advice Douglas E.@: Comer and David Stevens give in
 Volume III of their series @cite{Internetworking With TCP}
 (page 14):
 
-@cindex TCP (Transmission Control Protocol), UDP and
-@cindex UDP (User Datagram Protocol), TCP and
-@cindex Internet, See networks
+@cindex TCP (Transmission Control Protocol) @subentry UDP and
+@cindex UDP (User Datagram Protocol) @subentry TCP and
+@cindex Internet @seeentry{networks}
 @quotation
 When designing client-server applications, beginners are strongly
 advised to use TCP because it provides reliable, connection-oriented
@@ -1076,9 +1076,9 @@ or the application cannot tolerate virtual circuit overhead.
 @node Setting Up, Email, Interacting, Using Networking
 @section Setting Up a Service
 @c last comma is part of tertiary
-@cindex networks, @command{gawk} and, service@comma{} establishing
+@cindex networks @subentry @command{gawk} and @subentry service@comma{} establishing
 @c last comma is part of tertiary
-@cindex @command{gawk}, networking, service@comma{} establishing
+@cindex @command{gawk} @subentry networking @subentry service@comma{} establishing
 The preceding programs behaved as clients that connect to a server somewhere
 on the Internet and request a particular service. Now we set up such a
 service to mimic the behavior of the @samp{daytime} service.
@@ -1119,8 +1119,8 @@ Sat Sep 27 19:08:16 CEST 1997
 Both programs explicitly close the connection.
 
 @c first comma is part of primary
-@cindex Microsoft Windows, networking, ports
-@cindex networks, ports, reserved
+@cindex Microsoft Windows @subentry networking @subentry ports
+@cindex networks @subentry ports @subentry reserved
 @cindex Unix, network ports and
 Now we will intentionally make a mistake to see what happens when the name
 @samp{8888} (the so-called port) is already used by another service.
@@ -1170,8 +1170,8 @@ execute arbitrary commands, anyone would be free to do @samp{rm -rf *}.
 @section Reading Email
 @cindex RFC 1939
 @cindex RFC 821
-@cindex @command{gawk}, networking, See Also email
-@cindex networks, @command{gawk} and, See Also email
+@cindex @command{gawk} @subentry networking @subentry email
+@cindex networks @subentry @command{gawk} and @subentry email
 @cindex POP (Post Office Protocol)
 @cindex SMTP (Simple Mail Transfer Protocol)
 @cindex Post Office Protocol (POP)
@@ -1210,9 +1210,9 @@ BEGIN @{
 @end example
 
 @cindex RFC 1939
-@cindex record separators, POP and
-@cindex @code{RS} variable, POP and
-@cindex @code{ORS} variable, POP and
+@cindex record separators @subentry POP and
+@cindex @code{RS} variable @subentry POP and
+@cindex @code{ORS} variable @subentry POP and
 @cindex POP (Post Office Protocol)
 The record separators @code{RS} and @code{ORS} are redefined because the
 protocol (POP) requires CR-LF to separate lines. After identifying
@@ -1232,7 +1232,7 @@ message it reads, but instead leaves it on the server.
 @section Reading a Web Page
 @cindex web pages
 @cindex HTTP (Hypertext Transfer Protocol)
-@cindex Hypertext Transfer Protocol, See HTTP
+@cindex Hypertext Transfer Protocol @seeentry{HTTP}
 @cindex RFC 2068
 @cindex RFC 2616
 
@@ -1262,10 +1262,10 @@ BEGIN @{
 @end example
 
 @cindex RFC 1945
-@cindex record separators, HTTP and
-@cindex @code{RS} variable, HTTP and
-@cindex @code{ORS} variable, HTTP and
-@cindex HTTP (Hypertext Transfer Protocol), record separators and
+@cindex record separators @subentry HTTP and
+@cindex @code{RS} variable @subentry HTTP and
+@cindex @code{ORS} variable @subentry HTTP and
+@cindex HTTP (Hypertext Transfer Protocol) @subentry record separators and
 @cindex HTML (Hypertext Markup Language)
 @cindex Hypertext Markup Language (HTML)
 Again, lines are separated by a redefined @code{RS} and @code{ORS}.
@@ -1288,11 +1288,11 @@ then you get the body of the page in HTML.  The lines of the headers also
 have the same form as in POP. There is the name of a parameter,
 then a colon, and finally the value of that parameter.
 
-@cindex CGI (Common Gateway Interface), dynamic web pages and
-@cindex Common Gateway Interface, See CGI
+@cindex CGI (Common Gateway Interface) @subentry dynamic web pages and
+@cindex Common Gateway Interface @seeentry{CGI}
 @cindex GIF image format
 @cindex PNG image format
-@cindex images, retrieving over networks
+@cindex images @subentry retrieving over networks
 Images (@file{.png} or @file{.gif} files) can also be retrieved this way,
 but then you
 get binary data that should be redirected into a file. Another
@@ -1380,11 +1380,11 @@ use a proxy to connect to your machine.
 
 @node Interacting Service, Simple Server, Primitive Service, Using Networking
 @section A Web Service with Interaction
-@cindex @command{gawk}, web and, See web service
-@cindex web browsers, See web service
+@cindex @command{gawk} @subentry web and @seeentry{web service}
+@cindex web browsers, @seeentry{web service}
 @c comma is part of primary
 @cindex HTTP server, core logic
-@cindex servers, HTTP
+@cindex servers @subentry HTTP
 @ifinfo
 This node shows how to set up a simple web server.
 The subnode is a library file that we will use with all the examples in
@@ -1587,8 +1587,8 @@ This program can be started on the same host that runs your browser.
 Then let your browser point to @uref{http://localhost:8080}.
 
 @cindex XBM image format
-@cindex images, in web pages
-@cindex web pages, images in
+@cindex images @subentry in web pages
+@cindex web pages @subentry images in
 @cindex GNUPlot utility
 It is also possible to include images into the HTML pages.
 Most browsers support the not very well-known
@@ -1609,7 +1609,7 @@ Phil Smith III,@*
 @end quotation
 
 @c STARTOFRANGE cgilib
-@cindex CGI (Common Gateway Interface), library
+@cindex CGI (Common Gateway Interface) @subentry library
 In @ref{Interacting Service, ,A Web Service with Interaction},
 we saw the function @code{CGI_setup()} as part of the web server
 ``core logic'' framework. The code presented there handles almost
@@ -1826,7 +1826,7 @@ p2=stuff%26junk&percent=a %25 sign
 @c STARTOFRANGE webserx
 @cindex web servers
 @c STARTOFRANGE serweb
-@cindex servers, web
+@cindex servers @subentry web
 In the preceding @value{SECTION}, we built the core logic for event-driven GUIs.
 In this @value{SECTION}, we finally extend the core to a real application.
 No one would actually write a commercial web server in @command{gawk}, but
@@ -2199,9 +2199,9 @@ explain how to modify the Java source code.
 @node Caveats, Challenges, Simple Server, Using Networking
 @section Network Programming Caveats
 
-@cindex networks, @command{gawk} and, troubleshooting
-@cindex @command{gawk}, networking, troubleshooting
-@cindex troubleshooting, @command{gawk}, networks
+@cindex networks @subentry @command{gawk} and @subentry troubleshooting
+@cindex @command{gawk} @subentry networking @subentry troubleshooting
+@cindex troubleshooting @subentry @command{gawk}, networks
 By now it should be clear
 that debugging a networked application is more
 complicated than debugging a single-process single-hosted application.
@@ -2220,7 +2220,7 @@ If the party at the other end is running or not
 The state of the party at the other end
 @end itemize
 
-@cindex troubleshooting, networks, timeouts
+@cindex troubleshooting @subentry networks @subentry timeouts
 The most difficult problems for a beginner arise from the hidden states of the
 underlying network. After closing a TCP connection, it's often necessary to wait
 a short while before reopening the connection. Even more difficult is the
@@ -2405,7 +2405,7 @@ execution provides @command{gawk} with an interface to the most widely
 accepted standard for GUIs: the web browser. Now, @command{gawk} can rival even
 Tcl/Tk.
 
-@cindex Tcl/Tk, @command{gawk} and
+@cindex Tcl/Tk @subentry @command{gawk} and
 Tcl and @command{gawk} have much in common. Both are simple scripting languages
 that allow us to quickly solve problems with short programs. But Tcl has Tk
 on top of it, and @command{gawk} had nothing comparable up to now. While Tcl
@@ -2433,7 +2433,7 @@ We can use HTML, JavaScript, VRML, or whatever else comes along to do our work.
 @node PANIC, GETURL, Some Applications and Techniques, Some Applications and Techniques
 @section PANIC: An Emergency Web Server
 @cindex PANIC program
-@cindex networks, See Also web pages
+@cindex networks @seealso{web pages}
 @cindex web service
 At first glance, the @code{"Hello, world"} example in
 @ref{Primitive Service, ,A Primitive Web Service},
@@ -2478,7 +2478,7 @@ BEGIN @{
 @node GETURL, REMCONF, PANIC, Some Applications and Techniques
 @section GETURL: Retrieving Web Pages
 @cindex GETURL program
-@cindex web pages, retrieving
+@cindex web pages @subentry retrieving
 GETURL is a versatile building block for shell scripts that need to retrieve
 files from the Internet. It takes a web address as a command-line parameter and
 tries to retrieve the contents of this address. The contents are printed
@@ -2895,6 +2895,7 @@ Otherwise you still have the chance to generate some
 ASCII-art style images with GNUPlot by using @samp{set term dumb}.
 (We tried it and it worked.)}
 
+@cindex Numerical Recipes
 The program we develop takes the statistical parameters of two samples
 and computes the t-test statistics. As a result, we get the probabilities
 that the means and the variances of both samples are the same. In order to
@@ -2908,7 +2909,6 @@ of GNUPlot. As a side effect, we learn how to use GNUPlot as a
 sophisticated calculator. The comparison of means is done as in @code{tutest},
 paragraph 14.2, page 613, and the comparison of variances is done as in @code{ftest},
 page 611 in @cite{Numerical Recipes}.
-@cindex Numerical Recipes
 
 As usual, we take the site-independent code for servers and append
 our own functions @code{SetUpServer()} and @code{HandleGET()}:
@@ -3934,7 +3934,7 @@ function Report() @{
 @end smallexample
 
 The function @code{SendMail()} goes through the list of customers and opens
-a pipe to the @code{mail} command for each of them. Each one receives an
+a pipe to the @command{mail} command for each of them. Each one receives an
 email message with a proper subject heading and is addressed with his full name.
 
 @smallexample
@@ -4923,4 +4923,4 @@ Conventions:
 3. HTTP method names are in @code.
 4. Protocols such as echo, ftp, etc are in @samp.
 5. URLs are in @url.
-6. All RFCs in the index.  Put a space between `RFC' and the number.
+6. All RFCs are in the index.  Put a space between `RFC' and the number.
