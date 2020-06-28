@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Marzo 2020
+@set UPDATE-MONTH Giugno 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -12185,6 +12185,9 @@ Come parametro in una chiamata a una funzione definita dall'utente
 (@pxref{Funzioni definite dall'utente}).
 
 @item
+Come valore restituito da una funzione definita dall'utente.
+
+@item
 Sul lato destro di un assegnamento di variabile:
 @samp{qualche_variabile = @@/foo/}.
 In tal caso, @code{qualche_variabile} @`e di tipo @dfn{regexp}.
@@ -15662,14 +15665,14 @@ corrisponde al valore dell'espressione, viene eseguita la sezione
 @code{default}, se @`e stata specificata.
 
 Ogni @code{case} contiene una singola costante, che pu@`o essere un numero,
-una stringa, o
-una @dfn{regexp}.  Viene valutata l'espressione @code{switch}, e poi la
-costante di ogni @code{case} viene confrontata
-di volta in volta con il valore risultante.
-Il tipo di costante determina quale sar@`a il confronto: per i tipi numerici o
-stringa si seguono le regole abituali.  Per una costante @dfn{regexp} viene
-effettuato un confronto tra l'espressione e il valore di tipo stringa
-dell'espressione originale.
+una stringa, o una @dfn{regexp}.  Viene valutata l'espressione @code{switch},
+e poi la costante di ogni @code{case} viene confrontata di volta in volta
+con il valore risultante.
+Il tipo di costante determina come sar@`a eseguito il confronto: per i tipi
+numerici o stringa si seguono le regole abituali.  Per una costante
+@dfn{regexp} (sia regolare, @code{/pippo/}, che fortemente tipizzata,
+@code{@@/pippo/}) viene effettuato un confronto tra l'espressione e il
+valore di tipo stringa dell'espressione originale.
 Il formato generale dell'istruzione @code{switch} @`e simile a questo:
 
 @example
@@ -19220,11 +19223,12 @@ a[3] = "ultimo"
 @end example
 
 @quotation NOTA
-Per limitazioni dovute all'implementazione, non si possono usare
-n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come argomenti di queste 
-funzioni, neppure se si specifica un secondo vettore da utilizzare
-per effettuare l'ordinamento.  Se si tenta di farlo, viene generato
-un errore fatale.  Questa limitazione potrebbe venire meno in futuro.
+Non si pu@`o usare n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come secondo
+argomento di queste funzioni.  Se si tenta di farlo, viene generato un
+errore fatale.
+Questi vettori possono essere usati come primo argomento, ma soltanto
+se si specifica un secondo vettore da usare per contenere il risultato
+dell'ordinamento.
 @end quotation
 
 @item @code{gensub(@var{regexp}, @var{rimpiazzo}, @var{come}} [@code{, @var{obiettivo}}]@code{) #}
@@ -27675,11 +27679,8 @@ Si spera che siano interessanti e divertenti.
 @cindex documenti @subentry ricerca in
 Un errore comune quando si scrive un testo lungo @`e quello di ripetere
 accidentalmente delle parole.  Tipicamente lo si pu@`o vedere in testi del tipo
-``questo questo programma fa quanto segue@dots{}''  Quando il testo @`e pubblicato in rete, spesso
+``questo programma fa quanto segue segue@dots{}''  Quando il testo @`e pubblicato in rete, spesso
 le parole duplicate sono poste tra il termine di
-@iftex
-di
-@end iftex
 una riga e l'inizio di un'altra, il che rende difficile scoprirle.
 @c as here!
 
@@ -30908,7 +30909,7 @@ TCP del sistema locale.
 Stampa poi il risultato e chiude la connessione.
 
 Poich@'e questo tema @`e molto ampio, l'uso di @command{gawk} per
-la programmazione TCP/IP viene documentata separatamente.
+la programmazione TCP/IP viene documentato separatamente.
 @ifinfo
 Si veda
 @inforef{Top, , General Introduction, gawkinet, @value{GAWKINETTITLE}},
@@ -33666,7 +33667,7 @@ sono i seguenti:
 
 @c nested table
 @table @asis
-@item @code{-} (Meno)
+@item @code{-} (meno)
 Stampa righe prima delle ultime righe stampate.
 
 @item @code{+}
@@ -45549,18 +45550,18 @@ sistemi operativi possono avere limiti differenti.
 @multitable @columnfractions .40 .60
 @headitem Caratteristica @tab Limiti
 @item Caratteri in una classe di caratteri @tab 2^(numero di bit per byte)
-@item Lunghezza di un record in input @tab @code{MAX_INT}
+@item Lunghezza di un record in input @tab @code{ULONG_MAX}
 @item Lunghezza di un record in output @tab Illimitata
 @item Lunghezza di una riga di codice sorgente @tab Illimitata
-@item Numero di campi in un record @tab @code{MAX_LONG}
+@item Numero di campi in un record @tab @code{ULONG_MAX}
 @item Numero di ridirezioni di file @tab Illimitata
 @item Numero di record in input in un singolo file @tab @code{MAX_LONG}
 @item Numero totale di record in input @tab @code{MAX_LONG}
 @item Numero di ridirezioni via @dfn{pipe} @tab min(numero processi per utente, numero di file aperti)
 @item Valori numerici @tab Numeri in virgola mobile in doppia precisione (se non si usa la funzionalit@`a MPFR)
-@item Dimensione di un campo @tab @code{MAX_INT}
-@item Dimensione di una stringa letterale @tab @code{MAX_INT}
-@item Dimensione di una stringa di @dfn{printf} @tab @code{MAX_INT}
+@item Dimensione di un campo @tab @code{ULONG_MAX}
+@item Dimensione di una stringa letterale @tab @code{ULONG_MAX}
+@item Dimensione di una stringa di @dfn{printf} @tab @code{ULONG_MAX}
 @end multitable
 
 @node Progetto delle estensioni

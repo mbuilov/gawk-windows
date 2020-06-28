@@ -10,8 +10,9 @@
 .\"Aggiornam. a gawk-4.2.0 di A.G. Colombo - revis. M. Curreli - Dicembre 2017
 .\"Aggiornam. a gawk-4.2.1 di A.G. Colombo - revis. M. Curreli - Febbraio 2018
 .\"Aggiornam. a gawk-4.2.2 di A.G. Colombo - revis. M. Curreli - Dicembre 2018
-.\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Luglio 2019
-.\"Aggiornam. a gawk-5.1.1 di A.G. Colombo - revis. M. Curreli - Aprile 2020
+.\"Aggiornam. a gawk-5.0.0 di A.G. Colombo - Luglio 2019
+.\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - revis. M. Curreli - Aprile 2020
+.\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Giugno 2020
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -236,7 +237,7 @@ nella directory corrente.
 .sp .5
 Avere una lista di tutte le variabili globali è un buon modo per cercare
 errori tipografici nei programmi.
-Quest'opzione potrebbe essere usata anche se si ha un grosso programma con 
+Quest'opzione potrebbe essere usata anche se si ha un grosso programma con
 tantissime funzioni, e ci si vuole assicurare che le funzioni non usino
 inavvertitamente variabili globali che sono supposte essere locali
 (è facile commettere questo errore quando si usano nomi di variabili
@@ -904,7 +905,7 @@ producono la stringa vuota.  Tuttavia, l'assegnamento ad un campo inesistente
 provoca l'incremento del valore di
 .BR NF ,
 crea tutti i campi intermedi assegnando loro la stringa nulla, e fa sì
-che il valore di 
+che il valore di
 .B $0
 sia ricalcolato utilizzando
 .B OFS
@@ -926,7 +927,6 @@ Analogamente, assegnare un valore a
 provoca una nuova divisione del record, creando nuovi
 valori per i suoi campi.
 .SS Variabili predefinite
-.PP
 Le variabili predefinite di
 .IR gawk " sono:
 .PP
@@ -1443,7 +1443,7 @@ La stringa usata per separare indici multipli negli elementi di un vettore,
 quella predefinita è \fB"\e034"\fR.
 .TP
 .B SYMTAB
-Un vettore i cui indici sono i nomi di tutti i vettori e le variabili 
+Un vettore i cui indici sono i nomi di tutti i vettori e le variabili
 globali attualmente definite presenti nel programma.  Il vettore può essere
 usato per l'accesso indiretto in lettura e scrittura del valore di una
 variabile:
@@ -1474,7 +1474,6 @@ un nome di variabile.
 Il dominio di testo del programma \*(AK ; usato per trovare le traduzioni
 localizzate delle stringhe del programma.
 .SS Vettori
-.PP
 I vettori hanno per indice un'espressione tra parentesi quadre
 .RB ( [ " e " ] ).
 Se l'espressione è formata da una lista di espressioni
@@ -1560,7 +1559,7 @@ poi con l'istruzione
 .BR delete .
 .SS Spazi-dei-nomi
 .I Gawk
-fornisce una semplice funzionalità, 
+fornisce una semplice funzionalità,
 .IR namespace ,
 (spazio-dei-nomi) per ovviare al fatto che tutte le variabili in
 AWK sono globali.
@@ -1589,7 +1588,6 @@ possono essere usati come nomi di uno spazio-dei-nomi o come semplici
 identificativi in altri spazi-dei-nomi.
 Per ulteriori dettagli, vedere \*(EP.
 .SS Notazione e conversione delle variabili
-.PP
 Le variabili e i campi
 possono essere numeri (in virgola mobile), stringhe, o entrambe le cose.
 Possono anche essere espressioni regolari.
@@ -1683,7 +1681,6 @@ e il valore esadecimale
 .B 0x11
 è uguale al decimale 17.
 .SS Costanti di tipo stringa
-.PP
 Le costanti stringa in \*(AK sono sequenze di caratteri racchiusi tra
 doppi apici (come \fB"valore"\fR).  All'interno delle stringhe, sono riconosciute alcune
 .IR "sequenze di protezione" ,
@@ -1926,7 +1923,7 @@ Corrisponde al carattere
 considerato letteralmente.
 .TP
 .B .
-Corrisponde a qualsiasi carattere, 
+Corrisponde a qualsiasi carattere,
 .I compreso
 "newline".
 .TP
@@ -1938,14 +1935,14 @@ Corrisponde alla fine di una stringa.
 .TP
 .BI [ abc.\|.\|. ]
 Una lista di caratteri: corrisponde a uno qualsiasi dei caratteri
-.IR abc.\|.\|. .
+.IR abc.\|.\|.\& .
 Si possono includere intervalli di caratteri separandoli con un trattino.
 Per aggiungere alla lista il carattere trattino, inserirlo all'inizio o
 alla fine della lista stessa.
 .TP
 \fB[^\fIabc.\|.\|.\fB]\fR
 Una lista di caratteri negata: corrisponde a qualsiasi carattere eccetto
-.IR abc.\|.\|. .
+.IR abc.\|.\|.\& .
 .TP
 .IB r1 | r2
 Alternativa: corrisponde a
@@ -2037,7 +2034,7 @@ Le sequenze di protezione valide all'interno delle costanti stringa (vedere
 .BR "Costanti di tipo stringa" )
 sono ammesse anche nelle espressioni regolari.
 .PP
-Le 
+Le
 .I "classi di caratteri"
 sono una nuova funzionalità introdotta nello standard \*(PX.  Una classe di
 caratteri è una speciale notazione per indicare liste di caratteri accomunati
@@ -2218,7 +2215,6 @@ assegnamento, condizionali e iterative presenti nella maggior parte
 dei linguaggi.  Gli operatori, le strutture di controllo e le istruzioni
 di input/output ricalcano quelli corrispondenti nel linguaggio C.
 .SS Operatori
-.PP
 Gli operatori di \*(AK, in ordine decrescente di precedenza, sono
 .PP
 .TP "\w'\fB*= /= %= ^=\fR'u+1n"
@@ -2303,14 +2299,13 @@ Assegnamento. Sono permessi sia l'assegnamento assoluto
 .BI ( var " = " valore )
 che quello con operatore (le altre forme).
 .SS Istruzioni di controllo
-.PP
 Le istruzioni di controllo sono
 le seguenti:
 .PP
 .RS
 .nf
 \fBif (\fIcondizione\fB) \fIistruzione\fR [ \fBelse\fI istruzione \fR]
-\fBwhile (\fIcondizione\fB) \fIistruzione \fR
+\fBwhile (\fIcondizione\fB) \fIistruzione\fR
 \fBdo \fIistruzione \fBwhile (\fIcondizione\fB)\fR
 \fBfor (\fIespressione1\fB; \fIespressione2\fB; \fIespressione3\fB) \fIistruzione\fR
 \fBfor (\fIvar \fBin\fI vettore\fB) \fIistruzione\fR
@@ -2328,7 +2323,6 @@ le seguenti:
 .fi
 .RE
 .SS "Istruzioni di I/O"
-.PP
 Le istruzioni di input/output sono le seguenti:
 .PP
 .TP "\w'\fBprintf \fIfmt, lista-espressioni\fR'u+1n"
@@ -2413,7 +2407,7 @@ esegue i comandi di ogni regola
 .BR END ,
 se presenti.
 .TP
-.B "nextfile"
+.B nextfile
 Cessa l'elaborazione del file di input corrente.  La prossima riga
 letta proverrà dal file di input successivo.
 Aggiorna
@@ -2482,14 +2476,14 @@ Sono permessi anche altri tipi di ridirezione in scrittura per
 e
 .BR printf .
 .TP
-.BI "print .\|.\|. >>" " file"
+.BI "print .\|.\|.\& >>" " file"
 Aggiunge l'output alla fine di
 .IR file .
 .TP
-.BI "print .\|.\|. |" " comando"
+.BI "print .\|.\|.\& |" " comando"
 Scrive su una pipe.
 .TP
-.BI "print .\|.\|. |&" " comando"
+.BI "print .\|.\|.\& |&" " comando"
 Invia dati a un coprocesso o a un socket.
 (Vedere anche la sottosezione
 .BR "Nomi di file speciali" ,
@@ -2527,7 +2521,6 @@ per creare una nuova istanza del comando o del socket.
 \*(AK non chiude automaticamente pipe, socket, o coprocessi quando
 questi restituiscono EOF.
 .SS L'istruzione \fIprintf\fP\^
-.PP
 Le versioni di \*(AK dell'istruzione
 .B printf
 e della funzione
@@ -2702,7 +2695,7 @@ preceduto da spazi.  In presenza del flag
 .BR 0 ,
 è invece preceduto da zeri.
 .TP
-.BI \&. prec
+.BI \&.\& prec
 Un numero indicante la precisione da utilizzare nella stampa.
 Con i formati
 .BR %e ,
@@ -2757,7 +2750,6 @@ dopo il carattere
 nella stringa di formattazione.
 Per esempio, \fB"%3$*2$.*1$s"\fP.
 .SS Nomi di file speciali
-.PP
 effettuando delle ridirezioni di
 .B print
 o
@@ -2850,7 +2842,6 @@ Si può usare solo con l'operatore bidirezionale di I/O
 .BI /inet6/udp/ lport / rhost / rport
 Come sopra, ma usando porte UDP/IP invece che TCP/IP.
 .SS Funzioni numeriche
-.PP
 \*(AK ha le seguenti funzioni aritmetiche predefinite:
 .PP
 .TP "\w'\fBsrand(\fR[\fIespressione\^\fR]\fB)\fR'u+1n"
@@ -2882,7 +2873,7 @@ diviso per
 .I denominatore
 in \fIresult\fB["quotient"]\fR
 e il resto in
-in \fIresult\fB["remainder"]\fR.
+\fIresult\fB["remainder"]\fR.
 Questa è un'estensione
 .IR gawk ,
 utile in particolare quando si lavora con numeri
@@ -2916,7 +2907,6 @@ non è indicata, sarà utilizzata il tempo corrente, misurato in secondi dal 1970.
 Il valore restituito è il valore precedente
 del seme.
 .SS Funzioni di stringa
-.PP
 .I Gawk
 offre le seguenti funzioni di stringa predefinite:
 .PP
@@ -3529,7 +3519,7 @@ function  f(p, q,     a, b)	# a e b sono variabili locali
 	\&.\|.\|.
 }
 
-/abc/	{ .\|.\|. ; f(1, 2) ; .\|.\|. }
+/abc/	{ .\|.\|.\& ; f(1, 2) ; .\|.\|.\& }
 .fi
 .ft R
 .RE
@@ -3716,7 +3706,7 @@ regola
 .B BEGIN
 è stata eseguita.  Peraltro, in implementazioni precedenti, quando una tale
 assegnazione compariva prima di un nome di file, l'assegnazione sarebbe
-avvenuta 
+avvenuta
 .I prima
 di eseguire la regola
 .BR BEGIN .
@@ -3766,7 +3756,8 @@ e poi riversate nella versione Bell Laboratories); le funzioni predefinite
 .B tolower()
 e
 .B toupper()
-(dalla versione Bell Laboratories); e le specifiche di conversione ISO C in
+(dalla versione Bell Laboratories);
+e le specifiche di conversione ISO C in
 .B printf
 (presenti per prime nella versione Bell Laboratories).
 .SH FUNZIONALITÀ STORICHE
@@ -4202,7 +4193,7 @@ Anche se gli sviluppatori di
 .I gawk
 di tanto in tanto leggono questo forum, inviare qui messaggi di segnalazione
 di errore è una maniera poco affidabile per segnalare errori.
-Analogamente, 
+Analogamente,
 .B NON
 usare una comunità web (tipo Stack Overflow) per segnalare errori.
 Siete invece pregati di usare gli indirizzi di posta elettronica
@@ -4239,7 +4230,7 @@ di comando; viene mantenuta solo per compatibilità all'indietro.
 .IR usleep (3)
 .PP
 .IR "The AWK Programming Language" ,
-Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
+Alfred V.\& Aho, Brian W.\& Kernighan, Peter J.\& Weinberger,
 Addison-Wesley, 1988.  ISBN 0-201-07981-X.
 .PP
 \*(EP,
@@ -4328,7 +4319,7 @@ inglese ha tale validità.
 This is an unofficial translation into Italian of the above section "COPYING
 PERMISSIONS". It was not published by the Free Software Foundation, and does not
 legally state the distribution terms for this documentation; only
-the original English text does that. 
+the original English text does that.
 .PP
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
