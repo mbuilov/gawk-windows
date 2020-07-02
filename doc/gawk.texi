@@ -4094,6 +4094,18 @@ or on the command line.
 Files named with @option{-i} are treated as if they had @samp{@@namespace "awk"}
 at their beginning.  @xref{Changing The Namespace}, for more information.
 
+@item @option{-I}
+@itemx @option{--trace}
+@cindex @option{-I} option
+@cindex @option{--trace} option
+@cindex trace, internal instructions
+@cindex instructions, trace of internal
+@cindex op-codes, trace of internal
+Print the internal byte code names as they are executed when running
+the program. The trace is printed to standard error. Each ``op code''
+is preceded by a @code{+}
+sign in the output.
+
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
 @cindex @option{-l} option
