@@ -167,7 +167,7 @@ BASIC_TESTS = \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
 	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 paramdup paramres paramtyp paramuninitglobal \
-	parse1 parsefld parseme pcntplus posix2008sub prdupval prec printf0 \
+	parse1 parsefld parseme pcntplus posix_compare posix2008sub prdupval prec printf0 \
 	printf1 printfchar prmarscl prmreuse prt1eval prtoeval \
 	rand randtest range1 range2 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
@@ -267,7 +267,7 @@ NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
 NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
 
 # List of tests that need --posix
-NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
+NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix posix_compare
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
@@ -305,8 +305,9 @@ NEED_LOCALE_C = \
 
 NEED_LOCALE_EN = \
 	backbigs1 backsmalls1 backsmalls2 concat4 dfamb1 ignrcas2 lc_num1 \
-	mbfw1 mbprintf1 mbprintf3 mbprintf4 mbstr1 mbstr2 printhuge reint2 \
-	rri1 subamp subi18n wideidx wideidx2 widesub widesub2 widesub3 widesub4
+	mbfw1 mbprintf1 mbprintf3 mbprintf4 mbstr1 mbstr2 posix_compare \
+	printhuge reint2 rri1 subamp subi18n wideidx wideidx2 \
+	widesub widesub2 widesub3 widesub4
 
 
 # Unused at the moment, since nlstringtest has additional stufff it does
@@ -2025,6 +2026,12 @@ parseme:
 pcntplus:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+posix_compare:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 posix2008sub:

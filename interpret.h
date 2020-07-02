@@ -100,7 +100,13 @@ top:
 		}
 #endif
 
-		switch ((op = pc->opcode)) {
+		op = pc->opcode;
+		if (do_itrace) {
+			fprintf(stderr, "+ %s\n", opcode2str(op));
+			fflush(stderr);
+		}
+
+		switch (op) {
 		case Op_rule:
 			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline */
 			/* fall through */
