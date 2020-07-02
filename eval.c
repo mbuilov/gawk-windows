@@ -503,79 +503,81 @@ genflags2str(int flagval, const struct flagtab *tab)
 static int
 posix_compare(NODE *s1, NODE *s2)
 {
-	int ret = 0;
-	char save1, save2;
-	size_t l = 0;
-
-	save1 = s1->stptr[s1->stlen];
-	s1->stptr[s1->stlen] = '\0';
-
-	save2 = s2->stptr[s2->stlen];
-	s2->stptr[s2->stlen] = '\0';
+	int ret;
 
 	if (gawk_mb_cur_max == 1) {
-		if (strlen(s1->stptr) == s1->stlen && strlen(s2->stptr) == s2->stlen)
-			ret = strcoll(s1->stptr, s2->stptr);
-		else {
-			char b1[2], b2[2];
-			char *p1, *p2;
-			size_t i;
+		char save1, save2;
+		const char *p1, *p2;
 
-			if (s1->stlen < s2->stlen)
-				l = s1->stlen;
-			else
-				l = s2->stlen;
+		save1 = s1->stptr[s1->stlen];
+		s1->stptr[s1->stlen] = '\0';
 
-			b1[1] = b2[1] = '\0';
-			for (i = ret = 0, p1 = s1->stptr, p2 = s2->stptr;
-			     ret == 0 && i < l;
-			     p1++, p2++) {
-				b1[0] = *p1;
-				b2[0] = *p2;
-				ret = strcoll(b1, b2);
+		save2 = s2->stptr[s2->stlen];
+		s2->stptr[s2->stlen] = '\0';
+
+		p1 = s1->stptr;
+		p2 = s2->stptr;
+
+		for (;;) {
+			size_t len;
+
+			ret = strcoll(p1, p2);
+			if (ret != 0)
+				break;
+
+			len = strlen(p1);
+			p1 += len + 1;
+			p2 += len + 1;
+
+			if (p1 == s1->stptr + s1->stlen + 1) {
+				if (p2 != s2->stptr + s2->stlen + 1)
+					ret = -1;
+				break;
+			}
+			if (p2 == s2->stptr + s2->stlen + 1) {
+				ret = 1;
+				break;
 			}
 		}
-		/*
-		 * Either worked through the strings or ret != 0.
-		 * In either case, ret will be the right thing to return.
-		 */
+
+		s1->stptr[s1->stlen] = save1;
+		s2->stptr[s2->stlen] = save2;
 	}
 #if ! defined(__DJGPP__)
 	else {
 		/* Similar logic, using wide characters */
+		const wchar_t *p1, *p2;
+
 		(void) force_wstring(s1);
 		(void) force_wstring(s2);
 
-		if (wcslen(s1->wstptr) == s1->wstlen && wcslen(s2->wstptr) == s2->wstlen)
-			ret = wcscoll(s1->wstptr, s2->wstptr);
-		else {
-			wchar_t b1[2], b2[2];
-			wchar_t *p1, *p2;
-			size_t i;
+		p1 = s1->wstptr;
+		p2 = s2->wstptr;
 
-			if (s1->wstlen < s2->wstlen)
-				l = s1->wstlen;
-			else
-				l = s2->wstlen;
+		for (;;) {
+			size_t len;
 
-			b1[1] = b2[1] = L'\0';
-			for (i = ret = 0, p1 = s1->wstptr, p2 = s2->wstptr;
-			     ret == 0 && i < l;
-			     p1++, p2++) {
-				b1[0] = *p1;
-				b2[0] = *p2;
-				ret = wcscoll(b1, b2);
+			ret = wcscoll(p1, p2);
+			if (ret != 0)
+				break;
+
+			len = wcslen(p1);
+			p1 += len + 1;
+			p2 += len + 1;
+
+			if (p1 == s1->wstptr + s1->wstlen + 1) {
+				if (p2 != s2->wstptr + s2->wstlen + 1)
+					ret = -1;
+				break;
+			}
+			if (p2 == s2->wstptr + s2->wstlen + 1) {
+				ret = 1;
+				break;
 			}
 		}
-		/*
-		 * Either worked through the strings or ret != 0.
-		 * In either case, ret will be the right thing to return.
-		 */
 	}
 #endif
 
-	s1->stptr[s1->stlen] = save1;
-	s2->stptr[s2->stlen] = save2;
 	return ret;
 }
 
