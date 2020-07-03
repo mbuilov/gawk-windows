@@ -1,3 +1,12 @@
+2020-07-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a double free error with -M.  Thanks to
+	"NIDE, Naoyuki" <nide@ics.nara-wu.ac.jp> for the report.
+
+	* field.c (clear_mpfr):  New macro, clears MPFR and NUMCUR bits.
+	(reset_record): Use it on the newly copied field values.
+	(purge_record): Add introductory comment since we're in the file.
+
 2020-07-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* eval.c (posix_compare): Rewrite contributed by
