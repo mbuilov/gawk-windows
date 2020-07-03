@@ -1159,7 +1159,8 @@ enum do_flag_values {
 	DO_SANDBOX	   = 0x01000,	/* sandbox mode - disable 'system' function & redirections */
 	DO_PROFILE	   = 0x02000,	/* profile the program */
 	DO_DEBUG	   = 0x04000,	/* debug the program */
-	DO_MPFR		   = 0x08000	/* arbitrary-precision floating-point math */
+	DO_MPFR		   = 0x08000,	/* arbitrary-precision floating-point math */
+	DO_ITRACE	   = 0x10000	/* trace byte-code instructions */
 };
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
@@ -1174,6 +1175,7 @@ enum do_flag_values {
 #define do_sandbox          (do_flags & DO_SANDBOX)
 #define do_debug            (do_flags & DO_DEBUG)
 #define do_mpfr             (do_flags & DO_MPFR)
+#define do_itrace           (do_flags & DO_ITRACE)
 
 extern bool do_optimize;
 extern int use_lc_numeric;

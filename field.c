@@ -90,6 +90,8 @@ Regexp *FPAT_re_no_case = NULL;
 Regexp *FPAT_regexp = NULL;
 NODE *Null_field = NULL;
 
+#define clear_mpfr(n) ((n)->flags &= ~(MPFN | MPZN | NUMCUR))
+
 /* init_fields --- set up the fields array to start with */
 
 void
@@ -230,6 +232,7 @@ rebuild_record()
 			}
 
 			n->stptr = cops;
+			clear_mpfr(n);
 			unref(r);
 			fields_arr[i] = n;
 			assert((n->flags & WSTRCUR) == 0);
@@ -346,6 +349,11 @@ reset_record()
 		update_PROCINFO_str("FS", current_field_sep_str());
 	}
 }
+
+/*
+ * purge_record --- throw away the fields, make sure that
+ * 	individual nodes remain valid.
+ */
 
 static void
 purge_record()

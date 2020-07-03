@@ -539,7 +539,7 @@ print_lines(char *src, int start_line, int nlines)
 	}
 
 	if (fstat(s->fd, &sbuf) == 0 && s->mtime < sbuf.st_mtime) {
-		fprintf(out_fp, _("WARNING: source file `%s' modified since program compilation.\n"),
+		fprintf(out_fp, _("warning: source file `%s' modified since program compilation.\n"),
 				src);
 		efree(s->line_offset);
 		s->line_offset = NULL;
@@ -775,7 +775,7 @@ do_info(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 						b->number, disp, (b->flags & BP_ENABLE) != 0 ? "yes" : "no",
 					 	b->src,	b->bpi->source_line);
 				if (b->hit_count > 0)
-					gprintf(out_fp, _("\tno of hits = %ld\n"), b->hit_count);
+					gprintf(out_fp, _("\tnumber of hits = %ld\n"), b->hit_count);
 				if ((b->flags & BP_IGNORE) != 0)
 					gprintf(out_fp, _("\tignore next %ld hit(s)\n"), b->ignore_count);
 				if (b->cndn.code != NULL)
@@ -1129,7 +1129,7 @@ print_subscript(NODE *arr, char *arr_name, CMDARG *a, int count)
 	subs = a->a_node;
 	r = in_array(arr, subs);
 	if (r == NULL)
-		fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"), (int) subs->stlen, subs->stptr, arr_name);
+		fprintf(out_fp, _("subscript \"%.*s\" is not in array `%s'\n"), (int) subs->stlen, subs->stptr, arr_name);
 	else if (r->type == Node_var_array) {
 		if (count > 1)
 			print_subscript(r, r->vname, a->next, count - 1);
@@ -1181,7 +1181,7 @@ do_print_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					subs = a->a_node;
 					value = in_array(r, subs);
 					if (value == NULL) {
-						fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"),
+						fprintf(out_fp, _("subscript \"%.*s\" is not in array `%s'\n"),
 									(int) subs->stlen, subs->stptr, name);
 						break;
 					} else if (value->type != Node_var_array) {
@@ -1511,10 +1511,10 @@ do_delete_item(struct list_item *list, CMDARG *arg)
 			if ((d = find_item(list, arg->a_int)) == NULL) {
 				/* split into two for easier message translation */
 				if (list == &display_list)
-					d_error(_("No display item numbered %ld"),
+					d_error(_("no display item numbered %ld"),
 						arg->a_int);
 				else
-					d_error(_("No watch item numbered %ld"),
+					d_error(_("no watch item numbered %ld"),
 						arg->a_int);
 			} else
 				delete_item(d);
@@ -1540,7 +1540,7 @@ display(struct list_item *d)
 			sub = d->subs[i];
 			r = in_array(symbol, sub);
 			if (r == NULL) {
-				fprintf(out_fp, _("%d: [\"%.*s\"] not in array `%s'\n"),
+				fprintf(out_fp, _("%d: subscript \"%.*s\" is not in array `%s'\n"),
 							d->number, (int) sub->stlen, sub->stptr, d->sname);
 				break;
 			}
@@ -2383,7 +2383,7 @@ set_breakpoint(CMDARG *arg, bool temporary)
 	case D_int:		/* break lineno */
 		lineno = (int) arg->a_int;
 		if (lineno <= 0 || lineno > s->srclines)
-			d_error(_("line number %d in file `%s' out of range"), lineno, src);
+			d_error(_("line number %d in file `%s' is out of range"), lineno, src);
 		else {
 			rp = find_rule(src, lineno);
 			if (rp == NULL)
@@ -2966,7 +2966,7 @@ do_run(CMDARG *arg ATTRIBUTE_UNUSED, int cmd ATTRIBUTE_UNUSED)
 		restart(true);	/* does not return */
 	}
 
-	fprintf(out_fp, _("Starting program: \n"));
+	fprintf(out_fp, _("Starting program:\n"));
 
 	prog_running = true;
 	fatal_tag_valid = 1;
@@ -3228,7 +3228,7 @@ do_finish(CMDARG *arg ATTRIBUTE_UNUSED, int cmd)
 	}
 	stop.fcall_count = fcall_count - cur_frame - 1;
 	assert(stop.fcall_count >= 0);
-	fprintf(out_fp, _("Run till return from "));
+	fprintf(out_fp, _("Run until return from "));
 	print_numbered_frame(cur_frame);
 	stop.check_func = check_finish;
 	stop.command = cmd;
@@ -5752,7 +5752,7 @@ static void
 check_symbol(NODE *r)
 {
 	invalid_symbol++;
-	d_error(_("No symbol `%s' in current context"), r->vname);
+	d_error(_("no symbol `%s' in current context"), r->vname);
 	/* install anyway, but keep track of it */
 	append_symbol(r);
 }

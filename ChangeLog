@@ -1,3 +1,31 @@
+2020-07-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a double free error with -M.  Thanks to
+	"NIDE, Naoyuki" <nide@ics.nara-wu.ac.jp> for the report.
+
+	* field.c (clear_mpfr):  New macro, clears MPFR and NUMCUR bits.
+	(reset_record): Use it on the newly copied field values.
+	(purge_record): Add introductory comment since we're in the file.
+
+2020-07-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* eval.c (posix_compare): Rewrite contributed by
+	Michael Builov <mbuilov@gmail.com>.
+
+	Unrelated:
+
+	* awk.h: New option: do_itrace.
+	* interpret.h (r_interpret): Print instruction trace if enabled.
+	* main.c (optab): New option: -I/--trace.
+	(parse_args): Update optlist and the code to handle it.
+	* NEWS: Updated.
+
+2020-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c: Cleanup messages. Error messages start with lower
+	case letter.
+	* TODO: Updated.
+
 2020-06-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Disallow SYMTAB and FUNCTAB as destination arguments to builtin

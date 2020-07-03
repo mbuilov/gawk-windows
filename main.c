@@ -205,6 +205,7 @@ static const struct option optab[] = {
 	{ "re-interval",	no_argument,		NULL,	'r' },
 	{ "sandbox",		no_argument,		NULL, 	'S' },
 	{ "source",		required_argument,	NULL,	'e' },
+	{ "trace",		no_argument,		NULL,	'I' },
 	{ "traditional",	no_argument,		NULL,	'c' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "version",		no_argument,		& do_version, 'V' },
@@ -601,6 +602,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
 	fputs(_("\t-h\t\t\t--help\n"), fp);
 	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
+	fputs(_("\t-I\t\t\t--trace\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	/*
 	 * TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
@@ -1519,7 +1521,7 @@ parse_args(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L::nNo::Op::MPrSstVYZ:";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:Il:L::nNo::Op::MPrSstVYZ:";
 	int old_optind;
 	int c;
 	char *scan;
@@ -1612,6 +1614,10 @@ parse_args(int argc, char **argv)
 
 		case 'i':
 			(void) add_srcfile(SRC_INC, optarg, srcfiles, NULL, NULL);
+			break;
+
+		case 'I':
+			do_flags |= DO_ITRACE;
 			break;
 
 		case 'l':
