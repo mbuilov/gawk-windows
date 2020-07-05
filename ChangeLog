@@ -1,3 +1,11 @@
+2020-07-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Bug fixes in MPFR, reported by Hyunho Cho<mug896@naver.com>.
+
+	* node.c (r_dupnode): Set strndmode and also set stlen of new string.  (How
+	did that one get by us for so long?)
+	* mpfr.c (force_mpnum): Check for a + or - sign with nothing following it.
+
 2020-07-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix a double free error with -M.  Thanks to
