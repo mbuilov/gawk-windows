@@ -700,6 +700,9 @@ EXTRA_DIST = \
 	mpfrbigint2.awk \
 	mpfrbigint2.in \
 	mpfrbigint2.ok \
+	mpfrcase.awk \
+	mpfrcase.in \
+	mpfrcase.ok \
 	mpfrexprange.awk \
 	mpfrexprange.ok \
 	mpfrfield.awk \
@@ -711,6 +714,9 @@ EXTRA_DIST = \
 	mpfrmemok1.ok \
 	mpfrnegzero.awk \
 	mpfrnegzero.ok \
+	mpfrnonum.awk \
+	mpfrnonum.in \
+	mpfrnonum.ok \
 	mpfrnr.awk \
 	mpfrnr.in \
 	mpfrnr.ok \
@@ -1461,8 +1467,8 @@ NEED_LINT = \
 NEED_LINT_OLD = lintold
 
 # List of tests that must be run with -M
-NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
-	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
+NEED_MPFR = mpfrbigint mpfrbigint2 mpfrcase mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
+	mpfrnegzero mpfrnonum mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
 	mpfrstrtonum mpgforcenum mpfruplus mpfranswer42
 
 # List of tests that need --non-decimal-data

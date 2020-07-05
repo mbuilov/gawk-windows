@@ -316,11 +316,13 @@ r_dupnode(NODE *n)
 		r = mpg_integer();
 		mpz_set(r->mpg_i, n->mpg_i);
 		r->flags = n->flags;
+		r->strndmode = MPFR_round_mode;
 	} else if ((n->flags & MPFN) != 0) {
 		r = mpg_float();
 		int tval = mpfr_set(r->mpg_numbr, n->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 		r->flags = n->flags;
+		r->strndmode = MPFR_round_mode;
 	} else {
 #endif
 		getnode(r);
@@ -343,6 +345,7 @@ r_dupnode(NODE *n)
 		emalloc(r->stptr, char *, n->stlen + 1, "r_dupnode");
 		memcpy(r->stptr, n->stptr, n->stlen);
 		r->stptr[n->stlen] = '\0';
+		r->stlen = n->stlen;
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
 			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 1), "r_dupnode");

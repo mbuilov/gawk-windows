@@ -293,6 +293,14 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	else
 		cp1 = cp;
 
+	/*
+	 * Maybe "+" or "-" was the field.  mpg_strtoui
+	 * won't check for that and set errno, so we have
+	 * to check manuall.
+	 */
+	if (*cp1 == '\0')
+		return false;
+
 	if (do_nondec)
 		base = get_numbase(cp1, cpend - cp1, use_locale);
 

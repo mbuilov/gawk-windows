@@ -1,3 +1,19 @@
+2020-07-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Bug fixes in MPFR, reported by Hyunho Cho<mug896@naver.com>.
+
+	* node.c (r_dupnode): Set strndmode and also set stlen of new string.  (How
+	did that one get by us for so long?)
+	* mpfr.c (force_mpnum): Check for a + or - sign with nothing following it.
+
+	Unrelated. Make do_itrace a real variable so that it's easier to
+	change the value from a debugger.
+
+	* awk.h (do_itrace): Declare.
+	(DO_ITRACE, do_itrace): Remove macros.
+	* main.c (do_itrace): Define.
+	(parse_args): Set do_itrace.
+
 2020-07-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix a double free error with -M.  Thanks to
