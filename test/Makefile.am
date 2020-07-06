@@ -1580,7 +1580,7 @@ VALGRIND =
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
 LOCALES = LANGUAGE= LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
-AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
+AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG) $(GAWK_TEST_ARGS)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
