@@ -145,7 +145,7 @@ static void parse_args(int argc, char **argv);
 static void set_locale_stuff(void);
 static bool stopped_early = false;
 
-int do_flags = false;
+enum do_flag_values do_flags = 0;
 bool do_itrace = false;			/* provide simple instruction trace */
 bool do_optimize = true;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
