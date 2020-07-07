@@ -703,6 +703,9 @@ EXTRA_DIST = \
 	mpfrcase.awk \
 	mpfrcase.in \
 	mpfrcase.ok \
+	mpfrcase2.awk \
+	mpfrcase2.in \
+	mpfrcase2.ok \
 	mpfrexprange.awk \
 	mpfrexprange.ok \
 	mpfrfield.awk \
@@ -1467,7 +1470,7 @@ NEED_LINT = \
 NEED_LINT_OLD = lintold
 
 # List of tests that must be run with -M
-NEED_MPFR = mpfrbigint mpfrbigint2 mpfrcase mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
+NEED_MPFR = mpfrbigint mpfrbigint2 mpfrcase mpfrcase2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
 	mpfrnegzero mpfrnonum mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
 	mpfrstrtonum mpgforcenum mpfruplus mpfranswer42
 

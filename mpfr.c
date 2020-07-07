@@ -298,8 +298,11 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	 * won't check for that and set errno, so we have
 	 * to check manuall.
 	 */
-	if (*cp1 == '\0')
+	if (*cp1 == '\0') {
+		*cpend = save;
+		mpg_zero(n);
 		return false;
+	}
 
 	if (do_nondec)
 		base = get_numbase(cp1, cpend - cp1, use_locale);

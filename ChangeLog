@@ -3,6 +3,12 @@
 	* awk.h: Turn all the flag defines into enums. GDB can then show
 	the bit maps directly.
 
+	Unrelated: Fix another MFPF bug, reported by Hyunho Cho
+	<mug896@naver.com>.
+
+	* mpfr.c (force_mpnum): Restore the character at the end of
+	the string if only saw + or -.
+
 2020-07-07         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* node.c (r_dupnode): Sanitize the code, particularly for MPFR.
