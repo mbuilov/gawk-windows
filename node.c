@@ -479,6 +479,11 @@ make_typed_regex(const char *re, size_t len)
 
 	n2 = make_string(re, len);
 	n2->typed_re = n;
+#if HAVE_MPFR
+	if (do_mpfr)
+		mpg_zero(n2);
+	else
+#endif
 	n2->numbr = 0;
 	n2->flags |= NUMCUR|STRCUR|REGEX; 
 	n2->flags &= ~(STRING|NUMBER);

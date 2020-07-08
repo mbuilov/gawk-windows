@@ -680,8 +680,10 @@ numindex:
 
 numrange:
 	@echo $@ $(ZOS_FAIL)
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
 
 numstr1:
 	@echo $@
@@ -1313,8 +1315,10 @@ arraysort2:
 
 arraytype:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
 
 backw:
 	@echo $@
@@ -1399,8 +1403,10 @@ fieldwdth:
 
 forcenum:
 	@echo $@ $(ZOS_FAIL)
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
 
 fpat1:
 	@echo $@

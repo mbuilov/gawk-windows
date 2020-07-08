@@ -79,7 +79,9 @@ EXTRA_DIST = \
 	arraysort2.ok \
 	arraytype.awk \
 	arraytype.ok \
+	arraytype-mpfr.ok \
 	arrdbg.awk \
+	arrdbg-mpfr.ok \
 	arrymem1.awk \
 	arrymem1.ok \
 	arryref2.awk \
@@ -340,6 +342,7 @@ EXTRA_DIST = \
 	fnparydl.ok \
 	forcenum.awk \
 	forcenum.ok \
+	forcenum-mpfr.ok \
 	fordel.awk \
 	fordel.ok \
 	fork.awk \
@@ -843,6 +846,7 @@ EXTRA_DIST = \
 	numindex.ok \
 	numrange.awk \
 	numrange.ok \
+	numrange-mpfr.ok \
 	numstr1.awk \
 	numstr1.ok \
 	numsubstr.awk \
@@ -1505,7 +1509,7 @@ FAIL_CODE1 = \
 
 # List of files which have .ok versions for MPFR
 CHECK_MPFR = \
-	rand fnarydel fnparydl
+	arraytype arrdbg fnarydel fnparydl forcenum numrange rand
 
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
@@ -2384,7 +2388,10 @@ ignrcas3::
 arrdbg:
 	@echo $@
 	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
+
 
 sourcesplit:
 	@echo $@
