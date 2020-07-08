@@ -247,7 +247,7 @@ mpg_maybe_float(const char *str, int use_locale)
 
 /* mpg_zero --- initialize with arbitrary-precision integer(GMP) and set value to zero */
 
-static inline void
+void
 mpg_zero(NODE *n)
 {
 	if (is_mpg_float(n)) {
@@ -271,7 +271,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	char save;
 	int tval, base = 10;
 
-	if (n->stlen == 0) {
+	if (n->stlen == 0 || (n->flags & REGEX) != 0) {
 		mpg_zero(n);
 		return false;
 	}
@@ -1525,7 +1525,13 @@ mpg_interpret(INSTRUCTION **cp)
 	NODE **lhs;
 	int tval;	/* the ternary value returned by a MPFR function */
 
-	switch ((op = pc->opcode)) {
+	op = pc->opcode;
+	if (do_itrace) {
+		fprintf(stderr, "+ mpg_interpret: %s: ", opcode2str(op));
+		fflush(stderr);
+	}
+
+	switch (op) {
 	case Op_plus_i:
 		t2 = force_number(pc->memory);
 		goto plus;
@@ -1750,10 +1756,18 @@ mod:
 		break;
 
 	default:
+		if (do_itrace) {
+			fprintf(stderr, "unhandled\n", opcode2str(op));
+			fflush(stderr);
+		}
 		return true;	/* unhandled */
 	}
 
 	*cp = pc->nexti;	/* next instruction to execute */
+	if (do_itrace) {
+		fprintf(stderr, "handled\n", opcode2str(op));
+		fflush(stderr);
+	}
 	return false;
 }
 

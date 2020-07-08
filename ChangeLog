@@ -1,7 +1,15 @@
 2020-07-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* str_array.c (str_lookup): If a pure number, copy to a string. Fixes
-	at least printfchar test for MPFR, possibly some others.
+	at printfchar test for MPFR.
+
+	Fix typeregex2 and typedregex3 tests for MPFR:
+
+	* mpfr.c (mpg_zero): No longer static inline.
+	(force_mpnum): Handle the case of a strongly typed regex.
+	(mpg_interpret): Add tracing for do_itrace.
+	* awk.h (mpg_zero): Add declaration.
+	* node.c (make_typed_regex): Init to zero for MPFR via mpg_zero.
 
 2020-07-07         Arnold D. Robbins     <arnold@skeeve.com>
 
