@@ -5602,7 +5602,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	ctxt->install_func = append_symbol;	/* keep track of newly installed globals */
 	push_context(ctxt);
 	the_source = add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
-	do_flags = false;
+	do_flags &= DO_MPFR;	// preserve this flag only
 	ret = parse_program(&code, true);
 	do_flags = save_flags;
 	remove_params(this_func);
