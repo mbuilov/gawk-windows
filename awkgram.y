@@ -6476,7 +6476,7 @@ lookup_builtin(const char *name)
 		return (builtin_func_t) do_sub;
 
 #ifdef HAVE_MPFR
-	if (do_mpfr)
+	if (do_mpfr && tokentab[mid].ptr2 != NULL)
 		return tokentab[mid].ptr2;
 #endif
 
