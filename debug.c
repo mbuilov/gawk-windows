@@ -964,7 +964,7 @@ print_symbol(NODE *r, bool isparam)
 		valinfo(r->var_value, fprintf, out_fp);
 		break;
 	case Node_var_array:
-		fprintf(out_fp, "array, %ld elements\n", assoc_length(r));
+		fprintf(out_fp, "array, %ld elements\n", (long) assoc_length(r));
 		break;
 	case Node_func:
 		fprintf(out_fp, "`function'\n");

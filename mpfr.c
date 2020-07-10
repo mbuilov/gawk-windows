@@ -1757,7 +1757,7 @@ mod:
 
 	default:
 		if (do_itrace) {
-			fprintf(stderr, "unhandled\n", opcode2str(op));
+			fprintf(stderr, "unhandled\n");
 			fflush(stderr);
 		}
 		return true;	/* unhandled */
@@ -1765,7 +1765,7 @@ mod:
 
 	*cp = pc->nexti;	/* next instruction to execute */
 	if (do_itrace) {
-		fprintf(stderr, "handled\n", opcode2str(op));
+		fprintf(stderr, "handled\n");
 		fflush(stderr);
 	}
 	return false;
