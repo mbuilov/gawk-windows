@@ -23,12 +23,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#define NO_LOCALE_RPL /* avoid including "mscrtx/localerpl.h" */
 #include "awk.h"
 
-#ifdef _MSC_VER
-#include <io.h>		/* open/close */
+#ifdef WINDOWS_NATIVE
 #include <direct.h>	/* mkdir/rmdir */
-#include "pc/socket.h"	/* socket_file_clearerr */
+#include "mscrtx/socket_file.h"	/* socket_file_clearerr */
+#include "mscrtx/wreaddir.h"	/* opendirfd/closedirfd/fchdir/opendir/closedir/readdir */
+#include "mscrtx/wreadlink.h"	/* readlinkfd/readlink */
+#include "mscrtx/localerpl.h"
+#endif
+
+#ifdef WINDOWS_NATIVE
+#define close	_close
+#define fileno	_fileno
+#define dup	_dup
+#define dup2	_dup2
 #endif
 
 #ifdef HAVE_MPFR
@@ -40,9 +50,7 @@
 #endif
 
 /* Declare some globals used by api_get_file: */
-extern IOBUF *curfile;
 extern INSTRUCTION *main_beginfile;
-extern enum defrule currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 static const char *valtype2str(awk_valtype_t type);
@@ -178,10 +186,10 @@ awk_value_to_node(const awk_value_t *retval)
 			ext_ret_val = make_number_node(MPFN);
 			memcpy(&ext_ret_val->mpg_numbr, retval->num_ptr, sizeof(ext_ret_val->mpg_numbr));
 			freempfr(retval->num_ptr);
+			break;
 #else
 			fatal(_("awk_value_to_node: MPFR not supported"));
 #endif
-			break;
 		case AWK_NUMBER_TYPE_MPZ:
 #ifdef HAVE_MPFR
 			if (! do_mpfr)
@@ -189,13 +197,12 @@ awk_value_to_node(const awk_value_t *retval)
 			ext_ret_val = make_number_node(MPZN);
 			memcpy(&ext_ret_val->mpg_i, retval->num_ptr, sizeof(ext_ret_val->mpg_i));
 			freempz(retval->num_ptr);
+			break;
 #else
 			fatal(_("awk_value_to_node: MPFR not supported"));
 #endif
-			break;
 		default:
-			fatal(_("awk_value_to_node: invalid number type `%d'"), retval->num_type);
-			break;
+			fatal(_("awk_value_to_node: invalid number type `%d'"), (int) retval->num_type);
 		}
 		break;
 	case AWK_STRING:
@@ -233,6 +240,7 @@ awk_value_to_node(const awk_value_t *retval)
 
 /* api_fatal --- print a fatal message and exit */
 
+ATTRIBUTE_PRINTF(format, 1, 2)
 static void
 api_fatal(const char *format, ...)
 {
@@ -245,6 +253,7 @@ api_fatal(const char *format, ...)
 
 /* api_nonfatal --- print a non fatal error message */
 
+ATTRIBUTE_PRINTF(format, 1, 2)
 static void
 api_nonfatal(const char *format, ...)
 {
@@ -257,6 +266,7 @@ api_nonfatal(const char *format, ...)
 
 /* api_warning --- print a warning message */
 
+ATTRIBUTE_PRINTF(format, 1, 2)
 static void
 api_warning(const char *format, ...)
 {
@@ -269,6 +279,7 @@ api_warning(const char *format, ...)
 
 /* api_lintwarn --- print a lint warning message and exit if appropriate */
 
+ATTRIBUTE_PRINTF(format, 1, 2)
 static void
 api_lintwarn(const char *format, ...)
 {
@@ -348,7 +359,7 @@ api_unset_ERRNO(void)
 /* api_add_ext_func --- add a function to the interpreter, returns true upon success */
 
 static awk_bool_t
-api_add_ext_func(const char *name_space, const awk_ext_func_t *func)
+api_add_ext_func(const char *name_space, awk_ext_func_t *func)
 {
 	if (func == NULL)
 		return awk_false;
@@ -1113,7 +1124,7 @@ api_create_array(void)
 	NODE *n;
 
 	getnode(n);
-	memset(n, 0, sizeof(NODE));
+	clearnode(n);
 	null_array(n);
 
 	return (awk_array_t) n;
@@ -1417,19 +1428,15 @@ api_register_ext_version(const char *version)
 	vi_head = info;
 }
 
-extern size_t
-gawk_fwrite(const void *ptr, size_t size, size_t nmemb, awk_output_buf_t *outbuf);
-
-extern int
-gawk_fflush(awk_output_buf_t *outbuf);
-
-extern int
-gawk_ferror(awk_output_buf_t *outbuf);
+/* defined in io.c */
+extern size_t gawk_fwrite(const void *buf, size_t size, size_t nmemb, awk_output_buf_t *outbuf);
+extern int gawk_fflush(awk_output_buf_t *outbuf);
+extern int gawk_ferror(awk_output_buf_t *outbuf);
 
 static void
 api_ob_clearerr(awk_output_buf_t *outbuf)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
 		socket_file_clearerr((socket_file_t*) outbuf->file);
 		return;
@@ -1441,7 +1448,7 @@ api_ob_clearerr(awk_output_buf_t *outbuf)
 static int
 api_ob_fputc(int c, awk_output_buf_t *outbuf)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
 		unsigned char ch = (unsigned char) c;
 		size_t n = gawk_fwrite(&ch, 1, 1, outbuf);
@@ -1456,7 +1463,7 @@ api_ob_fputc(int c, awk_output_buf_t *outbuf)
 static int
 api_ob_fputs(const char *s, awk_output_buf_t *outbuf)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
 		size_t len = strlen(s);
 		size_t n = gawk_fwrite(s, len, 1, outbuf);
@@ -1468,44 +1475,27 @@ api_ob_fputs(const char *s, awk_output_buf_t *outbuf)
 	return fputs(s, (FILE*) outbuf->file);
 }
 
+ATTRIBUTE_PRINTF(format, 2, 0)
 static int
 api_ob_vfprintf(awk_output_buf_t *outbuf, const char *format, va_list ap)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
-		char stack_buf[1024], *buf = stack_buf, *dbuf = NULL;
-		size_t buf_size = sizeof(stack_buf);
-		for (;;) {
-			int n = _vsnprintf(buf, buf_size, format, ap);
-			if (n != -1) {
-				size_t k = gawk_fwrite(buf, (size_t) n, 1, outbuf);
-				if (dbuf != NULL)
-					free(dbuf);
-				return k == 1 ? n : -1;
-			}
-			if (buf_size < 65536)
-				buf_size *= 2;
-			else if (buf_size > INT_MAX - 65536) {
-				if (dbuf != NULL)
-					free(dbuf);
-				errno = ENOMEM;
-				return -1;
-			}
-			else
-				buf_size += 65536;
-			buf = (char*) realloc(dbuf, buf_size);
-			if (buf == NULL) {
-				if (dbuf != NULL)
-					free(dbuf);
-				return -1;
-			}
-			dbuf = buf;
+		char stack_buf[1024], *buf = stack_buf;
+		int n = vsnprintf_helper(&buf, sizeof(stack_buf), format, ap);
+		if (n != -1) {
+			size_t k = gawk_fwrite(buf, (size_t) n, 1, outbuf);
+			if (buf != stack_buf)
+				free(buf);
+			return k == 1 ? n : -1;
 		}
+		return -1;
 	}
 #endif
 	return vfprintf((FILE*) outbuf->file, format, ap);
 }
 
+ATTRIBUTE_PRINTF(format, 2, 3)
 static int
 api_ob_fprintf(awk_output_buf_t *outbuf, const char *format, ...)
 {
@@ -1519,27 +1509,73 @@ api_ob_fprintf(awk_output_buf_t *outbuf, const char *format, ...)
 
 #ifdef GAWK_CRT_API
 
-#ifdef _MSC_VER
-
-/* crt_printf --- print a message to stdout */
-
+ATTRIBUTE_PRINTF_PTR(format, 1, 2)
 static int
 crt_printf(const char *format, ...)
 {
-	int ret;
 	va_list args;
-
+	int r;
 	va_start(args, format);
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-	ret = vprintf(format, args);
-PRAGMA_WARNING_POP
+	r = vprintf(format, args);
 	va_end(args);
+	return r;
+}
 
+static int
+crt_open(const char *name, int flags, ...)
+{
+	va_list args;
+	int r;
+	va_start(args, flags);
+	r = open(name, flags, args);
+	va_end(args);
+	return r;
+}
+
+static int
+crt_putchar(int c)
+{
+	return putchar(c);
+}
+
+static int
+crt_stat(const char *path, gawk_stat_t *buf)
+{
+	return stat(path, buf);
+}
+
+ATTRIBUTE_PRINTF_PTR(format, 2, 3)
+static int
+crt_fprintf(FILE *stream, const char *format, ...)
+{
+	int ret;
+	va_list ap;
+	va_start(ap, format);
+	ret = vfprintf(stream, format, ap);
+	va_end(ap);
 	return ret;
 }
 
-#endif /* _MSC_VER */
+ATTRIBUTE_PRINTF_PTR(format, 1, 0)
+static int
+crt_vprintf(const char *format, va_list ap)
+{
+	return vprintf(format, ap);
+}
+
+
+ATTRIBUTE_PRINTF_PTR(format, 2, 0)
+static int
+crt_vfprintf(FILE *stream, const char *format, va_list ap)
+{
+	return vfprintf(stream, format, ap);
+}
+
+static char **
+crt_environ(void)
+{
+	return environ;
+}
 
 /* crt_assert_failed --- print error message and abort the program */
 
@@ -1547,10 +1583,11 @@ ATTRIBUTE_NORETURN
 static void
 crt_assert_failed(const char *sexpr, const char *file, unsigned line)
 {
-	error("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
+	set_loc(file, line);
+	r_fatal("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
 }
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 static ssize_t crt_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret = 0;
@@ -1561,12 +1598,12 @@ static ssize_t crt_read(int fd, void *buf, size_t count)
 	}
 	while (count > 0) {
 		/* Cannot read more than INT_MAX at once.  */
-		int n = count > INT_MAX ? INT_MAX : (int) count;
-		int x = _read(fd, buf, (unsigned) n);
+		unsigned n = count <= INT_MAX ? (unsigned) count : INT_MAX;
+		int x = read(fd, buf, n);
 		if (x < 0)
 			return -1;
 		ret += x;
-		if (x < n)
+		if ((unsigned) x < n)
 			break;
 		buf = (char*) buf + n;
 		count -= n;
@@ -1585,18 +1622,18 @@ static ssize_t crt_write(int fd, const void *buf, size_t count)
 	ret = (ssize_t) count;
 	while (count > 0) {
 		/* Cannot write more than INT_MAX at once.  */
-		int n = count > INT_MAX ? INT_MAX : (int) count;
-		int x = _write(fd, buf, (unsigned) n);
-		if (x != n)
+		unsigned n = count <= INT_MAX ? (unsigned) count : INT_MAX;
+		int x = write(fd, buf, n);
+		if (x != (int) n)
 			return -1;
 		buf = (const char*) buf + n;
 		count -= n;
 	}
 	return ret;
 }
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 static long long crt_lseek(int fd, long long offset, int whence)
 {
 	/* Note:
@@ -1614,29 +1651,17 @@ static long long crt_tell(int fd)
 	off_t ret = tell(fd);
 	return (long long) ret;
 }
-#endif /* !_MSC_VER */
+#endif /* !WINDOWS_NATIVE */
 
 static int crt_mb_cur_max(void)
 {
 	return MB_CUR_MAX;
 }
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 static int *crt_errno_p(void)
 {
 	return &errno;
-}
-#endif
-
-#if defined(__MINGW32__) || defined(_MSC_VER)
-static int crt_mkstemp(char *templ)
-{
-	char *tmp_fname = _mktemp(templ);
-	if (tmp_fname)
-		return open(tmp_fname,
-			O_RDWR | O_CREAT | O_EXCL,
-			S_IREAD | S_IWRITE);
-	return INVALID_HANDLE;
 }
 #endif
 
@@ -1650,27 +1675,23 @@ static gawk_crt_api_t crt_api_impl = {
 	free,
 
 	/* print a message to stdout */
-#ifdef _MSC_VER
 	crt_printf,
-#else
-	printf,
-#endif
 
 	/* process failed assertion */
 	crt_assert_failed,
 
 	/* Standard streams */
-	NULL,
-	NULL,
-	NULL,
+	NULL/*stdin*/,
+	NULL/*stdout*/,
+	NULL/*stderr*/,
 
 	/* File IO */
-	open,
+	crt_open,
 	close,
 	dup,
 	dup2,
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	crt_read,
 	crt_write,
 	_lseeki64,
@@ -1701,7 +1722,7 @@ static gawk_crt_api_t crt_api_impl = {
 	ferror,
 	fileno,
 
-	putchar,
+	crt_putchar,
 	fputc,
 	getchar,
 	fgetc,
@@ -1718,7 +1739,7 @@ static gawk_crt_api_t crt_api_impl = {
 	rename,
 	chdir,
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	xpathwc,
 	xfstat,
 	xwstat,
@@ -1727,58 +1748,65 @@ static gawk_crt_api_t crt_api_impl = {
 	xstat_root,
 #endif
 
-#ifdef _MSC_VER
-	_stat64,
-#else
-	stat,
-#endif
-#ifdef _MSC_VER
+	crt_stat,
+#ifdef WINDOWS_NATIVE
 	_fstat64,
 #else
 	fstat,
 #endif
 	chmod,
 
-	setlocale,
-	localeconv,
+#ifdef WINDOWS_NATIVE
+	opendirfd,
+	closedirfd,
+	fchdir,
+	opendir,
+	closedir,
+	readdir,
+	wreadlinkfd,
+	wreadlink,
+	readlinkfd,
+	readlink,
+#endif
 
-	strcoll,
-	wcscoll,
-
-	crt_mb_cur_max,
-
-	btowc,
-
-	mblen,
-	mbtowc,
-	wctomb,
-	mbstowcs,
-	wcstombs,
-
-	fprintf,
+	crt_fprintf,
 	sprintf,
 	snprintf,
 
-	vprintf,
-	vfprintf,
+	crt_vprintf,
+	crt_vfprintf,
 	vsprintf,
 	vsnprintf,
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	_errno,
 #else
 	crt_errno_p,
 #endif
 	strerror,
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-	crt_mkstemp,
-#else
 	mkstemp,
-#endif
 
+	crt_environ,
 	getenv,
+	setenv,
+	unsetenv,
+	clearenv,
 
+	setlocale,
+	localeconv,
+
+	crt_mb_cur_max,
+
+	btowc,
+
+	mblen,
+	mbrlen,
+
+	mbstowcs,
+	wcstombs,
+
+	strcoll,
 	tolower,
 	toupper,
 	isascii,
@@ -1795,6 +1823,8 @@ static gawk_crt_api_t crt_api_impl = {
 	isupper,
 	isxdigit,
 
+#ifndef WINDOWS_NATIVE
+	wcscoll,
 	towlower,
 	towupper,
 	iswascii,
@@ -1810,9 +1840,44 @@ static gawk_crt_api_t crt_api_impl = {
 	iswspace,
 	iswupper,
 	iswxdigit,
-
 	wctype,
 	iswctype,
+	mbtowc,
+	mbrtowc,
+	wctomb,
+	wcrtomb,
+#else /* WINDOWS_NATIVE */
+	c32scoll,
+	c32tolower,
+	c32toupper,
+	c32isascii,
+	c32isalnum,
+	c32isalpha,
+	c32isblank,
+	c32iscntrl,
+	c32isdigit,
+	c32isgraph,
+	c32islower,
+	c32isprint,
+	c32ispunct,
+	c32isspace,
+	c32isupper,
+	c32isxdigit,
+	c32ctype,
+	c32isctype,
+	mbrtoc16,
+	mbrtoc32,
+	c16rtomb,
+	c32rtomb,
+	mbstoc32s,
+	c32stombs,
+	wcstoc32s,
+	c32stowcs,
+	c32slen,
+	c32schr,
+	c32srchr,
+	c32schrnul,
+#endif /* WINDOWS_NATIVE */
 
 	/* Add more CRT replacements here.  */
 };

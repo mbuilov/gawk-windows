@@ -94,8 +94,129 @@
  * in a subsequent revision of the API.
  */
 
-#ifdef _MSC_VER
-#include "pc/xstat.h"
+/* Function attributes.  */
+#if !( \
+  (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7))) || \
+  defined(__clang__))
+# define __attribute__(arg)
+#endif
+
+/* Annotate function parameter that cannot be NULL.  */
+#ifndef ATTRIBUTE_NONNULL
+# define ATTRIBUTE_NONNULL(a) __attribute__ ((__nonnull__ (a)))
+#endif
+
+/* Annotate function that does not return (exits the program).  */
+#ifndef ATTRIBUTE_NORETURN
+# ifdef _MSC_VER
+#  define ATTRIBUTE_NORETURN __declspec(noreturn)
+# else
+#  define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+# endif
+#endif
+
+/* Annotate parameters of printf-like function, e.g.:
+  ATTRIBUTE_PRINTF(fmt, 2, 3) int my_printf(int param, const char *fmt, ...);
+   or
+  ATTRIBUTE_PRINTF(fmt, 2, 0) int my_vprintf(int param, const char *fmt, va_list ap); */
+#ifndef ATTRIBUTE_PRINTF
+# if defined(_MSC_VER) && defined(_PREFAST_)
+#  define ATTRIBUTE_PRINTF(fmt, m, n) _At_(fmt, _Printf_format_string_ _Notnull_)
+# elif defined(__MINGW32__) && !defined(__clang__)
+#  define ATTRIBUTE_PRINTF(fmt, m, n) \
+	__attribute__ ((__format__ (gnu_printf, m, n))) ATTRIBUTE_NONNULL(m)
+# else
+#  define ATTRIBUTE_PRINTF(fmt, m, n) \
+	__attribute__ ((__format__ (__printf__, m, n))) ATTRIBUTE_NONNULL(m)
+# endif
+#endif
+
+/* Annotate parameters of printf-like function pointer, e.g.:
+  ATTRIBUTE_PRINTF_PTR(fmt, 2, 3) int (*my_printf)(int param, const char *fmt, ...);
+   or
+  ATTRIBUTE_PRINTF_PTR(fmt, 2, 0) int (*my_vprintf)(int param, const char *fmt, va_list ap); */
+#ifndef ATTRIBUTE_PRINTF_PTR
+# if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))
+#  define ATTRIBUTE_PRINTF_PTR(fmt, m, n) ATTRIBUTE_PRINTF(fmt, m, n)
+# else
+#  define ATTRIBUTE_PRINTF_PTR(fmt, m, n)
+# endif
+#endif
+
+/* Annotate parameters of printf-like function pointer typedef, e.g.:
+  ATTRIBUTE_PRINTF_TYPEDEF(fmt, 2, 3) typedef int (*my_printf)(int param, const char *fmt, ...);
+   or
+  ATTRIBUTE_PRINTF_TYPEDEF(fmt, 2, 0) typedef int (*my_vprintf)(int param, const char *fmt, va_list ap); */
+#ifndef ATTRIBUTE_PRINTF_TYPEDEF
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  define ATTRIBUTE_PRINTF_TYPEDEF(fmt, m, n) ATTRIBUTE_PRINTF(fmt, m, n)
+# else
+#  define ATTRIBUTE_PRINTF_TYPEDEF(fmt, m, n)
+# endif
+#endif
+
+/* Pragmas.  */
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# define PRAGMA_WARNING_PUSH _Pragma ("GCC diagnostic push")
+# define PRAGMA_WARNING_POP  _Pragma ("GCC diagnostic pop")
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING _Pragma ("GCC diagnostic ignored \"-Wformat-nonliteral\"")
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST _Pragma ("GCC diagnostic ignored \"-Wtype-limits\"")
+#elif defined __clang__
+# define PRAGMA_WARNING_PUSH _Pragma ("clang diagnostic push")
+# define PRAGMA_WARNING_POP  _Pragma ("clang diagnostic pop")
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING _Pragma ("clang diagnostic ignored \"-Wformat-nonliteral\"")
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST _Pragma ("clang diagnostic ignored \"-Wtype-limits\"")
+#elif defined _MSC_VER
+# define PRAGMA_WARNING_PUSH __pragma(warning(push))
+# define PRAGMA_WARNING_POP  __pragma(warning(pop))
+/* 4774 - 'sprintf' : format string expected in argument 2 is not a string literal */
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING __pragma(warning(disable:4774))
+/* 4127 - conditional expression is constant */
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST __pragma(warning(disable:4127))
+#endif
+
+#ifndef PRAGMA_WARNING_PUSH
+# define PRAGMA_WARNING_PUSH
+#endif
+
+#ifndef PRAGMA_WARNING_POP
+# define PRAGMA_WARNING_POP
+#endif
+
+#ifndef PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING
+#endif
+
+#ifndef PRAGMA_WARNING_DISABLE_COND_IS_CONST
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST
+#endif
+
+/* Do compile unreachable code only if COMPILE_UNREACHABLE_CODE is defined.  */
+#ifndef _MSC_VER
+# define COMPILE_UNREACHABLE_CODE
+#endif
+
+/* Assume expression X is always TRUE.  */
+#ifdef __clang__
+# define ASSUME(x) __builtin_assume(x)
+#elif defined _MSC_VER
+# define ASSUME(x) __assume(x)
+#elif defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# define ASSUME(x) ((void) ((x) ? 1 : (__builtin_unreachable(), 0)))
+#else
+# define ASSUME(x) ((void) (x))
+#endif
+
+/* printf-format specifier for size_t.
+   A c99-compatible standard runtime library must support "%zu".  */
+#ifndef ZUFMT
+# define ZUFMT "zu"
+#endif
+
+/* printf-format specifier for unsigned long long.
+   A c99-compatible standard runtime library must support "%llu".  */
+#ifndef LLUFMT
+# define LLUFMT "llu"
 #endif
 
 /* Allow use in C++ code.  */
@@ -103,10 +224,9 @@
 extern "C" {
 #endif
 
+/* Current version of the API. */
 #define gawk_api_major_version 4
 #define gawk_api_minor_version 0
-
-/* Current version of the API. */
 enum {
 	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
 	GAWK_API_MINOR_VERSION = gawk_api_minor_version
@@ -129,6 +249,17 @@ enum {
 	GAWK_CRT_MINOR_VERSION = 0
 };
 #endif
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+
+/* declared in mscrtx/wreaddir.h */
+struct dir_fd_;
+struct win_find;
+
+/* from windows.h */
+struct _WIN32_FIND_DATAW;
+
+#endif /* _MSC_VER || __MINGW32__ */
 
 /* This is used to keep extensions from modifying certain fields in some structs. */
 #ifdef GAWK
@@ -174,25 +305,18 @@ typedef struct {
 typedef int fd_t;
 #define INVALID_HANDLE (-1)
 
-#ifdef _MSC_VER
-/*
- * Microsoft's CRT library do not supports socket FDs, but because number of
- * file FDs is limited, use most significant bit of positive integer as a flag
- * denoting a socket descriptor.
- */
-#define SOCKET_FD_BIT (((unsigned int)-1 >> 2) + 1)
-static inline int is_socket(fd_t fd)
-{
-	return fd >= 0 && (fd & SOCKET_FD_BIT);
-}
-#endif
-
 /* File status information.  */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /* Fields st_size, st_atime, st_mtime, st_ctime are 64-bit values.   */
 typedef struct _stat64 gawk_stat_t;
-/* Extended stat info, 64-bit st_ino is valid.  */
-typedef struct xstat gawk_xstat_t;
+# ifndef xstat_t /* Include mscrtx/xstat.h for the definition.  */
+/* Stub.  */
+struct xstat;
+typedef struct xstat xstat_t;
+# else
+/* Extended stat info, 64-bit st_ino is _valid_.  */
+typedef xstat_t gawk_xstat_t;
+# endif
 #else
 typedef struct stat gawk_stat_t;
 typedef struct stat gawk_xstat_t;
@@ -252,10 +376,28 @@ typedef struct awk_input {
 	 */
 	void (*close_func)(struct awk_input *iobuf);
 
+	/* Hidden fields (stat buf).  */
+} awk_input_buf_t;
+
+#if (!defined(_MSC_VER) && !defined(__MINGW32__)) || defined xstat_t
+
+struct awk_input_buf_container {
+	awk_input_buf_t input_buf;
+
 	/* put last, for alignment. bleah */
 	gawk_xstat_t sbuf;       /* stat buf */
+};
 
-} awk_input_buf_t;
+/* Note: include mscrtx/xstat.h before gawkapi.h for this function.  */
+static inline const gawk_xstat_t *
+awk_input_buf_get_stat(const awk_input_buf_t *iobuf)
+{
+	const void *container = iobuf;
+
+	return &((const struct awk_input_buf_container*)container)->sbuf;
+}
+
+#endif /* (!_MSC_VER && !__MINGW32__) || xstat_t */
 
 typedef struct awk_input_parser {
 	const char *name;	/* name of parser */
@@ -288,7 +430,7 @@ typedef struct awk_output_buf {
 	const char *name;	/* name of output file */
 	const char *mode;	/* mode argument to fopen */
 	void *file;		/* stdio file or socket buffer (if socket_fd is valid) */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 	fd_t socket_fd;		/* socket descriptor, INVALID_HANDLE if not valid */
 #endif
 	awk_bool_t redirected;	/* true if a wrapper is active */
@@ -308,11 +450,13 @@ typedef struct awk_output_buf {
 static inline fd_t
 awk_output_buf_get_fd(const awk_output_buf_t *outbuf)
 {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 	if (outbuf->socket_fd != INVALID_HANDLE)
 		return outbuf->socket_fd;
-#endif
+	return _fileno((FILE*) outbuf->file);
+#else
 	return fileno((FILE*) outbuf->file);
+#endif
 }
 
 /* Next the output wrapper registered with gawk */
@@ -562,7 +706,7 @@ typedef struct gawk_api {
 	 * points to, thus it's not const.
 	 */
 	awk_bool_t (*api_add_ext_func)(const char *name_space,
-			const awk_ext_func_t *func);
+			awk_ext_func_t *func);
 
 	/* Register an input parser, for opening files read-only */
 	void (*api_register_input_parser)(awk_input_parser_t *input_parser);
@@ -591,10 +735,10 @@ typedef struct gawk_api {
 	void (*api_register_ext_version)(const char *version);
 
 	/* Functions to print messages */
-	void (*api_fatal)(const char *format, ...);
-	void (*api_warning)(const char *format, ...);
-	void (*api_lintwarn)(const char *format, ...);
-	void (*api_nonfatal)(const char *format, ...);
+	ATTRIBUTE_PRINTF_PTR(format, 1, 2) void (*api_fatal)(const char *format, ...);
+	ATTRIBUTE_PRINTF_PTR(format, 1, 2) void (*api_warning)(const char *format, ...);
+	ATTRIBUTE_PRINTF_PTR(format, 1, 2) void (*api_lintwarn)(const char *format, ...);
+	ATTRIBUTE_PRINTF_PTR(format, 1, 2) void (*api_nonfatal)(const char *format, ...);
 
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(int errno_val);
@@ -885,14 +1029,18 @@ typedef struct gawk_api {
 	 * Functions for use in output callbacks of struct awk_output_buf.
 	 */
 	int (*api_ob_fflush)(awk_output_buf_t *outbuf);
-	size_t (*api_ob_fwrite)(const void *ptr, size_t size, size_t nmemb,
+	size_t (*api_ob_fwrite)(const void *buf, size_t size, size_t nmemb,
 			awk_output_buf_t *outbuf);
 	int (*api_ob_ferror)(awk_output_buf_t *outbuf);
 	void (*api_ob_clearerr)(awk_output_buf_t *outbuf);
 	int (*api_ob_fputc)(int c, awk_output_buf_t *outbuf);
 	int (*api_ob_fputs)(const char *s, awk_output_buf_t *outbuf);
+
+	ATTRIBUTE_PRINTF_PTR(format, 2, 3)
 	int (*api_ob_fprintf)(awk_output_buf_t *outbuf, const char *format,
 				...);
+
+	ATTRIBUTE_PRINTF_PTR(format, 2, 0)
 	int (*api_ob_vfprintf)(awk_output_buf_t *outbuf, const char *format,
 				va_list ap);
 
@@ -921,6 +1069,7 @@ typedef struct gawk_crt_api {
 	void *(*crt_realloc)(void *ptr, size_t size);
 	void (*crt_free)(void *ptr);
 
+	ATTRIBUTE_PRINTF_PTR(format, 1, 2)
 	int (*crt_printf)(const char *format, ...);
 
 	/* Assert failed: print message and abort the program */
@@ -951,8 +1100,8 @@ typedef struct gawk_crt_api {
 
 	FILE *(*crt_fopen)(const char *filename, const char *mode);
 	int (*crt_fclose)(FILE *stream);
-	size_t (*crt_fread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
-	size_t (*crt_fwrite)(const void *ptr, size_t size, size_t nmemb,
+	size_t (*crt_fread)(void *buf, size_t size, size_t nmemb, FILE *stream);
+	size_t (*crt_fwrite)(const void *buf, size_t size, size_t nmemb,
 			FILE *stream);
 
 	void (*crt_clearerr)(FILE *stream);
@@ -977,45 +1126,53 @@ typedef struct gawk_crt_api {
 	int (*crt_rename)(const char *old_name, const char *new_name);
 	int (*crt_chdir)(const char *path);
 
-#ifdef _MSC_VER
+#if defined _MSC_VER || defined(__MINGW32__)
 	wchar_t *(*crt_xpathwc)(const char *path, wchar_t buf[],
 		size_t buf_size);
-	int (*crt_xfstat)(void *h, const wchar_t *path, struct xstat *buf);
-	int (*crt_xwstat)(const wchar_t *path, struct xstat *buf,
+	int (*crt_xfstat)(void *h, const wchar_t *path, xstat_t *buf);
+	int (*crt_xwstat)(const wchar_t *path, xstat_t *buf,
 			int dont_follow);
-	int (*crt_xstat)(const char *path, struct xstat *buf);
-	int (*crt_xlstat)(const char *path, struct xstat *buf);
-	int (*crt_xstat_root)(const wchar_t *path, struct xstat *buf);
+	int (*crt_xstat)(const char *path, xstat_t *buf);
+	int (*crt_xlstat)(const char *path, xstat_t *buf);
+	int (*crt_xstat_root)(const wchar_t *path, xstat_t *buf);
 #endif
 
 	int (*crt_stat)(const char *path, gawk_stat_t *buf);
 	int (*crt_fstat)(int fd, gawk_stat_t *buf);
 	int (*crt_chmod)(const char *path, int mode);
 
-	char *(*crt_setlocale)(int category, const char *locale);
-	struct lconv *(*crt_localeconv)(void);
+#if defined _MSC_VER || defined(__MINGW32__)
+	int (*crt_opendirfd)(const char path[], struct dir_fd_ **const dfd);
+	int (*crt_closedirfd)(struct dir_fd_ *dfd);
+	int (*crt_fchdir)(const struct dir_fd_ *dfd);
+	struct win_find *(*crt_opendir)(const char path[]);
+	int (*crt_closedir)(struct win_find *const dirp);
+	struct _WIN32_FIND_DATAW *(*crt_readdir)(struct win_find *const dirp);
+	int (*crt_wreadlinkfd)(void *h, wchar_t buf[], const size_t bufsiz);
+	int (*crt_wreadlink)(const wchar_t path[], wchar_t buf[], const size_t bufsiz);
+	int (*crt_readlinkfd)(void *h, char buf[], const size_t bufsiz);
+	int (*crt_readlink)(const char path[], char buf[], const size_t bufsiz);
+#endif
 
-	int (*crt_strcoll)(const char *s1, const char *s2);
-	int (*crt_wcscoll)(const wchar_t *s1, const wchar_t *s2);
-
-	int (*crt_mb_cur_max)(void);
-
-	wint_t (*crt_btowc)(int c);
-
-	int (*crt_mblen)(const char *mbchar, size_t count);
-	int (*crt_mbtowc)(wchar_t *wchar, const char *mbchar, size_t count);
-	int (*crt_wctomb)(char *mbchar, wchar_t wchar);
-
-	size_t (*crt_mbstowcs)(wchar_t *wcstr, const char *mbstr, size_t count);
-	size_t (*crt_wcstombs)(char *mbstr, const wchar_t *wcstr, size_t count);
-
+	ATTRIBUTE_PRINTF_PTR(format, 2, 3)
 	int (*crt_fprintf)(FILE *stream, const char *format, ...);
+
+	ATTRIBUTE_PRINTF_PTR(format, 2, 3)
 	int (*crt_sprintf)(char *str, const char *format, ...);
+
+	ATTRIBUTE_PRINTF_PTR(format, 3, 4)
 	int (*crt_snprintf)(char *str, size_t size, const char *format, ...);
 
+	ATTRIBUTE_PRINTF_PTR(format, 1, 0)
 	int (*crt_vprintf)(const char *format, va_list ap);
+
+	ATTRIBUTE_PRINTF_PTR(format, 2, 0)
 	int (*crt_vfprintf)(FILE *stream, const char *format, va_list ap);
+
+	ATTRIBUTE_PRINTF_PTR(format, 2, 0)
 	int (*crt_vsprintf)(char *str, const char *format, va_list ap);
+
+	ATTRIBUTE_PRINTF_PTR(format, 3, 0)
 	int (*crt_vsnprintf)(char *str, size_t size, const char *format,
 			va_list ap);
 
@@ -1024,8 +1181,26 @@ typedef struct gawk_crt_api {
 
 	int (*crt_mkstemp)(char *templ);
 
+	char **(*crt_environ)(void);
 	char *(*crt_getenv)(const char *name);
+	int (*crt_setenv)(const char *name, const char *value, int overwrite);
+	int (*crt_unsetenv)(const char *name);
+	int (*crt_clearenv)(void);
 
+	char *(*crt_setlocale)(int category, const char *locale);
+	struct lconv *(*crt_localeconv)(void);
+
+	int (*crt_mb_cur_max)(void);
+
+	wint_t (*crt_btowc)(int c);
+
+	int (*crt_mblen)(const char *s, size_t n);
+	size_t (*crt_mbrlen)(const char *s, size_t n, mbstate_t *ps);
+
+	size_t (*crt_mbstowcs)(wchar_t *wcstr, const char *mbstr, size_t count);
+	size_t (*crt_wcstombs)(char *mbstr, const wchar_t *wcstr, size_t count);
+
+	int (*crt_strcoll)(const char *s1, const char *s2);
 	int (*crt_tolower)(int c);
 	int (*crt_toupper)(int c);
 	int (*crt_isascii)(int c);
@@ -1042,6 +1217,9 @@ typedef struct gawk_crt_api {
 	int (*crt_isupper)(int c);
 	int (*crt_isxdigit)(int c);
 
+#if !defined _MSC_VER && !defined __MINGW32__
+
+	int (*crt_wcscoll)(const wchar_t *s1, const wchar_t *s2);
 	wint_t (*crt_towlower)(wint_t c);
 	wint_t (*crt_towupper)(wint_t c);
 	int (*crt_iswascii)(wint_t c);
@@ -1057,9 +1235,51 @@ typedef struct gawk_crt_api {
 	int (*crt_iswspace)(wint_t c);
 	int (*crt_iswupper)(wint_t c);
 	int (*crt_iswxdigit)(wint_t c);
+	wctype_t (*crt_wctype)(const char *name);
+	int (*crt_iswctype)(wint_t c, wctype_t desc);
 
-	wctype_t (*crt_wctype)(char const *name);
-	int (*crt_iswctype)(wint_t c, wctype_t mask);
+	int (*crt_mbtowc)(wchar_t *pwc, const char *s, size_t n);
+	size_t (*crt_mbrtowc)(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
+	int (*crt_wctomb)(char *s, wchar_t wc);
+	size_t (*crt_wcrtomb)(char *s, wchar_t wc, mbstate_t *ps);
+
+#else /* _MSC_VER || __MINGW32__ */
+
+	int (*crt_c32scoll)(const uint32_t *s1, const uint32_t *s2);
+	uint32_t (*crt_c32tolower)(uint32_t c);
+	uint32_t (*crt_c32toupper)(uint32_t c);
+	int (*crt_c32isascii)(uint32_t c);
+	int (*crt_c32isalnum)(uint32_t c);
+	int (*crt_c32isalpha)(uint32_t c);
+	int (*crt_c32isblank)(uint32_t c);
+	int (*crt_c32iscntrl)(uint32_t c);
+	int (*crt_c32isdigit)(uint32_t c);
+	int (*crt_c32isgraph)(uint32_t c);
+	int (*crt_c32islower)(uint32_t c);
+	int (*crt_c32isprint)(uint32_t c);
+	int (*crt_c32ispunct)(uint32_t c);
+	int (*crt_c32isspace)(uint32_t c);
+	int (*crt_c32isupper)(uint32_t c);
+	int (*crt_c32isxdigit)(uint32_t c);
+	wctype_t (*crt_c32ctype)(const char *name);
+	int (*crt_c32isctype)(uint32_t c, wctype_t desc);
+
+	size_t (*crt_mbrtoc16)(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
+	size_t (*crt_mbrtoc32)(uint32_t *pwi, const char *s, size_t n, mbstate_t *ps);
+	size_t (*crt_c16rtomb)(char *s, wchar_t wc, mbstate_t *ps);
+	size_t (*crt_c32rtomb)(char *s, uint32_t wi, mbstate_t *ps);
+
+	size_t (*crt_mbstoc32s)(uint32_t *dst, const char *src, size_t n);
+	size_t (*crt_c32stombs)(char *dst, const uint32_t *src, size_t n);
+	size_t (*crt_wcstoc32s)(uint32_t *dst, const wchar_t *src, size_t n);
+	size_t (*crt_c32stowcs)(wchar_t *dst, const uint32_t *src, size_t n);
+
+	size_t (*crt_c32slen)(const uint32_t *s);
+	uint32_t *(*crt_c32schr)(const uint32_t *s, uint32_t c);
+	uint32_t *(*crt_c32srchr)(const uint32_t *s, uint32_t c);
+	uint32_t *(*crt_c32schrnul)(const uint32_t *s, uint32_t c);
+
+#endif /* _MSC_VER || __MINGW32__ */
 
 	/* Add more CRT replacements here.  */
 } gawk_crt_api_t;
@@ -1118,7 +1338,7 @@ void api_fatal_(const gawk_api_t *api,
 #define gawk_crt_assert(expr) ((void)((expr) ? 1 : \
 	(gawk_crt()->crt_assert_failed(#expr, __FILE__, __LINE__), 0)))
 #else
-#define gawk_crt_assert(expr) ((void)0)
+#define gawk_crt_assert(expr) ASSUME(expr)
 #endif
 
 #define register_input_parser(parser) \
@@ -1221,19 +1441,19 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define emalloc_(api, pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) emalloc1(api, size)) == 0) \
-			api_fatal_(api, "%s: malloc of %llu bytes failed", message, 0ull + size); \
+			api_fatal_(api, "%s: malloc of %" ZUFMT " bytes failed", message, size); \
 	} while(0)
 
 #define ezalloc_(api, pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) ezalloc1(api, 1, size)) == 0) \
-			api_fatal_(api, "%s: calloc of %llu bytes failed", message, 0ull + size); \
+			api_fatal_(api, "%s: calloc of %" ZUFMT " bytes failed", message, size); \
 	} while(0)
 
 #define erealloc_(api, pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) erealloc1(api, pointer, size)) == 0) \
-			api_fatal_(api, "%s: realloc of %llu bytes failed", message, 0ull + size); \
+			api_fatal_(api, "%s: realloc of %" ZUFMT " bytes failed", message, size); \
 	} while(0)
 
 #define emalloc(pointer, type, size, message) \
@@ -1244,7 +1464,7 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 	erealloc_(gawk_api(), pointer, type, size, message)
 
 #define outbuf_fflush(outbuf)			(gawk_api()->api_ob_fflush(outbuf))
-#define outbuf_fwrite(ptr, size, nmemb, outbuf)	(gawk_api()->api_ob_fwrite(ptr, size, nmemb, outbuf))
+#define outbuf_fwrite(buf, size, nmemb, outbuf)	(gawk_api()->api_ob_fwrite(buf, size, nmemb, outbuf))
 #define outbuf_ferror(outbuf)			(gawk_api()->api_ob_ferror(outbuf))
 #define outbuf_clearerr(outbuf)			(gawk_api()->api_ob_clearerr(outbuf))
 #define outbuf_fputc(c, outbuf)			(gawk_api()->api_ob_fputc(c, outbuf))
@@ -1366,10 +1586,10 @@ r_gawk_fstat(const gawk_crt_api_t *crt,
 #define gawk_crt_fopen(filename, mode)		(gawk_crt()->crt_fopen(filename, mode))
 #define gawk_crt_fclose(stream)			(gawk_crt()->crt_fclose(stream))
 
-#define gawk_crt_fread(ptr, size, nmemb, stream) \
-	(gawk_crt()->crt_fread(ptr, size, nmemb, stream))
-#define gawk_crt_fwrite(ptr, size, nmemb, stream) \
-	(gawk_crt()->crt_fwrite(ptr, size, nmemb, stream))
+#define gawk_crt_fread(buf, size, nmemb, stream) \
+	(gawk_crt()->crt_fread(buf, size, nmemb, stream))
+#define gawk_crt_fwrite(buf, size, nmemb, stream) \
+	(gawk_crt()->crt_fwrite(buf, size, nmemb, stream))
 
 #define gawk_crt_clearerr(stream)		(gawk_crt()->crt_clearerr(stream))
 #define gawk_crt_feof(stream)			(gawk_crt()->crt_feof(stream))
@@ -1397,7 +1617,7 @@ r_gawk_fstat(const gawk_crt_api_t *crt,
 #define gawk_crt_rename(old_name, new_name)	(gawk_crt()->crt_rename(old_name, new_name))
 #define gawk_crt_chdir(path)			(gawk_crt()->crt_chdir(path))
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #define gawk_crt_xpathwc(path, buf, buf_size)	(gawk_crt()->crt_xpathwc(path, buf, buf_size))
 #define gawk_crt_xfstat(h, path, buf)		(gawk_crt()->crt_xfstat(h, path, buf))
 #define gawk_crt_xwstat(path, buf, dont_follow)	(gawk_crt()->crt_xwstat(path, buf, dont_follow))
@@ -1412,19 +1632,28 @@ r_gawk_fstat(const gawk_crt_api_t *crt,
 #define gawk_crt_fstat(fd, buf)			r_gawk_fstat(gawk_crt(), fd, buf)
 #define gawk_crt_chmod(path, mode)		(gawk_crt()->crt_chmod(path, mode))
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#define gawk_crt_opendirfd(path, dfd)		(gawk_crt()->crt_opendirfd(path, dfd))
+#define gawk_crt_closedirfd(dfd)		(gawk_crt()->crt_closedirfd(dfd))
+#define gawk_crt_fchdir(dfd)			(gawk_crt()->crt_fchdir(dfd))
+#define gawk_crt_opendir(path)			(gawk_crt()->crt_opendir(path))
+#define gawk_crt_closedir(dirp)			(gawk_crt()->crt_closedir(dirp))
+#define gawk_crt_readdir(dirp)			(gawk_crt()->crt_readdir(dirp))
+#define gawk_crt_wreadlinkfd(h, buf, bufsiz)	(gawk_crt()->crt_wreadlinkfd(h, buf, bufsiz))
+#define gawk_crt_wreadlink(path, buf, bufsiz)	(gawk_crt()->crt_wreadlink(path, buf, bufsiz))
+#define gawk_crt_readlinkfd(h, buf, bufsiz)	(gawk_crt()->crt_readlinkfd(h, buf, bufsiz))
+#define gawk_crt_readlink(path, buf, bufsiz)	(gawk_crt()->crt_readlink(path, buf, bufsiz))
+#endif
+
 #define gawk_crt_setlocale(category, locale)	(gawk_crt()->crt_setlocale(category, locale))
 #define gawk_crt_localeconv()			(gawk_crt()->crt_localeconv())
-
-#define gawk_crt_strcoll(s1, s2)		(gawk_crt()->crt_strcoll(s1, s2))
-#define gawk_crt_wcscoll(s1, s2)		(gawk_crt()->crt_wcscoll(s1, s2))
 
 #define gawk_crt_mb_cur_max()			(gawk_crt()->crt_mb_cur_max())
 
 #define gawk_crt_btowc(c)			(gawk_crt()->crt_btowc(c))
 
-#define gawk_crt_mblen(mbchar, count)		(gawk_crt()->crt_mblen(mbchar, count))
-#define gawk_crt_mbtowc(wchar, mbchar, count)	(gawk_crt()->crt_mbtowc(wchar, mbchar, count))
-#define gawk_crt_wctomb(mbchar, wchar)		(gawk_crt()->crt_wctomb(mbchar, wchar))
+#define gawk_crt_mblen(s, n)			(gawk_crt()->crt_mblen(s, n))
+#define gawk_crt_mbrlen(s, n, ps)		(gawk_crt()->crt_mbrlen(s, n, ps))
 
 #define gawk_crt_mbstowcs(wcstr, mbstr, count)	(gawk_crt()->crt_mbstowcs(wcstr, mbstr, count))
 #define gawk_crt_wcstombs(mbstr, wcstr, count)	(gawk_crt()->crt_wcstombs(mbstr, wcstr, count))
@@ -1448,8 +1677,13 @@ r_gawk_mkstemp(const gawk_crt_api_t *crt,
 
 #define gawk_crt_mkstemp(templ)			r_gawk_mkstemp(gawk_crt(), templ)
 
+#define gawk_crt_environ()        		(gawk_crt()->crt_environ())
 #define gawk_crt_getenv(name)        		(gawk_crt()->crt_getenv(name))
+#define gawk_crt_setenv(name, value, overwrite) (gawk_crt()->crt_setenv(name, value, overwrite))
+#define gawk_crt_unsetenv(name)			(gawk_crt()->crt_unsetenv(name))
+#define gawk_crt_clearenv()        		(gawk_crt()->crt_clearenv())
 
+#define gawk_crt_strcoll(s1, s2)		(gawk_crt()->crt_strcoll(s1, s2))
 #define gawk_crt_tolower(c)			(gawk_crt()->crt_tolower(c))
 #define gawk_crt_toupper(c)			(gawk_crt()->crt_toupper(c))
 #define gawk_crt_isascii(c)			(gawk_crt()->crt_isascii(c))
@@ -1466,6 +1700,9 @@ r_gawk_mkstemp(const gawk_crt_api_t *crt,
 #define gawk_crt_isupper(c)			(gawk_crt()->crt_isupper(c))
 #define gawk_crt_isxdigit(c)			(gawk_crt()->crt_isxdigit(c))
 
+#if !defined _MSC_VER && !defined __MINGW32__
+
+#define gawk_crt_wcscoll(s1, s2)		(gawk_crt()->crt_wcscoll(s1, s2))
 #define gawk_crt_towlower(c)			(gawk_crt()->crt_towlower(c))
 #define gawk_crt_towupper(c)			(gawk_crt()->crt_towupper(c))
 #define gawk_crt_iswascii(c)			(gawk_crt()->crt_iswascii(c))
@@ -1481,13 +1718,74 @@ r_gawk_mkstemp(const gawk_crt_api_t *crt,
 #define gawk_crt_iswspace(c)			(gawk_crt()->crt_iswspace(c))
 #define gawk_crt_iswupper(c)			(gawk_crt()->crt_iswupper(c))
 #define gawk_crt_iswxdigit(c)			(gawk_crt()->crt_iswxdigit(c))
-
 #define gawk_crt_wctype(name)			(gawk_crt()->crt_wctype(name))
-#define gawk_crt_iswctype(c, mask)		(gawk_crt()->crt_iswctype(c, mask))
+#define gawk_crt_iswctype(c, desc)		(gawk_crt()->crt_iswctype(c, desc))
+
+#define gawk_crt_mbtowc(pwc, s, n)		(gawk_crt()->crt_mbtowc(pwc, s, n))
+#define gawk_crt_mbrtowc(pwc, s, n, ps)		(gawk_crt()->crt_mbrtowc(pwc, s, n, ps))
+#define gawk_crt_wctomb(s, wc)			(gawk_crt()->crt_wctomb(s, wc))
+#define gawk_crt_wcrtomb(s, wc, ps)		(gawk_crt()->crt_wcrtomb(s, wc, ps))
+
+#else /* _MSC_VER || __MINGW32__ */
+
+#define gawk_crt_c32scoll(s1, s2)		(gawk_crt()->crt_c32scoll(s1, s2))
+#define gawk_crt_c32tolower(c)			(gawk_crt()->crt_c32tolower(c))
+#define gawk_crt_c32toupper(c)			(gawk_crt()->crt_c32toupper(c))
+#define gawk_crt_c32isascii(c)			(gawk_crt()->crt_c32isascii(c))
+#define gawk_crt_c32isalnum(c)                  (gawk_crt()->crt_c32isalnum(c))
+#define gawk_crt_c32isalpha(c)                  (gawk_crt()->crt_c32isalpha(c))
+#define gawk_crt_c32isblank(c)                  (gawk_crt()->crt_c32isblank(c))
+#define gawk_crt_c32iscntrl(c)                  (gawk_crt()->crt_c32iscntrl(c))
+#define gawk_crt_c32isdigit(c)                  (gawk_crt()->crt_c32isdigit(c))
+#define gawk_crt_c32isgraph(c)                  (gawk_crt()->crt_c32isgraph(c))
+#define gawk_crt_c32islower(c)                  (gawk_crt()->crt_c32islower(c))
+#define gawk_crt_c32isprint(c)                  (gawk_crt()->crt_c32isprint(c))
+#define gawk_crt_c32ispunct(c)                  (gawk_crt()->crt_c32ispunct(c))
+#define gawk_crt_c32isspace(c)                  (gawk_crt()->crt_c32isspace(c))
+#define gawk_crt_c32isupper(c)                  (gawk_crt()->crt_c32isupper(c))
+#define gawk_crt_c32isxdigit(c)                 (gawk_crt()->crt_c32isxdigit(c))
+#define gawk_crt_c32ctype(name)			(gawk_crt()->crt_c32ctype(name))
+#define gawk_crt_c32isctype(c, desc)		(gawk_crt()->crt_c32isctype(c, desc))
+
+#define gawk_crt_mbrtoc16(pwc, s, n, ps)	(gawk_crt()->crt_mbrtoc16(pwc, s, n, ps))
+#define gawk_crt_mbrtoc32(pwi, s, c, ps)	(gawk_crt()->crt_mbrtoc32(pwi, s, n, ps))
+#define gawk_crt_c16rtomb(s, wc, ps)		(gawk_crt()->crt_c16rtomb(s, wc, ps))
+#define gawk_crt_c32rtomb(s, wi, ps)		(gawk_crt()->crt_c32rtomb(s, wi, ps))
+
+#define gawk_crt_mbstoc32s(dst, src, n)		(gawk_crt()->crt_mbstoc32s(dst, src, n))
+#define gawk_crt_c32stombs(dst, src, n)		(gawk_crt()->crt_c32stombs(dst, src, n))
+#define gawk_crt_wcstoc32s(dst, src, n)		(gawk_crt()->crt_wcstoc32s(dst, src, n))
+#define gawk_crt_c32stowcs(dst, src, n)		(gawk_crt()->crt_c32stowcs(dst, src, n))
+
+#define gawk_crt_c32slen(s)			(gawk_crt()->crt_c32slen(s))
+#define gawk_crt_c32schr(s, c)			(gawk_crt()->crt_c32schr(s, c))
+#define gawk_crt_c32srchr(s, c)			(gawk_crt()->crt_c32srchr(s, c))
+#define gawk_crt_c32schrnul(s, c)		(gawk_crt()->crt_c32schrnul(s, c))
+
+#endif /* _MSC_VER || __MINGW32__ */
 
 /* Add more CRT replacements here.  */
 
 #endif /* GAWK_CRT_API */
+
+static inline char *cast_conststr(const char *s)
+{
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+		return (char *) s;
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+}
 
 /* Constructor functions */
 
@@ -1514,7 +1812,7 @@ r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
 		cp[length] = '\0';
 		result->str_value.str = cp;
 	} else {
-		result->str_value.str = (char *) string;
+		result->str_value.str = cast_conststr(string);
 	}
 
 	return result;
@@ -1604,7 +1902,7 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 	return result;
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #define GAWK_PLUGIN_EXPORT __declspec(dllexport)
 #else
 #define GAWK_PLUGIN_EXPORT
@@ -1618,7 +1916,7 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 #define GAWK_PLUGIN_EXTERN_C_END
 #endif
 
-#if defined(_MSC_VER) && defined(GAWK_STATIC_CRT)
+#if (defined(_MSC_VER) || defined(__MINGW32__)) && defined(GAWK_STATIC_CRT)
 /*
  * Do not initialize static version of CRT library compiled in extension
  * DLLs - they should use gawk API for all except stateless CRT functions,
@@ -1626,15 +1924,13 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
  */
 /* Tip: link extension DLLs with "/Entry:ExtDllMain" option.  */
 #define EXTENSION_DLL_MAIN \
-	int __stdcall ExtDllMain( \
-		void * hinstDLL, \
-		unsigned long fdwReason, \
-		void *lpvReserved) \
-	{ \
-		(void) hinstDLL, (void) fdwReason, (void) lpvReserved; \
-		return 1; \
-	}
-#endif /* _MSC_VER && GAWK_STATIC_CRT */
+int __stdcall ExtDllMain(void *hinstDLL, unsigned long fdwReason, void *lpvReserved); \
+int __stdcall ExtDllMain(void *hinstDLL, unsigned long fdwReason, void *lpvReserved) \
+{ \
+	(void) hinstDLL, (void) fdwReason, (void) lpvReserved; \
+	return 1; \
+}
+#endif /* (_MSC_VER || __MINGW32__) && GAWK_STATIC_CRT */
 
 #ifndef EXTENSION_DLL_MAIN
 #define EXTENSION_DLL_MAIN
@@ -1643,19 +1939,25 @@ make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
 #define GAWK_PLUGIN_GPL_COMPATIBLE \
   GAWK_PLUGIN_EXTERN_C_BEGIN \
   GAWK_PLUGIN_EXPORT \
+  extern int plugin_is_GPL_compatible; \
   int plugin_is_GPL_compatible; \
   GAWK_PLUGIN_EXTERN_C_END
 
 typedef struct gawk_plugin_info {
-	const char *ext_version;
+	const char *const ext_version;
 	const gawk_api_t *api;
 #ifdef GAWK_CRT_API
 	const gawk_crt_api_t *crt;
 #endif
 } gawk_plugin_info_t;
 
+#ifdef GAWK_CRT_API
 #define GAWK_PLUGIN(ver) \
-	static gawk_plugin_info_t gawk_plugin_info = {ver}
+	static gawk_plugin_info_t gawk_plugin_info = {ver, NULL, NULL}
+#else
+#define GAWK_PLUGIN(ver) \
+	static gawk_plugin_info_t gawk_plugin_info = {ver, NULL}
+#endif
 
 /*
  * Each extension must define a function with this prototype.
@@ -1760,7 +2062,7 @@ static inline int dl_load_func_impl(
 	gawk_plugin_info_t *info,
 	const gawk_api_t *const api_p,
 	gawk_extension_api_ver_t *ver,
-	const awk_ext_func_t func_table[],
+	awk_ext_func_t func_table[],
 	const size_t func_table_size,
 	const char *name_space,
 	awk_bool_t (*init_func)(void))
@@ -1840,6 +2142,12 @@ int dl_load(const gawk_api_t *const api_p, gawk_extension_api_ver_t *ver) \
 } \
 GAWK_PLUGIN_EXTERN_C_END
 
+/* gawk_api() hides struct gawk_api */
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 /* Forward declaration - to be able to use gawk API in inline functions in
   headers included between "gawkapi.h" and the definition of
   "gawk_plugin_info".  */
@@ -1848,27 +2156,31 @@ extern const gawk_api_t *gawk_api(void);
 extern const gawk_crt_api_t *gawk_crt(void);
 #endif
 
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+
 #if defined(GAWK_CRT_API) && !defined(GAWK_DONT_REDEFINE_CRT)
 
 #ifdef malloc
 #undef malloc
 #endif
-#define malloc(size) gawk_crt_malloc(size)
+#define malloc gawk_crt_malloc
 
 #ifdef calloc
 #undef calloc
 #endif
-#define calloc(nmemb, size) gawk_crt_calloc(nmemb, size)
+#define calloc gawk_crt_calloc
 
 #ifdef realloc
 #undef realloc
 #endif
-#define realloc(ptr, size) gawk_crt_realloc(ptr, size)
+#define realloc gawk_crt_realloc
 
 #ifdef free
 #undef free
 #endif
-#define free(ptr) gawk_crt_free(ptr)
+#define free gawk_crt_free
 
 #ifdef printf
 #undef printf
@@ -1903,263 +2215,301 @@ extern const gawk_crt_api_t *gawk_crt(void);
 #ifdef close
 #undef close
 #endif
-#define close(fd) gawk_crt_close(fd)
+#define close gawk_crt_close
 
 #ifdef dup
 #undef dup
 #endif
-#define dup(oldfd) gawk_crt_dup(oldfd)
+#define dup gawk_crt_dup
 
 #ifdef dup2
 #undef dup2
 #endif
-#define dup2(oldfd, newfd) gawk_crt_dup2(oldfd, newfd)
+#define dup2 gawk_crt_dup2
 
 #ifdef read
 #undef read
 #endif
-#define read(fd, buf, count) gawk_crt_read(fd, buf, count)
+#define read gawk_crt_read
 
 #ifdef write
 #undef write
 #endif
-#define write(fd, buf, count) gawk_crt_write(fd, buf, count)
+#define write gawk_crt_write
 
 #ifdef lseek
 #undef lseek
 #endif
-#define lseek(fd, offset, whence) gawk_crt_lseek(fd, offset, whence)
+#define lseek gawk_crt_lseek
 
 #ifdef tell
 #undef tell
 #endif
-#define tell(fd) gawk_crt_tell(fd)
+#define tell gawk_crt_tell
 
 #ifdef fsync
 #undef fsync
 #endif
-#define fsync(fd) gawk_crt_fsync(fd)
+#define fsync gawk_crt_fsync
 
 #ifdef fflush
 #undef fflush
 #endif
-#define fflush(stream) gawk_crt_fflush(stream)
+#define fflush gawk_crt_fflush
 
 #ifdef fgetpos
 #undef fgetpos
 #endif
-#define fgetpos(stream, pos) gawk_crt_fgetpos(stream, pos)
+#define fgetpos gawk_crt_fgetpos
 
 #ifdef fsetpos
 #undef fsetpos
 #endif
-#define fsetpos(stream, pos) gawk_crt_fsetpos(stream, pos)
+#define fsetpos gawk_crt_fsetpos
 
 #ifdef rewind
 #undef rewind
 #endif
-#define rewind(stream) gawk_crt_rewind(stream)
+#define rewind gawk_crt_rewind
 
 #ifdef fseek
 #undef fseek
 #endif
-#define fseek(stream, offset, whence) gawk_crt_fseek(stream, offset, whence)
+#define fseek gawk_crt_fseek
 
 #ifdef ftell
 #undef ftell
 #endif
-#define ftell(stream) gawk_crt_ftell(stream)
+#define ftell gawk_crt_ftell
 
 #ifdef fopen
 #undef fopen
 #endif
-#define fopen(filename, mode) gawk_crt_fopen(filename, mode)
+#define fopen gawk_crt_fopen
 
 #ifdef fclose
 #undef fclose
 #endif
-#define fclose(stream) gawk_crt_fclose(stream)
+#define fclose gawk_crt_fclose
 
 #ifdef fread
 #undef fread
 #endif
-#define fread(ptr, size, nmemb, stream) \
-	gawk_crt_fread(ptr, size, nmemb, stream)
+#define fread gawk_crt_fread
 
 #ifdef fwrite
 #undef fwrite
 #endif
-#define fwrite(ptr, size, nmemb, stream) \
-	gawk_crt_fwrite(ptr, size, nmemb, stream)
+#define fwrite gawk_crt_fwrite
 
 #ifdef clearerr
 #undef clearerr
 #endif
-#define clearerr(stream) gawk_crt_clearerr(stream)
+#define clearerr gawk_crt_clearerr
 
 #ifdef feof
 #undef feof
 #endif
-#define feof(stream) gawk_crt_feof(stream)
+#define feof gawk_crt_feof
 
 #ifdef ferror
 #undef ferror
 #endif
-#define ferror(stream) gawk_crt_ferror(stream)
+#define ferror gawk_crt_ferror
 
 #ifdef fileno
 #undef fileno
 #endif
-#define fileno(stream) gawk_crt_fileno(stream)
+#define fileno gawk_crt_fileno
 
 #ifdef putchar
 #undef putchar
 #endif
-#define putchar(c) gawk_crt_putchar(c)
+#define putchar gawk_crt_putchar
 
 #ifdef fputc
 #undef fputc
 #endif
-#define fputc(c, stream) gawk_crt_fputc(c, stream)
+#define fputc gawk_crt_fputc
 
 #ifdef putc
 #undef putc
 #endif
-#define putc(c, stream) gawk_crt_putc(c, stream)
+#define putc gawk_crt_putc
 
 #ifdef getchar
 #undef getchar
 #endif
-#define getchar() gawk_crt_getchar()
+#define getchar gawk_crt_getchar
 
 #ifdef fgetc
 #undef fgetc
 #endif
-#define fgetc(stream) gawk_crt_fgetc(stream)
+#define fgetc gawk_crt_fgetc
 
 #ifdef getc
 #undef getc
 #endif
-#define getc(stream) gawk_crt_getc(stream)
+#define getc gawk_crt_getc
 
 #ifdef puts
 #undef puts
 #endif
-#define puts(s) gawk_crt_puts(s)
+#define puts gawk_crt_puts
 
 #ifdef fputs
 #undef fputs
 #endif
-#define fputs(s, stream) gawk_crt_fputs(s, stream)
+#define fputs gawk_crt_fputs
 
 #ifdef fgets
 #undef fgets
 #endif
-#define fgets(s, size, stream) gawk_crt_fgets(s, size, stream)
+#define fgets gawk_crt_fgets
 
 #ifdef ungetc
 #undef ungetc
 #endif
-#define ungetc(c, stream) gawk_crt_ungetc(c, stream)
+#define ungetc gawk_crt_ungetc
 
 #ifdef mkdir
 #undef mkdir
 #endif
-#define mkdir(dirname) gawk_crt_mkdir(dirname)
+#define mkdir gawk_crt_mkdir
 
 #ifdef rmdir
 #undef rmdir
 #endif
-#define rmdir(dirname) gawk_crt_rmdir(dirname)
+#define rmdir gawk_crt_rmdir
 
 #ifdef remove
 #undef remove
 #endif
-#define remove(pathname) gawk_crt_remove(pathname)
+#define remove gawk_crt_remove
 
 #ifdef unlink
 #undef unlink
 #endif
-#define unlink(pathname) gawk_crt_unlink(pathname)
+#define unlink gawk_crt_unlink
 
 #ifdef rename
 #undef rename
 #endif
-#define rename(old_name, new_name) gawk_crt_rename(old_name, new_name)
+#define rename gawk_crt_rename
 
 #ifdef chdir
 #undef chdir
 #endif
-#define chdir(path) gawk_crt_chdir(path)
+#define chdir gawk_crt_chdir
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 #ifdef xpathwc
 #undef xpathwc
 #endif
-#define xpathwc(path, buf, buf_size) gawk_crt_xpathwc(path, buf, buf_size)
+#define xpathwc gawk_crt_xpathwc
 
 #ifdef xfstat
 #undef xfstat
 #endif
-#define xfstat(h, path, buf) gawk_crt_xfstat(h, path, buf)
+#define xfstat gawk_crt_xfstat
 
 #ifdef xwstat
 #undef xwstat
 #endif
-#define xwstat(path, buf, dont_follow) gawk_crt_xwstat(path, buf, dont_follow)
+#define xwstat gawk_crt_xwstat
 
 #ifdef xlstat
 #undef xlstat
 #endif
-#define xlstat(path, buf) gawk_crt_xlstat(path, buf)
+#define xlstat gawk_crt_xlstat
 
 #ifdef xstat_root
 #undef xstat_root
 #endif
-#define xstat_root(path, buf) gawk_crt_xstat_root(path, buf)
+#define xstat_root gawk_crt_xstat_root
 
-#endif /* _MSC_VER */
+#endif /* _MSC_VER || __MINGW32__ */
 
 #ifdef xstat
 #undef xstat
 #endif
-#define xstat(path, buf) gawk_crt_xstat(path, buf)
+#define xstat(name, buf) gawk_crt_xstat(name, buf)
 
 #ifdef stat
 #undef stat
 #endif
-#define stat(path, buf) gawk_crt_stat(path, buf)
+#define stat(name, buf) gawk_crt_stat(name, buf)
 
 #ifdef fstat
 #undef fstat
 #endif
-#define fstat(fd, buf) gawk_crt_fstat(fd, buf)
+#define fstat gawk_crt_fstat
 
 #ifdef chmod
 #undef chmod
 #endif
-#define chmod(path, mode) gawk_crt_chmod(path, mode)
+#define chmod gawk_crt_chmod
+
+#ifdef opendirfd
+#undef opendirfd
+#endif
+#define opendirfd gawk_crt_opendirfd
+
+#ifdef closedirfd
+#undef closedirfd
+#endif
+#define closedirfd gawk_crt_closedirfd
+
+#ifdef fchdir
+#undef fchdir
+#endif
+#define fchdir gawk_crt_fchdir
+
+#ifdef opendir
+#undef opendir
+#endif
+#define opendir gawk_crt_opendir
+
+#ifdef closedir
+#undef closedir
+#endif
+#define closedir gawk_crt_closedir
+
+#ifdef readdir
+#undef readdir
+#endif
+#define readdir gawk_crt_readdir
+
+#ifdef wreadlinkfd
+#undef wreadlinkfd
+#endif
+#define wreadlinkfd gawk_crt_wreadlinkfd
+
+#ifdef wreadlink
+#undef wreadlink
+#endif
+#define wreadlink gawk_crt_wreadlink
+
+#ifdef readlinkfd
+#undef readlinkfd
+#endif
+#define readlinkfd gawk_crt_readlinkfd
+
+#ifdef readlink
+#undef readlink
+#endif
+#define readlink gawk_crt_readlink
 
 #ifdef setlocale
 #undef setlocale
 #endif
-#define setlocale(category, locale) gawk_crt_setlocale(category, locale)
+#define setlocale gawk_crt_setlocale
 
 #ifdef localeconv
 #undef localeconv
 #endif
-#define localeconv() gawk_crt_localeconv()
-
-#ifdef strcoll
-#undef strcoll
-#endif
-#define strcoll(s1, s2) gawk_crt_strcoll(s1, s2)
-
-#ifdef wcscoll
-#undef wcscoll
-#endif
-#define wcscoll(s1, s2) gawk_crt_wcscoll(s1, s2)
+#define localeconv gawk_crt_localeconv
 
 #ifdef MB_CUR_MAX
 #undef MB_CUR_MAX
@@ -2169,32 +2519,27 @@ extern const gawk_crt_api_t *gawk_crt(void);
 #ifdef btowc
 #undef btowc
 #endif
-#define btowc(c) gawk_crt_btowc(c)
+#define btowc gawk_crt_btowc
 
 #ifdef mblen
 #undef mblen
 #endif
-#define mblen(mbchar, count) gawk_crt_mblen(mbchar, count)
+#define mblen gawk_crt_mblen
 
-#ifdef mbtowc
-#undef mbtowc
+#ifdef mbrlen
+#undef mbrlen
 #endif
-#define mbtowc(wchar, mbchar, count) gawk_crt_mbtowc(wchar, mbchar, count)
-
-#ifdef wctomb
-#undef wctomb
-#endif
-#define wctomb(mbchar, wchar) gawk_crt_wctomb(mbchar, wchar)
+#define mbrlen gawk_crt_mbrlen
 
 #ifdef mbstowcs
 #undef mbstowcs
 #endif
-#define mbstowcs(wcstr, mbstr, count) gawk_crt_mbstowcs(wcstr, mbstr, count)
+#define mbstowcs gawk_crt_mbstowcs
 
 #ifdef wcstombs
 #undef wcstombs
 #endif
-#define wcstombs(mbstr, wcstr, count) gawk_crt_wcstombs(mbstr, wcstr, count)
+#define wcstombs gawk_crt_wcstombs
 
 #ifdef fprintf
 #undef fprintf
@@ -2214,22 +2559,22 @@ extern const gawk_crt_api_t *gawk_crt(void);
 #ifdef vprintf
 #undef vprintf
 #endif
-#define vprintf(format, ap) gawk_crt_vprintf(format, ap)
+#define vprintf gawk_crt_vprintf
 
 #ifdef vfprintf
 #undef vfprintf
 #endif
-#define vfprintf(stream, format, ap) gawk_crt_vfprintf(stream, format, ap)
+#define vfprintf gawk_crt_vfprintf
 
 #ifdef vsprintf
 #undef vsprintf
 #endif
-#define vsprintf(str, format, ap) gawk_crt_vsprintf(str, format, ap)
+#define vsprintf gawk_crt_vsprintf
 
 #ifdef vsnprintf
 #undef vsnprintf
 #endif
-#define vsnprintf(str, size, format, ap) gawk_crt_vsnprintf(str, size, format, ap)
+#define vsnprintf gawk_crt_vsnprintf
 
 #ifdef errno
 #undef errno
@@ -2239,177 +2584,389 @@ extern const gawk_crt_api_t *gawk_crt(void);
 #ifdef strerror
 #undef strerror
 #endif
-#define strerror(error_number) gawk_crt_strerror(error_number)
+#define strerror gawk_crt_strerror
 
 #ifdef mkstemp
 #undef mkstemp
 #endif
-#define mkstemp(templ) gawk_crt_mkstemp(templ)
+#define mkstemp gawk_crt_mkstemp
+
+#ifdef environ
+#undef environ
+#endif
+#define environ gawk_crt_environ()
 
 #ifdef getenv
 #undef getenv
 #endif
-#define getenv(name) gawk_crt_getenv(name)
+#define getenv gawk_crt_getenv
+
+#ifdef setenv
+#undef setenv
+#endif
+#define setenv gawk_crt_setenv
+
+#ifdef unsetenv
+#undef unsetenv
+#endif
+#define unsetenv gawk_crt_unsetenv
+
+#ifdef clearenv
+#undef clearenv
+#endif
+#define clearenv gawk_crt_clearenv
+
+#ifdef strcoll
+#undef strcoll
+#endif
+#define strcoll gawk_crt_strcoll
 
 #ifdef tolower
 #undef tolower
 #endif
-#define tolower(c) gawk_crt_tolower(c)
+#define tolower gawk_crt_tolower
 
 #ifdef toupper
 #undef toupper
 #endif
-#define toupper(c) gawk_crt_toupper(c)
+#define toupper gawk_crt_toupper
 
 #ifdef isascii
 #undef isascii
 #endif
-#define isascii(c) gawk_crt_isascii(c)
+#define isascii gawk_crt_isascii
 
 #ifdef isalnum
 #undef isalnum
 #endif
-#define isalnum(c) gawk_crt_isalnum(c)
+#define isalnum gawk_crt_isalnum
 
 #ifdef isalpha
 #undef isalpha
 #endif
-#define isalpha(c) gawk_crt_isalpha(c)
+#define isalpha gawk_crt_isalpha
 
 #ifdef isblank
 #undef isblank
 #endif
-#define isblank(c) gawk_crt_isblank(c)
+#define isblank gawk_crt_isblank
 
 #ifdef iscntrl
 #undef iscntrl
 #endif
-#define iscntrl(c) gawk_crt_iscntrl(c)
+#define iscntrl gawk_crt_iscntrl
 
 #ifdef isdigit
 #undef isdigit
 #endif
-#define isdigit(c) gawk_crt_isdigit(c)
+#define isdigit gawk_crt_isdigit
 
 #ifdef isgraph
 #undef isgraph
 #endif
-#define isgraph(c) gawk_crt_isgraph(c)
+#define isgraph gawk_crt_isgraph
 
 #ifdef islower
 #undef islower
 #endif
-#define islower(c) gawk_crt_islower(c)
+#define islower gawk_crt_islower
 
 #ifdef isprint
 #undef isprint
 #endif
-#define isprint(c) gawk_crt_isprint(c)
+#define isprint gawk_crt_isprint
 
 #ifdef ispunct
 #undef ispunct
 #endif
-#define ispunct(c) gawk_crt_ispunct(c)
+#define ispunct gawk_crt_ispunct
 
 #ifdef isspace
 #undef isspace
 #endif
-#define isspace(c) gawk_crt_isspace(c)
+#define isspace gawk_crt_isspace
 
 #ifdef isupper
 #undef isupper
 #endif
-#define isupper(c) gawk_crt_isupper(c)
+#define isupper gawk_crt_isupper
 
 #ifdef isxdigit
 #undef isxdigit
 #endif
-#define isxdigit(c) gawk_crt_isxdigit(c)
+#define isxdigit gawk_crt_isxdigit
 
+#ifdef wcscoll
+#undef wcscoll
+#endif
 #ifdef towlower
 #undef towlower
 #endif
-#define towlower(c) gawk_crt_towlower(c)
-
 #ifdef towupper
 #undef towupper
 #endif
-#define towupper(c) gawk_crt_towupper(c)
-
 #ifdef iswascii
 #undef iswascii
 #endif
-#define iswascii(c) gawk_crt_iswascii(c)
-
 #ifdef iswalnum
 #undef iswalnum
 #endif
-#define iswalnum(c) gawk_crt_iswalnum(c)
-
 #ifdef iswalpha
 #undef iswalpha
 #endif
-#define iswalpha(c) gawk_crt_iswalpha(c)
-
 #ifdef iswblank
 #undef iswblank
 #endif
-#define iswblank(c) gawk_crt_iswblank(c)
-
 #ifdef iswcntrl
 #undef iswcntrl
 #endif
-#define iswcntrl(c) gawk_crt_iswcntrl(c)
-
 #ifdef iswdigit
 #undef iswdigit
 #endif
-#define iswdigit(c) gawk_crt_iswdigit(c)
-
 #ifdef iswgraph
 #undef iswgraph
 #endif
-#define iswgraph(c) gawk_crt_iswgraph(c)
-
 #ifdef iswlower
 #undef iswlower
 #endif
-#define iswlower(c) gawk_crt_iswlower(c)
-
 #ifdef iswprint
 #undef iswprint
 #endif
-#define iswprint(c) gawk_crt_iswprint(c)
-
 #ifdef iswpunct
 #undef iswpunct
 #endif
-#define iswpunct(c) gawk_crt_iswpunct(c)
-
 #ifdef iswspace
 #undef iswspace
 #endif
-#define iswspace(c) gawk_crt_iswspace(c)
-
 #ifdef iswupper
 #undef iswupper
 #endif
-#define iswupper(c) gawk_crt_iswupper(c)
-
 #ifdef iswxdigit
 #undef iswxdigit
 #endif
-#define iswxdigit(c) gawk_crt_iswxdigit(c)
-
 #ifdef wctype
 #undef wctype
 #endif
-#define wctype(name) gawk_crt_wctype(name)
-
 #ifdef iswctype
 #undef iswctype
 #endif
-#define iswctype(c, mask) gawk_crt_iswctype(c, mask)
+
+#ifdef mbtowc
+#undef mbtowc
+#endif
+#ifdef mbrtowc
+#undef mbrtowc
+#endif
+#ifdef wctomb
+#undef wctomb
+#endif
+#ifdef wcrtomb
+#undef wcrtomb
+#endif
+
+#if !defined _MSC_VER && !defined __MINGW32__
+
+#define wcscoll gawk_crt_wcscoll
+#define towlower gawk_crt_towlower
+#define towupper gawk_crt_towupper
+#define iswascii gawk_crt_iswascii
+#define iswalnum gawk_crt_iswalnum
+#define iswalpha gawk_crt_iswalpha
+#define iswblank gawk_crt_iswblank
+#define iswcntrl gawk_crt_iswcntrl
+#define iswdigit gawk_crt_iswdigit
+#define iswgraph gawk_crt_iswgraph
+#define iswlower gawk_crt_iswlower
+#define iswprint gawk_crt_iswprint
+#define iswpunct gawk_crt_iswpunct
+#define iswspace gawk_crt_iswspace
+#define iswupper gawk_crt_iswupper
+#define iswxdigit gawk_crt_iswxdigit
+#define wctype gawk_crt_wctype
+#define iswctype gawk_crt_iswctype
+
+#define mbtowc gawk_crt_mbtowc
+#define mbrtowc gawk_crt_mbrtowc
+#define wctomb gawk_crt_wctomb
+#define wcrtomb gawk_crt_wcrtomb
+
+#else /* _MSC_VER || __MINGW32__ */
+
+#define wcscoll use_c32scoll_instead
+#define towlower use_c32tolower_instead
+#define towupper use_c32toupper_instead
+#define iswascii use_c32isascii_instead
+#define iswalnum use_c32isalnum_instead
+#define iswalpha use_c32isalpha_instead
+#define iswblank use_c32isblank_instead
+#define iswcntrl use_c32iscntrl_instead
+#define iswdigit use_c32isdigit_instead
+#define iswgraph use_c32isgraph_instead
+#define iswlower use_c32islower_instead
+#define iswprint use_c32isprint_instead
+#define iswpunct use_c32ispunct_instead
+#define iswspace use_c32isspace_instead
+#define iswupper use_c32isupper_instead
+#define iswxdigit use_c32isxdigit_instead
+#define wctype use_c32ctype_instead
+#define iswctype use_c32isctype_instead
+
+#define mbtowc use_mbrtoc16_or_mbrtoc32_instead
+#define mbrtowc use_mbrtoc16_or_mbrtoc32_instead
+#define wctomb use_c16rtomb_or_c32rtomb_intead
+#define wcrtomb use_c16rtomb_or_c32rtomb_intead
+
+#ifdef c32scoll
+#undef c32scoll
+#endif
+#define c32scoll gawk_crt_c32scoll
+
+#ifdef c32tolower
+#undef c32tolower
+#endif
+#define c32tolower gawk_crt_c32tolower
+
+#ifdef c32toupper
+#undef c32toupper
+#endif
+#define c32toupper gawk_crt_c32toupper
+
+#ifdef c32isascii
+#undef c32isascii
+#endif
+#define c32isascii gawk_crt_c32isascii
+
+#ifdef c32isalnum
+#undef c32isalnum
+#endif
+#define c32isalnum gawk_crt_c32isalnum
+
+#ifdef c32isalpha
+#undef c32isalpha
+#endif
+#define c32isalpha gawk_crt_c32isalpha
+
+#ifdef c32isblank
+#undef c32isblank
+#endif
+#define c32isblank gawk_crt_c32isblank
+
+#ifdef c32iscntrl
+#undef c32iscntrl
+#endif
+#define c32iscntrl gawk_crt_c32iscntrl
+
+#ifdef c32isdigit
+#undef c32isdigit
+#endif
+#define c32isdigit gawk_crt_c32isdigit
+
+#ifdef c32isgraph
+#undef c32isgraph
+#endif
+#define c32isgraph gawk_crt_c32isgraph
+
+#ifdef c32islower
+#undef c32islower
+#endif
+#define c32islower gawk_crt_c32islower
+
+#ifdef c32isprint
+#undef c32isprint
+#endif
+#define c32isprint gawk_crt_c32isprint
+
+#ifdef c32ispunct
+#undef c32ispunct
+#endif
+#define c32ispunct gawk_crt_c32ispunct
+
+#ifdef c32isspace
+#undef c32isspace
+#endif
+#define c32isspace gawk_crt_c32isspace
+
+#ifdef c32isupper
+#undef c32isupper
+#endif
+#define c32isupper gawk_crt_c32isupper
+
+#ifdef c32isxdigit
+#undef c32isxdigit
+#endif
+#define c32isxdigit gawk_crt_c32isxdigit
+
+#ifdef c32ctype
+#undef c32ctype
+#endif
+#define c32ctype gawk_crt_c32ctype
+
+#ifdef c32isctype
+#undef c32isctype
+#endif
+#define c32isctype gawk_crt_c32isctype
+
+#ifdef mbrtoc16
+#undef mbrtoc16
+#endif
+#define mbrtoc16 gawk_crt_mbrtoc16
+
+#ifdef mbrtoc32
+#undef mbrtoc32
+#endif
+#define mbrtoc32 gawk_crt_mbrtoc32
+
+#ifdef c16rtomb
+#undef c16rtomb
+#endif
+#define c16rtomb gawk_crt_c16rtomb
+
+#ifdef c32rtomb
+#undef c32rtomb
+#endif
+#define c32rtomb gawk_crt_c32rtomb
+
+#ifdef mbstoc32s
+#undef mbstoc32s
+#endif
+#define mbstoc32s gawk_crt_mbstoc32s
+
+#ifdef c32stombs
+#undef c32stombs
+#endif
+#define c32stombs gawk_crt_c32stombs
+
+#ifdef wcstoc32s
+#undef wcstoc32s
+#endif
+#define wcstoc32s gawk_crt_wcstoc32s
+
+#ifdef c32stowcs
+#undef c32stowcs
+#endif
+#define c32stowcs gawk_crt_c32stowcs
+
+#ifdef c32slen
+#undef c32slen
+#endif
+#define c32slen gawk_crt_c32slen
+
+#ifdef c32schr
+#undef c32schr
+#endif
+#define c32schr gawk_crt_c32schr
+
+#ifdef c32srchr
+#undef c32srchr
+#endif
+#define c32srchr gawk_crt_c32srchr
+
+#ifdef c32schrnul
+#undef c32schrnul
+#endif
+#define c32schrnul gawk_crt_c32schrnul
+
+#endif /* _MSC_VER || __MINGW32__ */
 
 /* Add more CRT replacements here.  */
 
