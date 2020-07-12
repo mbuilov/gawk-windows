@@ -38,6 +38,7 @@ int fatal_tag_valid = 0;
 /* err --- print an error message with source line and file and record */
 
 /* VARARGS2 */
+ATTRIBUTE_PRINTF(emsg, 3, 0)
 void
 err(bool isfatal, const char *s, const char *emsg, va_list argp)
 {
@@ -46,7 +47,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 	static bool first = true;
 	static bool add_src_info = false;
-	static long lineno_val = 0;	// Easter Egg
+	static unsigned long lineno_val = 0;	// Easter Egg
 
 	if (first) {
 		first = false;
@@ -55,7 +56,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 			NODE *n = lookup("LINENO");
 
 			if (n != NULL && n->type == Node_var)
-				lineno_val = (long) get_number_d(n->var_value);
+				lineno_val = (unsigned long) get_number_d(n->var_value);
 		}
 	}
 
@@ -74,7 +75,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		else
 			(void) fprintf(stderr, _("cmd. line:"));
 
-		(void) fprintf(stderr, "%ld: ", (long) (sourceline + lineno_val));
+		(void) fprintf(stderr, "%lu: ", sourceline + lineno_val);
 	}
 
 #ifdef HAVE_MPFR
@@ -98,7 +99,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		(void) putc('(', stderr);
 		if (file)
 			(void) fprintf(stderr, "FILENAME=%.*s ", TO_PRINTF_WIDTH(len), file);
-		(void) fprintf(stderr, "FNR=%llu) ", 0ull + FNR);
+		(void) fprintf(stderr, "FNR=%" ZUFMT ") ", FNR);
 	}
 
 	(void) fprintf(stderr, "%s", s);
@@ -122,7 +123,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 /* msg --- take a varargs error message and print it */
 
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 msg(const char *mesg, ...)
 {
@@ -134,7 +135,7 @@ msg(const char *mesg, ...)
 
 /* r_warning --- print a warning message */
 
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 r_warning(const char *mesg, ...)
 {
@@ -144,7 +145,7 @@ r_warning(const char *mesg, ...)
 	va_end(args);
 }
 
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 error(const char *mesg, ...)
 {
@@ -166,10 +167,10 @@ set_loc(const char *file, unsigned line)
 	file = srcfile; line = srcline;
 }
 
-/* r_fatal --- print a fatal error message */
+/* r_fatal --- print a fatal error message and abort the program */
 
 ATTRIBUTE_NORETURN
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 r_fatal(const char *mesg, ...)
 {
@@ -177,10 +178,14 @@ r_fatal(const char *mesg, ...)
 	va_start(args, mesg);
 	err(true, _("fatal: "), mesg, args);
 	va_end(args);
+	/* Make compilers happy - function declared as "noreturn".
+	   This code is unreachable: err(true, ...) exits the program.  */
+	gawk_exit(EXIT_FATAL);
 }
 
 /* gawk_exit --- longjmp out if necessary */
 
+ATTRIBUTE_NORETURN
 void
 gawk_exit(int status)
 {
@@ -194,6 +199,7 @@ gawk_exit(int status)
 
 /* final_exit --- run extension exit handlers and exit */
 
+ATTRIBUTE_NORETURN
 void
 final_exit(int status)
 {
@@ -203,8 +209,8 @@ final_exit(int status)
 	/* we could close_io() here */
 	close_extensions();
 
-	/* free dynamically allocated program args */
-	gawk_free_argv();
+	/* free dynamically allocated resources */
+	gawk_cleanup();
 
 	exit(status);
 }
