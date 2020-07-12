@@ -7,7 +7,7 @@
  *
  * Michael M. Builov
  * mbuilov@gmail.com
- * Reworked 4/2020
+ * Reworked 4-6/2020
  *
  */
 
@@ -39,6 +39,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -61,9 +63,6 @@
 #include <errno.h>
 #include <locale.h>
 #include <ctype.h>
-#ifdef HAVE_WCHAR_H
-#include <wchar.h>
-#endif
 #ifdef HAVE_WCTYPE_H
 #include <wctype.h>
 #endif
@@ -71,24 +70,59 @@
 
 #include "gawkapi.h"
 
+#if defined _MSC_VER || defined __MINGW32__
+/* wchar_t and wint_t are both 16 bits, which is not enough for full unicode support.
+   Redefine all unicode-related functions used in ../missing_d/fnmatch.c */
+# ifdef wchar_t
+#  undef wchar_t
+# endif
+# define wchar_t unsigned int
+# ifdef wint_t
+#  undef wint_t
+# endif
+# define wint_t unsigned int
+# ifdef wcschr
+#  undef wcschr
+# endif
+# define wcschr c32schr
+# ifdef iswctype
+#  undef iswctype
+# endif
+# define iswctype c32isctype
+# ifdef wctype
+#  undef wctype
+# endif
+# define wctype c32ctype
+# ifdef towlower
+#  undef towlower
+# endif
+# define towlower c32tolower
+# ifdef mbstowcs
+#  undef mbstowcs
+# endif
+# define mbstowcs mbstoc32s
+# ifndef HAVE_WCSCHRNUL
+#  define HAVE_WCSCHRNUL
+# endif
+# ifdef wcschrnul
+#  undef wcschrnul
+# endif
+# define wcschrnul c32schrnul
+#endif /* _MSC_VER || __MINGW32__ */
+
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #ifdef HAVE_FNMATCH_H
 #include <fnmatch.h>
-#else
-#ifdef __VMS
-#include "fnmatch.h"	/* version that comes with gawk */
-#else
-#include "../missing_d/fnmatch.h"	/* version that comes with gawk */
-#endif
-#define HAVE_FNMATCH_H
 #endif
 
 #ifndef HAVE_FNMATCH
+/* use version that comes with gawk */
 #ifdef __VMS
-#include "fnmatch.c"	/* ditto */
+#include "fnmatch.c"
 #else
-#include "../missing_d/fnmatch.c"	/* ditto */
+#include "../missing_d/fnmatch.c"
 #endif
+#define HAVE_FNMATCH_H
 #define HAVE_FNMATCH
 #define HAVE_WFNMATCH
 #endif
