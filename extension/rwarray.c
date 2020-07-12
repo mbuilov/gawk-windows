@@ -44,15 +44,14 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
-#ifdef __MINGW32__
-#include <winsock2.h>
-#include <stdint.h>
-#elif !defined _MSC_VER
+#if !defined _MSC_VER && !defined __MINGW32__
 #include <arpa/inet.h>
 #endif
 #include <sys/types.h>
@@ -85,13 +84,14 @@ static awk_bool_t read_array(FILE *fp, awk_array_t array);
 static awk_bool_t read_elem(FILE *fp, awk_element_t *element);
 static awk_bool_t read_value(FILE *fp, awk_value_t *value);
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 typedef int check_sizeof_ulong[1-2*(sizeof(unsigned long) != 4)];
-typedef unsigned long uint32_t;
+typedef int check_sizeof_uint[1-2*(sizeof(unsigned int) != 4)];
+typedef unsigned int uint32_t;
 static inline uint32_t ntohl(uint32_t n)
 {
 	const unsigned i = 1;
-	return (*(const char*)&i) ? (uint32_t) _byteswap_ulong(n) : n;
+	return (*(const char*)&i) ? _byteswap_ulong(n) : n;
 }
 static inline uint32_t htonl(uint32_t n)
 {
@@ -282,7 +282,7 @@ write_value(FILE *fp, awk_value_t *val)
 		default:
 			/* XXX can this happen? */
 			code = htonl(0);
-			warning(_("array value has unknown type %d"), val->val_type);
+			warning(_("array value has unknown type %d"), (int) val->val_type);
 			break;
 		}
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
