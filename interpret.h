@@ -52,7 +52,7 @@ unfield(NODE **l, NODE **r)
 #define UNFIELD(l, r)	unfield(& (l), & (r))
 #endif
 
-int
+static int
 r_interpret(INSTRUCTION *code)
 {
 	INSTRUCTION *pc;   /* current instruction */
@@ -239,10 +239,9 @@ uninitialized_scalar:
 				m = m->var_value;
 				UPREF(m);
 				PUSH(m);
-		 		break;
+				break;
 			}
- 			/* else
-				fall through */
+			/* fall through */
 		case Op_push_array:
 			PUSH(pc->memory);
 			break;
@@ -775,9 +774,9 @@ mod:
 				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
 					size_t wlen = t1->wstlen + t2->wstlen;
 
-					erealloc(t1->wstptr, wchar_t *,
-							sizeof(wchar_t) * (wlen + 1), "r_interpret");
-					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen * sizeof(wchar_t));
+					erealloc(t1->wstptr, uni_char_t *,
+							sizeof(uni_char_t) * (wlen + 1), "r_interpret");
+					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen * sizeof(uni_char_t));
 					t1->wstlen = wlen;
 					t1->wstptr[wlen] = L'\0';
 				} else
@@ -1013,12 +1012,12 @@ arrayfor:
 			awk_value_t result;
 
 			if (arg_count < min_req)
-				fatal(_("%s: called with %lu arguments, expecting at least %llu"),
-						pc[1].func_name, TO_ULONG(arg_count), 0ull + min_req);
+				fatal(_("%s: called with %lu arguments, expecting at least %" ZUFMT ""),
+						pc[1].func_name, TO_ULONG(arg_count), min_req);
 
 			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %lu arguments, expecting no more than %llu"),
-						pc[1].func_name, TO_ULONG(arg_count), 0ull + max_expect);
+				lintwarn(_("%s: called with %lu arguments, expecting no more than %" ZUFMT ""),
+						pc[1].func_name, TO_ULONG(arg_count), max_expect);
 
 			PUSH_CODE(pc);
 			r = awk_value_to_node(pc->extfunc((int) arg_count, & result, f));
@@ -1267,7 +1266,7 @@ match_re:
 			/* Find the execution state to return to */
 			ni = pop_exec_state(& currule, & source, NULL);
 
-			assert(ni->opcode == Op_newfile || ni->opcode == Op_K_getline);
+			assert(ni && (ni->opcode == Op_newfile || ni->opcode == Op_K_getline));
 			JUMPTO(ni);
 
 		case Op_after_beginfile:
@@ -1276,7 +1275,7 @@ match_re:
 			/* Find the execution state to return to */
 			ni = pop_exec_state(& currule, & source, NULL);
 
-			assert(ni->opcode == Op_newfile || ni->opcode == Op_K_getline);
+			assert(ni && (ni->opcode == Op_newfile || ni->opcode == Op_K_getline));
 			if (ni->opcode == Op_K_getline
 					|| curfile == NULL      /* skipping directory argument */
 			)
