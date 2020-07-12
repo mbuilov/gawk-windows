@@ -35,7 +35,7 @@ int yydebug = 2;
 #endif
 
 static cmdtok_t yylex(void);
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 static void yyerror(const char *mesg, ...);
 
 static int find_command(const char *token, size_t toklen);
@@ -1009,7 +1009,7 @@ free_cmdarg(CMDARG *list)
 
 /* yyerror --- print a syntax error message */
 
-ATTRIBUTE_PRINTF_AT1(mesg)
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 static void
 yyerror(const char *mesg, ...)
 {
