@@ -24,6 +24,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#define NO_LOCALE_RPL /* avoid including "mscrtx/localerpl.h" */
 #include "awk.h"
 
 #if defined(HAVE_FCNTL_H)
