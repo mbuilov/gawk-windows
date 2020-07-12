@@ -25,7 +25,7 @@
 
 #include "awk.h"
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 #include <math.h>
 #else
 extern double pow(double x, double y);
@@ -33,11 +33,22 @@ extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
 #endif
 
+#ifdef WINDOWS_NATIVE
+# define uni_slen c32slen
+# define uni_scoll c32scoll
+#else
+# define uni_slen wcslen
+# define uni_scoll wcscoll
+#endif
+
+/* for debug.c */
 NODE **fcall_list = NULL;
 ulong_t fcall_count = 0u;
-enum defrule currule = UNKRULE;
 IOBUF *curfile = NULL;		/* current data file */
 bool exiting = false;
+
+/* for gawkapi.c */
+enum defrule currule = UNKRULE;
 
 int (*interpret)(INSTRUCTION *);
 #define MAX_EXEC_HOOKS	10
@@ -45,6 +56,7 @@ static unsigned num_exec_hook = 0;
 static Func_pre_exec pre_execute[MAX_EXEC_HOOKS];
 static Func_post_exec post_execute = NULL;
 
+/* defined in debug.c */
 extern void frame_popped(void);
 
 unsigned OFSlen;
@@ -508,79 +520,81 @@ genflags2str(int flagval, const struct flagtab *tab)
 static int
 posix_compare(NODE *s1, NODE *s2)
 {
-	int ret = 0;
-	char save1, save2;
-	size_t l = 0;
-
-	save1 = s1->stptr[s1->stlen];
-	s1->stptr[s1->stlen] = '\0';
-
-	save2 = s2->stptr[s2->stlen];
-	s2->stptr[s2->stlen] = '\0';
+	int ret;
 
 	if (gawk_mb_cur_max == 1) {
-		if (strlen(s1->stptr) == s1->stlen && strlen(s2->stptr) == s2->stlen)
-			ret = strcoll(s1->stptr, s2->stptr);
-		else {
-			char b1[2], b2[2];
-			char *p1, *p2;
-			size_t i;
+		char save1, save2;
+		const char *p1, *p2;
 
-			if (s1->stlen < s2->stlen)
-				l = s1->stlen;
-			else
-				l = s2->stlen;
+		save1 = s1->stptr[s1->stlen];
+		s1->stptr[s1->stlen] = '\0';
 
-			b1[1] = b2[1] = '\0';
-			for (i = 0, p1 = s1->stptr, p2 = s2->stptr;
-			     ret == 0 && i < l;
-			     p1++, p2++) {
-				b1[0] = *p1;
-				b2[0] = *p2;
-				ret = strcoll(b1, b2);
+		save2 = s2->stptr[s2->stlen];
+		s2->stptr[s2->stlen] = '\0';
+
+		p1 = s1->stptr;
+		p2 = s2->stptr;
+
+		for (;;) {
+			size_t len;
+
+			ret = strcoll(p1, p2);
+			if (ret != 0)
+				break;
+
+			len = strlen(p1);
+			p1 += len + 1;
+			p2 += len + 1;
+
+			if (p1 == s1->stptr + s1->stlen + 1) {
+				if (p2 != s2->stptr + s2->stlen + 1)
+					ret = -1;
+				break;
+			}
+			if (p2 == s2->stptr + s2->stlen + 1) {
+				ret = 1;
+				break;
 			}
 		}
-		/*
-		 * Either worked through the strings or ret != 0.
-		 * In either case, ret will be the right thing to return.
-		 */
+
+		s1->stptr[s1->stlen] = save1;
+		s2->stptr[s2->stlen] = save2;
 	}
 #if ! defined(__DJGPP__)
 	else {
 		/* Similar logic, using wide characters */
+		const uni_char_t *p1, *p2;
+
 		(void) force_wstring(s1);
 		(void) force_wstring(s2);
 
-		if (wcslen(s1->wstptr) == s1->wstlen && wcslen(s2->wstptr) == s2->wstlen)
-			ret = wcscoll(s1->wstptr, s2->wstptr);
-		else {
-			wchar_t b1[2], b2[2];
-			wchar_t *p1, *p2;
-			size_t i;
+		p1 = s1->wstptr;
+		p2 = s2->wstptr;
 
-			if (s1->wstlen < s2->wstlen)
-				l = s1->wstlen;
-			else
-				l = s2->wstlen;
+		for (;;) {
+			size_t len;
 
-			b1[1] = b2[1] = L'\0';
-			for (i = 0, p1 = s1->wstptr, p2 = s2->wstptr;
-			     ret == 0 && i < l;
-			     p1++, p2++) {
-				b1[0] = *p1;
-				b2[0] = *p2;
-				ret = wcscoll(b1, b2);
+			ret = uni_scoll(p1, p2);
+			if (ret != 0)
+				break;
+
+			len = uni_slen(p1);
+			p1 += len + 1;
+			p2 += len + 1;
+
+			if (p1 == s1->wstptr + s1->wstlen + 1) {
+				if (p2 != s2->wstptr + s2->wstlen + 1)
+					ret = -1;
+				break;
+			}
+			if (p2 == s2->wstptr + s2->wstlen + 1) {
+				ret = 1;
+				break;
 			}
 		}
-		/*
-		 * Either worked through the strings or ret != 0.
-		 * In either case, ret will be the right thing to return.
-		 */
 	}
 #endif
 
-	s1->stptr[s1->stlen] = save1;
-	s2->stptr[s2->stlen] = save2;
 	return ret;
 }
 
@@ -779,7 +793,6 @@ set_BINMODE(void)
 			default:
 				BINMODE = BINMODE_BOTH;
 				goto bad_value;
-				break;
 			}
 			break;
 		case 2:
@@ -858,6 +871,7 @@ set_ORS(void)
 
 /* fmt_ok --- is the conversion format a valid one? */
 
+/* referenced in node.c */
 NODE **fmt_list = NULL;
 static int fmt_ok(NODE *n);
 static unsigned fmt_index(NODE *n);
@@ -1080,9 +1094,9 @@ update_NR(void)
 		(void) mpg_update_var(NR_node);
 	else
 #endif
-	if (NR_node->var_value->numbr != NR) {
+	if (NR_node->var_value->numbr != field_num_as_awknum(NR)) {
 		unref(NR_node->var_value);
-		NR_node->var_value = make_number((AWKNUM) NR);
+		NR_node->var_value = make_number(field_num_as_awknum(NR));
 	}
 }
 
@@ -1091,14 +1105,11 @@ update_NR(void)
 void
 update_NF(void)
 {
-	long l;
-
-	l = get_number_si(NF_node->var_value);
-	if (NF == BAD_NF || (unsigned long) l != NF) {
+	if (NF == BAD_NF || NF_node->var_value->numbr != field_num_as_awknum(NF)) {
 		if (NF == BAD_NF)
 			(void) get_field(UNLIMITED - 1, NULL); /* parse record */
 		unref(NF_node->var_value);
-		NF_node->var_value = make_number((AWKNUM) NF);
+		NF_node->var_value = make_number(field_num_as_awknum(NF));
 	}
 }
 
@@ -1112,9 +1123,9 @@ update_FNR(void)
 		(void) mpg_update_var(FNR_node);
 	else
 #endif
-	if (FNR_node->var_value->numbr != FNR) {
+	if (FNR_node->var_value->numbr != field_num_as_awknum(FNR)) {
 		unref(FNR_node->var_value);
-		FNR_node->var_value = make_number((AWKNUM) FNR);
+		FNR_node->var_value = make_number(field_num_as_awknum(FNR));
 	}
 }
 
@@ -1301,7 +1312,7 @@ setup_frame(INSTRUCTION *pc)
 
 	for (i = 0u, j = arg_count - 1; i < pcount; i++, j--) {
 		getnode(r);
-		memset(r, 0, sizeof(NODE));
+		clearnode(r);
 		sp[i] = r;
 
 		if (i >= arg_count) {
