@@ -45,7 +45,7 @@ BEGIN {
 
 		if (ret == 0 && !("KEEPIT" in ENVIRON)) {
 			if (PROCINFO["platform"] == "windows")
-				system("del orig.bin orig.out new.out")
+				system("del /f orig.bin orig.out new.out")
 			else
 				system("rm -f orig.bin orig.out new.out")
 		}
