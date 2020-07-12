@@ -77,7 +77,7 @@ const array_funcs_t cint_array_func = {
 static NODE **argv_store(NODE *symbol, NODE *subs);
 
 /* special case for ARGV in sandbox mode */
-const array_funcs_t argv_array_func = {
+static const array_funcs_t argv_array_func = {
 	"argv",
 	cint_array_init,
 	is_uinteger,
@@ -465,8 +465,8 @@ cint_list(NODE *symbol, NODE *t)
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
 		assert(list != NULL);
-		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
-		t->flags = assoc_kind;
+		assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
+		t->flags = (int) assoc_kind;
 		if (num_elems == 1u || num_elems == xn->table_size)
 			return list;
 		erealloc(list, NODE **, list_size * sizeof(NODE *), "cint_list");
@@ -476,8 +476,8 @@ cint_list(NODE *symbol, NODE *t)
 
 	if ((assoc_kind & AINUM) == 0) {
 		/* not sorting by "index num" */
-		assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
-		t->flags = assoc_kind;
+		assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
+		t->flags = (int) assoc_kind;
 	}
 
 	/* populate it with index in ascending or descending order */
@@ -494,8 +494,6 @@ cint_list(NODE *symbol, NODE *t)
 	return list;
 }
 
-extern AWKNUM int_kilobytes(NODE *symbol);
-extern AWKNUM str_kilobytes(NODE *symbol);
 
 /* cint_dump --- dump array info */
 
@@ -535,7 +533,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 	fprintf(output_fp, "table_size: %lu (total), %lu (cint), %lu (int + str)\n",
 				TO_ULONG(symbol->table_size), TO_ULONG(cint_size), TO_ULONG(xsize));
 	indent(indent_level);
-	fprintf(output_fp, "array_capacity: %llu\n", 0ull + symbol->array_capacity);
+	fprintf(output_fp, "array_capacity: %" ZUFMT "\n", symbol->array_capacity);
 	indent(indent_level);
 	fprintf(output_fp, "Load Factor: %.2g\n", (AWKNUM) (cint_size / symbol->array_capacity));
 
