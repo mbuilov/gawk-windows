@@ -597,8 +597,6 @@ int_list(NODE *symbol, NODE *t)
 }
 
 
-extern AWKNUM str_kilobytes(NODE *symbol);
-
 /* int_kilobytes --- calculate memory consumption of the assoc array */
 
 AWKNUM
