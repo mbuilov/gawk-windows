@@ -34,7 +34,7 @@
 /*
  * Michael M. Builov
  * mbuilov@gmail.com
- * Ported to _MSC_VER 4/2020
+ * Ported to _MSC_VER/__MINGW32__ 4-5/2020
  */
 
 #ifndef	_FTS_H_
@@ -56,14 +56,14 @@
 #define MAXPATHLEN FILENAME_MAX
 #endif
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
 
 typedef int		fts_dir_fd_t;
 typedef dev_t		fts_dev_t;
 typedef ino_t		fts_ino_t;
 typedef struct stat	fts_stat_t;
 
-#else /* _MSC_VER */
+#else /* _MSC_VER || __MINGW32__ */
 
 struct dir_fd_;
 typedef struct dir_fd_	*fts_dir_fd_t;
@@ -72,7 +72,7 @@ typedef xino_t		fts_ino_t;
 typedef struct xstat	fts_stat_t;
 #define FTS_DIRNLINK_SUPPORTED 0
 
-#endif /* _MSC_VER */
+#endif /* _MSC_VER || __MINGW32__ */
 
 /* Non-zero if st_nlink field of stat(2) result is the number of
    sub-directories (including "." and "..") for a stat'ed directory.  */
@@ -125,7 +125,7 @@ typedef struct _ftsent {
 	int fts_level;		/* depth (-1 to N) */
 
 	/* these fields are for FTS_D/FTS_DC only */
-#if defined(FTS_DIRNLINK_SUPPORTED) && FTS_DIRNLINK_SUPPORTED
+#if FTS_DIRNLINK_SUPPORTED
 	unsigned int fts_nlink;	/* link count */
 #endif
 	fts_ino_t fts_ino;		/* inode */
