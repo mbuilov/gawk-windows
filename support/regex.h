@@ -614,10 +614,14 @@ extern int re_exec (const char *);
    'configure' might #define 'restrict' to those words, so pick a
    different name.  */
 #ifndef _Restrict_
-# if defined __restrict || 2 < __GNUC__ + (95 <= __GNUC_MINOR__)
+# if defined __restrict \
+     || (defined __GNUC__ && 2 < __GNUC__ + (95 <= __GNUC_MINOR__))
 #  define _Restrict_ __restrict
-# elif 199901L <= __STDC_VERSION__ || defined restrict
+# elif defined restrict \
+       || (defined __STDC_VERSION__ && 199901L <= __STDC_VERSION__)
 #  define _Restrict_ restrict
+# elif defined NEED_C99_FEATURES
+#  error no _Restrict_
 # else
 #  define _Restrict_
 # endif
@@ -627,8 +631,9 @@ extern int re_exec (const char *);
 #ifndef _Restrict_arr_
 # ifdef __restrict_arr
 #  define _Restrict_arr_ __restrict_arr
-# elif ((199901L <= __STDC_VERSION__ || 3 < __GNUC__ + (1 <= __GNUC_MINOR__)) \
-        && !defined __GNUG__)
+# elif ((defined __STDC_VERSION__ && 199901L <= __STDC_VERSION__) \
+        || (defined __GNUC__ && 3 < __GNUC__ + (1 <= __GNUC_MINOR__))) \
+       && !defined __GNUG__
 #  define _Restrict_arr_ _Restrict_
 # else
 #  define _Restrict_arr_
