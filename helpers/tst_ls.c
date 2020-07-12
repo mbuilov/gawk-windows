@@ -4,7 +4,7 @@
  *
  * Michael M. Builov
  * mbuilov@gmail.com
- * Written 4/2020
+ * Written 4-6/2020
  */
 
 /*
@@ -39,14 +39,18 @@
 #include <stdio.h>
 #include <locale.h>
 #include <wchar.h>
+#include <io.h>
+#include <fcntl.h>
 
-/* printf-format string for printing "long long unsigned int" */
+#include "mscrtx/arg_parser.h"
+#include "mscrtx/utf8env.h"
+#include "mscrtx/locale_helpers.h"
+#include "mscrtx/console_setup.h"
+
+/* printf-format specifier for unsigned long long.
+   A c99-compatible standard runtime library must support "%llu".  */
 #ifndef LLUFMT
-# ifdef PRIu64
-#  define LLUFMT PRIu64
-# else
-#  define LLUFMT "llu"
-# endif
+# define LLUFMT "llu"
 #endif
 
 static unsigned long long
@@ -135,56 +139,6 @@ err:
 	return ftype;
 }
 
-static int
-set_lcat_from_env(const wchar_t prog[], int cat, const wchar_t name[])
-{
-	const wchar_t *lc = _wgetenv(name);
-	if (lc && lc[0] && !_wsetlocale(cat, lc)) {
-		fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", prog, name, lc);
-		return -1;
-	}
-	return 0;
-}
-
-/* Set locale based on the values of environment variables.  */
-static int
-set_locale_from_env(const wchar_t prog[], const wchar_t def[])
-{
-	const wchar_t *lc = _wgetenv(L"LC_ALL");
-	if (lc && lc[0]) {
-		if (!_wsetlocale(LC_ALL, lc)) {
-			fwprintf(stderr, L"%ls: bad locale: LC_ALL=%ls\n",
-				prog, lc);
-			return -1;
-		}
-		return 0;
-	}
-
-	/* LANG is the default for all LC_...  */
-	lc = _wgetenv(L"LANG");
-
-	/* if LANG is not defined - set the system default.
-	   (If def is "", locale may be be set to e.g. Russian_Russia.1251).  */
-	if (!lc || !lc[0])
-		lc = def;
-
-	if (!_wsetlocale(LC_ALL, lc)) {
-		fwprintf(stderr, L"%ls: bad locale: LANG=%ls\n", prog, lc);
-		return -1;
-	}
-
-	/* set all locale categories from the environment:
-	   specific LC_... take precedence over LANG.  */
-	if (set_lcat_from_env(prog, LC_CTYPE,    L"LC_CTYPE") ||
-		set_lcat_from_env(prog, LC_COLLATE,  L"LC_COLLATE") ||
-		set_lcat_from_env(prog, LC_MONETARY, L"LC_MONETARY") ||
-		set_lcat_from_env(prog, LC_NUMERIC,  L"LC_NUMERIC") ||
-		set_lcat_from_env(prog, LC_TIME,     L"LC_TIME"))
-		return -1;
-
-	return 0;
-}
-
 static HANDLE open_dir(
 	const wchar_t prog[],
 	const wchar_t dirname[],
@@ -206,7 +160,7 @@ static HANDLE open_dir(
 		path = (wchar_t*) malloc(sz);
 		if (path == NULL) {
 			fwprintf(stderr, L"%ls: can't allocate memory of %u bytes\n",
-				prog, (unsigned) sz);
+				prog, 0u + (unsigned) sz);
 			return INVALID_HANDLE_VALUE;
 		}
 	}
@@ -226,67 +180,12 @@ static HANDLE open_dir(
 	return h;
 }
 
-static int usage(const wchar_t prog[])
-{
-	const wchar_t *name = wcsrchr(prog, L'\\');
-	name = name != NULL ? name + 1 : prog;
-	fwprintf(stderr, L"%ls - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
-	fwprintf(stderr, L"Usage: %ls [--locale=<locale>] (-afi|-lna) <dir>\n", name);
-	return 2;
-}
-
-#ifdef __MINGW32__
-int wmain(int argc, wchar_t *wargv[]);
-#endif
-
-int wmain(int argc, wchar_t *wargv[])
+static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int afi)
 {
 	WIN32_FIND_DATAW ffd;
-	HANDLE h;
 
-	int afi;
-	const wchar_t *dirname;
-	const wchar_t *locale = NULL;	/* optional */
-	const wchar_t *const prog = wargv[0];
-	wchar_t **w = wargv + 1;
-	size_t dir_len;
-
-	if (argc < 3 || argc > 4)
-		return usage(prog);
-	for (;; w++) {
-		if (!wcsncmp(*w, L"--locale=", wcslen(L"--locale="))) {
-			if (locale)
-				return usage(prog);
-			locale = *w + wcslen(L"--locale=");
-			continue;
-		}
-		if (!wcscmp(*w, L"-afi")) {
-			afi = 1;
-			break;
-		}
-		if (!wcscmp(*w, L"-lna")) {
-			afi = 0;
-			break;
-		}
-		return usage(prog);
-	}
-
-	dirname = *++w;
-	if (!dirname || w[1])
-		return usage(prog);
-
-	if (locale) {
-		if (!_wsetlocale(LC_ALL, locale)) {
-			fwprintf(stderr, L"%ls: bad locale: %ls\n", prog, locale);
-			return 2;
-		}
-	}
-	else if (set_locale_from_env(prog, L""))
-		return 2;
-
-	dir_len = wcslen(dirname);
-
-	h = open_dir(prog, dirname, dir_len, &ffd);
+	const size_t dir_len = wcslen(dirname);
+	const HANDLE h = open_dir(prog, dirname, dir_len, &ffd);
 	if (INVALID_HANDLE_VALUE == h)
 		return 2;
 
@@ -331,6 +230,98 @@ int wmain(int argc, wchar_t *wargv[])
 			return 2;
 		}
 	}
-
 	return 0;
+}
+
+static int usage(const wchar_t prog[])
+{
+	const wchar_t *name = wcsrchr(prog, L'\\');
+	name = name != NULL ? name + 1 : prog;
+	fwprintf(stderr, L"%ls - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
+	fwprintf(stderr, L"Usage: %ls [--locale=<locale>] (-afi|-lna) <dir>\n", name);
+	return 2;
+}
+
+/* GCC complains about missing protope of wmain().  Provide one.  */
+int wmain(int argc, wchar_t *wargv[]);
+
+int wmain(int argc, wchar_t *wargv[])
+{
+	struct wide_arg *const wargs = arg_parse_command_line(&argc);
+
+	if (-1 == console_set_wide(_fileno(stderr)))
+		(void) _setmode(_fileno(stderr), _O_U8TEXT);
+
+	if (-1 == console_set_wide(_fileno(stdout)))
+		(void) _setmode(_fileno(stdout), _O_U8TEXT);
+
+	if (wargs == NULL) {
+		fwprintf(stderr, L"Failed to parse command-line arguments list");
+		return 2;
+	}
+
+	/* Not used, since MinGW version do not handles escaping of
+	   double quote via two double-quotes, like: "1""2".  */
+	(void)wargv;
+
+	{
+		int afi;
+		const wchar_t *locale = NULL;	/* optional */
+		const wchar_t *const prog = wargs->value;
+		struct wide_arg *w = wargs->next;
+
+		if (argc < 3 || argc > 4)
+			return usage(prog);
+
+		for (;; w = w->next) {
+			if (!wcsncmp(w->value, L"--locale=", wcslen(L"--locale="))) {
+				if (locale)
+					return usage(prog);
+				locale = w->value + wcslen(L"--locale=");
+				continue;
+			}
+			if (!wcscmp(w->value, L"-afi")) {
+				afi = 1;
+				break;
+			}
+			if (!wcscmp(w->value, L"-lna")) {
+				afi = 0;
+				break;
+			}
+			return usage(prog);
+		}
+
+		w = w->next;
+		if (!w || w->next)
+			return usage(prog);
+
+		if (locale) {
+			if (wset_locale_helper(LC_ALL, locale)) {
+				fwprintf(stderr, L"%ls: bad locale: %ls\n", prog, locale);
+				return 2;
+			}
+		}
+		else {
+			struct set_locale_err err;
+			if (set_locale_from_env("", &err)) {
+				if (err.lc)
+					fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", prog, err.cat, err.lc);
+				else
+					fwprintf(stderr, L"%ls: failed to set default locale\n", prog);
+				return 2;
+			}
+		}
+
+		if (process_dir(prog, w->value, afi))
+			return 2;
+	}
+
+	arg_free_wide_args(wargs);
+	return 0;
+}
+
+void utf8_env_fatal(void)
+{
+	fwprintf(stderr, L"failed to create environment variables table\n");
+	exit(3);
 }
