@@ -65,12 +65,8 @@ void w32_maybe_set_errno (void);
 # undef setlocale
 #endif
 
-#ifndef _MSC_VER
-char *w32_setlocale (int, const char *);
-#define setlocale(c,v) w32_setlocale(c,v)
-#else
-void set_locale_from_env(const char *def);
-#endif
+/* set locale defaults from environment variables */
+void pc_set_locale(const char *def);
 
 #endif	/* __MINGW32__ || _MSC_VER */
 
