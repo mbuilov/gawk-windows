@@ -1527,8 +1527,37 @@ mpg_interpret(INSTRUCTION **cp)
 
 	op = pc->opcode;
 	if (do_itrace) {
-		fprintf(stderr, "+ mpg_interpret: %s: ", opcode2str(op));
-		fflush(stderr);
+		switch (op) {
+		case Op_plus_i:
+		case Op_plus:
+		case Op_minus_i:
+		case Op_minus:
+		case Op_times_i:
+		case Op_times:
+		case Op_exp_i:
+		case Op_exp:
+		case Op_quotient_i:
+		case Op_quotient:
+		case Op_mod_i:
+		case Op_mod:
+		case Op_preincrement:
+		case Op_predecrement:
+		case Op_postincrement:
+		case Op_postdecrement:
+		case Op_unary_minus:
+		case Op_unary_plus:
+		case Op_assign_plus:
+		case Op_assign_minus:
+		case Op_assign_times:
+		case Op_assign_quotient:
+		case Op_assign_mod:
+		case Op_assign_exp:
+			fprintf(stderr, "++ %s: mpg_interpret\n", opcode2str(op));
+			fflush(stderr);
+			// fall thru to break
+		default:
+			break;
+		}
 	}
 
 	switch (op) {
@@ -1756,18 +1785,10 @@ mod:
 		break;
 
 	default:
-		if (do_itrace) {
-			fprintf(stderr, "unhandled\n");
-			fflush(stderr);
-		}
 		return true;	/* unhandled */
 	}
 
 	*cp = pc->nexti;	/* next instruction to execute */
-	if (do_itrace) {
-		fprintf(stderr, "handled\n");
-		fflush(stderr);
-	}
 	return false;
 }
 
