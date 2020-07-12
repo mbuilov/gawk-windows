@@ -29,8 +29,6 @@
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
 
-#define HASHSIZE	1021
-
 static unsigned func_count;	/* total number of functions */
 static unsigned var_count;	/* total number of global variables and functions */
 
@@ -55,11 +53,11 @@ void
 init_symbol_table(void)
 {
 	getnode(global_table);
-	memset(global_table, '\0', sizeof(NODE));
+	clearnode(global_table);
 	null_array(global_table);
 
 	getnode(param_table);
-	memset(param_table, '\0', sizeof(NODE));
+	clearnode(param_table);
 	null_array(param_table);
 
 	installing_specials = true;
@@ -285,7 +283,7 @@ make_symbol(const char *name, NODETYPE type)
 	NODE *r;
 
 	getnode(r);
-	memset(r, '\0', sizeof(NODE));
+	clearnode(r);
 	if (type == Node_var_array)
 		null_array(r);
 	else if (type == Node_var)
@@ -574,7 +572,7 @@ load_symbols(void)
 	aptr = assoc_lookup(PROCINFO_node, tmp);
 
 	getnode(sym_array);
-	memset(sym_array, '\0', sizeof(NODE));	/* PPC Mac OS X wants this */
+	clearnode(sym_array);	/* PPC Mac OS X wants this */
 	null_array(sym_array);
 
 	unref(tmp);
@@ -629,7 +627,6 @@ load_symbols(void)
 					break;
 				default:
 					cant_happen();
-					break;
 				}
 			}
 		}
@@ -659,7 +656,7 @@ check_param_names(void)
 
 	max = func_table->table_size * 2u;
 
-	memset(& n, 0, sizeof n);
+	clearnode(&n);
 	n.type = Node_val;
 	n.flags = STRING|STRCUR;
 	n.stfmt = STFMT_UNUSED;
@@ -758,7 +755,7 @@ bcalloc(OPCODE op, unsigned size, unsigned srcline)
 		pool->free_space = &block->i[size];
 	}
 
-	memset(cp, 0, size * sizeof(INSTRUCTION));
+	memset((void*) cp, 0, size * sizeof(INSTRUCTION));
 	cp->pool_size = (unsigned short) size;
 	cp->opcode = op;
 	cp->source_line = (unsigned short) srcline;
@@ -978,6 +975,74 @@ is_all_upper(const char *name)
 		default:
 			return false;
 		}
+	}
+
+	return true;
+}
+
+/* cmp_keyword --- return true if name matches a lower-case keyword case-insensitively */
+
+/*
+ * DON'T use tolower(), it's locale aware!
+ */
+
+bool
+cmp_keyword(const char name[], const char keyword[], unsigned len)
+{
+	unsigned i = 0;
+	for (; i < len; i++) {
+		int n = name[i];
+
+		/* Allow spaces and NULs in the keyword.  */
+		if (n == keyword[i])
+			continue;
+
+		/* Try to convert name letter to lower case.  */
+		switch (n) {
+#if \
+  'A' + 1 == 'B' && 'B' + 1 == 'C' && 'C' + 1 == 'D' && 'D' + 1 == 'E' && \
+  'E' + 1 == 'F' && 'F' + 1 == 'G' && 'G' + 1 == 'H' && 'H' + 1 == 'I' && \
+  'I' + 1 == 'J' && 'J' + 1 == 'K' && 'K' + 1 == 'L' && 'L' + 1 == 'M' && \
+  'M' + 1 == 'N' && 'N' + 1 == 'O' && 'O' + 1 == 'P' && 'P' + 1 == 'Q' && \
+  'Q' + 1 == 'R' && 'R' + 1 == 'S' && 'S' + 1 == 'T' && 'T' + 1 == 'U' && \
+  'U' + 1 == 'V' && 'V' + 1 == 'W' && 'W' + 1 == 'X' && 'X' + 1 == 'Y' && \
+  'Y' + 1 == 'Z' && \
+  'a' + 1 == 'b' && 'b' + 1 == 'c' && 'c' + 1 == 'd' && 'd' + 1 == 'e' && \
+  'e' + 1 == 'f' && 'f' + 1 == 'g' && 'g' + 1 == 'h' && 'h' + 1 == 'i' && \
+  'i' + 1 == 'j' && 'j' + 1 == 'k' && 'k' + 1 == 'l' && 'l' + 1 == 'm' && \
+  'm' + 1 == 'n' && 'n' + 1 == 'o' && 'o' + 1 == 'p' && 'p' + 1 == 'q' && \
+  'q' + 1 == 'r' && 'r' + 1 == 's' && 's' + 1 == 't' && 't' + 1 == 'u' && \
+  'u' + 1 == 'v' && 'v' + 1 == 'w' && 'w' + 1 == 'x' && 'x' + 1 == 'y' && \
+  'y' + 1 == 'z'
+		case 'A': case 'B': case 'C': case 'D': case 'E':
+		case 'F': case 'G': case 'H': case 'I': case 'J':
+		case 'K': case 'L': case 'M': case 'N': case 'O':
+		case 'P': case 'Q': case 'R': case 'S': case 'T':
+		case 'U': case 'V': case 'W': case 'X': case 'Y':
+		case 'Z':
+			n = n - 'A' + 'a';
+			break;
+#else
+		case 'A': n = 'a'; break; case 'B': n = 'b'; break;
+		case 'C': n = 'c'; break; case 'D': n = 'd'; break;
+		case 'E': n = 'e'; break; case 'F': n = 'f'; break;
+		case 'G': n = 'g'; break; case 'H': n = 'h'; break;
+		case 'I': n = 'i'; break; case 'J': n = 'j'; break;
+		case 'K': n = 'k'; break; case 'L': n = 'l'; break;
+		case 'M': n = 'm'; break; case 'N': n = 'n'; break;
+		case 'O': n = 'o'; break; case 'P': n = 'p'; break;
+		case 'Q': n = 'q'; break; case 'R': n = 'r'; break;
+		case 'S': n = 's'; break; case 'T': n = 't'; break;
+		case 'U': n = 'u'; break; case 'V': n = 'v'; break;
+		case 'W': n = 'w'; break; case 'X': n = 'x'; break;
+		case 'Y': n = 'y'; break; case 'Z': n = 'z'; break;
+#endif
+		default:
+			return false;
+		}
+
+		if (n != keyword[i])
+			return false;
 	}
 
 	return true;
