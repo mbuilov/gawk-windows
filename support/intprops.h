@@ -40,32 +40,52 @@
 /* True if the real type T is signed.  */
 #define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
 
+/* Ignore some pedantic warnings.  */
 #ifndef _GL_WARNING_PUSH
-#ifdef _MSC_VER
-#define _GL_WARNING_PUSH __pragma(warning(push))
-#endif
-#ifndef _GL_WARNING_PUSH
-#define _GL_WARNING_PUSH
-#endif
+# if defined __clang__
+#  define _GL_WARNING_PUSH _Pragma ("clang diagnostic push")
+# elif defined _MSC_VER
+#  define _GL_WARNING_PUSH __pragma(warning(push))
+# else
+#  define _GL_WARNING_PUSH
+# endif
 #endif
 
 #ifndef _GL_WARNING_POP
-#ifdef _MSC_VER
-#define _GL_WARNING_POP __pragma(warning(pop))
-#endif
-#ifndef _GL_WARNING_POP
-#define _GL_WARNING_POP
-#endif
+# if defined __clang__
+#  define _GL_WARNING_POP _Pragma ("clang diagnostic pop")
+# elif defined _MSC_VER
+#  define _GL_WARNING_POP __pragma(warning(pop))
+# else
+#  define _GL_WARNING_POP
+# endif
 #endif
 
 #ifndef _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
-#ifdef _MSC_VER
-#define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE \
-  __pragma(warning(disable:4296)) /* expression is always true or false */
+# ifdef _MSC_VER
+#  define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE \
+	__pragma(warning(disable:4296)) /* expression is always true or false */
+# else
+#  define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
+# endif
 #endif
-#ifndef _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
-#define _GL_WARNING_DISABLE_EXPR_IS_ALWAYS_TRUE_OR_FALSE
+
+#ifndef _GL_WARNING_DISABLE_SIGN_CONVERSION
+# if defined __clang__
+#  define _GL_WARNING_DISABLE_SIGN_CONVERSION \
+	_Pragma ("clang diagnostic ignored \"-Wsign-conversion\"")
+# else
+#  define _GL_WARNING_DISABLE_SIGN_CONVERSION
+# endif
 #endif
+
+#ifndef _GL_WARNING_DISABLE_CAST_ALIGN
+# if defined __clang__
+#  define _GL_WARNING_DISABLE_CAST_ALIGN \
+	_Pragma ("clang diagnostic ignored \"-Wcast-align\"")
+# else
+#  define _GL_WARNING_DISABLE_CAST_ALIGN
+# endif
 #endif
 
 /* Return 1 if the real expression E, after promotion, has a
@@ -81,7 +101,7 @@
 /* The width in bits of the integer type or expression T.
    Do not evaluate T.
    Padding bits are not supported; this is checked at compile-time below.  */
-#define TYPE_WIDTH(t) (sizeof ((t)) * CHAR_BIT)
+#define TYPE_WIDTH(t) (sizeof (t) * CHAR_BIT)
 
 /* The maximum and minimum values for the integer type T.  */
 #define TYPE_MINIMUM(t) ((t) ~ TYPE_MAXIMUM (t))
@@ -478,6 +498,9 @@
 # endif
 
 # define _GL_INT_OP_WRAPV(a, b, r, op, builtin, overflow) \
+   _GL_WARNING_PUSH \
+   _GL_WARNING_DISABLE_CAST_ALIGN \
+   _GL_WARNING_DISABLE_SIGN_CONVERSION \
    (sizeof *(r) == sizeof (signed char) \
     ? _GL_INT_OP_WRAPV_SMALLISH (a, b, r, op, overflow, \
                                  signed char, SCHAR_MIN, SCHAR_MAX, \
@@ -492,7 +515,8 @@
                           int, INT_MIN, INT_MAX) \
        : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
                           unsigned int, 0, UINT_MAX)) \
-    : _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow))
+    : _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow)) \
+   _GL_WARNING_POP
 # ifdef LLONG_MAX
 #  define _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow) \
     (sizeof *(r) == sizeof (long int) \
@@ -521,8 +545,8 @@
    overflow problems.  *R's type is T, with extrema TMIN and TMAX.
    T must be a signed integer type.  Return 1 if the result overflows.  */
 #define _GL_INT_OP_CALC(a, b, r, op, overflow, ut, t, tmin, tmax) \
-  (*(t*)(sizeof (t) == sizeof (*r) ? r : NULL) = \
-    _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), \
+  ((void) (*(t*) (sizeof (t) == sizeof (*r) ? r : NULL) \
+           = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t)), \
    overflow (a, b, tmin, tmax) ? 1 : 0)
 
 /* Return the low-order bits of A <op> B, where the operation is given
@@ -567,15 +591,15 @@
 #define _GL_INT_SUBTRACT_RANGE_OVERFLOW(a, b, tmin, tmax) \
   (((a) < 0) == ((b) < 0) \
    ? ((a) < (b) \
-      ? !(tmin) || -1 - (tmin) < (b) - (a) - 1 \
-      : (tmax) < (a) - (b)) \
+      ? !(tmin) || -1 - (tmin) < (tmin) - (tmin) + (b) - (a) - 1 \
+      : (tmax) < (tmax) - (tmax) + (a) - (b)) \
    : (a) < 0 \
    ? ((!EXPR_SIGNED (_GL_INT_CONVERT ((a) - (tmin), b)) && (a) - (tmin) < 0) \
-      || (a) - (tmin) < (b)) \
+      || (a) - (tmin) < (tmin) - (tmin) + (b)) \
    : ((! (EXPR_SIGNED (_GL_INT_CONVERT (tmax, b)) \
           && EXPR_SIGNED (_GL_INT_CONVERT ((tmax) + (b), a))) \
-       && (tmax) <= -1 - (b)) \
-      || (tmax) + (b) < (a)))
+       && (tmax) <= (tmax) - (tmax) - 1 - (b)) \
+      || (tmax) + (b) < (tmax) - (tmax) + (a)))
 #define _GL_INT_MULTIPLY_RANGE_OVERFLOW(a, b, tmin, tmax) \
   ((b) < 0 \
    ? ((a) < 0 \
