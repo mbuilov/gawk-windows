@@ -41,9 +41,9 @@ static char* _os2_unixroot(const char *path);
 static const char* _os2_unixroot_path(const char *path);
 #endif /* __EMX__ */
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 #ifdef HAVE_SOCKETS
-#include <socket.h>
+#include "socket.h"
 
 #undef socket
 #undef setsockopt
@@ -57,7 +57,18 @@ static const char* _os2_unixroot_path(const char *path);
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif /* __MINGW32__ || _MSC_VER */
+#include "mscrtx/arg_parser.h"
+#include "mscrtx/utf8env.h"
+#include "mscrtx/locale_helpers.h"
+#include "mscrtx/localerpl.h"
+#endif /* WINDOWS_NATIVE */
+
+#ifdef WINDOWS_NATIVE
+#define close(fd)		_close(fd)
+#define lseek(fd, off, set)	_lseek(fd, off, set)
+#define setmode(fd, mode)	_setmode(fd, mode)
+#define isatty(fd)		_isatty(fd)
+#endif
 
 #if ! defined(S_ISREG) && defined(S_IFREG)
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
@@ -67,12 +78,12 @@ static const char* _os2_unixroot_path(const char *path);
 #define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
-#ifdef _MSC_VER
-/* S_IFSOCK is non-standard for _MSC_VER.  */
+#ifdef WINDOWS_NATIVE
+/* S_IFSOCK is non-standard for Windows.  */
 #if ! defined(S_IFSOCK)
 #define S_IFSOCK (S_IFREG | S_IFDIR)
 #endif
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 #if ! defined(S_IFIFO) && defined(_S_IFIFO)
 #define S_IFIFO _S_IFIFO
@@ -83,19 +94,65 @@ static const char* _os2_unixroot_path(const char *path);
 const char *
 gawk_name(const char *filespec)
 {
-	char *p, *q;
-
-	p = (char *) filespec;  /* Sloppy... */
+	static char name_buf[128];
+	const char *p = filespec, *q;
+	size_t name_len;
 
 	/* OS/2 allows / for directory separator too */
 	if ((q = strrchr(p, '\\')) != NULL)
 		p = q + 1;
-	if ((q = strrchr(p, '/')) != NULL
-	    && (p == NULL || q > p)) /* support mixed d:\foo/bar\gawk.exe */
-		p = q + 1;
-	if ((q = strchr(p, '.')) != NULL)
-		*q = '\0';
-	return strlwr(p);
+	if ((q = strrchr(p, '/')) != NULL)
+		p = q + 1; /* support mixed d:\foo\bar/gawk.exe */
+	if ((q = strchr(p, '.')) == NULL)
+		q = strchr(p, '\0');
+
+	name_len = (size_t) (q - p);
+	if (name_len == 0)
+		goto dfl;
+
+#ifndef WINDOWS_NATIVE
+
+	if (name_len >= sizeof(name_buf))
+		goto dfl;
+
+	memcpy(name_buf, p, name_len);
+	name_len[name_len] = '\0';
+	return strlwr(name_buf);
+
+#else /* WINDOWS_NATIVE */
+
+	{
+		/* Convert name to lower case.  */
+		mbstate_t s = {
+#ifndef __cplusplus
+			0
+#endif
+		};
+		char *d = name_buf;
+		const size_t mx = (size_t) MB_CUR_MAX;
+		do {
+			unsigned wi;
+			size_t n = mbrtoc32(&wi, p, name_len, &s);
+			if (n == 0 || n == (size_t)-1 || n == (size_t)-2)
+				goto dfl;
+			p += n;
+			name_len -= n;
+			wi = c32tolower(wi);
+			if (sizeof(name_buf) - (size_t) (d - name_buf) <= mx)
+				goto dfl;
+			n = c32rtomb(d, wi, &s);
+			if (n == 0 || n == (size_t)-1 || n == (size_t)-2)
+				goto dfl;
+			d += n;
+		} while (name_len);
+		*d = '\0';
+		return name_buf;
+	}
+
+#endif /* WINDOWS_NATIVE */
+
+dfl:
+	return "gawk";
 }
 
 
@@ -234,6 +291,35 @@ isdirpunct(int c)
 	return (strchr(":\\/", c) != NULL);
 }
 
+#ifdef WINDOWS_NATIVE
+static HANDLE osf_to_handle(const intptr_t h)
+{
+#if 0
+#ifndef __cplusplus
+#if defined __GNUC__ && __GNUC__ >= 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbad-function-cast" /* cast from function call of type 'intptr_t' {aka 'long long int'} to non-matching type 'void *' */
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbad-function-cast" /* cast from function call of type 'intptr_t' (aka 'int') to non-matching type 'HANDLE' (aka 'void *') */
+#endif
+#endif
+#endif
+	return (HANDLE)h;
+#if 0
+#ifndef __cplusplus
+#if defined __GNUC__ && __GNUC__ >= 6
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#endif
+#endif
+}
+#endif
+
 /* os_close_on_exec --- set close on exec flag, print warning if fails */
 
 void
@@ -247,15 +333,13 @@ os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 		warning("%s %s `%s': could not set close-on-exec: %s",
 			what, dir, name, strerror(errno));
 #endif
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 	HANDLE fh;
-#ifdef _MSC_VER
 	SOCKET s = valid_socket (fd);
 	if (s != INVALID_SOCKET)
 		fh = (HANDLE)s;
 	else
-#endif
-		fh = (HANDLE)_get_osfhandle(fd);
+		fh = osf_to_handle(_get_osfhandle(fd));
 	if (fh != INVALID_HANDLE_VALUE)
 		SetHandleInformation(fh, HANDLE_FLAG_INHERIT, 0);
 #endif
@@ -279,7 +363,7 @@ os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
 {
 	*isdir = false;
 
-	switch (iobuf->sbuf.st_mode & S_IFMT) {
+	switch (awk_input_buf_get_stat(iobuf)->st_mode & S_IFMT) {
 	case S_IFREG:
 	case S_IFCHR:	/* ttys, /dev/null, .. */
 #ifdef S_IFSOCK
@@ -327,7 +411,7 @@ os_setbinmode(fd_t fd, int mode)
 {
 	int prev_mode;
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (is_socket(fd)) {
 		/* Only O_BINARY mode is supported.  */
 		assert(mode == O_BINARY);
@@ -352,7 +436,7 @@ os_setbinmode(fd_t fd, int mode)
 void
 os_restore_mode(fd_t fd)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (is_socket(fd))
 		return;
 #endif
@@ -365,15 +449,17 @@ os_restore_mode(fd_t fd)
 bool
 os_isatty(fd_t fd)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (is_socket(fd))
 		return false;
 #endif
-#if defined(__MINGW32__) || defined(_MSC_VER)
-	return (isatty(fd) && lseek(fd, SEEK_CUR, 0) == -1);
-#else
-	return isatty(fd);
+	if (!isatty(fd))
+		return false;
+#ifdef WINDOWS_NATIVE
+	if (lseek(fd, SEEK_CUR, 0) != -1)
+		return false;
 #endif
+	return true;
 }
 
 /* files_are_same --- return true if files are identical */
@@ -381,36 +467,43 @@ os_isatty(fd_t fd)
 bool
 files_are_same(const char *path, SRCFILE *src)
 {
+#ifndef WINDOWS_NATIVE
+	struct stat st;
 	size_t pathlen;
-	const char *p, *s;
+	char *p, *s;
 
-	gawk_xstat_t st;
-	int r = os_xstat (path, & st);
-
-	if (r != 0)
-		return false;
-
-	/* If they have a working `stat', honor that.  */
-	if (!(st.st_dev == src->sbuf.st_dev
-	      && st.st_ino == src->sbuf.st_ino))
-		return false;
-
-	/* Compare modification times.  */
-	if (st.st_mtime != src->mtime)
-		return false;
-
-	/* Compare absolute file names case-insensitively, and
-	   treat forward- and back-slashes as equal.  */
-	pathlen = strlen(path);
-	for (p = path, s = src->fullpath;
-	     p <= path + pathlen;
-	     p++, s++) {
-		if (tolower((unsigned char)*p) != tolower((unsigned char)*s)
-		    && !((*p == '/' || *p == '\\')
-			 && (*s == '/' || *s == '\\')))
+	if (stat (path, & st) == 0) {
+		/* If they have a working `stat', honor that.  */
+		if (!(st.st_dev == src->sbuf.st_dev
+		      && st.st_ino == src->sbuf.st_ino))
 			return false;
+
+		/* Compare modification times.  */
+		if (st.st_mtime != src->mtime)
+			return false;
+
+		/* Compare absolute file names case-insensitively, and
+		   treat forward- and back-slashes as equal.  */
+		pathlen = strlen(path);
+		for (p = path, s = src->fullpath;
+		     p <= path + pathlen;
+		     p++, s++) {
+			if (tolower(*p) != tolower(*s)
+			    && !((*p == '/' || *p == '\\')
+				 && (*s == '/' || *s == '\\')))
+				return false;
+		}
+		return true;
 	}
-	return true;
+	return false;
+#else /* WINDOWS_NATIVE */
+	gawk_xstat_t st;
+	return
+		os_xstat (path, & st) == 0 &&
+		st.st_dev == src->sbuf.st_dev &&
+		st.st_ino == src->sbuf.st_ino &&
+		st.st_mtime == src->mtime;
+#endif /* WINDOWS_NATIVE */
 }
 
 
@@ -632,37 +725,7 @@ void *os2_dlsym(void *handle, const char *name)
 
 #endif /* __EMX__ */
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-
-int
-setenv (const char *name, const char *value, int rewrite)
-{
-  char *entry;
-
-  if (*value == '=')
-    ++value;
-
-  if (getenv (name) && !rewrite)
-    return 0;
-
-  emalloc(entry, char *, strlen (name) + 1 + strlen (value) + 1, "setenv");
-  strcat (strcat (strcpy (entry, name), "="), value);
-  if (putenv (entry) != 0)
-    {
-      free (entry);
-      return -1;
-    }
-  return 0;
-}
-
-int
-unsetenv (const char *name)
-{
-  if (!name || !*name || strchr (name, '=') != NULL)
-    return -1;
-
-  return setenv (name, "", 1);
-}
+#ifdef WINDOWS_NATIVE
 
 /* MinGW 3.21 and later defines usleep as an inline function in
    unistd.h, which conflicts with the version below.  */
@@ -670,159 +733,30 @@ unsetenv (const char *name)
 int
 usleep(unsigned int usec)
 {
-  double msecf = usec / 1000.0;
+  DWORD msec = (DWORD) (usec / 1000);
+  usec %= 1000;
 
-  Sleep ((DWORD)msecf);
+  Sleep (msec);
 
-  return usec - msecf * 1000 < 0 ? 0 : (int)(usec - msecf * 1000);
+  return (int) usec;
 }
 #endif
 
-
-#ifndef _MSC_VER
-
-/* The implementation of wctob in the MS runtime is problematic
-   because it doesn't allow to distinguish between WEOF and 0xff, due
-   to integer sign extension.  It also causes failures in dfa.c when
-   characters with the 8th bit set are involved.  This replacement
-   version fixes that.  */
-
-#include <wchar.h>
-
-int
-wctob (wint_t wc)
-{
-  char buf[64];
-
-  if (!(MB_CUR_MAX <= sizeof (buf)))
-    abort ();
-  /* Handle the case where WEOF is a value that does not fit in a wchar_t.  */
-  if (wc == (wchar_t)wc)
-    if (wctomb (buf, (wchar_t)wc) == 1)
-      return (unsigned char) buf[0];
-  return EOF;
-}
-
-#else /* _MSC_VER */
-
-/* M.B. No problems with newer MS runtime - it typedefs both wint_t and wchar_t as
-   unsigned short, e.g. in locale Russian_Russia.1251:
-   wctob(WEOF) == -1, wctob(0xff) == 0x79.  */
-
-/* 1) Check that wint_t do not sign-extends (like 'char' do) WEOF and 0xff */
-typedef int ms_wint_t_check_1[1-2*((unsigned)0xff != (wint_t)0xff)];
-typedef int ms_wint_t_check_2[1-2*((unsigned)WEOF != (wint_t)WEOF)];
-
-/* 2) check that (wint_t)WEOF fits in wchar_t */
-typedef int ms_wchar_t_check[1-2*((wint_t)WEOF != (wchar_t)WEOF)];
-
-#endif /* _MSC_VER */
-
-
-#undef setlocale
-#include <locale.h>
-
-#ifndef _MSC_VER
-
 /* On Posix systems, 'setlocale' looks at LC_* variables in the
-   environment, and Gawk users might expect that on Windows as well.
-   The replacement implementation below does that, and also fixes a
-   few additional quirks with locales on Windows.  */
-static const char *
-lc_var (int category)
-{
-  static const char *const loc_name[LC_MAX - LC_MIN + 1] = {
-    "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME"
-  };
-
-  /* This function assumes LC_* categories are small numbers between 0
-     and 5, as shown above, so if that changes at some point, complain
-     vociferously.  */
-  if (LC_ALL != 0 || LC_CTYPE != 2 || LC_TIME != 5)
-    abort ();
-  /* Ensured by the caller, so should never happen.  */
-  if (category < LC_MIN || category > LC_MAX)
-    return "????";
-  return loc_name[category];
-}
-
-char *
-w32_setlocale (int category, const char *value)
-{
-  const char *new_locale = value;
-
-  if (LC_MIN <= category && category <= LC_MAX
-      && value && *value == '\0')
-    {
-      const char *lc_val = getenv ("LC_ALL");
-
-      if (!lc_val)
-        lc_val = getenv (lc_var (category));
-      if (!lc_val)
-        lc_val = getenv ("LANG");
-      if (lc_val)
-        new_locale = lc_val;
-    }
-
-  /* If VALUE includes a codeset, i.e. a Windows codepage number, we
-     must also set the LC_CTYPE locale to the same value, because
-     LC_CTYPE is the only category which is documented to be able to
-     change the codepage.  */
-  if (category != LC_ALL && category != LC_CTYPE)
-    {
-      const char *p = strchr (new_locale, '.');
-
-      if (p && isdigit (p[1]))
-        setlocale (LC_CTYPE, new_locale);
-    }
-  return setlocale (category, new_locale);
-}
-
-#else /* _MSC_VER */
-
-static void
-set_lcat_from_env(int cat, const char name[])
-{
-	const char *lc = getenv(name);
-	if (lc && lc[0] && !setlocale(cat, lc))
-		fatal(_("Bad locale: %s=%s"), name, lc);
-}
-
-/* Set locale based on the values of environment variables.  */
-/* M.B. Note: w32_setlocale defined above is buggy - it doesn't set e.g.
-  LC_NUMERIC from the environment if called as w32_setlocale(LC_ALL, ""),
-  if both LC_ALL and LANG are not defined in the environment.  */
+   environment, and Gawk users might expect that on Windows as well.  */
 void
-set_locale_from_env(const char *def)
+pc_set_locale(const char *def)
 {
-	const char *lc = getenv("LC_ALL");
-	if (lc && lc[0]) {
-		if (!setlocale(LC_ALL, lc))
-			fatal(_("Bad locale: LC_ALL=%s"), lc);
-		return;
+	struct set_locale_err err;
+	if (set_locale_from_env(def, &err)) {
+		if (err.lc)
+			fwprintf(stderr, L"Bad locale: %ls=%ls\n", err.cat, err.lc);
+		else
+			fwprintf(stderr, L"Failed to set default locale\n");
+		(void) fflush(stderr);
+		gawk_exit(EXIT_FATAL);
 	}
-
-	/* LANG is the default for all LC_...  */
-	lc = getenv("LANG");
-
-	/* if LANG is not defined - set the system default.
-	   (If def is "", locale may be be set to e.g. Russian_Russia.1251).  */
-	if (!lc || !lc[0])
-		lc = def;
-
-	if (!setlocale(LC_ALL, lc))
-		fatal(_("Bad locale: LANG=%s"), lc);
-
-	/* set all locale categories from the environment:
-	   specific LC_... take precedence over LANG.  */
-	set_lcat_from_env(LC_CTYPE,    "LC_CTYPE");
-	set_lcat_from_env(LC_COLLATE,  "LC_COLLATE");
-	set_lcat_from_env(LC_MONETARY, "LC_MONETARY");
-	set_lcat_from_env(LC_NUMERIC,  "LC_NUMERIC");
-	set_lcat_from_env(LC_TIME,     "LC_TIME");
 }
-
-#endif /* _MSC_VER */
 
 /* Replacement for the missing nl_langinfo.  Only CODESET is currently
    supported.  */
@@ -835,7 +769,7 @@ nl_langinfo (int item)
     {
       case CODESET:
         {
-          /* M.B. Reworked Gnulib's implementation of nl_langinfo:
+          /* Reworked Gnulib's implementation of nl_langinfo:
              - Gnulib's implementation is unnecessarily complex,
              - Gnulib's implementation doesn't handle UTF-8 code page.  */
           static char buf[2 + 10 + 1] = "CP";
@@ -853,21 +787,22 @@ nl_langinfo (int item)
                 {
                   codeset = dot + 1;
 
-                  /* Check if codeset is UTF8 */
-                  if ((codeset[0] == 'u' || codeset[0] == 'U') &&
-                      (codeset[1] == 't' || codeset[1] == 'T') &&
-                      (codeset[2] == 'f' || codeset[2] == 'F') &&
-                     ((codeset[3] == '8' && codeset[4] == '\0') ||
-                      (codeset[3] == '-' && codeset[4] == '8' && codeset[5] == '\0')))
-                    {
-                      return "UTF-8";
-                    }
-
                   /* Look for the possible @... trailer and remove it,
                      if any.  */
                   codeset_end = strchr (codeset, '@');
                   if (! codeset_end)
                     codeset_end = strchr (codeset, '\0');
+
+                  /* Check if codeset is UTF8 */
+                  if ((codeset[0] == 'u' || codeset[0] == 'U') &&
+                      (codeset[1] == 't' || codeset[1] == 'T') &&
+                      (codeset[2] == 'f' || codeset[2] == 'F') &&
+                      ((codeset[3] == '8' && codeset + 4 == codeset_end) ||
+                       (codeset[3] == '-' && codeset[4] == '8' &&
+                        codeset + 5 == codeset_end)))
+                    {
+                      return "UTF-8";
+                    }
                 }
             }
 
@@ -892,19 +827,18 @@ nl_langinfo (int item)
     }
 }
 
-#include <process.h> /* for _spawnvp */
+int w32_execvp(const char *, char **);
 
 /*
  * On MS-Windows with MinGW, execvp causes the shell and the re-exec'ed
- * dgawk to compete for the keyboard input.
+ * gawk to compete for the keyboard input.
  *
  * This will need work if we ever need a real version of execvp.
  */
 int w32_execvp(const char *file, char **argv)
 {
-	if (_spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
+	if (spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
 		exit(EXIT_SUCCESS);
-
 	return -1;
 }
 
@@ -913,57 +847,102 @@ int w32_execvp(const char *file, char **argv)
 #include <winerror.h>
 #include <dlfcn.h>
 
-static DWORD last_err;
+static DWORD dllast_err;
 
 void *
 dlopen (const char *file, int mode)
 {
-  char dllfn[MAX_PATH], *p;
+  wchar_t dllfn_buf[MAX_PATH + 2/*red zone*/], *dllfn, *p;
   HANDLE dllhandle;
 
   if (mode != RTLD_LAZY)
     {
       errno = EINVAL;
-      last_err = ERROR_INVALID_PARAMETER;
+      dllast_err = ERROR_INVALID_PARAMETER;
+      return NULL;
+    }
+
+  dllfn = xpathwc (file, dllfn_buf, sizeof(dllfn_buf)/sizeof(dllfn_buf[0]));
+  if (dllfn == NULL)
+    {
+      if (errno == EILSEQ || errno == ENAMETOOLONG)
+        dllast_err = ERROR_INVALID_NAME;
       return NULL;
     }
 
   /* MSDN says to be sure to use backslashes in the DLL file name.  */
-  strcpy (dllfn, file);
   for (p = dllfn; *p; p++)
-    if (*p == '/')
-      *p = '\\';
+    if (*p == L'/')
+      *p = L'\\';
 
-  dllhandle = LoadLibrary (dllfn);
+  dllhandle = LoadLibraryW (dllfn);
   if (!dllhandle)
-    last_err = GetLastError ();
+    dllast_err = GetLastError ();
+
+  if (dllfn != dllfn_buf)
+    free (dllfn);
 
   return dllhandle;
+}
+
+static const char *
+format_msg (int ecode, char buf[], unsigned int buf_size)
+{
+  WCHAR *wbuf = NULL;
+
+  for (;;) {
+    DWORD ret;
+    size_t n;
+    void *const pwbuf = &wbuf;
+
+    if (buf_size <= 1)
+      break;
+
+    ret = FormatMessageW (FORMAT_MESSAGE_ALLOCATE_BUFFER
+			  | FORMAT_MESSAGE_FROM_SYSTEM
+			  | FORMAT_MESSAGE_IGNORE_INSERTS,
+			  NULL, (DWORD) ecode, 0, (LPWSTR) pwbuf, 0, NULL);
+    if (wbuf == NULL)
+      break;
+
+    while (ret > 0 && (wbuf[ret - 1] == L'\n' || wbuf[ret - 1] == L'\r'))
+      --ret;
+
+    if (ret == 0)
+      break;
+
+    wbuf[ret] = L'\0';
+
+    /* e.g. convert to UTF-8 */
+    n = wcstombs (buf, wbuf, buf_size - 1);
+    if (n == (size_t)-1)
+      break;
+
+    buf[n] = '\0';
+    goto ok;
+  }
+
+  if (buf_size > 0) {
+    (void) _snprintf (buf, buf_size, "Error code %d", ecode);
+    buf[buf_size - 1] = '\0';
+  }
+
+ok:
+  if (wbuf != NULL)
+    LocalFree(wbuf);
+
+  return buf;
 }
 
 const char *
 dlerror_buf (char buf[], unsigned int buf_size)
 {
-  DWORD ret;
-
-  if (!last_err)
+  int err = (int) dllast_err;
+  if (!err)
     return NULL;
 
-  ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
-		       | FORMAT_MESSAGE_IGNORE_INSERTS,
-		       NULL, last_err, 0, buf, buf_size, NULL);
-  while (ret > 0 && (buf[ret - 1] == '\n' || buf[ret - 1] == '\r'))
-    --ret;
-
-  buf[ret] = '\0';
-  if (!ret)
-    {
-      (void) _snprintf (buf, buf_size, "Error code %lu", last_err);
-      buf[buf_size - 1] = '\0';
-    }
-
-  last_err = 0;
-  return buf;
+  dllast_err = 0;
+  return format_msg (err, buf, buf_size);
 }
 
 int
@@ -984,365 +963,61 @@ dlsym (void *handle, const char *name)
 
   if (!handle || handle == INVALID_HANDLE_VALUE)
     {
-      last_err = ERROR_INVALID_PARAMETER;
+      dllast_err = ERROR_INVALID_PARAMETER;
       return NULL;
     }
 
   addr = GetProcAddress ((HMODULE)handle, name);
   if (!addr)
-    last_err = GetLastError ();
+    dllast_err = GetLastError ();
 
   return (void *)addr;
 }
+
 #endif	/* DYNAMIC */
-
-#ifdef HAVE_SOCKETS
-
-#ifdef _MSC_VER
-
-#ifndef SOCKET_TAB_MAX_ROWS
-#define SOCKET_TAB_MAX_ROWS  128
-#endif
-
-/* SOCKET_TAB_MAX_ROWS must be non-zero */
-typedef int socket_tab_max_rows_is_zero_[1 - 2*!SOCKET_TAB_MAX_ROWS];
-
-#ifndef SOCKET_ARRAY_SIZE
-#define SOCKET_ARRAY_SIZE    64
-#endif
-
-/* SOCKET_ARRAY_SIZE must be non-zero */
-typedef int socket_array_size_is_zero_[1 - 2*!SOCKET_ARRAY_SIZE];
-
-/* SOCKET_ARRAY_SIZE must be power of the two */
-typedef int socket_array_size_is_not_power_of_two_[1 -
-  2*!!((SOCKET_ARRAY_SIZE - 1) & SOCKET_ARRAY_SIZE)];
-
-typedef SOCKET socket_array_t[SOCKET_ARRAY_SIZE];
-static socket_array_t **socket_tab = NULL;
-static socket_array_t *socket_arr_cached = NULL;
-static size_t socket_tab_size = 0;
-static size_t socket_tab_capacity = 0;
-
-static socket_array_t *new_socket_array(void)
-{
-  socket_array_t *arr = (socket_array_t*) malloc(sizeof(*arr));
-  if (arr != NULL) {
-    size_t j = 0;
-    for (; j < SOCKET_ARRAY_SIZE; j++)
-      (*arr)[j] = INVALID_SOCKET;
-  }
-  return arr;
-}
-
-static int alloc_socket_fd(void)
-{
-  /* find free cell */
-  size_t i, j;
-  for (i = 0; i < socket_tab_size; i++) {
-    for (j = 0; j < SOCKET_ARRAY_SIZE; j++) {
-      if ((*socket_tab[i])[j] == INVALID_SOCKET)
-        return (int) (i*SOCKET_ARRAY_SIZE + j);
-    }
-  }
-
-  /* no free cells */
-  if (socket_tab_size == SOCKET_TAB_MAX_ROWS)
-    return -1;
-
-  /* add new row */
-  if (socket_tab_size == socket_tab_capacity) {
-    socket_array_t **new_tab = (socket_array_t**) realloc(
-      socket_tab, sizeof(*socket_tab)*(socket_tab_capacity + 1));
-    if (new_tab == NULL)
-      return -1;
-    socket_tab = new_tab;
-    socket_tab_capacity++;
-  }
-  if (socket_arr_cached == NULL) {
-    socket_arr_cached = new_socket_array();
-    if (socket_arr_cached == NULL)
-      return -1;
-  }
-  socket_tab[socket_tab_size++] = socket_arr_cached;
-  socket_arr_cached = NULL;
-  return (int) ((socket_tab_size - 1)*SOCKET_ARRAY_SIZE);
-}
-
-static int close_socket_fd(unsigned fd)
-{
-  int r = 0;
-  size_t row = fd/SOCKET_ARRAY_SIZE;
-  size_t idx = fd%SOCKET_ARRAY_SIZE;
-  SOCKET s = (*socket_tab[row])[idx];
-  size_t dup_row;
-
-  /* check if socket is not dup'ed */
-  for (dup_row = 0; dup_row < socket_tab_size; dup_row++) {
-    size_t dup_idx;
-    for (dup_idx = 0; dup_idx < SOCKET_ARRAY_SIZE; dup_idx++) {
-      if ((*socket_tab[dup_row])[dup_idx] == s &&
-          (dup_row != row || dup_idx != idx))
-        goto found_dup;
-    }
-  }
-found_dup:
-
-  /* don't close if socket was dup'ed */
-  if (dup_row == socket_tab_size)
-    r = closesocket(s);
-
-  (*socket_tab[row])[idx] = INVALID_SOCKET;
-  if (row != socket_tab_size - 1 || dup_row == row)
-    return r;
-
-  /* try to free tail rows */
-  for (;; row--) {
-    size_t j = 0;
-    for (; j < SOCKET_ARRAY_SIZE; j++) {
-      if ((*socket_tab[row])[j] != INVALID_SOCKET)
-        return r;
-    }
-    if (socket_arr_cached != NULL)
-      free(socket_arr_cached);
-    socket_arr_cached = socket_tab[row];
-    socket_tab_size = row;
-    if (socket_tab_size == 0)
-      return r;
-  }
-}
-
-static SOCKET *get_socket(unsigned fd)
-{
-  size_t row = fd/SOCKET_ARRAY_SIZE;
-  size_t idx = fd%SOCKET_ARRAY_SIZE;
-  return &(*socket_tab[row])[idx];
-}
-
-static void free_socket_tab(void)
-{
-  /* all FDs must be closed */
-  assert(socket_tab_size == 0);
-  if (socket_arr_cached != NULL) {
-    free(socket_arr_cached);
-    socket_arr_cached = NULL;
-  }
-  if (socket_tab != NULL) {
-    free(socket_tab);
-    socket_tab = NULL;
-  }
-  socket_tab_capacity = 0;
-}
-
-int ws_socket_dup(int oldfd)
-{
-  assert(is_socket(oldfd));
-  {
-    int fd = alloc_socket_fd();
-    if (fd != -1) {
-      SOCKET s = *get_socket((unsigned)oldfd & ~SOCKET_FD_BIT);
-      *get_socket((unsigned)fd) = s;
-      return (int)(fd | SOCKET_FD_BIT);
-    }
-    return INVALID_HANDLE;
-  }
-}
-
-#ifndef SOCKET_FILE_BUFFER_SIZE
-#define SOCKET_FILE_BUFFER_SIZE 4096
-#endif
-
-socket_file_t *socket_file_alloc(void)
-{
-  struct socket_file *sf = (struct socket_file*) malloc(sizeof(*sf));
-  if (sf != NULL) {
-    sf->buf = malloc(SOCKET_FILE_BUFFER_SIZE);
-    if (sf->buf != NULL) {
-      sf->buf_size = SOCKET_FILE_BUFFER_SIZE;
-      sf->filled = 0;
-      return sf;
-    }
-    free(sf);
-  }
-  return NULL;
-}
-
-void socket_file_free(socket_file_t *sf)
-{
-  free(sf->buf);
-  free(sf);
-}
-
-int socket_file_fflush(socket_file_t *sf, fd_t fd)
-{
-  int ret;
-  SOCKET s;
-  if (sf->filled == 0)
-    return 0;
-  if (sf->filled < 0) {
-    errno = EIO;
-    return EOF;
-  }
-  s = *get_socket(fd & ~SOCKET_FD_BIT);
-  ret = send(s, (const char*) sf->buf, sf->filled, 0);
-  if (ret == SOCKET_ERROR) {
-    errno = EIO;
-    sf->filled = 0 - sf->filled - 1;
-    return EOF;
-  }
-  sf->filled = 0;
-  return 0;
-}
-
-size_t socket_file_fwrite(socket_file_t *sf, fd_t fd,
-  const void *ptr, size_t size, size_t nmemb)
-{
-  int ret;
-  SOCKET s;
-  size_t n, result, to_send, rem;
-  unsigned space;
-  if (nmemb == 0 || size == 0 || sf->filled < 0)
-    return 0;
-  s = *get_socket(fd & ~SOCKET_FD_BIT);
-  n = nmemb;
-  space = sf->buf_size - sf->filled;
-  if (size == 1) {
-    to_send = n;
-    if (to_send > space) {
-      n = to_send - space;
-      to_send = space;
-    }
-    rem = 0;
-  }
-  else {
-    to_send = size;
-    while (--n && to_send < space)
-      to_send += size;
-    if (to_send > space) {
-      rem = to_send - space;
-      to_send = space;
-    }
-    else
-      rem = 0;
-  }
-  if (sf->filled || (unsigned) to_send != space) {
-    char *dest = (char*) sf->buf + sf->filled;
-    unsigned filled = (unsigned) (((char*) memcpy(dest, ptr, to_send)
-      - (char*) sf->buf) + (unsigned) to_send);
-    if (filled != sf->buf_size) {
-      sf->filled = (int) filled;
-      return nmemb;
-    }
-    ptr = (const char*) ptr + (unsigned) to_send;
-    ret = send(s, (const char*) sf->buf, (int) filled, 0);
-    if (ret == SOCKET_ERROR) {
-      errno = EIO;
-      sf->filled = 0 - (int) (filled - (unsigned) (size - rem)) - 1;
-      return nmemb - n - 1;
-    }
-    space = (unsigned) filled;
-    goto block_sent;
-  }
-  for (result = 0;;) {
-    ret = send(s, (const char*) ptr, (int) space, 0);
-    if (ret == SOCKET_ERROR) {
-      errno = EIO;
-      sf->filled = -1;
-      return result;
-    }
-    ptr = (const char*) ptr + space;
-block_sent:
-    result = nmemb - n - !!rem;
-    if (size == 1) {
-      to_send = n;
-      if (to_send > space) {
-        n = to_send - space;
-        to_send = space;
-      }
-      else if (to_send != space)
-        break;
-    }
-    else {
-      for (to_send = rem; n && to_send < space; n--)
-        to_send += size;
-      if (to_send > space) {
-        rem = to_send - space;
-        to_send = space;
-      }
-      else if (to_send != space)
-        break;
-      else
-        rem = 0;
-    }
-  }
-  sf->filled = (int) to_send;
-  if (to_send)
-    memcpy(sf->buf, ptr, to_send);
-  return nmemb;
-}
-
-void socket_file_clearerr(socket_file_t *sf)
-{
-  if (sf->filled < 0)
-    sf->filled = 0 - (sf->filled + 1);
-}
 
 int os_fstat(int fd, gawk_stat_t *buf)
 {
-  if (!is_socket(fd))
-    return _fstat64(fd, buf);
-  else {
+#ifdef HAVE_SOCKETS
+  if (is_socket(fd)) {
     memset(buf, 0, sizeof(*buf));
     buf->st_mode = S_IFSOCK;
     buf->st_dev = (dev_t)-1;
     return 0;
   }
+#endif
+  return _fstat64(fd, buf);
 }
 
 int os_xfstat(int fd, gawk_xstat_t *buf)
 {
-  if (!is_socket(fd))
-    return xfstat((void*) _get_osfhandle(fd), NULL, buf);
-  else {
+#ifdef HAVE_SOCKETS
+  if (is_socket(fd)) {
     memset(buf, 0, sizeof(*buf));
     buf->st_mode = S_IFSOCK;
     buf->st_dev = (xdev_t)-1;
     return 0;
   }
+#endif
+  return xfstat(osf_to_handle(_get_osfhandle(fd)), NULL, buf);
 }
 
-#endif /* _MSC_VER */
+#ifdef HAVE_SOCKETS
 
 SOCKET
 fd_to_socket(int fd)
 {
-#ifndef _MSC_VER
-  if (fd != INVALID_HANDLE)
-    return _get_osfhandle(fd);
-#else /* _MSC_VER */
   if (is_socket(fd))
-    return *get_socket(fd & ~SOCKET_FD_BIT);
-#endif /* _MSC_VER */
+    return socket_fd_get(fd);
   return INVALID_SOCKET;
 }
 
 int
 socket_to_fd(SOCKET s)
 {
-  if (s == INVALID_SOCKET)
-    return INVALID_HANDLE;
-#ifndef _MSC_VER
-  return _open_osfhandle ((intptr_t)s, O_BINARY | O_NOINHERIT);
-#else /* _MSC_VER */
-  {
-    int fd = alloc_socket_fd();
-    if (fd != -1) {
-      *get_socket((unsigned)fd) = s;
-      return (int)(fd | SOCKET_FD_BIT);
-    }
-    return INVALID_HANDLE;
-  }
-#endif /* _MSC_VER */
+  if (s != INVALID_SOCKET)
+    return socket_fd_attach(s);
+  return INVALID_HANDLE;
 }
 
 int
@@ -1374,9 +1049,15 @@ w32_socket(int family, int type, int protocol)
 	    errno = EINVAL;
 	    break;
 	}
+      return INVALID_HANDLE;
     }
 
-  return socket_to_fd (s);
+  {
+    int fd = socket_to_fd (s);
+    if (fd == INVALID_HANDLE)
+      closesocket (s);
+    return fd;
+  }
 }
 
 int
@@ -1423,17 +1104,6 @@ SOCKET
 valid_socket (int fd)
 {
   SOCKET s = FD_TO_SOCKET (fd);
-  if (s == INVALID_SOCKET)
-    return INVALID_SOCKET;
-
-#ifndef _MSC_VER
-  {
-    int ov, ol = 4;
-    if (getsockopt (s, SOL_SOCKET, SO_TYPE, (char *)&ov, &ol) == SOCKET_ERROR
-        && WSAGetLastError() == WSAENOTSOCK)
-      s = INVALID_SOCKET;
-  }
-#endif
 
   return s;
 }
@@ -1443,26 +1113,12 @@ w32_closemaybesocket (int fd)
 {
   int res;
 
-#ifdef _MSC_VER
-
   if (is_socket (fd)) {
-    int res2 = close_socket_fd (fd & ~SOCKET_FD_BIT);
+    int res2 = socket_fd_close (fd);
     res = res2 == SOCKET_ERROR ? -1 : 0;
   }
   else
     res = close (fd);
-
-#else /* !_MSC_VER */
-
-  SOCKET s = valid_socket (fd);
-  res = close (fd);
-  if (s != INVALID_SOCKET) {
-    int res2 = closesocket (s);
-    if (res2 == SOCKET_ERROR)
-      res = -1;
-  }
-
-#endif /* !_MSC_VER */
 
   return res;
 }
@@ -1487,22 +1143,7 @@ w32_shutdown (int fd, int how)
 const char *
 gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
 {
-  DWORD ret;
-
-  ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
-		       | FORMAT_MESSAGE_IGNORE_INSERTS,
-		       NULL, (DWORD) ecode, 0, buf, buf_size, NULL);
-  while (ret > 0 && (buf[ret - 1] == '\n' || buf[ret - 1] == '\r'))
-    --ret;
-
-  buf[ret] = '\0';
-  if (!ret)
-    {
-      (void) _snprintf (buf, buf_size, "Error code %d", ecode);
-      buf[buf_size - 1] = '\0';
-    }
-
-  return buf;
+  return format_msg (ecode, buf, buf_size);
 }
 
 #endif	/* HAVE_SOCKETS */
@@ -1573,9 +1214,10 @@ w32_maybe_set_errno (void)
     }
 }
 
-#endif	/* __MINGW32__ || _MSC_VER */
+#endif	/* WINDOWS_NATIVE */
 
-#if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__) || defined(_MSC_VER)
+
+#if defined(__DJGPP__) || defined(__EMX__) || defined(WINDOWS_NATIVE)
 
 void
 init_sockets(void)
@@ -1590,7 +1232,8 @@ init_sockets(void)
 #endif
 }
 
-#endif	/* __DJGPP__ || __MINGW32__ || __EMX__ || _MSC_VER */
+#endif	/* __DJGPP__ || __EMX__ || WINDOWS_NATIVE */
+
 
 #ifdef __DJGPP__
 
@@ -1607,7 +1250,6 @@ nl_langinfo (int item)
         return "";
     }
 }
-
 
 # if __DJGPP__ == 2 && __DJGPP_MINOR__ < 4 
 int
@@ -1638,56 +1280,46 @@ putwc(wchar_t wc, FILE *stream)
 #endif /* __DJGPP__ */
 
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 
 /* Array of multibyte program args converted from Unicode.  */
 static char **gawk_argv = NULL;
 
 /* Convert program arguments from wide-char to multibyte
-  according to the locale codepage.  */
+  according to current locale codepage.  */
 char **
-convert_wargv(int argc, wchar_t **wargv)
+convert_wargv(int argc, struct wide_arg *wargs)
 {
-	wchar_t **wa = wargv;
-	char **argv;
-
-	/* Note: argv array must be NULL-terminated.  */
-	emalloc(argv, char **, sizeof(*argv) * (argc + 1), "convert_wargv");
-
-	for (; *wa; wa++) {
-		const size_t need = wcstombs(NULL, *wa, 0);
-
-		if ((size_t) -1 == need)
-			fatal(_("failed to convert argument %u (Unicode -> LC_CTYPE=%s): %s"),
-				(unsigned)(wa - wargv), setlocale(LC_CTYPE, NULL), strerror(errno));
-
-		{
-			char *a;
-			emalloc(a, char *, need + 1, "convert_wargv");
-
-			wcstombs(a, *wa, need + 1);
-			argv[wa - wargv] = a;
-		}
+	struct arg_convert_err err;
+	char **argv = arg_convert_wide_args((unsigned) argc, wargs, &err);
+	if (!argv) {
+		if (err.arg)
+			fatal(_("failed to convert command-line argument %u (Unicode -> LC_CTYPE=%s)"),
+				err.number, setlocale(LC_CTYPE, NULL));
+		else
+			fatal(_("failed to convert command-line arguments from wide-character strings: %s"), strerror(errno));
 	}
-
-	/* argv - is a NULL-terminated array of pointers */
-	argv[wa - wargv] = NULL;
-
+	arg_free_wide_args(wargs);
 	return (gawk_argv = argv);
 }
 
-/* Free arguments array allocated by convert_wargv().
+/* Free resources.
   This is called from final_exit().  */
 void
-gawk_free_argv(void)
+gawk_cleanup(void)
 {
-	if (gawk_argv) {
-		char **a = gawk_argv;
-		for (; *a; a++)
-			efree(*a);
-		efree(gawk_argv);
-	}
-	free_socket_tab();
+	if (gawk_argv)
+		arg_free_argv(gawk_argv);
+#ifdef HAVE_SOCKETS
+	socket_fd_free_tab();
+#endif
+	utf8_env_shadow_reset();
 }
 
-#endif /* _MSC_VER */
+/* needed by utf8env.c */
+ATTRIBUTE_NORETURN void utf8_env_fatal(void)
+{
+	fatal(_("failed to create utf8 shadow environment variables table"));
+}
+
+#endif /* WINDOWS_NATIVE */
