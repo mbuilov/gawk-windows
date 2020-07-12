@@ -515,6 +515,12 @@ static CHAR_T const month_name[][10] =
 #endif
 
 
+#if defined HAVE_STRFTIME && ! (defined _NL_CURRENT && defined HAVE_STRUCT_ERA_ENTRY)
+/* Forward declaration.  */
+static size_t underlying_strftime (char *, size_t, const char *, const struct tm *);
+#endif
+
+
 /* Write information from TP into S according to the format
    string FORMAT, writing no more that MAXSIZE characters
    (including the terminating '\0') and returning number of
@@ -898,20 +904,13 @@ my_strftime (
 	    char *u = ufmt;
 	    char ubuf[1024]; /* enough for any single format in practice */
 	    size_t len;
-	    /* Make sure we're calling the actual underlying strftime.
-	       In some cases, config.h contains something like
-	       "#define strftime rpl_strftime".  */
-# ifdef strftime
-#  undef strftime
-	    size_t strftime (char *, size_t, const char *, const struct tm *);
-# endif
 
 	    *u++ = '%';
 	    if (modifier != 0)
 	      *u++ = (char) modifier;
 	    *u++ = (char) format_char;
 	    *u = '\0';
-	    len = strftime (ubuf, sizeof ubuf, ufmt, tp);
+	    len = underlying_strftime (ubuf, sizeof ubuf, ufmt, tp);
 	    if (len == 0 && ubuf[0] != '\0')
 	      return 0;
 	    cpy ((int) len, ubuf);
@@ -1050,7 +1049,7 @@ my_strftime (
 
 		      if (p)
 			memset_space (p, (unsigned) padding);
-		      i += padding;
+		      i += (unsigned) padding;
 		      width = width > padding ? width - padding : 0;
 		    }
 		  else
@@ -1069,7 +1068,7 @@ my_strftime (
 
 		      if (p)
 			memset_zero (p, (unsigned) padding);
-		      i += padding;
+		      i += (unsigned) padding;
 		      width = 0;
 		    }
 		}
@@ -1454,6 +1453,25 @@ my_strftime (
 libc_hidden_def (my_strftime)
 #endif
 
+#if defined HAVE_STRFTIME && ! (defined _NL_CURRENT && defined HAVE_STRUCT_ERA_ENTRY)
+/* Make sure we're calling the actual underlying strftime.
+   In some cases, config.h contains something like
+   "#define strftime rpl_strftime".  */
+# ifdef strftime
+#  undef strftime
+#  ifdef __cplusplus
+extern "C" {
+#  endif
+extern size_t strftime (char *, size_t, const char *, const struct tm *);
+#  ifdef __cplusplus
+}
+#  endif
+# endif
+static size_t underlying_strftime (char *s, size_t maxsize, const char *format, const struct tm *tp)
+{
+  return strftime (s, maxsize, format, tp);
+}
+#endif /* HAVE_STRFTIME && ... */
 
 #ifdef emacs
 /* For Emacs we have a separate interface which corresponds to the normal
