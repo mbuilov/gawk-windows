@@ -152,10 +152,29 @@
 /* <cdefs.h> __inline is too pessimistic for non-GCC.  */
 #undef __inline
 #ifndef HAVE___INLINE
-# if (defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__) || defined inline
+# if defined __cplusplus \
+     || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L) \
+     || defined inline
 #  define __inline inline
+# elif defined NEED_C99_FEATURES
+#  error no __inline
 # else
 #  define __inline
+# endif
+#endif
+
+/* <cdefs.h> __restrict is too pessimistic for non-GCC.  */
+#undef __restrict
+#ifndef HAVE___RESTRICT
+# if (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L) \
+     || defined restrict
+#  define __restrict restrict
+# elif defined __GNUC__ && __GNUC__ > 4 + (__GNUC_MINOR__ >= 1)
+#  define __restrict __restrict__
+# elif defined NEED_C99_FEATURES
+#  error no __restrict
+# else
+#  define __restrict
 # endif
 #endif
 
