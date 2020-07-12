@@ -81,7 +81,6 @@ EXTRA_DIST = \
 	arraytype.ok \
 	arraytype-mpfr.ok \
 	arrdbg.awk \
-	arrdbg-mpfr.ok \
 	arrymem1.awk \
 	arrymem1.ok \
 	arryref2.awk \
@@ -1263,6 +1262,7 @@ EXTRA_DIST = \
 	tailrecurse.awk \
 	tailrecurse.ok \
 	testext.ok \
+	testext-mpfr.ok \
 	time.awk \
 	time.ok \
 	timeout.awk \
@@ -1509,7 +1509,7 @@ FAIL_CODE1 = \
 
 # List of files which have .ok versions for MPFR
 CHECK_MPFR = \
-	arraytype arrdbg fnarydel fnparydl forcenum numrange rand
+	arraytype fnarydel fnparydl forcenum numrange rand
 
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
@@ -2250,7 +2250,9 @@ testext::
 	@echo $@
 	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
+	fi
 
 getfile:
 	@echo $@
@@ -2387,9 +2389,9 @@ ignrcas3::
 
 arrdbg:
 	@echo $@
-	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	@$(AWK) -v "okfile=./$@.ok" -v "mpfr_okfile=./$@-mpfr.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; else \
+	$(CMP) ./$@-mpfr.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; \
 	fi
 
 

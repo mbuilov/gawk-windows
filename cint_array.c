@@ -527,8 +527,8 @@ cint_dump(NODE *symbol, NODE *ndump)
 	indent(indent_level);
 	fprintf(output_fp, "THRESHOLD: %ld\n", THRESHOLD);
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %ld (total), %ld (cint), %ld (int + str)\n",
-				symbol->table_size, cint_size, xsize);
+	fprintf(output_fp, "table_size: %lu (total), %ld (cint), %ld (int + str)\n",
+				(unsigned long) symbol->table_size, cint_size, xsize);
 	indent(indent_level);
 	fprintf(output_fp, "array_capacity: %lu\n", (unsigned long) symbol->array_capacity);
 	indent(indent_level);

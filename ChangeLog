@@ -1,3 +1,24 @@
+2020-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mpfr.c (mpg_interpret): Make the instruction tracing more sane.
+
+	Fix the testext test for MPFR.
+
+	* gawkapi.c (awk_value_to_node): Use correct code to copy
+	MPFR/MPN numbers and don't free the original values.
+	* interpret.h (r_interpret): At Op_ext_builtin, separate out calls
+	to the external function and awk_value_to_node, for ease in a
+	debugger.
+	* NEWS: Updated.
+
+2020-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+	
+	Fix printf issues. Thanks to Michal Jaegermann for the report.
+
+	* cint_array.c (cint_dump): Fix printf formats.
+	* debug.c (print_symbol): Ditto.
+	* mpfr.c (mpg_interpret): Ditto.
+
 2020-07-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix dbugeval2 test for MPFR.

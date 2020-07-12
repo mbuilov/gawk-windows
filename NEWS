@@ -11,10 +11,15 @@ Changes from 5.0.1 to 5.0.2
 
 2. asort and asorti now allow FUNCTAB and SYMTAB as the first argument if a
    second destination array is supplied. Similarly, using either array as
-   the second argument is now a fatal error.
+   the second argument is now a fatal error. Additionally, using either
+   array as the destination for split(), match(), etc. also causes a
+   fatal error.
 
 3. The new -I/--trace option prints a trace of the byte codes as they
    are executed.
+
+4. A number of subtle bugs relating to MPFR mode that caused differences
+   between regular operation and MPFR mode have been fixed.
 
 Changes from 5.0.1 to 5.1.0
 ---------------------------
