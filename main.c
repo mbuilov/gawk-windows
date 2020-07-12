@@ -27,8 +27,10 @@
 /* FIX THIS BEFORE EVERY RELEASE: */
 #define UPDATE_YEAR	2020
 
+#define NO_LOCALE_RPL /* avoid including "mscrtx/localerpl.h" */
 #include "awk.h"
 #include "getopt.h"
+#include "version.h"
 
 #ifdef _MSC_VER
 #include <process.h> /* for getpid */
@@ -39,6 +41,17 @@
 
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
+#endif
+
+#ifdef WINDOWS_NATIVE
+#include "mscrtx/arg_parser.h"
+#include "mscrtx/locale_helpers.h"
+#include "mscrtx/localerpl.h"
+#endif
+
+#ifdef WINDOWS_NATIVE
+#define fileno(fd)	_fileno(fd)
+#define getpid()	_getpid()
 #endif
 
 #ifdef HAVE_LIBSIGSEGV
@@ -107,10 +120,10 @@ const char *CONVFMT = "%.6g";
 
 NODE *Nnull_string;		/* The global null string */
 
-#if defined(HAVE_LOCALE_H)
+#ifdef HAVE_LOCALE_H
 struct lconv loc;		/* current locale */
 static void init_locale(struct lconv *l);
-#endif /* defined(HAVE_LOCALE_H) */
+#endif
 
 /* The name the program was invoked under, for error messages */
 const char *myname;
@@ -167,7 +180,7 @@ static const char *locale_dir = LOCALEDIR;	/* default locale dir */
 
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
-int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
+unsigned gawk_mb_cur_max;	/* MB_CUR_MAX value, see comment in main() */
 
 FILE *output_fp;		/* default gawk output, can be redirected in the debugger */
 bool output_is_tty = false;	/* control flushing of output */
@@ -175,9 +188,7 @@ bool output_is_tty = false;	/* control flushing of output */
 /* default format for strftime(), available via PROCINFO */
 const char def_strftime_format[] = "%a %b %e %H:%M:%S %Z %Y";
 
-extern const char *version_string;
-
-#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+#if defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 GETGROUPS_T *groupset;		/* current group set */
 int ngroups;			/* size of said set */
 #endif
@@ -201,7 +212,7 @@ static const struct option optab[] = {
 	{ "lint",		optional_argument,	NULL,	'L' },
 	{ "lint-old",		no_argument,		NULL,	't' },
 	{ "load",		required_argument,	NULL,	'l' },
-#if defined(LOCALEDEBUG) || defined(_MSC_VER)
+#if defined(LOCALEDEBUG) || defined(WINDOWS_NATIVE)
 	{ "locale",		required_argument,	NULL,	'Z' },
 #endif
 	{ "non-decimal-data",	no_argument,		NULL,	'n' },
@@ -223,7 +234,7 @@ static const struct option optab[] = {
 	{ NULL, 0, NULL, '\0' }
 };
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 
 /* Get value of command-line option:
    -Zlocale-name or -Z locale-name or --loc[ale]=locale-name or --loc[ale] locale-name,
@@ -234,11 +245,11 @@ static const struct option optab[] = {
 /* Note: doesn't support parsing of 'Z' short option if it's groupped with other
    short options, like "-MOZ locale-name".  */
 static const wchar_t *
-get_specified_locale(wchar_t **wa, char opt_name_array[])
+get_specified_locale(const struct wide_arg *wl, char opt_name_array[])
 {
 	const wchar_t *w = NULL;
-	for (; *wa; wa++) {
-		w = *wa;
+	for (; wl; wl = wl->next) {
+		w = wl->value;
 		if (L'-' == w[0] && L'Z' == w[1]) {
 			opt_name_array[1] = 'Z';
 			w += 2;
@@ -266,31 +277,30 @@ get_specified_locale(wchar_t **wa, char opt_name_array[])
 			break;
 	}
 
-	if (!*wa)
+	if (!wl)
 		return NULL; /* -Z or --loc[ale] option wasn't found.  */
 
-	opt_name_array[(unsigned)(w - *wa)] = '\0';
+	opt_name_array[(unsigned)(w - wl->value)] = '\0';
 	if (*w)
 		return w + (L'=' == *w); /* -Zlocale-name or --loc[ale]=locale-name, return locale-name.  */
 
 	/* -Z locale-name or --loc[ale] locale-name.  */
-	{
-		const wchar_t *locale_name = wa[1];
-		if (!locale_name)
-			fatal(_("option '%s' requires an argument"), opt_name_array);
-		return locale_name;
-	}
+	if (!wl->next)
+		fatal("option '%s' requires an argument", opt_name_array);
+
+	return wl->next->value;
 }
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
-/* main --- process args, parse program, run it, clean up */
+/* GCC complains about missing protope of wmain().  Provide one.  */
+int wmain(int argc, wchar_t **wargv);
 
 int
-#ifndef _MSC_VER
-main(int argc, char **argv)
-#else
+#ifdef WINDOWS_NATIVE
 wmain(int argc, wchar_t **wargv)
+#else
+main(int argc, char **argv)
 #endif
 {
 	ulong_t i;
@@ -298,18 +308,25 @@ wmain(int argc, wchar_t **wargv)
 	unsigned have_srcfile = 0;
 	const SRCFILE *s;
 	const char *cp;
-#ifdef _MSC_VER
-	char **argv;
-#endif
-#if defined(LOCALEDEBUG)
+#ifdef LOCALEDEBUG
 	const char *initial_locale;
+#endif
+#ifdef WINDOWS_NATIVE
+	char **argv;
+	struct wide_arg *const wargs = arg_parse_command_line(&argc);
+	if (wargs == NULL)
+		fatal("Failed to parse command-line arguments list");
+
+	/* Not used, since MinGW version do not handles escaping of
+	   double quote via two double-quotes, like: "1""2".  */
+	(void)wargv;
 #endif
 
 #if defined(_MSC_VER) && (defined(MEMDEBUG) || defined(MEMDEBUGLEAKS))
 	/* randtest.awk test takes too long time if tracking memory allocations,
 	   allow to disable this by setting GAWKTEST_NO_TRACK_MEM env variable.  */
-	int crtdbg_flag = getenv("GAWKTEST_NO_TRACK_MEM") != NULL ? 0 :
-		_CrtSetDbgFlag(0
+	if (_wgetenv(L"GAWKTEST_NO_TRACK_MEM") == NULL) {
+		int crtdbg_flag = 0
 			| _CRTDBG_ALLOC_MEM_DF
 			| _CRTDBG_CHECK_EVERY_1024_DF
 			| _CRTDBG_CHECK_CRT_DF
@@ -317,12 +334,19 @@ wmain(int argc, wchar_t **wargv)
 #ifdef MEMDEBUGLEAKS
 			| _CRTDBG_LEAK_CHECK_DF
 #endif
-		);
-	(void) crtdbg_flag;
-#endif
+			;
+		_CrtSetDbgFlag(crtdbg_flag);
+		if (crtdbg_flag & _CRTDBG_LEAK_CHECK_DF)
+			do_flags |= DO_TIDY_MEM;
+	}
+#endif /* _MSC_VER && (MEMDEBUG || MEMDEBUGLEAKS) */
 
 	/* do these checks early */
+#ifdef WINDOWS_NATIVE
+	if (_wgetenv(L"TIDYMEM") != NULL)
+#else
 	if (getenv("TIDYMEM") != NULL)
+#endif
 		do_flags |= DO_TIDY_MEM;
 
 #ifdef HAVE_MCHECK_H
@@ -332,7 +356,7 @@ wmain(int argc, wchar_t **wargv)
 #endif /* HAVE_MTRACE */
 #endif /* HAVE_MCHECK_H */
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	/* Temporary set program name.
 	   This is needed for error messages - in case of bad locale.  */
 	myname = "gawk";
@@ -340,19 +364,18 @@ wmain(int argc, wchar_t **wargv)
 	/* Set locale according to user's wishes.
 	   (Current locale is "C").  */
 	{
-		const wchar_t *spec_locale;
 		char opt_name_array[] = "--locale";
 
 		/* Command-line option takes precedence over environment vars.  */
-		spec_locale = get_specified_locale(wargv, opt_name_array);
+		const wchar_t *const spec_locale = get_specified_locale(wargs, opt_name_array);
 		if (!spec_locale)
-			set_locale_from_env(locale);
-		else if (!_wsetlocale (LC_ALL, spec_locale))
-			fatal(_("Bad locale name specified by the option '%s'"), opt_name_array);
+			pc_set_locale("");
+		else if (wset_locale_helper(LC_ALL, spec_locale))
+			fatal("Bad locale name specified by the option '%s'", opt_name_array);
 	}
 
 	/* Convert program arguments to multibyte strings.  */
-	argv = convert_wargv(argc, wargv);
+	argv = convert_wargv(argc, wargs);
 
 	/* Currently 'locale' variable has the value "",
 	   which on POSIX systems, when passed to setlocale(), means to
@@ -362,7 +385,7 @@ wmain(int argc, wchar_t **wargv)
 	   Now system locale have been set from the environment, don't change
 	   it by the next calls to setlocale(..., locale).  */
 	locale = setlocale(LC_ALL, NULL);
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 	myname = gawk_name(argv[0]);
 	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
@@ -384,7 +407,7 @@ wmain(int argc, wchar_t **wargv)
 	}
 #endif
 
-#if defined(LOCALEDEBUG)
+#ifdef LOCALEDEBUG
 	initial_locale = locale;
 #endif
 	set_locale_stuff();
@@ -434,7 +457,7 @@ wmain(int argc, wchar_t **wargv)
 
 	parse_args(argc, argv);
 
-#if defined(LOCALEDEBUG)
+#ifdef LOCALEDEBUG
 	if (locale != initial_locale)
 		set_locale_stuff();
 #endif
@@ -444,7 +467,7 @@ wmain(int argc, wchar_t **wargv)
 	 * tested *a lot* in many speed-critical places in gawk. Caching
 	 * this value once makes a speed difference.
 	 */
-	gawk_mb_cur_max = MB_CUR_MAX;
+	gawk_mb_cur_max = (unsigned) MB_CUR_MAX;
 
 	/* init the cache for checking bytes if they're characters */
 	init_btowc_cache();
@@ -577,7 +600,7 @@ wmain(int argc, wchar_t **wargv)
 
 	/* No -f or --source options, use next arg */
 	if (! have_srcfile) {
-		if (optind > argc - 1 || stopped_early) /* no args left or no program */
+		if (optind >= argc || stopped_early) /* no args left or no program */
 			usage(EXIT_FAILURE, stderr);
 		(void) add_srcfile(SRC_CMDLINE, argv[optind], srcfiles, NULL, NULL);
 		optind++;
@@ -590,7 +613,7 @@ wmain(int argc, wchar_t **wargv)
 			do_posix ? argv[0] : myname,
 			argv);
 
-#if defined(LC_NUMERIC)
+#ifdef LC_NUMERIC
 	/*
 	 * FRAGILE!  CAREFUL!
 	 * Pre-initing the variables with arg_assign() can change the
@@ -620,7 +643,7 @@ wmain(int argc, wchar_t **wargv)
 	if (do_profile)
 		init_profiling_signals();
 
-#if defined(LC_NUMERIC)
+#ifdef LC_NUMERIC
 	/*
 	 * See comment above about using locale's decimal point.
 	 *
@@ -755,7 +778,7 @@ usage(int exitval, FILE *fp)
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	fputs(_("\t-Y\t\t\t--parsedebug\n"), fp);
 #endif
-#if defined(LOCALEDEBUG) || defined(_MSC_VER)
+#if defined(LOCALEDEBUG) || defined(WINDOWS_NATIVE)
 	fputs(_("\t-Z locale-name\t\t--locale=locale-name\n"), fp);
 #endif
 
@@ -780,7 +803,7 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fflush(fp);
 
 	if (ferror(fp)) {
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 		if (errno == 0 || errno == EINVAL)
 			w32_maybe_set_errno();
 #endif
@@ -823,7 +846,7 @@ GNU General Public License for more details.\n\
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n");
 	static const char patched_by[] =
-	  N_("\nPatched by: Michael M. Builov <mbuilov@gmail.com>.\n");
+	  N_("\nHeavily patched for Windows by: Michael M. Builov <mbuilov@gmail.com>.\n");
 
 	/* multiple blurbs are needed for some brain dead compilers. */
 PRAGMA_WARNING_PUSH
@@ -836,7 +859,7 @@ PRAGMA_WARNING_POP
 	fflush(stdout);
 
 	if (ferror(stdout)) {
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 		if (errno == 0 || errno == EINVAL)
 			w32_maybe_set_errno();
 #endif
@@ -1037,7 +1060,7 @@ path_environ(const char *pname, const char *dflt)
 static NODE *
 load_environ(void)
 {
-#if ! (defined(VMS) && defined(__DECC)) && !defined(_MSC_VER)
+#if ! (defined(VMS) && defined(__DECC)) && !defined(WINDOWS_NATIVE)
 	extern char **environ;
 #endif
 	char *var, *val;
@@ -1049,14 +1072,6 @@ load_environ(void)
 		return ENVIRON_node;
 
 	been_here = true;
-
-#ifdef _MSC_VER
-	/* environ variable initially is NULL, because the program uses wmain().
-	   According to MSDN, environ variable is initialized on a first call
-	   to _getenv or _putenv.  */
-	if (!environ)
-		(void)getenv("");
-#endif
 
 	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), Node_var_array);
 	for (i = 0; environ[i] != NULL; i++) {
@@ -1107,7 +1122,7 @@ load_procinfo_argv(void)
 
 	// build the sub-array first
 	getnode(argv_array);
-	memset(argv_array, '\0', sizeof(NODE));  /* valgrind wants this */
+	clearnode(argv_array);  /* valgrind wants this */
 	null_array(argv_array);
 	argv_array->parent_array = PROCINFO_node;
 	argv_array->vname = estrdup("argv", 4);
@@ -1127,10 +1142,10 @@ load_procinfo_argv(void)
 static NODE *
 load_procinfo(void)
 {
-#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+#if defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	int i;
 #endif
-#if (defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0) || defined(HAVE_MPFR)
+#if (defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0) || defined(HAVE_MPFR)
 	char name[100];
 #endif
 	AWKNUM value;
@@ -1196,7 +1211,7 @@ load_procinfo(void)
 
 	update_PROCINFO_str("FS", current_field_sep_str());
 
-#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+#if defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	for (i = 0; i < ngroups; i++) {
 		sprintf(name, "group%d", i + 1);
 		value = groupset[i];
@@ -1493,9 +1508,12 @@ version(void)
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
 #ifdef _MSC_VER
-	printf(" (MSVC)");
-#endif
+	printf(" (MSVC)\n");
+#elif defined __MINGW32__
+	printf(" (MINGW)\n");
+#else
 	printf("\n");
+#endif
 	print_ext_versions();
 
 	/*
@@ -1513,14 +1531,14 @@ version(void)
 static void
 init_fds(void)
 {
-	struct stat sbuf;
+	gawk_stat_t sbuf;
 	int fd;
 	int newfd;
 	char const *const opposite_mode[] = {"w", "r", "r"};
 
 	/* maybe no stderr, don't bother with error mesg */
 	for (fd = 0; fd <= 2; fd++) {
-		if (fstat(fd, &sbuf) < 0) {
+		if (os_fstat(fd, &sbuf) < 0) {
 #ifdef MAKE_A_HEROIC_EFFORT
 			if (do_lint)
 				lintwarn(_("no pre-opened fd %d"), fd);
@@ -1620,7 +1638,7 @@ save_argv(int argc, char **argv)
 {
 	int i;
 
-	emalloc(d_argv, char **, (argc + 1) * sizeof(char *), "save_argv");
+	emalloc(d_argv, char **, (unsigned) (argc + 1) * sizeof(char *), "save_argv");
 	for (i = 0; i < argc; i++)
 		d_argv[i] = estrdup(argv[i], strlen(argv[i]));
 	d_argv[argc] = NULL;
@@ -1728,7 +1746,6 @@ parse_args(int argc, char **argv)
 
 		case 'C':
 			copyleft();
-			break;
 
 		case 'd':
 			do_flags |= DO_DUMP_VARS;
@@ -1756,7 +1773,6 @@ parse_args(int argc, char **argv)
 		case 'h':
 			/* write usage to stdout, per GNU coding stds */
 			usage(EXIT_SUCCESS, stdout);
-			break;
 
 		case 'i':
 			(void) add_srcfile(SRC_INC, optarg, srcfiles, NULL, NULL);
@@ -1867,16 +1883,16 @@ parse_args(int argc, char **argv)
 				break;
 			}
 #endif
-#if defined(LOCALEDEBUG) || defined(_MSC_VER)
+#if defined(LOCALEDEBUG) || defined(WINDOWS_NATIVE)
 			if (c == 'Z') {
-				/* for _MSC_VER: this option is already processed */
-#ifndef _MSC_VER
+				/* for WINDOWS_NATIVE: this option is already processed */
+#ifndef WINDOWS_NATIVE
 				locale = optarg;
 #endif
 				break;
 			}
 #endif
-			/* if not debugging, fall through */
+			/* fall through */
 		case '?':
 		default:
 			/*
@@ -1969,9 +1985,7 @@ platform_name(void)
 	// Cygwin and Mac OS X count as POSIX
 #if defined(__VMS)
 	return "vms";
-#elif defined(__MINGW32__)
-	return "mingw";
-#elif defined(_MSC_VER)
+#elif defined(WINDOWS_NATIVE)
 	return "windows";
 #elif defined(__DJGPP__)
 	return "djgpp";
