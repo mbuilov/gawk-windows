@@ -184,10 +184,17 @@
 
 #ifdef __cplusplus
 # if !defined GNULIB_defined_struct__gl_verify_type || !GNULIB_defined_struct__gl_verify_type
+#  if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wtemplates"
+#  endif
 template <int w>
   struct _gl_verify_type {
     unsigned int _gl_verify_error_if_negative: w;
   };
+#  if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#   pragma GCC diagnostic pop
+#  endif
 #  define GNULIB_defined_struct__gl_verify_type 1
 # endif
 # define _GL_VERIFY_TYPE(R, DIAGNOSTIC) \
