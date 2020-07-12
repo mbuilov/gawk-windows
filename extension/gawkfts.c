@@ -32,7 +32,7 @@
 /*
  * Michael M. Builov
  * mbuilov@gmail.com
- * Reworked, fixed memory leaks, ported to _MSC_VER 4/2020
+ * Reworked, fixed memory leaks, ported to _MSC_VER/__MINGW32__ 4-5/2020
  */
 
 #if 0
@@ -56,11 +56,14 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 #endif
 #include <sys/stat.h>
 
+#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -68,22 +71,30 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#elif defined _MSC_VER
+#elif defined(_MSC_VER) || defined(__MINGW32__)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <direct.h> /* _chdir */
-#include "xstat.h"
-#include "wreaddir.h"
+#include "mscrtx/xstat.h"
+#include "mscrtx/wreaddir.h"
+#include "mscrtx/win_find.h"
+#define WINDOWS_NATIVE
 #else
 #error Cannot compile the gawkfts extension on this system!
 #endif
 
+#ifndef WINDOWS_NATIVE
+#include "gawkdirfd.h"
+#endif
+
 #include "gawkapi.h"
 #include "gawkfts.h"
-#include "gawkdirfd.h"
 
 #if ! defined(S_ISREG) && defined(S_IFREG)
 #define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#if ! defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 /*
@@ -117,7 +128,7 @@ static int	 fts_safe_changedir(const FTS *, const FTSENT *,
     const fts_dir_fd_t, const char *);
 
 /* Bad value of fts_dir_fd_t.  */
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 #define BAD_FD -1
 #else
 #define BAD_FD NULL
@@ -163,10 +174,9 @@ typedef int check_FTS_ALIGN_BY_is_power_of_two[
 #define	ISSET(opt)	(sp->fts_options & (opt))
 #define	SET(opt)	(sp->fts_options |= (opt))
 
-#define	CHDIR(sp, path)	(!ISSET(FTS_NOCHDIR) && chdir(path))
 #define	FCHDIR(sp, dfd)	(!ISSET(FTS_NOCHDIR) && fchdir(dfd))
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 
 #define xstat(path, buf)	stat(path, buf)
 #define xlstat(path, buf)	lstat(path, buf)
@@ -183,7 +193,7 @@ typedef int check_FTS_ALIGN_BY_is_power_of_two[
 
 #define dp_release(dp)		((void) 0)
 
-#else /* _MSC_VER */
+#else /* WINDOWS_NATIVE */
 
 #define opencurdfd(flags, dfd)	((void)(flags), opencurdirfd(dfd))
 #define dp_maybe_dir(dp) \
@@ -193,7 +203,7 @@ typedef int check_FTS_ALIGN_BY_is_power_of_two[
 #define FTS_PATHSEP	'\\'
 #endif
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 #ifndef FTS_PATHSEP
 #define FTS_PATHSEP	'/'
@@ -223,9 +233,9 @@ typedef int check_FTS_ALIGN_BY_is_power_of_two[
   FTSENT::fts_path      root path
 */
 
-#define fts_pathsize	fts_pathlen
-#define fts_rpath	fts_path
-#define fts_rpathlen	fts_pathlen
+#define fts_pathsize	fts_pathlen	/* FTS::fts_pathlen */
+#define fts_rpath	fts_path	/* FTSENT::fts_path */
+#define fts_rpathlen	fts_pathlen	/* FTSENT::fts_pathlen */
 
 FTS *
 fts_open(char * const *argv, int options,
@@ -343,7 +353,7 @@ is_slash(char c)
 {
 	if (c == '/')
 		return 1;
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (c == '\\')
 		return 1;
 #endif
@@ -361,7 +371,7 @@ is_alpha(char c)
 static int
 is_abs_path(const char *path)
 {
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	return *path == '/';
 #else
 	/* Check for "C:/" */
@@ -376,17 +386,15 @@ is_abs_path(const char *path)
 				return 0; /* "//" or "//abc" */
 		} while (!is_slash(*++p));
 
-		while (is_slash(*++p));
-
-		if (*p == '\0')
-			return 0; /* "//x/" or "//x//" */
+		if (is_slash(*++p) || *p == '\0')
+			return 0; /* "//x//" or "//x/" */
 
 		do {
 			if (is_slash(*++p))
-				return 1; /* "//x/y/" or "//x//y/" */
+				return 1; /* "//x/y/" */
 		} while (*p != '\0');
 
-		/* "//x/y" or "//x//y" */
+		/* "//x/y" */
 	}
 	return 0;
 #endif
@@ -396,9 +404,9 @@ static char *
 rfind_slash(char *path)
 {
 	char *cp = strrchr(path, '/');
-#ifdef _MSC_VER
-	char *cp2 = strrchr(path, '\\');
-	if (cp2 != NULL && (cp == NULL || cp < cp2))
+#ifdef WINDOWS_NATIVE
+	char *cp2 = strrchr(cp != NULL ? cp + 1 : path, '\\');
+	if (cp2 != NULL)
 		cp = cp2;
 #endif
 	return cp;
@@ -413,7 +421,7 @@ get_name_after_slash(char *path)
 	if (cp[1])
 		return cp;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	/* Exclude root path: "/" */
 	if (cp == path)
 		return NULL;
@@ -823,7 +831,7 @@ fts_children(FTS *sp, int instr)
 	return (sp->fts_child);
 }
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 static size_t
 convert_dname(const wchar_t filename[], char **dname,
 	char **dyn_dname, size_t *dname_space)
@@ -858,7 +866,7 @@ convert_dname(const wchar_t filename[], char **dname,
 		*dname_space = dnamlen + 1 + 10/*MB_CUR_MAX*/;
 	}
 }
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 /*
  * This is the tricky part -- do not casually change *anything* in here.  The
@@ -879,7 +887,7 @@ fts_build(FTS *sp, const int type)
 {
 	FTSENT *p, *cur, *head, **tail = &head;
 	size_t nitems;
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	struct dirent *dp;
 	DIR *dirp;
 	char *dname;
@@ -1026,7 +1034,7 @@ fts_build(FTS *sp, const int type)
 		if (!ISSET(FTS_SEEDOT) && DP_ISDOT(dp))
 			continue;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 # ifdef HAVE_STRUCT_DIRENT_D_NAMLEN
 		dnamlen = dp->d_namlen;
 # else
@@ -1342,9 +1350,10 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 		return (NULL);
 
 #ifdef FTS_ALLOC_ALIGNED
-	if (!ISSET(FTS_NOSTAT))
-		p->fts_statp = (fts_stat_t *)((char*) p
-			+ len - sizeof(*(p->fts_statp)));
+	if (!ISSET(FTS_NOSTAT)) {
+		void *tmp = (char*) p + len - sizeof(*(p->fts_statp));
+		p->fts_statp = (fts_stat_t *) tmp;
+	}
 #else
 	if (!ISSET(FTS_NOSTAT))
 		if ((p->fts_statp = (fts_stat_t *) malloc(sizeof(*(p->fts_statp))))
@@ -1508,7 +1517,7 @@ fts_safe_changedir(const FTS *sp, const FTSENT *p, const fts_dir_fd_t fd,
 	if (ISSET(FTS_NOCHDIR))
 		return 0;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 
 	if (work_fd < 0) {
 		if (path == NULL) {
@@ -1535,7 +1544,7 @@ bail:
 		errno = save_errno;
 	}
 
-#else /* _MSC_VER */
+#else /* WINDOWS_NATIVE */
 
 	(void) work_fd;
 
@@ -1553,9 +1562,9 @@ bail:
 		return -1;
 	}
 
-	ret = fd != BAD_FD ? fchdir(fd) : _chdir(path);
+	ret = fd != BAD_FD ? fchdir(fd) : chdir(path);
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 	return ret;
 }
