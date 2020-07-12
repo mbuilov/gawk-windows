@@ -29,6 +29,8 @@
 extern FILE *output_fp;
 extern void indent(unsigned indent_level);
 extern NODE **fmt_list;          /* declared in eval.c */
+extern enum defrule currule;     /* declared in eval.c */
+extern NODE **args_array;        /* declared in eval.c */
 
 NODE *success_node;
 
@@ -214,7 +216,7 @@ make_aname(const NODE *symbol)
 			max_alen = alen + slen + 4 + SLEN;
 			erealloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
 		}
-		alen += sprintf(aname + alen, "[\"%s\"]", symbol->vname);
+		alen += (unsigned) sprintf(aname + alen, "[\"%s\"]", symbol->vname);
 	} else {
 		alen = strlen(symbol->vname);
 		if (aname == NULL) {
@@ -390,7 +392,6 @@ concat_exp(nargs_t nargs, bool do_subsep)
 	size_t len;
 	size_t subseplen = 0;
 	ulong_t i;
-	extern NODE **args_array;
 
 	assert(nargs);
 	if (nargs == 1u)
@@ -695,7 +696,7 @@ value_info(NODE *n)
 	fprintf(output_fp, ":%s", flags2str(n->flags));
 
 	if ((n->flags & MALLOC) != 0)
-		fprintf(output_fp, ":%llu", 0ull + n->valref);
+		fprintf(output_fp, ":%" ZUFMT, n->valref);
 	else
 		fprintf(output_fp, ":");
 
@@ -1323,7 +1324,6 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	unsigned elem_size, qi, fsz;
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
-	extern enum defrule currule;
 	enum defrule save_rule = UNKRULE; /* To silence the compiler.  */
 	assoc_kind_t assoc_kind = ANONE;
 
@@ -1339,7 +1339,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		assoc_kind = sort_funcs[qi].kind;
 
 		if (symbol->array_funcs != & cint_array_func)
-			assoc_kind = (assoc_kind_t) (assoc_kind & ~(AASC|ADESC));
+			assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
 
 		if (sort_ctxt != SORTED_IN || (assoc_kind & AVALUE) != 0) {
 			/* need index and value pair in the list */
@@ -1388,7 +1388,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		PUSH_CODE(code);
 	}
 
-	akind.flags = assoc_kind;	/* kludge */
+	akind.flags = (int) assoc_kind;	/* kludge */
 	list = symbol->alist(symbol, & akind);
 	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
