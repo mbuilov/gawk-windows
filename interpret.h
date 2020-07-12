@@ -1037,7 +1037,8 @@ arrayfor:
 						(unsigned long) max_expect);
 
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc(arg_count, & result, f));
+			awk_value_t *ef_ret = pc->extfunc(arg_count, & result, f);
+			r = awk_value_to_node(ef_ret);
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();

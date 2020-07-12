@@ -2,6 +2,14 @@
 
 	* mpfr.c (mpg_interpret): Make the instruction tracing more sane.
 
+	Fix the testext test for MPFR.
+
+	* gawkapi.c (awk_value_to_node): Use correct code to copy
+	MPFR/MPN numbers and don't free the original values.
+	* interpret.h (r_interpret): At Op_ext_builtin, separate out calls
+	to the external function and awk_value_to_node, for ease in a
+	debugger.
+
 2020-07-10         Arnold D. Robbins     <arnold@skeeve.com>
 	
 	Fix printf issues. Thanks to Michal Jaegermann for the report.
