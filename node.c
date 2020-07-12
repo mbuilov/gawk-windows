@@ -53,8 +53,8 @@ is_hex(const char *str, const char *cpend)
 	return false;
 }
 
-#ifndef _MSC_VER
-extern double strtod();
+#ifndef WINDOWS_NATIVE
+extern double strtod(void);
 #endif
 
 /* force_number --- force a value to be numeric */
@@ -271,7 +271,7 @@ r_format_val(const char *format, unsigned index, NODE *s)
 		 */
 		long num = (long) val;
 
-		if (num < NVAL && num >= 0) {
+		if (num >= 0 && (unsigned long) num < NVAL) {
 			sp = values[num];
 			s->stlen = 1;
 		} else {
@@ -349,8 +349,8 @@ r_dupnode(NODE *n)
 		r->stptr[n->stlen] = '\0';
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
-			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 1), "r_dupnode");
-			memcpy(r->wstptr, n->wstptr, n->wstlen * sizeof(wchar_t));
+			emalloc(r->wstptr, uni_char_t *, sizeof(uni_char_t) * (n->wstlen + 1), "r_dupnode");
+			memcpy(r->wstptr, n->wstptr, n->wstlen * sizeof(uni_char_t));
 			r->wstptr[n->wstlen] = L'\0';
 			r->flags |= WSTRCUR;
 		}
@@ -439,12 +439,12 @@ make_str_node(const char *s, size_t len, int flags)
 			 * character happens to be a backslash.
 			 */
 			if (gawk_mb_cur_max > 1) {
-				size_t mblen = mbrlen(pf, (size_t) (end - pf), &cur_state);
+				size_t mb_len = mbrlen(pf, (size_t) (end - pf), &cur_state);
 
-				if (mblen > 1) {
+				if (mb_len > 1) {
 					size_t i;
 
-					for (i = 0; i < mblen; i++)
+					for (i = 0; i < mb_len; i++)
 						*ptm++ = *pf++;
 					continue;
 				}
@@ -587,7 +587,7 @@ parse_escape(const char **string_ptr)
 		while (++count < 3) {
 			if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
 				i *= 8;
-				i += c - '0';
+				i += (unsigned) (c - '0');
 			} else {
 				(*string_ptr)--;
 				break;
@@ -616,11 +616,11 @@ parse_escape(const char **string_ptr)
 			if (isxdigit(c)) {
 				i *= 16;
 				if (isdigit(c))
-					i += c - (unsigned char) '0';
+					i += (unsigned) (c - (unsigned char) '0');
 				else if (isupper(c))
-					i += c - (unsigned char) 'A' + 10;
+					i += (unsigned) (c - (unsigned char) 'A' + 10);
 				else
-					i += c - (unsigned char) 'a' + 10;
+					i += (unsigned) (c - (unsigned char) 'a' + 10);
 			} else {
 				(*string_ptr)--;
 				break;
@@ -698,10 +698,10 @@ get_numbase(const char *s, size_t len, bool use_locale)
 NODE *
 str2wstr(NODE *n, size_t **ptr)
 {
-	size_t i, count, src_count;
-	const char *sp;
+	size_t i, count;
+	const char *sp, *esp;
 	mbstate_t mbs;
-	wchar_t wc, *wsp;
+	uni_char_t wc;
 	static bool warned = false;
 
 	assert((n->flags & (STRING|STRCUR)) != 0);
@@ -726,9 +726,9 @@ str2wstr(NODE *n, size_t **ptr)
 	/*
 	 * After consideration and consultation, this
 	 * code trades space for time. We allocate
-	 * an array of wchar_t that is n->stlen long.
+	 * an array of uni_char_t that is n->stlen long.
 	 * This is needed in the worst case anyway, where
-	 * each input byte maps to one wchar_t.  The
+	 * each input byte maps to one uni_char_t.  The
 	 * advantage is that we only have to convert the string
 	 * once, instead of twice, once to find out how many
 	 * wide characters, and then again to actually fill in
@@ -736,25 +736,24 @@ str2wstr(NODE *n, size_t **ptr)
 	 * realloc the wide string down in size.
 	 */
 
-	emalloc(n->wstptr, wchar_t *, sizeof(wchar_t) * (n->stlen + 1), "str2wstr");
-	wsp = n->wstptr;
+	emalloc(n->wstptr, uni_char_t *, sizeof(uni_char_t) * (n->stlen + 1), "str2wstr");
 
 	/*
 	 * For use by do_match, create and fill in an array.
 	 * For each byte `i' in n->stptr (the original string),
-	 * a[i] is equal to `j', where `j' is the corresponding wchar_t
+	 * a[i] is equal to `j', where `j' is the corresponding uni_char_t
 	 * in the converted wide string.
 	 *
 	 * Create the array.
 	 */
-	if (ptr != NULL) {
-		ezalloc(*ptr, size_t *, sizeof(size_t) * n->stlen, "str2wstr");
-	}
+	if (ptr != NULL)
+		emalloc(*ptr, size_t *, sizeof(size_t) * n->stlen, "str2wstr");
 
 	sp = n->stptr;
-	src_count = n->stlen;
+	esp = sp + n->stlen;
 	memset(& mbs, 0, sizeof(mbs));
-	for (i = 0; src_count > 0; i++) {
+
+	for (i = 0; sp < esp; i++) {
 		/*
 		 * 9/2010: Check the current byte; if it's a valid character,
 		 * then it doesn't start a multibyte sequence. This brings a
@@ -765,7 +764,7 @@ str2wstr(NODE *n, size_t **ptr)
 			count = 1;
 			wc = btowc_cache((unsigned char)*sp);
 		} else
-			count = mbrtowc(& wc, sp, src_count, & mbs);
+			count = mbrto_uni (& wc, sp, (size_t) (esp - sp), & mbs);
 		switch (count) {
 		case (size_t) -2:
 		case (size_t) -1:
@@ -793,39 +792,36 @@ str2wstr(NODE *n, size_t **ptr)
 			 * stopping early. This is particularly important
 			 * for match() where we need to build the indices.
 			 */
-			if (using_utf8()) {
-				count = 1;
-				wc = 0xFFFD;	/* unicode replacement character */
-				goto set_wc;
-			} else {
+			if (!using_utf8()) {
 				/* skip it and keep going */
+				if (ptr != NULL)
+					(*ptr)[sp - n->stptr] = 0;
 				sp++;
-				src_count--;
+				break;
 			}
-			break;
-
+			wc = 0xFFFD;	/* unicode replacement character */
+			/* fall through */
 		case 0:
 			count = 1;
 			/* fall through */
 		default:
-		set_wc:
-			*wsp++ = wc;
-			src_count -= count;
-			while (count--)  {
-				if (ptr != NULL)
-					(*ptr)[sp - n->stptr] = i;
-				sp++;
+			n->wstptr[i] = wc;
+			sp += count;
+			if (ptr != NULL) {
+				do {
+					(*ptr)[sp - count - n->stptr] = i;
+				} while (--count);
 			}
 			break;
 		}
 	}
 
-	*wsp = L'\0';
-	n->wstlen = (size_t) (wsp - n->wstptr);
+	n->wstptr[i] = L'\0';
+	n->wstlen = i;
 	n->flags |= WSTRCUR;
 #define ARBITRARY_AMOUNT_TO_GIVE_BACK 100
 	if (n->stlen - n->wstlen > ARBITRARY_AMOUNT_TO_GIVE_BACK)
-		erealloc(n->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 1), "str2wstr");
+		erealloc(n->wstptr, uni_char_t *, sizeof(uni_char_t) * (n->wstlen + 1), "str2wstr");
 
 	return n;
 }
@@ -837,7 +833,7 @@ wstr2str(NODE *n)
 {
 	size_t result;
 	size_t length;
-	wchar_t *wp;
+	uni_char_t *wp;
 	mbstate_t mbs;
 	char *newval, *cp;
 
@@ -856,7 +852,7 @@ wstr2str(NODE *n)
 
 	wp = n->wstptr;
 	for (cp = newval; length > 0; length--) {
-		result = wcrtomb(cp, *wp, & mbs);
+		result = uni_rtomb(cp, *wp, & mbs);
 		if (result == (size_t) -1)	/* what to do? break seems best */
 			break;
 		cp += result;
@@ -902,61 +898,61 @@ dump_wstr(FILE *fp, const wchar_t *str, size_t len)
 
 /* wstrstr --- walk haystack, looking for needle, wide char version */
 
-const wchar_t *
-wstrstr(const wchar_t *haystack, size_t hs_len,
-	const wchar_t *needle, size_t needle_len)
+const uni_char_t *
+wstrstr(const uni_char_t *haystack, size_t hs_len,
+	const uni_char_t *needle, size_t needle_len)
 {
-	size_t i;
+	if (needle_len <= hs_len) {
 
-	if (haystack == NULL || needle == NULL || needle_len > hs_len)
-		return NULL;
+		const size_t n = needle_len - 1;
+		const uni_char_t *h = haystack;
+		const uni_char_t *const he = h + hs_len - n;
 
-	for (i = 0; i < hs_len; i++) {
-		if (haystack[i] == needle[0]
-		    && i+needle_len-1 < hs_len
-		    && haystack[i+needle_len-1] == needle[needle_len-1]) {
+		do {
+			if (h[0] != needle[0])
+				continue;
+			if (h[n] != needle[n])
+				continue;
+
 			/* first & last chars match, check string */
-			if (memcmp(haystack+i, needle, sizeof(wchar_t) * needle_len) == 0) {
-				return haystack + i;
-			}
-		}
-	}
+			if (n <= 1 || memcmp(h + 1, needle + 1, sizeof(uni_char_t) * (n - 1)) == 0)
+				return h;
 
+		} while (++h < he);
+	}
 	return NULL;
 }
 
 /* wcasestrstr --- walk haystack, nocase look for needle, wide char version */
 
-const wchar_t *
-wcasestrstr(const wchar_t *haystack, size_t hs_len,
-	const wchar_t *needle, size_t needle_len)
+const uni_char_t *
+wcasestrstr(const uni_char_t *haystack, size_t hs_len,
+	const uni_char_t *needle, size_t needle_len)
 {
-	size_t i, j;
+	if (needle_len <= hs_len) {
 
-	if (haystack == NULL || needle == NULL || needle_len > hs_len)
-		return NULL;
+		const size_t n = needle_len - 1;
+		const uni_char_t *h = haystack;
+		const uni_char_t *const he = h + hs_len - n;
 
-	for (i = 0; i < hs_len; i++) {
-		if (towlower(haystack[i]) == towlower(needle[0])
-		    && i+needle_len-1 < hs_len
-		    && towlower(haystack[i+needle_len-1]) == towlower(needle[needle_len-1])) {
+		do {
+			if (uni_tolower(h[0]) != uni_tolower(needle[0]))
+				continue;
+			if (uni_tolower(h[n]) != uni_tolower(needle[n]))
+				continue;
+
 			/* first & last chars match, check string */
-			const wchar_t *start;
-
-			start = haystack+i;
-			for (j = 0; j < needle_len; j++, start++) {
-				wchar_t h, n;
-
-				h = towlower(*start);
-				n = towlower(needle[j]);
-				if (h != n)
-					goto out;
+			if (n > 1) {
+				size_t j = 1;
+				do {
+					if (uni_tolower(h[j]) != uni_tolower(needle[j]))
+						goto out;
+				} while (++j < n);
+				return h;
 			}
-			return haystack + i;
-		}
-out:	;
+		out:;
+		} while (++h < he);
 	}
-
 	return NULL;
 }
 
@@ -1024,19 +1020,25 @@ void init_btowc_cache(void)
 
 #define BLOCKCHUNK 100
 
+#ifdef MEMDEBUG
+#define BLOCK_HEADER_INIT(type, name)	{name, sizeof(type), 0, 0}
+#else
+#define BLOCK_HEADER_INIT(type, name)	{NULL, name, sizeof(type), 0}
+#endif
+
 struct block_header nextfree[BLOCK_MAX] = {
-	{ NULL, sizeof(NODE), "node" },
-	{ NULL, sizeof(BUCKET), "bucket" },
+	BLOCK_HEADER_INIT(NODE, "node"),
+	BLOCK_HEADER_INIT(BUCKET, "bucket"),
 #ifdef HAVE_MPFR
-	{ NULL, sizeof(mpfr_t), "mpfr" },
-	{ NULL, sizeof(mpz_t), "mpz" },
+	BLOCK_HEADER_INIT(mpfr_t, "mpfr"),
+	BLOCK_HEADER_INIT(mpz_t, "mpz"),
 #endif
 };
 
 #ifdef MEMDEBUG
 
 void *
-r_getblock(enum block_id id, const char *file, int line)
+r_getblock(enum block_id id, const char *file, unsigned line)
 {
 	void *res;
 	emalloc_at(res, void *, nextfree[id].size, "getblock", file, line);
@@ -1053,32 +1055,32 @@ r_freeblock(void *p, enum block_id id)
 	free(p);
 }
 
-#else
+#else /* !MEMDEBUG */
 
 /* more_blocks --- get more blocks of memory and add to the free list;
 	size of a block must be >= sizeof(struct block_item)
  */
 
-void *
+struct block_item *
 more_blocks(enum block_id id)
 {
 	struct block_item *freep, *np, *next;
-	char *p, *endp;
+	void *endp;
 	size_t size;
 
 	size = nextfree[id].size;
 
 	assert(size >= sizeof(struct block_item));
 	emalloc(freep, struct block_item *, BLOCKCHUNK * size, "more_blocks");
-	p = (char *) freep;
-	endp = p + BLOCKCHUNK * size;
+	endp = (char*) freep + BLOCKCHUNK * size;
 
 	for (np = freep; ; np = next) {
-		next = (struct block_item *) (p += size);
-		if (p >= endp) {
+		void *n = (char*) np + size;
+		if (n == endp) {
 			np->freep = NULL;
 			break;
 		}
+		next = (struct block_item *) n;
 		np->freep = next;
 	}
 	nextfree[id].freep = freep->freep;
@@ -1086,4 +1088,4 @@ more_blocks(enum block_id id)
 	return freep;
 }
 
-#endif
+#endif /* !MEMDEBUG */
