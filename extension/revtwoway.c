@@ -36,6 +36,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -242,6 +244,7 @@ static awk_bool_t
 revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_buf_t *outbuf)
 {
 	static int fake_file;
+	void *const fake_file_ptr = &fake_file;
 	two_way_proc_data_t *proc_data;
 
 	(void) name;	/* silence warnings */
@@ -261,7 +264,7 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 	inbuf->opaque = proc_data;
 
 	/* output side: */
-	outbuf->file = (FILE *) &fake_file; 	/* must be != NULL.  */
+	outbuf->file = (FILE *) fake_file_ptr; 	/* must be != NULL.  */
 	outbuf->opaque = proc_data;
 	outbuf->gawk_fwrite = rev2way_fwrite;
 	outbuf->gawk_fflush = rev2way_fflush;
