@@ -62,7 +62,8 @@
    it now, to make later inclusions of <libintl.h> a NOP.  */
 #if defined(__cplusplus) && defined(__GNUG__) && (__GNUC__ >= 3)
 # include <cstdlib>
-# if (__GLIBC__ >= 2 && !defined __UCLIBC__) || _GLIBCXX_HAVE_LIBINTL_H
+# if (defined(__GLIBC__) && __GLIBC__ >= 2 && !defined __UCLIBC__) || \
+    (defined(_GLIBCXX_HAVE_LIBINTL_H) && _GLIBCXX_HAVE_LIBINTL_H)
 #  include <libintl.h>
 # endif
 #endif
@@ -73,7 +74,7 @@
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
 # undef gettext
-# define gettext(Msgid) ((char *) (Msgid))
+# define gettext(Msgid) ((const char *) (Msgid))
 # undef dgettext
 # define dgettext(Domainname, Msgid) ((void) (Domainname), gettext (Msgid))
 # undef dcgettext
@@ -146,11 +147,13 @@
 #define dcnpgettext(Domainname, Msgctxt, Msgid, MsgidPlural, N, Category) \
   npgettext_aux (Domainname, Msgctxt GETTEXT_CONTEXT_GLUE Msgid, Msgid, MsgidPlural, N, Category)
 
-#ifdef __GNUC__
+#if defined(__inline) || defined(__GNUC__)
 __inline
 #else
 #ifdef __cplusplus
 inline
+#elif defined NEED_C99_FEATURES
+#error no inline
 #endif
 #endif
 static const char *
@@ -165,11 +168,13 @@ pgettext_aux (const char *domain,
     return translation;
 }
 
-#ifdef __GNUC__
+#if defined(__inline) || defined(__GNUC__)
 __inline
 #else
 #ifdef __cplusplus
 inline
+#elif defined NEED_C99_FEATURES
+#error no inline
 #endif
 #endif
 static const char *
@@ -211,11 +216,13 @@ npgettext_aux (const char *domain,
 #define dpgettext_expr(Domainname, Msgctxt, Msgid) \
   dcpgettext_expr (Domainname, Msgctxt, Msgid, LC_MESSAGES)
 
-#ifdef __GNUC__
+#if defined(__inline) || defined(__GNUC__)
 __inline
 #else
 #ifdef __cplusplus
 inline
+#elif defined NEED_C99_FEATURES
+#error no inline
 #endif
 #endif
 static const char *
@@ -258,11 +265,13 @@ dcpgettext_expr (const char *domain,
 #define dnpgettext_expr(Domainname, Msgctxt, Msgid, MsgidPlural, N) \
   dcnpgettext_expr (Domainname, Msgctxt, Msgid, MsgidPlural, N, LC_MESSAGES)
 
-#ifdef __GNUC__
+#if defined(__inline) || defined(__GNUC__)
 __inline
 #else
 #ifdef __cplusplus
 inline
+#elif defined NEED_C99_FEATURES
+#error no inline
 #endif
 #endif
 static const char *
