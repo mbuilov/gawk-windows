@@ -22,6 +22,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <wchar.h>
+#include "uni_char.h"
 
 struct localeinfo
 {
@@ -57,4 +58,4 @@ extern void init_localeinfo (struct localeinfo *);
    itself.  This is a generous upper bound.  */
 enum { CASE_FOLDED_BUFSIZE = 32 };
 
-extern int case_folded_counterparts (wint_t, wchar_t[CASE_FOLDED_BUFSIZE]);
+extern int case_folded_counterparts (uni_int_t, uni_char_t[CASE_FOLDED_BUFSIZE]);
