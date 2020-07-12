@@ -34,26 +34,39 @@
 #include <io.h>	/* close() */
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 #define execvp(p,a) w32_execvp(p,a)
 extern int w32_execvp(const char *, char **);
 #endif
 
-extern bool exiting;
+#ifdef WINDOWS_NATIVE
+#define close			_close
+#define fileno(fd)		_fileno(fd)
+#define fdopen(fd, omode)	_fdopen(fd, omode)
+#define lseek(fd, off, set)	_lseek(fd, off, set)
+#endif
+
+#ifndef AWKLONG_MAX
+#define AWKLONGMAX	((long) ((unsigned long)-1/2))
+#endif
+
+/* main.c */
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
 extern INSTRUCTION *code_block;
-extern NODE **fcall_list;
-extern ulong_t fcall_count;
 extern FILE *output_fp;
-extern IOBUF *curfile;
 extern const char *command_file;
 extern const char *get_spec_varname(Func_ptr fptr);
+
+/* eval.c */
+extern NODE **fcall_list;
+extern ulong_t fcall_count;
+extern IOBUF *curfile;
+extern bool exiting;
+
+/* command.c */
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
-
-/* needed by eval.c */
-void frame_popped(void);
 
 /* defined in eval.c */
 extern INSTRUCTION *unwind_stack(size_t n);
@@ -253,7 +266,9 @@ struct dbg_option {
 	const char *help_txt;
 };
 
+#ifdef HAVE_LIBREADLINE
 #define DEFAULT_HISTFILE	"./.gawk_history"
+#endif
 #define DEFAULT_OPTFILE		"./.gawkrc"
 #define DEFAULT_PROMPT		"gawk> "
 #define DEFAULT_LISTSIZE	15
@@ -461,14 +476,14 @@ find_lines(SRCFILE *s)
 	unsigned numlines = 0;
 	char lastchar = '\0';
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 	/* Under MS-Windows, read() takes unsigned int as buffer size, not size_t;
 	   also, read() fails if buffer size > INT_MAX.  */
 	unsigned to_read = s->bufsize <= INT_MAX ? (unsigned) s->bufsize : INT_MAX;
-#else /* !__MINGW32__ && !_MSC_VER */
+#else /* !WINDOWS_NATIVE */
 	/* Don't try to read more than SSIZE_MAX at once.  */
 	size_t to_read = s->bufsize <= SSIZE_MAX ? s->bufsize : SSIZE_MAX;
-#endif /* !__MINGW32__ && !_MSC_VER */
+#endif /* !WINDOWS_NATIVE */
 
 	emalloc(buf, char *, s->bufsize, "find_lines");
 	pos_size = s->srclines;
@@ -984,7 +999,7 @@ do_info(CMDARG *arg, enum argtype cmd)
 					}
 					gprintf(out_fp, "\n");
 				} else if (IS_FIELD(d))
-					gprintf(out_fp, "%u:\t$%llu\n", d->number, 0ull + get_number_fn(symbol));
+					gprintf(out_fp, "%u:\t$%" ZUFMT "\n", d->number, get_number_fn(symbol));
 				else
 					gprintf(out_fp, "%u:\t%s\n", d->number, d->sname);
 				if (d->cndn.code != NULL)
@@ -1133,9 +1148,9 @@ print_field(field_num_t field_num)
 	NODE **lhs;
 	lhs = get_field(field_num, NULL);
 	if (*lhs == Null_field || *lhs == Nnull_string)
-		fprintf(out_fp, _("$%llu = uninitialized field\n"), 0ull + field_num);
+		fprintf(out_fp, _("$%" ZUFMT " = uninitialized field\n"), field_num);
 	else {
-		fprintf(out_fp, "$%llu = ", 0ull + field_num);
+		fprintf(out_fp, "$%" ZUFMT " = ", field_num);
 		valinfo(*lhs, fprintf, out_fp);
 	}
 }
@@ -1914,7 +1929,7 @@ do_watch(CMDARG *arg, enum argtype cmd)
 		}
 		fprintf(out_fp, "\n");
 	} else if (IS_FIELD(w))
-		fprintf(out_fp, "$%llu\n", 0ull + get_number_fn(symbol));
+		fprintf(out_fp, "$%" ZUFMT "\n", get_number_fn(symbol));
 	else
 		fprintf(out_fp, "%s\n", w->sname);
 
@@ -2057,10 +2072,10 @@ do_backtrace(CMDARG *arg, enum argtype cmd)
 			/* toward outermost frame #fcall_count */
 			if ((unsigned long) count <= fcall_count)
 				lim = (unsigned long) count;
-		} else {
+		} else if (count >= -AWKLONGMAX) {
 			/* toward innermost frame #0 */
 			if (lim > (unsigned long) -count)
-				cur = lim + count;
+				cur = lim - (unsigned long) -count;
 		}
 	}
 
@@ -2129,12 +2144,13 @@ up_down(long_t x)
 {
 	if (x >= 0) {
 		if ((unsigned long) x < fcall_count - cur_frame)
-			cur_frame += x;
+			cur_frame += (unsigned long) x;
 		else
 			cur_frame = fcall_count;
 	}
+	/* Note: x >= -AWKLONGMAX */
 	else if ((unsigned long) -x < cur_frame)
-		cur_frame += x;
+		cur_frame -= (unsigned long) -x;
 	else
 		cur_frame = 0u;
 }
@@ -2146,8 +2162,12 @@ do_up(CMDARG *arg, enum argtype cmd)
 {
 	(void) cmd;
 	CHECK_PROG_RUNNING();
-	if (arg != NULL && arg->type == D_int)
-		up_down(arg->a_int);
+	if (arg != NULL && arg->type == D_int) {
+		if (arg->a_int >= -AWKLONGMAX)
+			up_down(arg->a_int);
+		else
+			cur_frame = 0u;
+	}
 	else if (cur_frame < fcall_count)
 		cur_frame++;
 
@@ -2162,8 +2182,12 @@ do_down(CMDARG *arg, enum argtype cmd)
 {
 	(void) cmd;
 	CHECK_PROG_RUNNING();
-	if (arg != NULL && arg->type == D_int)
-		up_down(-arg->a_int);
+	if (arg != NULL && arg->type == D_int) {
+		if (arg->a_int >= -AWKLONGMAX)
+			up_down(-arg->a_int);
+		else
+			cur_frame = fcall_count;
+	}
 	else if (cur_frame)
 		cur_frame--;
 
@@ -2605,8 +2629,7 @@ do_clear(CMDARG *arg, enum argtype cmd)
 		src = s->src;
 		if (arg->type == D_func)
 			goto func;
-		/* else
-			fall through */
+		/* fall through */
 	case D_int:	/* clear lineno */
 		ln = arg->a_int;
 		if (ln <= 0 || (unsigned long) ln > s->srclines) {
@@ -2928,7 +2951,7 @@ debug_prog(INSTRUCTION *pc)
 		unserialize_list(OPTION);
 		unsetenv("DGAWK_RESTART");
 		fprintf(out_fp, "Restarting ...\n");
-		if (strcasecmp(run, "true") == 0)
+		if (cmp_keyword(run, "true", 5))
 			(void) do_run(NULL, D_illegal);
 
 	} else if (command_file != NULL) {
@@ -3492,8 +3515,7 @@ do_until(CMDARG *arg, enum argtype cmd)
 		src = s->src;
 		if (arg->type == D_func)
 			goto func;
-		/* else
-			fall through */
+		/* fall through */
 	case D_int:	/* until lineno */
 		ln = arg->a_int;
 		if (ln <= 0 || (unsigned long) ln > s->srclines) {
@@ -3564,20 +3586,21 @@ print_watch_item(struct list_item *w)
 		}
 		fprintf(out_fp, "\n");
 	} else if (IS_FIELD(w))
-		fprintf(out_fp, "$%llu\n", 0ull + get_number_fn(symbol));
+		fprintf(out_fp, "$%" ZUFMT "\n", get_number_fn(symbol));
 	else
 		fprintf(out_fp, "%s\n", w->sname);
 
 
-#define print_value(X, S, V)                                        \
-if (X)                                                              \
-	fprintf(out_fp, "array, %lu elements\n", TO_ULONG(w->S));       \
-else if (! w->V)                                                    \
-	fputs(IS_SUBSCRIPT(w) ?                                         \
-		_("element not in array\n") : _("untyped variable\n"),      \
-		out_fp);                                                    \
-else                                                                \
-	valinfo(w->V, fprintf, out_fp);
+#define print_value(X, S, V) do {                                       \
+	if (X)                                                              \
+		fprintf(out_fp, "array, %lu elements\n", TO_ULONG(w->S));       \
+	else if (! w->V)                                                    \
+		fputs(IS_SUBSCRIPT(w) ?                                         \
+			_("element not in array\n") : _("untyped variable\n"),      \
+			out_fp);                                                    \
+	else                                                                \
+		valinfo(w->V, fprintf, out_fp);                                 \
+} while ((void) 0, 0)
 
 	fprintf(out_fp, "  Old value: ");
 	print_value((w->flags & OLD_IS_ARRAY) != 0, old_size, old_value);
@@ -3612,6 +3635,7 @@ next_command(void)
 			goto no_output;
 	} else if (stop.watch_point) {
 		w = find_item(&watch_list, stop.watch_point);
+		assert(w != NULL);
 		if (w->silent)
 			goto no_output;
 	}
@@ -4107,7 +4131,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	case Op_K_case:
 		print_func(fp, "[target_jmp = %p] [match_exp = %s]",
-						(void*) pc->target_jmp,	(void*) (pc + 1)->match_exp ? "true" : "false");
+						(void*) pc->target_jmp,	(pc + 1)->match_exp ? "true" : "false");
 		if (pc->comment) {
 			print_func(fp, " [comment = %p]\n", (void*) pc->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
@@ -4514,7 +4538,7 @@ gprintf(FILE *fp, const char *format, ...)
 		if (nchar == 0)
 			return 0;
 		if (nchar > 0 && (unsigned) nchar < buflen - bl) {
-			bl += nchar;
+			bl += (unsigned) nchar;
 			if (buf[bl-1] != '\n') /* buffer output until see a newline at end */
 				return nchar;
 			break;
@@ -4576,12 +4600,12 @@ serialize_subscript(char *buf, size_t buflen, const struct list_item *item)
 	bl = (unsigned) nchar;
 	for (i = 0; i < item->num_subs; i++) {
 		sub = item->subs[i];
-		nchar = snprintf(buf + bl, buflen - bl, "%llu%c%.*s%c",
-					0ull + sub->stlen, FSEP,
+		nchar = snprintf(buf + bl, buflen - bl, "%" ZUFMT "%c%.*s%c",
+					sub->stlen, FSEP,
 					TO_PRINTF_WIDTH(sub->stlen), sub->stptr, FSEP);
 		if (nchar <= 0)
 			return 0;
-		bl += nchar;
+		bl += (unsigned) nchar;
 		if (bl >= buflen)	/* need larger buffer */
 			return bl;
 	}
@@ -4699,8 +4723,8 @@ enlarge_buffer:
 			else if (IS_SUBSCRIPT(wd))
 				sz = serialize_subscript(buf + bl, buflen - bl, wd);
 			else if (IS_FIELD(wd))
-				sz = (unsigned) snprintf(buf + bl, buflen - bl, "%u%c%d%c%llu%c",
-				            wd->number, FSEP, D_field, FSEP, 0ull + get_number_fn(wd->symbol), FSEP);
+				sz = (unsigned) snprintf(buf + bl, buflen - bl, "%u%c%d%c%" ZUFMT "%c",
+				            wd->number, FSEP, D_field, FSEP, get_number_fn(wd->symbol), FSEP);
 			else
 				sz = (unsigned) snprintf(buf + bl, buflen - bl, "%u%c%d%c%s%c",
 				            wd->number, FSEP, D_variable, FSEP, wd->sname, FSEP);
@@ -4771,7 +4795,7 @@ enlarge_buffer:
 						buflen = bl + sz + 1/*RSEP*/;
 						erealloc(buf, char *, buflen + 1/*'\0'*/, "serialize_list");
 					}
-					bl += sprintf(buf + bl, "commands %u", cnum);
+					bl += (unsigned) sprintf(buf + bl, "commands %u", cnum);
 					buf[bl++] = CSEP;
 					for (c = commands->next; c != commands; c = c->next) {
 						sz = strlen(c->cmd_string);
@@ -5030,16 +5054,16 @@ unserialize_list(enum env_type type)
 
 		switch (type) {
 		case BREAK:
-			(void) unserialize_breakpoint(pstr, pstr_len, field_cnt);
+			(void) unserialize_breakpoint((const char *const *) pstr, pstr_len, field_cnt);
 			break;
 		case DISPLAY:
-			(void) unserialize_list_item(&display_list, pstr, pstr_len, field_cnt);
+			(void) unserialize_list_item(&display_list, (const char *const *) pstr, pstr_len, field_cnt);
 			break;
 		case WATCH:
-			(void) unserialize_list_item(&watch_list, pstr, pstr_len, field_cnt);
+			(void) unserialize_list_item(&watch_list, (const char *const *) pstr, pstr_len, field_cnt);
 			break;
 		case OPTION:
-			(void) unserialize_option(pstr, pstr_len, field_cnt);
+			(void) unserialize_option((const char *const *) pstr, pstr_len, field_cnt);
 			break;
 		case HISTORY:
 			/* processed at the beginning of for loop */
