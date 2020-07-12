@@ -45,7 +45,10 @@
 # define DIR_TO_FD(d) (FAKE_FD_VALUE)
 #endif
 
-#if !defined(HAVE_DIRFD) && (!defined(HAVE_DECL_DIRFD) || HAVE_DECL_DIRFD == 0) && !defined(_MSC_VER)
+/* Not used for _MSC_VER/__MINGW32__ */
+#if !defined(HAVE_DIRFD) && \
+  (!defined(HAVE_DECL_DIRFD) || HAVE_DECL_DIRFD == 0) && \
+  !defined(_MSC_VER) && !defined(__MINGW32__)
 int
 dirfd (DIR *dir_p)
 {
