@@ -40,6 +40,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -81,7 +83,7 @@ static struct {
 	int default_stdout;
 	int posrc;	/* return code from fgetpos */
 	fpos_t pos;
-} state = { NULL, -1 };
+} state = { NULL, -1, 0, 0 };
 
 /*
  * XXX Known problems:
