@@ -3,7 +3,7 @@
 #ifndef GAWK_SOCKET_H
 #define GAWK_SOCKET_H
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 
 #include <io.h>
 
@@ -42,27 +42,12 @@ SOCKET valid_socket (int);
 
 const char *gai_strerror_buf (int ecode, char buf[], unsigned int buf_size);
 
-#ifdef _MSC_VER
+#include "mscrtx/socket_fd.h"
+#include "mscrtx/is_socket.h"
+#include "mscrtx/socket_file.h"
 
-int ws_socket_dup(int oldfd);
-#define socket_dup(oldfd) ws_socket_dup(oldfd)
+#define socket_dup(oldfd) socket_fd_dup(oldfd)
 
-typedef struct socket_file {
-  unsigned buf_size;
-  int filled;
-  void *buf;
-} socket_file_t;
-
-#define socket_file_ferror(sf)	((sf)->filled < 0)
-
-socket_file_t *socket_file_alloc(void);
-void socket_file_free(socket_file_t *sf);
-int socket_file_fflush(socket_file_t *sf, fd_t fd);
-size_t socket_file_fwrite(socket_file_t *sf, fd_t fd, const void *ptr, size_t size, size_t nmemb);
-void socket_file_clearerr(socket_file_t *sf);
-
-#endif /* _MSC_VER */
-
-#endif	/* __MINGW32__ || _MSC_VER */
+#endif	/* WINDOWS_NATIVE */
 
 #endif	/* GAWK_SOCKET_H */
