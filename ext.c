@@ -97,7 +97,7 @@ load_ext(const char *lib_name)
 /* make_builtin --- register name to be called as func with a builtin body */
 
 awk_bool_t
-make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
+make_builtin(const char *name_space, awk_ext_func_t *funcinfo)
 {
 	NODE *symbol, *f;
 	INSTRUCTION *b;
@@ -152,7 +152,7 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 
 	b = bcalloc(Op_symbol, 1, 0);
 	b->extfunc = funcinfo->function;
-	b->c_function = (awk_ext_func_t *) funcinfo;
+	b->c_function = funcinfo;
 
 	/* NB: extension sub must return something */
 
@@ -223,12 +223,12 @@ get_actual_argument(NODE *t, size_t i, bool want_array)
 
 	if (want_array) {
 		if (t->type != Node_var_array)
-			fatal(_("function `%s': argument #%llu: attempt to use scalar as an array"),
-				fname, 0ull + i + 1);
+			fatal(_("function `%s': argument #%" ZUFMT ": attempt to use scalar as an array"),
+				fname, i + 1);
 	} else {
 		if (t->type != Node_val)
-			fatal(_("function `%s': argument #%llu: attempt to use array as a scalar"),
-				fname, 0ull + i + 1);
+			fatal(_("function `%s': argument #%" ZUFMT ": attempt to use array as a scalar"),
+				fname, i + 1);
 	}
 	assert(t->type == Node_var_array || t->type == Node_val);
 	return t;
