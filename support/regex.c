@@ -25,6 +25,12 @@
 # if __GNUC_PREREQ (4, 6)
 #  pragma GCC diagnostic ignored "-Wsuggest-attribute=pure"
 # endif
+# ifndef __cplusplus
+#  if __GNUC_PREREQ (4, 3)
+#   pragma GCC diagnostic ignored "-Wold-style-definition"
+#   pragma GCC diagnostic ignored "-Wtype-limits"
+#  endif
+# endif
 #endif
 
 /* Make sure no one compiles this code with a C++ compiler.  */
@@ -64,6 +70,10 @@
 
 #include <regex.h>
 #include "regex_internal.h"
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include "mscrtx/localerpl.h"
+#endif
 
 #include "regex_internal.c"
 #include "regcomp.c"
