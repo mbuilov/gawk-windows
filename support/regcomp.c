@@ -37,10 +37,10 @@ static void optimize_utf8 (re_dfa_t *dfa);
 #endif
 static reg_errcode_t analyze (regex_t *preg);
 static reg_errcode_t preorder (bin_tree_t *root,
-			       reg_errcode_t (fn (void *, bin_tree_t *)),
+			       reg_errcode_t (*fn) (void *, bin_tree_t *),
 			       void *extra);
 static reg_errcode_t postorder (bin_tree_t *root,
-				reg_errcode_t (fn (void *, bin_tree_t *)),
+				reg_errcode_t (*fn) (void *, bin_tree_t *),
 				void *extra);
 static reg_errcode_t optimize_subexps (void *extra, bin_tree_t *node);
 static reg_errcode_t lower_subexps (void *extra, bin_tree_t *node);
@@ -311,12 +311,12 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 	    {
 	      unsigned char buf[MB_LEN_MAX];
 	      unsigned char *p;
-	      wchar_t wc;
+	      uni_char_t wc;
 	      mbstate_t state;
 
 	      p = buf;
 	      *p++ = dfa->nodes[node].opr.c;
-	      while ((size_t)0 + ++node < dfa->nodes_len
+	      while ((Udx) ++node < dfa->nodes_len
 		     &&	dfa->nodes[node].type == CHARACTER
 		     && dfa->nodes[node].mb_partial)
 		*p++ = dfa->nodes[node].opr.c;
@@ -331,10 +331,11 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 	}
       else if (type == SIMPLE_BRACKET)
 	{
-	  int i, ch;
+	  int ch;
+	  unsigned i;
 	  for (i = 0, ch = 0; i < BITSET_WORDS; ++i)
 	    {
-	      int j;
+	      unsigned j;
 	      bitset_word_t w = dfa->nodes[node].opr.sbcset[i];
 	      for (j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
 		if (w & ((bitset_word_t) 1 << j))
@@ -381,7 +382,8 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 		{
 		  mbstate_t mbs;
 		  memset (&mbs, 0, sizeof (mbs));
-		  if (__mbrtowc (NULL, (char *) &c, 1, &mbs) == (size_t) -2)
+		  if (__mbrtowc (NULL, (const char *) &c, 1, &mbs)
+		      == (size_t) -2)
 		    re_set_fastmap (fastmap, false, (int) c);
 		}
 	      while (++c != 0);
@@ -399,6 +401,7 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 		    re_set_fastmap (fastmap, icase, *(unsigned char *) buf);
 		  if ((bufp->syntax & RE_ICASE) && dfa->mb_cur_max > 1)
 		    {
+		      memset (&state, '\0', sizeof (state));
 		      if (__wcrtomb (buf, __towlower (cset->mbchars[i]), &state)
 			  != (size_t) -1)
 			re_set_fastmap (fastmap, false, *(unsigned char *) buf);
@@ -469,7 +472,7 @@ regcomp (regex_t *__restrict preg, const char *__restrict pattern, int cflags)
   preg->used = 0;
 
   /* Try to allocate space for the fastmap.  */
-  preg->fastmap = re_malloc (char, SBC_MAX);
+  preg->fastmap = re_malloc_sz (char, SBC_MAX);
   if (__glibc_unlikely (preg->fastmap == NULL))
     return REG_ESPACE;
 
@@ -835,7 +838,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
   const char *codeset_name;
 #endif
 #ifdef RE_ENABLE_I18N
-  size_t max_i18n_object_size = MAX (sizeof (wchar_t), sizeof (wctype_t));
+  size_t max_i18n_object_size = MAX (sizeof (uni_char_t), sizeof (wctype_t));
 #else
   size_t max_i18n_object_size = 0;
 #endif
@@ -860,7 +863,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
     return REG_ESPACE;
 
   dfa->nodes_alloc = pat_len + 1;
-  dfa->nodes = re_malloc (re_token_t, dfa->nodes_alloc);
+  dfa->nodes = re_malloc_sz (re_token_t, dfa->nodes_alloc);
 
   /*  table_size = 2 ^ ceil(log pat_len) */
   for (table_size = 1; ; table_size <<= 1)
@@ -899,7 +902,8 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 	dfa->sb_char = (re_bitset_ptr_t) utf8_sb_map;
       else
 	{
-	  int i, j, ch;
+	  int ch;
+	  unsigned i, j;
 
 	  dfa->sb_char = (re_bitset_ptr_t) calloc (sizeof (bitset_t), 1);
 	  if (__glibc_unlikely (dfa->sb_char == NULL))
@@ -933,8 +937,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 static void
 init_word_char (re_dfa_t *dfa)
 {
-  int i = 0;
-  int j;
+  unsigned i = 0, j;
   int ch = 0;
   dfa->word_ops_used = 1;
   if (__glibc_likely (dfa->map_notascii == 0))
@@ -1089,7 +1092,7 @@ static void
 optimize_utf8 (re_dfa_t *dfa)
 {
   size_t node;
-  int i;
+  unsigned i;
   bool mb_chars = false;
   bool has_period = false;
 
@@ -1172,15 +1175,15 @@ analyze (regex_t *preg)
   reg_errcode_t ret;
 
   /* Allocate arrays.  */
-  dfa->nexts = re_malloc (Idx, dfa->nodes_alloc);
-  dfa->org_indices = re_malloc (Idx, dfa->nodes_alloc);
-  dfa->edests = re_malloc (re_node_set, dfa->nodes_alloc);
-  dfa->eclosures = re_malloc (re_node_set, dfa->nodes_alloc);
+  dfa->nexts = re_malloc_sz (Idx, dfa->nodes_alloc);
+  dfa->org_indices = re_malloc_sz (Idx, dfa->nodes_alloc);
+  dfa->edests = re_malloc_sz (re_node_set, dfa->nodes_alloc);
+  dfa->eclosures = re_malloc_sz (re_node_set, dfa->nodes_alloc);
   if (__glibc_unlikely (dfa->nexts == NULL || dfa->org_indices == NULL
 			|| dfa->edests == NULL || dfa->eclosures == NULL))
     return REG_ESPACE;
 
-  dfa->subexp_map = re_malloc (Idx, preg->re_nsub);
+  dfa->subexp_map = re_malloc_sz (Idx, preg->re_nsub);
   if (dfa->subexp_map != NULL)
     {
       size_t i;
@@ -1216,7 +1219,7 @@ analyze (regex_t *preg)
   if ((!preg->no_sub && preg->re_nsub > 0 && dfa->has_plural_match)
       || dfa->nbackref)
     {
-      dfa->inveclosures = re_malloc (re_node_set, dfa->nodes_len);
+      dfa->inveclosures = re_malloc_sz (re_node_set, dfa->nodes_len);
       if (__glibc_unlikely (dfa->inveclosures == NULL))
 	return REG_ESPACE;
       ret = calc_inveclosure (dfa);
@@ -1229,7 +1232,7 @@ analyze (regex_t *preg)
    implement parse tree visits.  Instead, we use parent pointers and
    some hairy code in these two functions.  */
 static reg_errcode_t
-postorder (bin_tree_t *root, reg_errcode_t (fn (void *, bin_tree_t *)),
+postorder (bin_tree_t *root, reg_errcode_t (*fn) (void *, bin_tree_t *),
 	   void *extra)
 {
   bin_tree_t *node, *prev;
@@ -1261,7 +1264,7 @@ postorder (bin_tree_t *root, reg_errcode_t (fn (void *, bin_tree_t *)),
 }
 
 static reg_errcode_t
-preorder (bin_tree_t *root, reg_errcode_t (fn (void *, bin_tree_t *)),
+preorder (bin_tree_t *root, reg_errcode_t (*fn) (void *, bin_tree_t *),
 	  void *extra)
 {
   bin_tree_t *node;
@@ -1315,7 +1318,7 @@ optimize_subexps (void *extra, bin_tree_t *node)
 	node->left->parent = node;
 
       dfa->subexp_map[other_idx] = dfa->subexp_map[node->token.opr.idx];
-      if (other_idx < BITSET_WORD_BITS)
+      if (other_idx < (int) BITSET_WORD_BITS)
 	dfa->used_bkref_map &= ~((bitset_word_t) 1 << other_idx);
     }
 
@@ -1359,7 +1362,7 @@ lower_subexp (reg_errcode_t *err, regex_t *preg, bin_tree_t *node)
 	 very common, so we do not lose much.  An example that triggers
 	 this case is the sed "script" /\(\)/x.  */
       && node->left != NULL
-      && (node->token.opr.idx >= BITSET_WORD_BITS
+      && (node->token.opr.idx >= (int) BITSET_WORD_BITS
 	  || !(dfa->used_bkref_map
 	       & ((bitset_word_t) 1 << node->token.opr.idx))))
     return node->left;
@@ -1400,7 +1403,7 @@ calc_first (void *extra, bin_tree_t *node)
       if (__glibc_unlikely (node->node_idx == -1))
 	return REG_ESPACE;
       if (node->token.type == ANCHOR)
-	dfa->nodes[node->node_idx].constraint = node->token.opr.ctx_type;
+	dfa->nodes[node->node_idx].constraint = (unsigned int) node->token.opr.ctx_type;
     }
   return REG_NOERROR;
 }
@@ -1829,8 +1832,8 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 #ifdef RE_ENABLE_I18N
       if (input->mb_cur_max > 1)
 	{
-	  wint_t wc = re_string_wchar_at (input,
-					  re_string_cur_idx (input) + 1);
+	  uni_int_t wc = re_string_wchar_at (input,
+					     re_string_cur_idx (input) + 1);
 	  token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
 	}
       else
@@ -1943,7 +1946,7 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 #ifdef RE_ENABLE_I18N
   if (input->mb_cur_max > 1)
     {
-      wint_t wc = re_string_wchar_at (input, re_string_cur_idx (input));
+      uni_int_t wc = re_string_wchar_at (input, re_string_cur_idx (input));
       token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
     }
   else
@@ -2682,11 +2685,17 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 # ifdef RE_ENABLE_I18N
 /* Convert the byte B to the corresponding wide character.  In a
    unibyte locale, treat B as itself.  In a multibyte locale, return
-   WEOF if B is an encoding error.  */
-static wint_t
+   UNI_EOF if B is an encoding error.  */
+static uni_int_t
 parse_byte (unsigned char b, re_charset_t *mbcset)
 {
-  return mbcset == NULL ? (wint_t) b : __btowc (b);
+  wint_t wi;
+  if (mbcset == NULL)
+    return (uni_int_t) b;
+  wi = __btowc (b);
+  if (WEOF != wi)
+    return (uni_int_t) wi;
+  return UNI_EOF;
 }
 # endif
 
@@ -2730,9 +2739,9 @@ build_range_exp (const reg_syntax_t syntax,
 
 # ifdef RE_ENABLE_I18N
   {
-    wchar_t wc;
-    wint_t start_wc;
-    wint_t end_wc;
+    uni_char_t wc;
+    uni_int_t start_wc;
+    uni_int_t end_wc;
 
     start_ch = ((start_elem->type == SB_CHAR) ? start_elem->opr.ch
 		: ((start_elem->type == COLL_SYM) ? start_elem->opr.name[0]
@@ -2741,10 +2750,10 @@ build_range_exp (const reg_syntax_t syntax,
 	      : ((end_elem->type == COLL_SYM) ? end_elem->opr.name[0]
 		 : 0u));
     start_wc = ((start_elem->type == SB_CHAR || start_elem->type == COLL_SYM)
-		? parse_byte (start_ch, mbcset) : (wint_t) start_elem->opr.wch);
+		? parse_byte (start_ch, mbcset) : (uni_int_t) start_elem->opr.wch);
     end_wc = ((end_elem->type == SB_CHAR || end_elem->type == COLL_SYM)
-	      ? parse_byte (end_ch, mbcset) : (wint_t) end_elem->opr.wch);
-    if (start_wc == WEOF || end_wc == WEOF)
+	      ? parse_byte (end_ch, mbcset) : (uni_int_t) end_elem->opr.wch);
+    if (start_wc == UNI_EOF || end_wc == UNI_EOF)
       return REG_ECOLLATE;
     else if (__glibc_unlikely ((syntax & RE_NO_EMPTY_RANGES)
 			       && start_wc > end_wc))
@@ -2761,16 +2770,16 @@ build_range_exp (const reg_syntax_t syntax,
 	if (__glibc_unlikely (*range_alloc == mbcset->nranges))
 	  {
 	    /* There is not enough space, need realloc.  */
-	    wchar_t *new_array_start, *new_array_end;
+	    uni_char_t *new_array_start, *new_array_end;
 	    Idx new_nranges;
 
 	    /* +1 in case of mbcset->nranges is 0.  */
 	    new_nranges = 2 * mbcset->nranges + 1;
 	    /* Use realloc since mbcset->range_starts and mbcset->range_ends
 	       are NULL if *range_alloc == 0.  */
-	    new_array_start = re_realloc (mbcset->range_starts, wchar_t,
+	    new_array_start = re_realloc (mbcset->range_starts, uni_char_t,
 					  new_nranges);
-	    new_array_end = re_realloc (mbcset->range_ends, wchar_t,
+	    new_array_end = re_realloc (mbcset->range_ends, uni_char_t,
 					new_nranges);
 
 	    if (__glibc_unlikely (new_array_start == NULL
@@ -2794,7 +2803,7 @@ build_range_exp (const reg_syntax_t syntax,
     for (wc = 0; wc < SBC_MAX; ++wc)
       {
 	if (start_wc <= wc && wc <= end_wc)
-	  bitset_set (sbcset, wc);
+	  bitset_set (sbcset, (Idx) wc);
       }
   }
 # else /* not RE_ENABLE_I18N */
@@ -2837,7 +2846,7 @@ build_collating_symbol (bitset_t sbcset, const unsigned char *name)
 # ifdef RE_ENABLE_I18N
   (void) mbcset;
   (void) coll_sym_alloc;
-#endif
+# endif
   if (__glibc_unlikely (name_len != 1))
     return REG_ECOLLATE;
   else
@@ -3272,12 +3281,12 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
 	      /* Check whether the array has enough space.  */
 	      if (__glibc_unlikely (mbchar_alloc == mbcset->nmbchars))
 		{
-		  wchar_t *new_mbchars;
+		  uni_char_t *new_mbchars;
 		  /* Not enough, realloc it.  */
 		  /* +1 in case of mbcset->nmbchars is 0.  */
 		  mbchar_alloc = 2 * mbcset->nmbchars + 1;
 		  /* Use realloc since array is NULL if *alloc == 0.  */
-		  new_mbchars = re_realloc (mbcset->mbchars, wchar_t,
+		  new_mbchars = re_realloc (mbcset->mbchars, uni_char_t,
 					    mbchar_alloc);
 		  if (__glibc_unlikely (new_mbchars == NULL))
 		    goto parse_bracket_exp_espace;
@@ -3344,7 +3353,7 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
 						     || mbcset->non_match)))
     {
       bin_tree_t *mbc_tree;
-      int sbc_idx;
+      unsigned sbc_idx;
       /* Build a tree for complex bracket.  */
       dfa->has_mb_node = 1;
       br_token.type = COMPLEX_BRACKET;
@@ -3794,7 +3803,7 @@ fetch_number (re_string_t *input, re_token_t *token, reg_syntax_t syntax)
 	     ? -2
 	     : num == -1
 	     ? c - '0'
-	     : MIN (RE_DUP_MAX + 1, num * 10 + c - '0'));
+	     : (Idx) MIN (RE_DUP_MAX + 1, num * 10 + (c - '0')));
     }
   return num;
 }
