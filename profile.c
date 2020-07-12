@@ -29,6 +29,13 @@
 #include <io.h> /* for close */
 #endif
 
+#ifdef WINDOWS_NATIVE
+#define close(fd)		_close(fd)
+#define fileno(fd)		_fileno(fd)
+#define fdopen(fd, omode)	_fdopen(fd, omode)
+#define strdup(str)		_strdup(str)
+#endif
+
 static void pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags);
 static INSTRUCTION *end_line(INSTRUCTION *ip);
 static void pp_parenthesize(NODE *n);
@@ -61,8 +68,10 @@ static char *adjust_namespace(char *name, bool *malloced);
 #define pp_next	rnode
 #define pp_comment	sub.nodep.x.cmnt
 
+#if defined(__DJGPP__) || defined(SIGHUP)
 ATTRIBUTE_NORETURN static void dump_and_exit(int signum);
 static void just_dump(int signum);
+#endif
 
 /* pretty printing related functions and variables */
 
@@ -75,10 +84,11 @@ static unsigned indent_level = 0;
 static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 static const unsigned tabs_len = sizeof(tabs) - 1;
 
-#define check_indent_level() \
+#define check_indent_level() do { \
 	if (indent_level + 1 > tabs_len) \
 		/* We're allowed to be snarky, occasionally. */ \
-		fatal(_("Program indentation level too deep. Consider refactoring your code"));
+		fatal(_("Program indentation level too deep. Consider refactoring your code")); \
+} while ((void) 0, 0)
 
 
 #define SPACEOVER	0u
@@ -587,7 +597,6 @@ cleanup:
 		case Op_K_delete_loop:
 			/* Efficency hack not in effect because of exec_count instruction */
 			cant_happen();
-			break;
 
 		case Op_in_array:
 		{
@@ -711,8 +720,7 @@ cleanup:
 		case Op_push_re:
 			if (pc->memory->type != Node_regex && (pc->memory->flags & REGEX) == 0)
 				break;
-			/* else
-				fall through */
+			/* fall through */
 		case Op_match_rec:
 		{
 			if (pc->memory->type == Node_regex) {
@@ -1287,19 +1295,21 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 }
 
 
+#if defined(__DJGPP__) || defined(SIGHUP)
+extern INSTRUCTION *code_block; /* defined in main.c */
+
 /* just_dump --- dump the profile and function stack and keep going */
 
 static void
 just_dump(int signum)
 {
-	extern INSTRUCTION *code_block;
-
 	dump_prog(code_block);
 	dump_funcs();
 	dump_fcall_stack(prof_fp);
 	fflush(prof_fp);
 	signal(signum, just_dump);	/* for OLD Unix systems ... */
 }
+#endif /* __DJGPP__ || SIGHUP */
 
 /* dump_and_exit --- dump the profile, the function stack, and exit */
 
@@ -1806,7 +1816,7 @@ pp_list(ulong_t nargs, const char *paren, const char *delim)
 			}
 		}
 		if (paren != NULL) {
-			assert(strlen(paren) == 2);
+			assert(paren[0] && paren[1] && !paren[2]);	// 2 chars, like "()"
 			len += 2;
 		}
 	}
@@ -2053,7 +2063,7 @@ redir2str(enum redirval redirtype)
 		" |& ",	/* redirect_twoway */
 	};
 
-	if (redirtype < 0 || redirtype > redirect_twoway)
+	if ((unsigned) redirtype >= sizeof(redirtab)/sizeof(redirtab[0]))
 		fatal(_("redir2str: unknown redirection type %d"), (int) redirtype);
 	return redirtab[redirtype];
 }
