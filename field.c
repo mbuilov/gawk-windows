@@ -81,13 +81,13 @@ static awk_fieldwidth_info_t *FIELDWIDTHS = NULL;
 
 NODE **fields_arr;		/* array of pointers to the field nodes */
 bool field0_valid;		/* $(>0) has not been changed yet */
-int default_FS;			/* true when FS == " " */
-Regexp *FS_re_yes_case = NULL;
-Regexp *FS_re_no_case = NULL;
-Regexp *FS_regexp = NULL;
-Regexp *FPAT_re_yes_case = NULL;
-Regexp *FPAT_re_no_case = NULL;
-Regexp *FPAT_regexp = NULL;
+static int default_FS;			/* true when FS == " " */
+static Regexp *FS_re_yes_case = NULL;
+static Regexp *FS_re_no_case = NULL;
+static Regexp *FS_regexp = NULL;
+static Regexp *FPAT_re_yes_case = NULL;
+static Regexp *FPAT_re_no_case = NULL;
+static Regexp *FPAT_regexp = NULL;
 NODE *Null_field = NULL;
 
 /* init_fields --- set up the fields array to start with */
@@ -837,11 +837,13 @@ fw_parse_field(field_num_t up_to,	/* parse only up to this field number */
 
 /* invalidate_field0 --- $0 needs reconstruction */
 
-void
+static void
 invalidate_field0(void)
 {
 	field0_valid = false;
 }
+
+extern enum defrule currule; /* defined in eval.c */
 
 /* get_field --- return a particular $n */
 
@@ -852,7 +854,6 @@ get_field(field_num_t requested, Func_ptr *assign)
 {
 	bool in_middle = false;
 	static bool warned = false;
-	extern enum defrule currule;
 	NODE *saved_fs;
 	Regexp *fs_regexp;
 
@@ -878,12 +879,8 @@ get_field(field_num_t requested, Func_ptr *assign)
 					fs_regexp = FS_regexp;
 				}
 				NF = (*parse_field)(UNLIMITED - 1, &parse_extent,
-		    			fields_arr[0]->stlen -
-					(parse_extent - fields_arr[0]->stptr),
-					saved_fs, fs_regexp, set_field,
-					(NODE *) NULL,
-					(NODE *) NULL,
-					in_middle);
+					fields_arr[0]->stlen - (size_t) (parse_extent - fields_arr[0]->stptr),
+					saved_fs, fs_regexp, set_field, (NODE *) NULL, (NODE *) NULL, in_middle);
 				parse_high_water = NF;
 			}
 			rebuild_record();
@@ -924,8 +921,8 @@ get_field(field_num_t requested, Func_ptr *assign)
 		else
 			in_middle = true;
 		parse_high_water = (*parse_field)(requested, &parse_extent,
-		     fields_arr[0]->stlen - (parse_extent - fields_arr[0]->stptr),
-		     save_FS, NULL, set_field, (NODE *) NULL, (NODE *) NULL, in_middle);
+					fields_arr[0]->stlen - (size_t) (parse_extent - fields_arr[0]->stptr),
+					save_FS, NULL, set_field, (NODE *) NULL, (NODE *) NULL, in_middle);
 
 		/*
 		 * if we reached the end of the record, set NF to the number of
@@ -1141,6 +1138,14 @@ set_parser(parse_field_func_t func)
 	}
 }
 
+static unsigned max_field_len(void)
+{
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_COND_IS_CONST
+	return (unsigned) (((size_t)-1) < UINT_MAX ? (size_t)-1 : UINT_MAX);
+PRAGMA_WARNING_POP
+}
+
 /* set_FIELDWIDTHS --- handle an assignment to FIELDWIDTHS */
 
 void
@@ -1196,15 +1201,14 @@ set_FIELDWIDTHS(void)
 			break;
 
 		// Look for skip value. We allow N:M and N:*.
-#define MAX_FIELD_LEN ((size_t)-1 < UINT_MAX ? (size_t)-1 : UINT_MAX)
 		/*
 		 * Detect an invalid base-10 integer, a valid value that
 		 * is followed by something other than a blank or '\0',
-		 * or a value that is not in the range [1..MAX_FIELD_LEN].
+		 * or a value that is not in the range [1..max_field_len()].
 		 */
 		errno = 0;
 		ul_tmp = strtoul(scan, &end, 10);
-		if (errno == 0 && *end == ':' && (0 < ul_tmp && ul_tmp <= MAX_FIELD_LEN)) {
+		if (errno == 0 && *end == ':' && (0 < ul_tmp && ul_tmp <= max_field_len())) {
 			FIELDWIDTHS->fields[i].skip = ul_tmp;
 			scan = end + 1;
 			if (*scan == '-' || is_blank(*scan)) {
@@ -1219,7 +1223,7 @@ set_FIELDWIDTHS(void)
 
 		if (errno != 0
 		    	|| (*end != '\0' && ! is_blank(*end))
-				|| !(0 < ul_tmp && ul_tmp <= MAX_FIELD_LEN)
+				|| !(0 < ul_tmp && ul_tmp <= max_field_len())
 		) {
 			if (*scan == '*') {
 				for (scan++; is_blank(*scan); scan++)
@@ -1228,7 +1232,7 @@ set_FIELDWIDTHS(void)
 				if (*scan != '\0')
 					fatal(_("`*' must be the last designator in FIELDWIDTHS"));
 
-				FIELDWIDTHS->fields[i].len = MAX_FIELD_LEN;
+				FIELDWIDTHS->fields[i].len = max_field_len();
 				FIELDWIDTHS->nf = i+1;
 			}
 			else
@@ -1247,8 +1251,8 @@ set_FIELDWIDTHS(void)
 	}
 
 	if (fatal_error)
-		fatal(_("invalid FIELDWIDTHS value, for field %llu, near `%s'"),
-			1ull + i, scan);
+		fatal(_("invalid FIELDWIDTHS value, for field %" ZUFMT ", near `%s'"),
+			i + 1, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */
