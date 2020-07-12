@@ -14,23 +14,16 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-#define popen(cmd, mode) _popen(cmd, mode)
-#define pclose(file)     _pclose(file)
-#endif
-
 int
 os_system(const char *cmd)
 {
   const char *cmdexe = getenv("ComSpec");
   char *cmd1 = quote_cmd(cmd);
 
-  /* It's safe to truncate 64-bit process handle
-    to 32-bit integer on 64-bit Windows.  */
-  int pid = (int) spawnl(P_WAIT, cmdexe, "cmd.exe", "/D /S /C", cmd1, NULL);
+  int ret = (int) _spawnl(_P_WAIT, cmdexe, "cmd.exe", "/D /S /C", cmd1, NULL);
 
   free(cmd1);
-  return pid;
+  return ret;
 }
 
 FILE *
@@ -41,7 +34,7 @@ os_popen(const char *command, const char *mode)
   if (*mode != 'r' && *mode != 'w')
     return NULL;
 
-  current = popen(command, mode);
+  current = _popen(command, mode);
   return current;
 }
 
@@ -50,15 +43,14 @@ os_pclose(FILE *current)
 {
   int rval;
 
-  rval = pclose(current);
+  rval = _pclose(current);
   return rval;
 }
 
 int
-kill (int pid, int sig)
+kill(intptr_t pid, int sig)
 {
   HANDLE ph;
-  int retval = 0;
 
   /* We only support SIGKILL.  */
   if (sig != SIGKILL)
@@ -67,35 +59,16 @@ kill (int pid, int sig)
       return -1;
     }
 
-  ph = OpenProcess(PROCESS_TERMINATE, FALSE, (DWORD) pid);
-  if (ph)
-    {
-      BOOL status = TerminateProcess(ph, (UINT) -1);
+  /* pid must be result of _spawnl(_P_NOWAIT, ...) */
+  ph = (HANDLE) pid;
 
-      if (!status)
-        {
-          errno = EPERM;
-          retval = -1;
-        }
-      CloseHandle (ph);
-    }
-  else
+  if (!TerminateProcess(ph, (UINT) -1))
     {
-      /* If we cannot open the process, it means we eaither aren't
-         allowed to (e.g., a process of another user), or such a
-         process doesn't exist.  */
-      switch (GetLastError ())
-        {
-          case ERROR_ACCESS_DENIED:
-            errno = EPERM;
-            break;
-          default:
-            errno = ESRCH;
-            break;
-        }
-      retval = -1;
+      errno = EPERM;
+      return -1;
     }
-  return retval;
+
+  return 0;
 }
 
 char *

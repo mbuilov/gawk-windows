@@ -14,7 +14,7 @@
 #  define system(c)	os_system(c)
    extern int os_system( const char * );
 #  define SIGKILL	9
-   extern int kill( int, int );
+   extern int kill( intptr_t, int );
    extern char *quote_cmd( const char * );
 # endif	 /* __MINGW32__ || _MSC_VER */
 #endif	/* !__DJGPP__ */
