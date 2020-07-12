@@ -34,15 +34,19 @@ USA.  */
  * 5) Allow letter 'z' in a character class name.
  * 6) FOLD start character of the range in bracket expression, so "^" will not
  *  be incorrectly matched by "[A-Z]".
- * 7) Correctly skip character classes in the bracket expressions, e.g.:
+ * 7) Correctly skip character classes in bracket expressions, e.g.:
  *  match "XaZ" by "X[a[:digit:]]Z".
  * 8) Firstly, check for the range in bracket expression and do not match if
  *  the range is invalid, i.e.: do _not_ match "z" by "[z-a]".
  * 9) Try to match unpaired '[' as a non-special char, e.g.:
  *  "a[b" will match "a[b".
- * 10) Use collating order when maching against ranges in bracket expressions.
- * 11) Do not match file name beginning with dot after bracket expression:
+ * 10) Do not match file name beginning with a dot after bracket expression:
  *  fnmatch("*[a]/??", "ca/.b", PATHNAME | PERIOD) should _not_ match.
+ *
+ * Note.
+ * Ignore collating order when matching against ranges in bracket expressions.
+ * Portable applications must not use range expressions in non-POSIX locales,
+ * see https://pubs.opengroup.org/onlinepubs/007908799/xbd/re.html
  *
  * Improvements:
  * 1) Add wide-character support.
@@ -125,12 +129,6 @@ USA.  */
 
 #endif /* FNMATCH_WIDE_CHAR */
 
-#ifndef FNMATCH_WIDE_CHAR
-# define FNMCOLL(s1, s2) strcoll(s1, s2)
-#else
-# define FNMCOLL(s1, s2) wcscoll(s1, s2)
-#endif
-
 #ifndef STREQ
 # define STREQ(s1, s2) ((strcmp (s1, s2) == 0))
 #endif
@@ -178,7 +176,7 @@ wcschrnul (
 {
   const wchar_t *result = wcschr (s, c);
   if (result == NULL)
-    result = wcschr(s, L'\0');
+    result = wcschr (s, L'\0');
   return (wchar_t*) result;
 }
 # endif
@@ -215,7 +213,7 @@ static int
 INTERNAL_FNMATCH (
      const FNM_UCHAR *const pattern,
      const FNM_UCHAR *const string,
-     int flags, const int do_coll)
+     int flags)
 {
   const FNM_UCHAR *p = pattern, *n = string;
   FNM_INT c;
@@ -514,27 +512,9 @@ INTERNAL_FNMATCH (
                           return FNM_NOMATCH;
                         p++;
 
-                        if (!do_coll)
-                          {
-                            if ((FNM_CHAR) cold <= (FNM_CHAR) fn
-                                && (FNM_CHAR) fn <= (FNM_CHAR) FOLD (cend))
-                              goto matched;
-                          }
-                        else
-                          {
-                            FNM_CHAR fns[2];
-                            FNM_CHAR coll[2];
-                            fns[0] = (FNM_CHAR) fn;
-                            fns[1] = CH('\0');
-                            coll[0] = (FNM_CHAR) cold;
-                            coll[1] = CH('\0');
-                            if (FNMCOLL (coll, fns) <= 0)
-                              {
-                                coll[0] = (FNM_CHAR) cend;
-                                if (FNMCOLL (fns, coll) <= 0)
-                                  goto matched;
-                              }
-                          }
+                        if ((FNM_CHAR) cold <= (FNM_CHAR) fn
+                            && (FNM_CHAR) fn <= (FNM_CHAR) FOLD (cend))
+                          goto matched;
                       }
                     else if (cold == fn)
                       goto matched;
@@ -634,18 +614,10 @@ FNMATCH (
      const FNM_CHAR *string,
      int flags)
 {
-  const char *const coll = setlocale (LC_COLLATE, NULL);
-
-  const int do_coll = coll != NULL
-                      && !(*coll == 'C' && coll[1] == '\0')
-                      && strcmp ("POSIX", coll) != 0;
-
   return INTERNAL_FNMATCH ((const FNM_UCHAR*) pattern,
                            (const FNM_UCHAR*) string,
-                           flags, do_coll);
+                           flags);
 }
-
-#undef FNMCOLL
 
 #undef FNMISBLANK
 #undef FNMISGRAPH
