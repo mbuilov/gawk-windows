@@ -30,9 +30,15 @@
 
 #include "awk.h"
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 #include <math.h> /* for fmod */
 #include <io.h>   /* for close */
+#endif
+
+#ifdef WINDOWS_NATIVE
+#define close			_close
+#define fileno(fd)		_fileno(fd)
+#define fdopen(fd, omode)	_fdopen(fd, omode)
 #endif
 
 #ifndef INT32_MAX
@@ -53,10 +59,10 @@ typedef int token_t;
 /* bad token */
 #define BADTOK 0
 
-ATTRIBUTE_PRINTF_AT1(m) static void yyerror(const char *m, ...);
-ATTRIBUTE_PRINTF_AT2(m) static void error_ln(unsigned line, const char *m, ...);
-ATTRIBUTE_PRINTF_AT2(mesg) static void lintwarn_ln(unsigned line, const char *mesg, ...);
-ATTRIBUTE_PRINTF_AT2(mesg) static void warning_ln(unsigned line, const char *mesg, ...);
+ATTRIBUTE_PRINTF(m, 1, 2) static void yyerror(const char *m, ...);
+ATTRIBUTE_PRINTF(m, 2, 3) static void error_ln(unsigned line, const char *m, ...);
+ATTRIBUTE_PRINTF(mesg, 2, 3) static void lintwarn_ln(unsigned line, const char *mesg, ...);
+ATTRIBUTE_PRINTF(mesg, 2, 3) static void warning_ln(unsigned line, const char *mesg, ...);
 static char *get_src_buf(void);
 static token_t yylex(void);
 int	yyparse(void);
@@ -320,7 +326,8 @@ rule
 		want_source = false;
 		at_seen = false;
 		if ($3 != NULL && $4 != NULL) {
-			SRCFILE *s = (SRCFILE *) (void *) $3;
+			void *v = $3;
+			SRCFILE *s = (SRCFILE *) v;
 			s->comment = $4;
 		}
 		yyerrok;
@@ -330,7 +337,8 @@ rule
 		want_source = false;
 		at_seen = false;
 		if ($3 != NULL && $4 != NULL) {
-			SRCFILE *s = (SRCFILE *) (void *) $3;
+			void *v = $3;
+			SRCFILE *s = (SRCFILE *) v;
 			s->comment = $4;
 		}
 		yyerrok;
@@ -2494,7 +2502,7 @@ print_included_from(void)
 
 /* warning_ln --- print a warning message with location */
 
-ATTRIBUTE_PRINTF_AT2(mesg)
+ATTRIBUTE_PRINTF(mesg, 2, 3)
 static void
 warning_ln(unsigned line, const char *mesg, ...)
 {
@@ -2512,7 +2520,7 @@ warning_ln(unsigned line, const char *mesg, ...)
 
 /* lintwarn_ln --- print a lint warning and location */
 
-ATTRIBUTE_PRINTF_AT2(mesg)
+ATTRIBUTE_PRINTF(mesg, 2, 3)
 static void
 lintwarn_ln(unsigned line, const char *mesg, ...)
 {
@@ -2535,7 +2543,7 @@ lintwarn_ln(unsigned line, const char *mesg, ...)
 
 /* error_ln --- print an error message and location */
 
-ATTRIBUTE_PRINTF_AT2(m)
+ATTRIBUTE_PRINTF(m, 2, 3)
 static void
 error_ln(unsigned line, const char *m, ...)
 {
@@ -2554,7 +2562,7 @@ error_ln(unsigned line, const char *m, ...)
 
 /* yyerror --- print a syntax error message, show where */
 
-ATTRIBUTE_PRINTF_AT1(m)
+ATTRIBUTE_PRINTF(m, 1, 2)
 static void
 yyerror(const char *m, ...)
 {
@@ -2610,7 +2618,7 @@ yyerror(const char *m, ...)
 
 	count = strlen(mesg) + 1;
 	if (lexptr != NULL)
-		count += (lexeme - thisline) + 2;
+		count += (size_t) (lexeme - thisline) + 2;
 	ezalloc(buf, char *, count+1, "yyerror");
 
 	bp = buf;
@@ -3367,7 +3375,11 @@ again:
 		if (cur_char_ring[cur_ring_idx] == 0) {
 			/* No, we need to check the next character on the buffer.  */
 			unsigned idx, work_ring_idx = cur_ring_idx;
-			mbstate_t tmp_state = {0}; /* Pacify compiler.  */
+			mbstate_t tmp_state = {
+#ifndef __cplusplus
+				0
+#endif
+			}; /* Pacify compiler.  */
 			size_t mbclen;
 
 			for (idx = 0; lexptr + idx < lexend; idx++) {
@@ -3616,7 +3628,7 @@ yylex(void)
 	 * added for OS/2's extproc feature of cmd.exe
 	 * (like #! in BSD sh)
 	 */
-	if (strncasecmp(lexptr, "extproc ", 8) == 0) {
+	if (cmp_keyword(lexptr, "extproc ", 8)) {
 		while (*lexptr && *lexptr != '\n')
 			lexptr++;
 	}
@@ -3684,13 +3696,11 @@ collect_regexp:
 					c = nextc(true);
 				if (c == '\n') {
 					sourceline++;
-					continue;
 				} else {
 					tokadd('\\');
 					tokadd((char)c);
-					continue;
 				}
-				break;
+				continue;
 			case '/':	/* end of the regexp */
 				if (in_brack > 0)
 					break;
@@ -3832,14 +3842,12 @@ retry:
 		c = nextc(true);
 		if (c == '\r')	/* allow MS-DOS files. bleah */
 			c = nextc(true);
-		if (c == '\n') {
-			sourceline++;
-			goto retry;
-		} else {
+		if (c != '\n') {
 			yyerror(_("backslash not last character on line"));
 			return lasttok = LEX_EOF;
 		}
-		break;
+		sourceline++;
+		goto retry;
 
 	case '?':
 		qm_col_count++;
@@ -4403,7 +4411,6 @@ retry:
 				break;
 			default:
 				cant_happen();
-				break;
 			}
 		}
 
@@ -4441,7 +4448,7 @@ retry:
 		case LEX_EVAL:
 			if (in_main_context())
 				goto out;
-			emalloc(tokkey, char *, tok - tokstart + 1, "yylex");
+			emalloc(tokkey, char *, (size_t) (tok - tokstart + 1), "yylex");
 			tokkey[0] = '@';
 			memcpy(tokkey + 1, tokstart, (size_t) (tok - tokstart));
 			yylval = GET_INSTRUCTION(Op_token);
@@ -4517,8 +4524,8 @@ out:
 		if (SMART_ALECK
 		    && do_lint
 		    && ! goto_warned
-		    && tolower(tokkey[0]) == 'g'
-		    && strcasecmp(tokkey, "goto") == 0) {
+		    && (tokkey[0] == 'g' || tokkey[0] == 'G')
+		    && cmp_keyword(tokkey + 1, &"goto"[1], 4)) {
 			goto_warned = true;
 			lintwarn(_("`goto' considered harmful!"));
 		}
