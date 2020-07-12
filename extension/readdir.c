@@ -12,6 +12,10 @@
  * Michael M. Builov: reworked, ported to _MSC_VER.
  * mbuilov@gmail.com
  * Reworked 4/2020
+ *
+ * Michael M. Builov: reworked, make __MINGW32__ version the same as _MSC_VER.
+ * mbuilov@gmail.com
+ * Reworked 5/2020
  */
 
 /*
@@ -44,6 +48,9 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -58,13 +65,18 @@
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#elif ! defined _MSC_VER
+#elif defined(_MSC_VER) || defined(__MINGW32__)
+# ifndef WINDOWS_NATIVE
+#  define WINDOWS_NATIVE
+# endif
+#else
 #error Cannot compile the readdir extension on this system!
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "mscrtx/xstat.h"
 #endif
 
 /* Include <locale.h> before "gawkapi.h" redefines setlocale().
@@ -73,13 +85,19 @@
 #include <locale.h>
 #endif
 
-#include "gawkapi.h"
-
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
 #include "gawkdirfd.h"
+#endif
+
+#include "gawkapi.h"
 
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
+
+#if ! defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
 
 #ifndef PATH_MAX
 #define PATH_MAX	1024	/* a good guess */
@@ -93,18 +111,28 @@ GAWK_PLUGIN("readdir extension: version 2.0");
 GAWK_PLUGIN("readdir extension: version 3.0");
 #endif
 
+#ifndef OFFSETOF
+# if defined _MSC_VER && !defined __cplusplus
+#  define OFFSETOF(type, member) \
+     ((size_t) ((const char*)&((type*)NULL)->member - (const char*)NULL))
+# else
+#  define OFFSETOF(type, member) offsetof(type, member)
+# endif
+#endif
+
 /* data type for the opaque pointer: */
 
 union u_field_info {
-	awk_fieldwidth_info_t fw;
+	awk_fieldwidth_info_t fwi;
 	char buf[awk_fieldwidth_info_size(3)];
 };
 
 typedef struct open_directory {
 #ifdef READDIR_TEST
 	union u_field_info u;
+#define fw u.fwi
 #endif
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	/* HANDLE ffd_handle        */
 	/* wchar_t dirname[dir_len] */
 	/* ...optional padding...   */
@@ -116,42 +144,15 @@ typedef struct open_directory {
 #endif
 	char buf[1];
 } open_directory_t;
-#define fw u.fw
 
 /* Get head size of struct open_directory.  */
 static size_t
 dir_head_size(void)
 {
-#ifdef READDIR_TEST
-# define FIELDS_ADD_SIZE sizeof(((struct open_directory*)NULL)->u)
-#else
-# define FIELDS_ADD_SIZE 0
-#endif
-
-#ifdef _MSC_VER
-# define FIELDS_SIZE \
-	FIELDS_ADD_SIZE + \
-	sizeof(((struct open_directory*)NULL)->dir_len) +    \
-	sizeof(((struct open_directory*)NULL)->space) +      \
-	sizeof(((struct open_directory*)NULL)->ffd)
-#else
-# define FIELDS_SIZE \
-	FIELDS_ADD_SIZE + \
-	sizeof(((struct open_directory*)NULL)->dp)
-#endif
-
-	/* Ensure that there is no padding between fields.  */
-	(void) sizeof(int[1-2*!(
-		(char*)&((struct open_directory*)NULL)->buf - (char*)NULL
-		== FIELDS_SIZE)]);
-
-	return FIELDS_SIZE;
-
-#undef FIELDS_SIZE
-#undef FIELDS_ADD_SIZE
+	return OFFSETOF(struct open_directory, buf);
 }
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 /* Get size of memory before the head of struct open_directory.  */
 static size_t
 head_offset(size_t dir_len)
@@ -161,9 +162,9 @@ head_offset(size_t dir_len)
 	offset = (offset + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
 	return offset;
 }
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 static unsigned long long
 file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 {
@@ -174,7 +175,7 @@ file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 }
 #endif
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 
 /* file_type --- return type of file as a single character */
 
@@ -229,28 +230,11 @@ file_type(struct dirent *entry, const char *dirname)
 static unsigned long long
 get_inode(struct dirent *entry, const char *dirname)
 {
-#ifdef __MINGW32__
-	char fname[PATH_MAX];
-	HANDLE fh;
-	BY_HANDLE_FILE_INFORMATION info;
-	unsigned long long ino = 0;
-
-	sprintf(fname, "%s\\%s", dirname, entry->d_name);
-	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if (fh == INVALID_HANDLE_VALUE)
-		return 0;
-	if (GetFileInformationByHandle(fh, &info))
-		ino = file_info_get_inode(&info);
-	CloseHandle(fh);
-	return ino;
-#else
 	(void) dirname;		/* silence warnings */
 	return (unsigned long long) entry->d_ino;
-#endif
 }
 
-#else /* _MSC_VER */
+#else /* WINDOWS_NATIVE */
 
 /* ftype_and_ino: use file handle to get both inode number and the file type
   --- return type of file as a single character string,
@@ -332,7 +316,7 @@ err:
 	return ftype;
 }
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 /* dir_get_record --- get one record at a time out of a directory */
 
@@ -341,13 +325,14 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len,
 		const awk_fieldwidth_info_t **field_width)
 {
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	DIR *dp;
 	struct dirent *dirent;
 #else
 	size_t converted;
 	HANDLE *ffd_handle;
 	const wchar_t *dirname;
+	void *p;
 #endif
 	char *out_buf;
 	int len, flen;
@@ -367,7 +352,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	the_dir = (open_directory_t *) iobuf->opaque;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 
 	dp = the_dir->dp;
 
@@ -387,28 +372,21 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 # ifndef READDIR_TEST
 
-#  ifdef __MINGW32__
-	len = sprintf(out_buf, "%I64u/%s", ino, dirent->d_name);
-#  else
-	len = sprintf(out_buf, "%llu/%s", ino, dirent->d_name);
-#  endif
+	len = sprintf(out_buf, "%" LLUFMT "/%s", ino, dirent->d_name);
 
 # else /* READDIR_TEST */
 
-#  ifdef __MINGW32__
-	len = sprintf(out_buf, "%I64u", ino);
-#  else
-	len = sprintf(out_buf, "%llu", ino);
-#  endif
+	len = sprintf(out_buf, "%" LLUFMT "", ino);
 	the_dir->fw.fields[0].len = (unsigned) len;
 	len += (flen = sprintf(out_buf + len, "/%s", dirent->d_name));
 	the_dir->fw.fields[1].len = (unsigned) flen - 1;
 
 # endif /* READDIR_TEST */
 
-#else /* _MSC_VER */
+#else /* WINDOWS_NATIVE */
 
-	ffd_handle = (HANDLE*) ((char*) the_dir - head_offset(the_dir->dir_len));
+	p = (char*) the_dir - head_offset(the_dir->dir_len);
+	ffd_handle = (HANDLE*) p;
 
 	if (the_dir->ffd.dwFileAttributes == ~(DWORD)0) {
 		/* no cached entry */
@@ -419,7 +397,8 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		}
 	}
 
-	dirname = (const wchar_t*) (ffd_handle + 1);
+	p = ffd_handle + 1;
+	dirname = (const wchar_t*) p;
 	ftype = ftype_and_ino(&the_dir->ffd, dirname, the_dir->dir_len, &ino);
 
 	/* mark that there is no cached entry */
@@ -443,25 +422,21 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		}
 	}
 
-	/* dwFileAttributes must be the first member of WIN32_FIND_DATAW */
-	(void) sizeof(int[1-2*!!(
-		(char*)&((WIN32_FIND_DATAW*)NULL)->dwFileAttributes - (char*)NULL)]);
-
 	/* there must be a space for at least 21 characters between
 	  ffd->dwfileattributes and ffd->cfilename */
-	(void) sizeof(int[1-2*!(
-		(size_t)((char*)&((WIN32_FIND_DATAW*)NULL)->cFileName - (char*)NULL) >=
-			sizeof(((WIN32_FIND_DATAW*)NULL)->dwFileAttributes) + 21)]);
+	(void) sizeof(int[1-2*!(OFFSETOF(WIN32_FIND_DATAW, cFileName)
+		- OFFSETOF(WIN32_FIND_DATAW, dwFileAttributes) >=
+		sizeof(the_dir->ffd.dwFileAttributes) + 21)]);
 
 	/* print max 21 characters, including terminating '\0' */
 	out_buf = (char*)(&the_dir->ffd.dwFileAttributes + 1);
-	len = sprintf(out_buf, "%llu", ino);
+	len = sprintf(out_buf, "%" LLUFMT "", ino);
 # ifdef READDIR_TEST
 	the_dir->fw.fields[0].len = (unsigned) len;
 # endif
 
 	/* There must be a space for 3 more characters: 2 slashes and ftype.  */
-	(void) sizeof(int[1-2*!(sizeof((WIN32_FIND_DATAW*)NULL)->cFileName >= 3)]);
+	(void) sizeof(int[1-2*!(sizeof(the_dir->ffd.cFileName) >= 3)]);
 
 	out_buf[len++] = '/';
 	memmove(out_buf + len, the_dir->buf, converted);
@@ -470,7 +445,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	the_dir->fw.fields[1].len = (unsigned) converted;
 # endif
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 	flen = sprintf(out_buf + len, "/%c", (char) ftype);
 	len += flen;
@@ -502,7 +477,7 @@ dir_close(awk_input_buf_t *iobuf)
 
 	the_dir = (open_directory_t *) iobuf->opaque;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	mem = the_dir;
 	closedir(the_dir->dp);
 #else
@@ -523,45 +498,61 @@ dir_can_take_file(const awk_input_buf_t *iobuf)
 		return awk_false;
 
 	return (awk_bool_t) (iobuf->fd != INVALID_HANDLE &&
-		S_ISDIR(iobuf->sbuf.st_mode));
+		S_ISDIR(awk_input_buf_get_stat(iobuf)->st_mode));
 }
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 static int
 report_opendir_error(const char *dirname, const DWORD last_err)
 {
-	DWORD n_chars;
 	char *msg_buf = NULL;
+	WCHAR *wbuf = NULL;
+	void *const pwbuf = &wbuf;
+	DWORD n_chars;
 
-	n_chars = FormatMessage(
+	n_chars = FormatMessageW(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, last_err, 0, (LPSTR)&msg_buf, 0, NULL);
+		NULL, last_err, 0, (LPWSTR)pwbuf, 0, NULL);
 
 	/* trim "\r\n" at end of msg */
-	if (n_chars && '\n' == msg_buf[n_chars - 1]) {
-		if (--n_chars && '\r' == msg_buf[n_chars - 1])
+	if (n_chars && L'\n' == wbuf[n_chars - 1]) {
+		if (--n_chars && L'\r' == wbuf[n_chars - 1])
 			n_chars--;
-		msg_buf[n_chars] = '\0';
+		wbuf[n_chars] = L'\0';
 	}
 
-	if (n_chars)
+	if (n_chars) {
+		/* e.g. convert to UTF-8 */
+		size_t n = wcstombs(NULL, wbuf, 0);
+		if (n != (size_t)-1) {
+			msg_buf = (char*)malloc(n + 1);
+			if (msg_buf != NULL)
+				(void)wcstombs(msg_buf, wbuf, n + 1);
+		}
+	}
+
+	if (wbuf != NULL)
+		LocalFree(wbuf);
+
+	if (msg_buf != NULL)
 		warning(_("dir_take_control_of: "
-			"couldn't open directory: %s, system error: 0x%x (%s)"),
+			"couldn't open directory: %s, system error: 0x%lx (%s)"),
 			dirname, last_err, msg_buf);
 	else
 		warning(_("dir_take_control_of: "
-			"couldn't open directory: %s, system error: 0x%x"),
+			"couldn't open directory: %s, system error: 0x%lx"),
 			dirname, last_err);
 
-	LocalFree(msg_buf);
+	if (msg_buf != NULL)
+		free(msg_buf);
 	return
 		ERROR_FILE_NOT_FOUND == last_err ? ENOENT :
 		ERROR_ACCESS_DENIED == last_err ? EACCES :
 		EFAULT;
 }
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 /*
  * dir_take_control_of --- set up input parser.
@@ -575,7 +566,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	open_directory_t *the_dir;
 	size_t size;
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 
 	DIR *dp;
 
@@ -604,11 +595,12 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 
 	the_dir->dp = dp;
 
-#else /* _MSC_VER */
+#else /* WINDOWS_NATIVE */
 
 	HANDLE *ffd_handle;
 	wchar_t *dirname;
 	size_t offset;
+	void *p;
 
 	size_t dir_len = mbstowcs(NULL, iobuf->name, 0);
 	if ((size_t)-1 == dir_len) {
@@ -630,12 +622,15 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	offset = head_offset(dir_len);
 	size = offset
 		+ dir_head_size()
-		+ MAX_PATH*MB_CUR_MAX + 10;
+		+ MAX_PATH*((unsigned) MB_CUR_MAX) + 10;
 
 	emalloc(ffd_handle, HANDLE *, size, "dir_take_control_of");
 
-	the_dir = (open_directory_t*) ((char*) ffd_handle + offset);
-	dirname = (wchar_t*) (ffd_handle + 1);
+	p = (char*) ffd_handle + offset;
+	the_dir = (open_directory_t*) p;
+
+	p = ffd_handle + 1;
+	dirname = (wchar_t*) p;
 
 	(void) mbstowcs(dirname, iobuf->name, dir_len);
 
@@ -666,7 +661,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	the_dir->dir_len = (unsigned) dir_len;
 	the_dir->space = (unsigned) (size - offset - dir_head_size());
 
-#endif /* _MSC_VER */
+#endif /* WINDOWS_NATIVE */
 
 #ifdef READDIR_TEST
 	/* pre-populate the field_width struct with constant values: */
