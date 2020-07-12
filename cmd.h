@@ -37,9 +37,7 @@ extern NODE *get_function(void);
 #define initialize_pager(x)	((void)0)	/* nothing */
 #define add_history(x)	((void)0)	/* nothing */
 
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(format, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF(format, 2, 3)
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
 extern int pager_quit_tag_valid;
@@ -169,9 +167,7 @@ extern Func_cmd get_command(enum argtype ctype);
 extern const char *get_command_name(enum argtype ctype);
 
 /* debug.c */
-#if defined(_MSC_VER) && defined(_PREFAST_)
-_At_(mesg, _Printf_format_string_)
-#endif
+ATTRIBUTE_PRINTF(mesg, 1, 2)
 extern void d_error(const char *mesg, ...);
 
 /* command.c */
