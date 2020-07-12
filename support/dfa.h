@@ -38,6 +38,15 @@ struct dfamust
 struct dfa;
 
 /* Needed when Gnulib is not used.  */
+#ifndef _GL_ATTRIBUTE_NORETURN
+# ifdef _MSC_VER
+#  define _GL_ATTRIBUTE_NORETURN __declspec(noreturn)
+# else
+#  define _GL_ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+# endif
+#endif
+
+/* Needed when Gnulib is not used.  */
 #ifndef _GL_ATTRIBUTE_MALLOC
 # ifdef _MSC_VER
 #  define _GL_ATTRIBUTE_MALLOC __declspec(restrict)
@@ -133,4 +142,4 @@ extern void dfawarn (const char *);
 /* dfaerror() is called by the regexp routines whenever an error occurs.  It
    takes a single argument, a NUL-terminated string describing the error.
    The user must supply a dfaerror.  */
-extern _Noreturn void dfaerror (const char *);
+_GL_ATTRIBUTE_NORETURN extern void dfaerror (const char *);
