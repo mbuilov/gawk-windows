@@ -35,6 +35,8 @@
 #include <intprops.h>
 #include <verify.h>
 
+#include "uni_char.h"
+
 #if defined DEBUG && DEBUG != 0
 # include <assert.h>
 # define DEBUG_ASSERT(x) assert (x)
@@ -129,14 +131,24 @@
 # undef __iswctype
 # undef __towlower
 # undef __towupper
-# define __wctype wctype
-# define __iswalnum iswalnum
-# define __iswctype iswctype
-# define __towlower towlower
-# define __towupper towupper
+# if defined(_MSC_VER) || defined(__MINGW32__)
+#  define __wctype c32ctype
+#  define __iswalnum c32isalnum
+#  define __iswctype c32isctype
+#  define __towlower c32tolower
+#  define __towupper c32toupper
+#  define __mbrtowc mbrtoc32
+#  define __wcrtomb c32rtomb
+# else
+#  define __wctype wctype
+#  define __iswalnum iswalnum
+#  define __iswctype iswctype
+#  define __towlower towlower
+#  define __towupper towupper
+#  define __mbrtowc mbrtowc
+#  define __wcrtomb wcrtomb
+# endif
 # define __btowc btowc
-# define __mbrtowc mbrtowc
-# define __wcrtomb wcrtomb
 # define __regfree regfree
 #endif /* not _LIBC */
 
@@ -175,6 +187,9 @@ typedef regoff_t Idx;
 #else
 # define IDX_MAX INT_MAX
 #endif
+
+/* Type for casting Idx to unsigned value.  */
+typedef size_t Udx;
 
 /* A hash value, suitable for computing hash tables.  */
 typedef __re_size_t re_hashval_t;
@@ -281,7 +296,7 @@ typedef enum
 typedef struct
 {
   /* Multibyte characters.  */
-  wchar_t *mbchars;
+  uni_char_t *mbchars;
 
   /* Collating symbols.  */
 # ifdef _LIBC
@@ -298,8 +313,8 @@ typedef struct
   uint32_t *range_starts;
   uint32_t *range_ends;
 # else /* not _LIBC */
-  wchar_t *range_starts;
-  wchar_t *range_ends;
+  uni_char_t *range_starts;
+  uni_char_t *range_ends;
 # endif /* not _LIBC */
 
   /* Character classes. */
@@ -367,7 +382,7 @@ struct re_string_t
   unsigned char *mbs;
 #ifdef RE_ENABLE_I18N
   /* Store the wide character string which is corresponding to MBS.  */
-  wint_t *wcs;
+  uni_int_t *wcs;
   Idx *offsets;
   mbstate_t cur_state;
 #endif
@@ -426,10 +441,10 @@ typedef struct re_dfa_t re_dfa_t;
 #define re_string_fetch_byte(pstr) \
   ((pstr)->mbs[(pstr)->cur_idx++])
 #define re_string_first_byte(pstr, idx) \
-  ((idx) == (pstr)->valid_len || (pstr)->wcs[idx] != WEOF)
+  ((idx) == (pstr)->valid_len || (pstr)->wcs[idx] != UNI_EOF)
 #define re_string_is_single_byte_char(pstr, idx) \
-  ((pstr)->wcs[idx] != WEOF && ((pstr)->valid_len == (idx) + 1 \
-				|| (pstr)->wcs[(idx) + 1] != WEOF))
+  ((pstr)->wcs[idx] != UNI_EOF && ((pstr)->valid_len == (idx) + 1 \
+				|| (pstr)->wcs[(idx) + 1] != UNI_EOF))
 #define re_string_eoi(pstr) ((pstr)->stop <= (pstr)->cur_idx)
 #define re_string_cur_idx(pstr) ((pstr)->cur_idx)
 #define re_string_get_buffer(pstr) ((pstr)->mbs)
@@ -470,9 +485,35 @@ typedef struct re_dfa_t re_dfa_t;
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
-#define re_realloc(p,t,n) ((t *) realloc (p, (n) * sizeof (t)))
-#define re_free(p) free (p)
+static inline void *
+re_malloc_ (Idx n, size_t item_size)
+{
+	return malloc ((Udx) n * item_size);
+}
+
+static inline void *
+re_realloc_ (void *p, Idx n, size_t item_size)
+{
+	return realloc (p, (Udx) n * item_size);
+}
+
+static inline void *
+re_malloc_sz_ (size_t n, size_t item_size)
+{
+	return malloc (n * item_size);
+}
+
+static inline void *
+re_realloc_sz_ (void *p, size_t n, size_t item_size)
+{
+	return realloc (p, n * item_size);
+}
+
+#define re_malloc(t,n)		((t *) re_malloc_ (n, sizeof (t)))
+#define re_realloc(p,t,n)	((t *) re_realloc_ (p, n, sizeof (t)))
+#define re_malloc_sz(t,n)	((t *) re_malloc_sz_ (n, sizeof (t)))
+#define re_realloc_sz(p,t,n)	((t *) re_realloc_sz_ (p, n, sizeof (t)))
+#define re_free(p)		free (p)
 
 struct bin_tree_t
 {
@@ -729,7 +770,7 @@ typedef struct
   {
     unsigned char ch;
     unsigned char *name;
-    wchar_t wch;
+    uni_char_t wch;
   } opr;
 } bracket_elem_t;
 
@@ -739,19 +780,22 @@ typedef struct
 static inline void
 bitset_set (bitset_t set, Idx i)
 {
-  set[i / BITSET_WORD_BITS] |= (bitset_word_t) 1 << i % BITSET_WORD_BITS;
+  const unsigned int n = (unsigned int) i;
+  set[n / BITSET_WORD_BITS] |= (bitset_word_t) 1 << n % BITSET_WORD_BITS;
 }
 
 static inline void
 bitset_clear (bitset_t set, Idx i)
 {
-  set[i / BITSET_WORD_BITS] &= ~ ((bitset_word_t) 1 << i % BITSET_WORD_BITS);
+  const unsigned int n = (unsigned int) i;
+  set[n / BITSET_WORD_BITS] &= ~ ((bitset_word_t) 1 << n % BITSET_WORD_BITS);
 }
 
 static inline bool
 bitset_contain (const bitset_t set, Idx i)
 {
-  return (set[i / BITSET_WORD_BITS] >> i % BITSET_WORD_BITS) & 1;
+  const unsigned int n = (unsigned int) i;
+  return (set[n / BITSET_WORD_BITS] >> n % BITSET_WORD_BITS) & 1;
 }
 
 static inline void
@@ -778,7 +822,7 @@ bitset_copy (bitset_t dest, const bitset_t src)
 static inline void
 bitset_not (bitset_t set)
 {
-  int bitset_i;
+  unsigned bitset_i;
   for (bitset_i = 0; bitset_i < SBC_MAX / BITSET_WORD_BITS; ++bitset_i)
     set[bitset_i] = ~set[bitset_i];
   if (CONSTANT_EXPR (SBC_MAX % BITSET_WORD_BITS != 0))
@@ -790,7 +834,7 @@ bitset_not (bitset_t set)
 static inline void
 bitset_merge (bitset_t dest, const bitset_t src)
 {
-  int bitset_i;
+  unsigned bitset_i;
   for (bitset_i = 0; bitset_i < BITSET_WORDS; ++bitset_i)
     dest[bitset_i] |= src[bitset_i];
 }
@@ -798,7 +842,7 @@ bitset_merge (bitset_t dest, const bitset_t src)
 static inline void
 bitset_mask (bitset_t dest, const bitset_t src)
 {
-  int bitset_i;
+  unsigned bitset_i;
   for (bitset_i = 0; bitset_i < BITSET_WORDS; ++bitset_i)
     dest[bitset_i] &= src[bitset_i];
 }
@@ -813,18 +857,18 @@ re_string_char_size_at (const re_string_t *pstr, Idx idx)
   if (pstr->mb_cur_max == 1)
     return 1;
   for (byte_idx = 1; idx + byte_idx < pstr->valid_len; ++byte_idx)
-    if (pstr->wcs[idx + byte_idx] != WEOF)
+    if (pstr->wcs[idx + byte_idx] != UNI_EOF)
       break;
   return byte_idx;
 }
 
-static wint_t
+static uni_int_t
 __attribute__ ((pure, unused))
 re_string_wchar_at (const re_string_t *pstr, Idx idx)
 {
   if (pstr->mb_cur_max == 1)
-    return (wint_t) pstr->mbs[idx];
-  return (wint_t) pstr->wcs[idx];
+    return (uni_int_t) pstr->mbs[idx];
+  return pstr->wcs[idx];
 }
 
 # ifdef _LIBC
@@ -858,10 +902,12 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
 #endif /* RE_ENABLE_I18N */
 
 #ifndef FALLTHROUGH
-# if defined __GNUC__ && __GNUC__ < 7
-#  define FALLTHROUGH ((void) 0)
-# else
+# if defined __STDC_VERSION__ && 201710L < __STDC_VERSION__
+#  define FALLTHROUGH [[__fallthrough__]]
+# elif (defined(__GNUC__) && __GNUC__ >= 7) || (defined(__clang__) && !defined(_MSC_VER))
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
+# else
+#  define FALLTHROUGH ((void) 0)
 # endif
 #endif
 
