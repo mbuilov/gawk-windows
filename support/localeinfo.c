@@ -35,6 +35,10 @@
 #include "mbsupport.h"
 #endif
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include "mscrtx/localerpl.h"
+#endif
+
 /* The sbclen implementation relies on this.  */
 verify (MB_LEN_MAX <= SCHAR_MAX);
 
@@ -44,8 +48,16 @@ static bool
 is_using_utf8 (void)
 {
   wchar_t wc;
-  mbstate_t mbs = {0};
+  mbstate_t mbs = {
+#ifndef __cplusplus
+    0
+#endif
+  };
+#if defined _MSC_VER || defined __MINGW32__
+  return mbrtoc16 (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
+#else
   return mbrtowc (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
+#endif
 }
 
 /* Return true if the locale is compatible enough with the C locale so
@@ -106,16 +118,24 @@ init_localeinfo (struct localeinfo *localeinfo)
     {
       char c = (char) i;
       unsigned char uc = (unsigned char) c;
-      mbstate_t s = {0};
+      mbstate_t s = {
+#ifndef __cplusplus
+        0
+#endif
+      };
       wchar_t wc;
+#if defined _MSC_VER || defined __MINGW32__
+      size_t len = mbrtoc16 (&wc, &c, 1, &s);
+#else
       size_t len = mbrtowc (&wc, &c, 1, &s);
+#endif
       signed char b = (signed char) (len <= 1 ? 1 : - (signed char)((size_t)0 - len));
       localeinfo->sbclen[uc] = b; /* 1, -1 or -2 */
       localeinfo->sbctowc[uc] = len <= 1 ? (wint_t) wc : WEOF;
     }
 }
 
-/* The set of wchar_t values C such that there's a useful locale
+/* The set of uni_char_t values C such that there's a useful locale
    somewhere where C != towupper (C) && C != towlower (towupper (C)).
    For example, 0x00B5 (U+00B5 MICRO SIGN) is in this table, because
    towupper (0x00B5) == 0x039C (U+039C GREEK CAPITAL LETTER MU), and
@@ -139,23 +159,23 @@ verify (1 + 1 + sizeof lonesome_lower / sizeof *lonesome_lower
 
 /* Find the characters equal to C after case-folding, other than C
    itself, and store them into FOLDED.  Return the number of characters
-   stored; this is zero if C is WEOF.  */
+   stored; this is zero if C is UNI_EOF.  */
 
 int
-case_folded_counterparts (wint_t c, wchar_t folded[CASE_FOLDED_BUFSIZE])
+case_folded_counterparts (uni_int_t c, uni_char_t folded[CASE_FOLDED_BUFSIZE])
 {
   unsigned i;
   int n = 0;
-  wint_t uc = towupper (c);
-  wint_t lc = towlower (uc);
+  uni_int_t uc = uni_toupper (c);
+  uni_int_t lc = uni_tolower (uc);
   if (uc != c)
     folded[n++] = uc;
-  if (lc != uc && lc != c && towupper (lc) == uc)
+  if (lc != uc && lc != c && uni_toupper (lc) == uc)
     folded[n++] = lc;
   for (i = 0; i < sizeof lonesome_lower / sizeof *lonesome_lower; i++)
     {
-      wint_t li = (wint_t) lonesome_lower[i];
-      if (li != lc && li != uc && li != c && towupper (li) == uc)
+      uni_int_t li = (uni_int_t) lonesome_lower[i];
+      if (li != lc && li != uc && li != c && uni_toupper (li) == uc)
         folded[n++] = li;
     }
   return n;
