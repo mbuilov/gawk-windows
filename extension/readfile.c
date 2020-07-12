@@ -49,6 +49,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -61,6 +63,10 @@
   "gettext.h" will include <locale.h> anyway */
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
+
+#if defined _MSC_VER || defined __MINGW32__
+#include "mscrtx/xstat.h"
 #endif
 
 #include "gawkapi.h"
@@ -185,7 +191,7 @@ readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	}
 
 	/* read file */
-	text = read_file_to_buffer(iobuf->fd, & iobuf->sbuf, INT_MAX);
+	text = read_file_to_buffer(iobuf->fd, awk_input_buf_get_stat(iobuf), INT_MAX);
 	if (text == NULL)
 		return EOF;
 
@@ -198,7 +204,7 @@ readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	*out = text;
 
 	/* return count */
-	return (int) iobuf->sbuf.st_size;
+	return (int) awk_input_buf_get_stat(iobuf)->st_size;
 }
 
 /* readfile_can_take_file --- return true if we want the file */
