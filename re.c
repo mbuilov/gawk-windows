@@ -28,7 +28,7 @@
 #include "localeinfo.h"
 
 static reg_syntax_t syn;
-static void check_bracket_exp(char *s, size_t len);
+static void check_bracket_exp(const char *s, size_t len);
 const char *regexflags2str(int flags);
 
 static struct localeinfo localeinfo;
@@ -74,7 +74,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	}
 
 	/* always check */
-	check_bracket_exp((char *) s, len);
+	check_bracket_exp(s, len);
 
 	/* Handle escaped characters first. */
 
@@ -351,7 +351,7 @@ research(Regexp *rp, char *str, int start,
 			 * Passing NULL as last arg speeds up search for cases
 			 * where we don't need the start/end info.
 			 */
-			res = re_search(&(rp->pat), str, (regoff_t) (start+len),
+			res = re_search(&(rp->pat), str, start + (regoff_t) len,
 				start, (regoff_t) len, need_start ? &(rp->regs) : NULL);
 		} else
 			res = 1;
@@ -517,9 +517,10 @@ reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 	return res;
 }
 
+#if 0
 /* reflags2str --- make a regex flags value readable */
 
-const char *
+static const char *
 reflags2str(int flagval)
 {
 	static const struct flagtab values[] = {
@@ -556,6 +557,7 @@ reflags2str(int flagval)
 
 	return genflags2str(flagval, values);
 }
+#endif
 
 /*
  * dfawarn() is called by the dfa routines whenever a regex is compiled
@@ -575,11 +577,11 @@ dfawarn(const char *dfa_warning)
 /* check_bracket_exp --- look for /[:space:]/ that should be /[[:space:]]/ */
 
 static void
-check_bracket_exp(char *s, size_t length)
+check_bracket_exp(const char *s, size_t length)
 {
 	static struct reclass {
-		const char *name;
-		size_t len;
+		const char *const name;
+		size_t const len;
 		bool warned;
 	} classes[] = {
 		/*
@@ -598,80 +600,71 @@ check_bracket_exp(char *s, size_t length)
 		{ "[:graph:]", 9, false },
 		{ "[:cntrl:]", 9, false },
 		{ "[:blank:]", 9, false },
-		{ NULL, 0 }
 	};
+
 	unsigned i;
-	bool found = false;
-	char save;
-	const char *sp, *sp2, *end;
-	size_t len = 0; /* Silence compiler warning.  */
-	int count = 0;
+	size_t count;
+	const char *sp, *start;
+	const char *const end = s + length;
 
 	if (length == 0)
 		return;
 
-	end = s + length;
-	save = s[length];
-	s[length] = '\0';
-	sp = s;
+	for (sp = s;;) {
+		sp = (const char*) memchr(sp, '[', (size_t) (end - sp));
+		if (sp == NULL)
+			return;
 
-again:
-	sp = sp2 = (const char*) memchr(sp, '[', (size_t) (end - sp));
-	if (sp == NULL)
-		goto done;
+		for (count = 1, start = sp++;; sp++) {
+			if (sp == end)
+				return;	/* bad regex, give up */
 
-	for (count++, sp++; *sp != '\0'; sp++) {
-		if (*sp == '[')
-			count++;
-		/*
-		 * ] as first char after open [ is skipped
-		 * \] is skipped
-		 * [^]] is skipped
-		 */
-		if (*sp == ']' && sp > sp2) {
-			 if (sp[-1] != '['
-			     && sp[-1] != '\\')
-				 ;
-			 else if ((sp - sp2) >= 2
-				  && sp[-1] == '^' && sp[-2] == '[')
-				 ;
-			 else
-				count--;
+			if (*sp == '[') {
+				count++;
+				continue;
+			}
+			if (*sp != ']')
+				continue;
+
+			/*
+			 * ] as first char after open [ is skipped
+			 * \] is skipped
+			 * [^]] is skipped
+			 */
+			if (sp[-1] == '[')
+				continue;	/* skip ] after [ */
+
+			if (sp[-1] == '\\') {
+				/* count backslahes */
+				const char *p = sp - 1;
+				while (p[-1] == '\\')
+					p--;
+				if (1 & (size_t) (sp - p))
+					continue;	/* skip escaped \] */
+			}
+			else if (sp[-1] == '^' && sp[-2] == '[')
+				continue;	/* skip ] after [^ */
+
+			if (--count == 0) {
+				sp++;	/* skip past ']' */
+				break;
+			}
 		}
 
-		if (count == 0) {
-			sp++;	/* skip past ']' */
-			break;
+		for (i = 0; i < sizeof(classes)/sizeof(classes[0]); i++) {
+			if (classes[i].warned)
+				continue;
+			if (classes[i].len == (size_t) (sp - start)
+			    && memcmp(start, classes[i].name, classes[i].len) == 0) {
+				awkwarn(_("regexp component `%.*s' should probably be `[%.*s]'"),
+					TO_PRINTF_WIDTH(classes[i].len), classes[i].name,
+					TO_PRINTF_WIDTH(classes[i].len), classes[i].name);
+				classes[i].warned = true;
+				break;
+			}
 		}
-	}
 
-	if (count > 0) {	/* bad regex, give up */
-		goto done;
+		if (sp == end)
+			return;
 	}
-
-	/* sp2 has start */
-
-	for (i = 0; classes[i].name != NULL; i++) {
-		if (classes[i].warned)
-			continue;
-		len = classes[i].len;
-		if (   len == (size_t) (sp - sp2)
-		    && memcmp(sp2, classes[i].name, len) == 0) {
-			found = true;
-			break;
-		}
-	}
-
-	if (found && ! classes[i].warned) {
-		awkwarn(_("regexp component `%.*s' should probably be `[%.*s]'"),
-				TO_PRINTF_WIDTH(len), sp2, TO_PRINTF_WIDTH(len), sp2);
-		classes[i].warned = true;
-	}
-
-	if (sp < end) {
-		found = false;
-		goto again;
-	}
-done:
-	s[length] = save;
 }
