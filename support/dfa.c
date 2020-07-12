@@ -37,9 +37,14 @@
    indexes into objects.  It is signed to help catch integer overflow.
    It has its own name because it is for nonnegative values only.  */
 typedef ptrdiff_t idx_t;
+
+/* Type for casting idx_t to unsigned value.  */
+typedef size_t udx_t;
+
 #ifndef PTRDIFF_MAX
 #define PTRDIFF_MAX ((ptrdiff_t)-1 < 1 ? (ptrdiff_t) (size_t)-1/2 : (ptrdiff_t)-1)
 #endif
+
 static idx_t const IDX_MAX = PTRDIFF_MAX;
 
 static bool
@@ -63,11 +68,17 @@ isasciidigit (char c)
 #include "xalloc.h"
 #include "localeinfo.h"
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include "mscrtx/localerpl.h"
+#endif
+
 #ifndef FALLTHROUGH
-# if defined __GNUC__ && __GNUC__ < 7
-#  define FALLTHROUGH ((void) 0)
-# else
+# if defined __STDC_VERSION__ && 201710L < __STDC_VERSION__
+#  define FALLTHROUGH [[__fallthrough__]]
+# elif (defined(__GNUC__) && __GNUC__ >= 7) || (defined(__clang__) && !defined(_MSC_VER))
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
+# else
+#  define FALLTHROUGH ((void) 0)
 # endif
 #endif
 
@@ -389,7 +400,7 @@ struct mb_char_classes
 {
   ptrdiff_t cset;
   bool invert;
-  wchar_t *chars;               /* Normal characters.  */
+  uni_char_t *chars;               /* Normal characters.  */
   idx_t nchars;
   idx_t nchars_alloc;
 };
@@ -437,9 +448,9 @@ struct lexer_state
   int minrep, maxrep;	/* Repeat counts for {m,n}.  */
 
   /* Wide character representation of the current multibyte character,
-     or WEOF if there was an encoding error.  Used only if
+     or UNI_EOF if there was an encoding error.  Used only if
      MB_CUR_MAX > 1.  */
-  wint_t wctok;
+  uni_int_t wctok;
 
   /* The most recently analyzed multibyte bracket expression.  */
   struct mb_char_classes brack;
@@ -532,7 +543,7 @@ struct dfa
                                    beginning of the buffer.  */
 
   /* Fields filled by dfaanalyze.  */
-  unsigned int *constraints;             /* Array of union of accepting constraints
+  unsigned int *constraints;    /* Array of union of accepting constraints
                                    in the follow of a position.  */
   unsigned *separates;          /* Array of contexts on follow of a
                                    position.  */
@@ -614,12 +625,12 @@ static void regexp (struct dfa *dfa);
 /* Store into *PWC the result of converting the leading bytes of the
    multibyte buffer S of length N bytes, using D->localeinfo.sbctowc
    and updating the conversion state in *D.  On conversion error,
-   convert just a single byte, to WEOF.  Return the number of bytes
+   convert just a single byte, to UNI_EOF.  Return the number of bytes
    converted.
 
    This differs from mbrtowc (PWC, S, N, &D->mbs) as follows:
 
-   * PWC points to wint_t, not to wchar_t.
+   * PWC points to uni_int_t, not to wchar_t.
    * The last arg is a dfa *D instead of merely a multibyte conversion
      state D->mbs.
    * N must be at least 1.
@@ -629,24 +640,28 @@ static void regexp (struct dfa *dfa);
    * D->mbs is always valid afterwards.
    * *PWC is always set to something.  */
 static size_t
-mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
+mbs_to_wchar (uni_int_t *pwc, char const *s, size_t n, struct dfa *d)
 {
+  uni_char_t wch;
+  size_t nbytes;
   unsigned char uc = (unsigned char) s[0];
   wint_t wc = d->localeinfo.sbctowc[uc];
 
-  if (wc == WEOF)
+  if (wc != WEOF)
     {
-      wchar_t wch;
-      size_t nbytes = mbrtowc (&wch, s, n, &d->mbs);
-      if (0 < nbytes && nbytes < (size_t) -2)
-        {
-          *pwc = wch;
-          return nbytes;
-        }
-      memset (&d->mbs, 0, sizeof d->mbs);
+      *pwc = wc;
+      return 1;
     }
 
-  *pwc = wc;
+  nbytes = mbrto_uni (&wch, s, n, &d->mbs);
+  if (0 < nbytes && nbytes < (size_t) -2)
+    {
+      *pwc = wch;
+      return nbytes;
+    }
+
+  memset (&d->mbs, 0, sizeof d->mbs);
+  *pwc = UNI_EOF;
   return 1;
 }
 
@@ -830,8 +845,8 @@ xpalloc (void *pa, idx_t *nitems, idx_t nitems_incr_min,
 
   idx_t adjusted_nbytes
     = ((INT_MULTIPLY_WRAPV (n, item_size, &nbytes) || SIZE_MAX <
-						      (size_t)0 + nbytes)
-       ? (idx_t) MIN (IDX_MAX, SIZE_MAX)
+						      (udx_t) nbytes)
+       ? (idx_t) MIN ((udx_t) IDX_MAX, SIZE_MAX)
        : nbytes < DEFAULT_MXFAST ? DEFAULT_MXFAST : 0);
   if (adjusted_nbytes)
     {
@@ -846,7 +861,7 @@ xpalloc (void *pa, idx_t *nitems, idx_t nitems_incr_min,
           || (0 <= nitems_max && nitems_max < n)
           || INT_MULTIPLY_WRAPV (n, item_size, &nbytes)))
     xalloc_die ();
-  pa = xrealloc (pa, (size_t)0 + nbytes);
+  pa = xrealloc (pa, (udx_t) nbytes);
   *nitems = n;
   return pa;
 }
@@ -908,9 +923,11 @@ char_context (struct dfa const *dfa, unsigned char c)
    dotless i/dotted I are not included in the chosen character set.
    Return whether a bit was set in the charclass.  */
 static bool
-setbit_wc (wint_t wc, charclass *c)
+setbit_wc (uni_int_t wc, charclass *c)
 {
-  int b = wctob (wc);
+  /* For UTF-8 locale, wctob succeeds only if wc <= 127,
+     so it's safe to skip UNI-chars which do not fit in wchar_t.  */
+  int b = (wchar_t) wc == wc ? wctob ((wchar_t) wc) : -1;
   if (b < 0)
     return false;
 
@@ -931,7 +948,7 @@ setbit_case_fold_c (int b, charclass *c)
 
 /* Fetch the next lexical input character from the pattern.  There
    must at least one byte of pattern input.  Set DFA->lex.wctok to the
-   value of the character or to WEOF depending on whether the input is
+   value of the character or to UNI_EOF depending on whether the input is
    a valid multibyte character (possibly of length 1).  Then return
    the next input byte value, except return EOF if the input is a
    multibyte character of length greater than 1.  */
@@ -939,7 +956,7 @@ static int
 fetch_wc (struct dfa *dfa)
 {
   size_t nbytes = mbs_to_wchar (&dfa->lex.wctok, dfa->lex.ptr,
-                                (size_t) dfa->lex.left, dfa);
+                                (udx_t) dfa->lex.left, dfa);
   int c = nbytes == 1 ? to_uchar (dfa->lex.ptr[0]) : EOF;
   dfa->lex.ptr += nbytes;
   dfa->lex.left -= (idx_t) nbytes;
@@ -1020,9 +1037,9 @@ parse_bracket_exp (struct dfa *dfa)
       c = bracket_fetch_wc (dfa);
       known_bracket_exp = dfa->localeinfo.simple;
     }
-  wint_t wc = dfa->lex.wctok;
+  uni_int_t wc = dfa->lex.wctok;
   int c1;
-  wint_t wc1 = 0; /* Silence compiler: 'wc1' is set after 'c1' is changed.  */
+  uni_int_t wc1 = 0; /* Silence compiler: 'wc1' is set after 'c1' is changed.  */
   colon_warning_state = (c == ':');
   do
     {
@@ -1114,7 +1131,7 @@ parse_bracket_exp (struct dfa *dfa)
         /* build range characters.  */
         {
           int c2 = bracket_fetch_wc (dfa);
-          wint_t wc2 = dfa->lex.wctok;
+          uni_int_t wc2 = dfa->lex.wctok;
 
           /* A bracket expression like [a-[.aa.]] matches an unknown set.
              Treat it like [-a[.aa.]] while parsing it, and
@@ -1146,7 +1163,7 @@ parse_bracket_exp (struct dfa *dfa)
               wc1 = dfa->lex.wctok;
 
               /* Treat [x-y] as a range if x != y.  */
-              if (wc != wc2 || wc == WEOF)
+              if (wc != wc2 || wc == UNI_EOF)
                 {
                   if (dfa->localeinfo.simple
                       || (isasciidigit ((char) c) & isasciidigit ((char) c2)))
@@ -1176,11 +1193,11 @@ parse_bracket_exp (struct dfa *dfa)
           continue;
         }
 
-      if (wc == WEOF)
+      if (wc == UNI_EOF)
         known_bracket_exp = false;
       else
         {
-          wchar_t folded[CASE_FOLDED_BUFSIZE + 1];
+          uni_char_t folded[CASE_FOLDED_BUFSIZE + 1];
           int n = (dfa->syntax.case_fold
                    ? case_folded_counterparts (wc, folded + 1) + 1
                    : 1);
@@ -1189,15 +1206,15 @@ parse_bracket_exp (struct dfa *dfa)
             if (!setbit_wc (folded[i], &ccl))
               {
                 dfa->lex.brack.chars =
-                  (wchar_t*) maybe_realloc (dfa->lex.brack.chars,
-                                            dfa->lex.brack.nchars,
-                                            &dfa->lex.brack.nchars_alloc, -1,
-                                            sizeof *dfa->lex.brack.chars);
+                  (uni_char_t*) maybe_realloc (dfa->lex.brack.chars,
+                                               dfa->lex.brack.nchars,
+                                               &dfa->lex.brack.nchars_alloc, -1,
+                                               sizeof *dfa->lex.brack.chars);
                 dfa->lex.brack.chars[dfa->lex.brack.nchars++] = folded[i];
               }
         }
     }
-  while ((wc = wc1, (c = c1) != ']'));
+  while (((void) (wc = wc1), (c = c1) != ']'));
 
   if (colon_warning_state == 7)
     dfawarn (_("character class syntax is [[:space:]], not [:space:]"));
@@ -1247,20 +1264,15 @@ pop_lex_state (struct dfa *dfa, struct lexptr const *ls)
 static int
 add_rep (int rep, char c)
 {
-  /* Make sure that both expressions does not overflow an integer:
-   1) RE_DUP_MAX + 1,
-   2) rep * 10 + c.  */
-  (void) sizeof(int[1-2*!(RE_DUP_MAX < INT_MAX)]);
-  (void) sizeof(int[1-2*!(RE_DUP_MAX + 1
-                          <= (INT_MAX - (unsigned char)-1) / 10)]);
-#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
-  return rep < 0 ? c - '0' : MIN (RE_DUP_MAX + 1, rep * 10 + c - '0');
-#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic pop
-#endif
+  /* Make sure RE_DUP_MAX is small enough so result of the expression
+    `(RE_DUP_MAX + 1) * 10 + c` will fit into an integer.  */
+  (void) sizeof(int[1-2*!(RE_DUP_MAX < (INT_MAX - (unsigned char)-1) / 10)]);
+  if (rep < 0)
+    return c - '0';
+  rep = rep * 10 + c - '0';
+  if (rep <= RE_DUP_MAX + 1)
+    return rep;
+  return RE_DUP_MAX + 1;
 }
 
 static token
@@ -1494,9 +1506,9 @@ lex (struct dfa *dfa)
               if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
                 clrbit ('\0', &ccl);
               if (dfa->localeinfo.multibyte)
-                for (int c2 = 0; c2 < NOTCHAR; c2++)
+                for (unsigned c2 = 0; c2 < NOTCHAR; c2++)
                   if (dfa->localeinfo.sbctowc[c2] == WEOF)
-                    clrbit ((unsigned int) c2, &ccl);
+                    clrbit (c2, &ccl);
               dfa->canychar = charclass_index (dfa, &ccl);
             }
           dfa->lex.laststart = false;
@@ -1614,7 +1626,7 @@ addtok_mb (struct dfa *dfa, token t, char mbprop)
                                       sizeof *dfa->tokens);
       if (dfa->localeinfo.multibyte)
         dfa->multibyte_prop
-          = (char*) xnrealloc(dfa->multibyte_prop, (size_t) dfa->talloc,
+          = (char*) xnrealloc(dfa->multibyte_prop, (udx_t) dfa->talloc,
                               sizeof *dfa->multibyte_prop);
     }
   if (dfa->localeinfo.multibyte)
@@ -1647,7 +1659,7 @@ addtok_mb (struct dfa *dfa, token t, char mbprop)
     dfa->depth = dfa->parse.depth;
 }
 
-static void addtok_wc (struct dfa *dfa, wint_t wc);
+static void addtok_wc (struct dfa *dfa, uni_int_t wc);
 
 /* Add the given token to the parse tree, maintaining the depth count and
    updating the maximum depth if necessary.  */
@@ -1691,12 +1703,17 @@ addtok (struct dfa *dfa, token t)
    <mb1(1st-byte)><mb1(2nd-byte)><CAT><mb1(3rd-byte)><CAT>
    <mb2(1st-byte)><mb2(2nd-byte)><CAT><mb2(3rd-byte)><CAT><CAT> */
 static void
-addtok_wc (struct dfa *dfa, wint_t wc)
+addtok_wc (struct dfa *dfa, uni_int_t wc)
 {
   unsigned char buf[MB_LEN_MAX];
-  mbstate_t s = { 0 };
-  size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
-  size_t buflen;
+  mbstate_t s = {
+#ifndef __cplusplus
+    0
+#endif
+  };
+  size_t buflen, stored_bytes;
+
+  stored_bytes = uni_rtomb ((char *) buf, (uni_char_t) wc, &s);
 
   if (stored_bytes != (size_t) -1)
     buflen = stored_bytes;
@@ -1892,7 +1909,7 @@ atom (struct dfa *dfa)
     }
   else if (dfa->parse.tok == WCHAR)
     {
-      if (dfa->lex.wctok == WEOF)
+      if (dfa->lex.wctok == UNI_EOF)
         addtok (dfa, BACKREF);
       else
         {
@@ -1900,7 +1917,7 @@ atom (struct dfa *dfa)
 
           if (dfa->syntax.case_fold)
             {
-              wchar_t folded[CASE_FOLDED_BUFSIZE];
+              uni_char_t folded[CASE_FOLDED_BUFSIZE];
               int n = case_folded_counterparts (dfa->lex.wctok, folded);
               for (int i = 0; i < n; i++)
                 {
@@ -2071,13 +2088,13 @@ copy (position_set const *src, position_set *dst)
     }
   dst->nelem = src->nelem;
   if (src->nelem != 0)
-    memcpy (dst->elems, src->elems, (size_t) src->nelem * sizeof *dst->elems);
+    memcpy (dst->elems, src->elems, (udx_t) src->nelem * sizeof *dst->elems);
 }
 
 static void
 alloc_position_set (position_set *s, idx_t size)
 {
-  s->elems = (position*) xnmalloc ((size_t) size, sizeof *s->elems);
+  s->elems = (position*) xnmalloc ((udx_t) size, sizeof *s->elems);
   s->alloc = size;
   s->nelem = 0;
 }
@@ -2238,7 +2255,7 @@ state_index (struct dfa *d, position_set const *s, unsigned context)
 
   for (i = 0; i < s->nelem; ++i)
     {
-      size_t ind = (size_t) s->elems[i].index;
+      size_t ind = (udx_t) s->elems[i].index;
       hash ^= ind + s->elems[i].constraint;
     }
 
@@ -2503,19 +2520,19 @@ reorder_tokens (struct dfa *d)
 
   nleaves = 0;
 
-  map = (ptrdiff_t*) xnmalloc ((size_t) d->tindex, sizeof *map);
+  map = (ptrdiff_t*) xnmalloc ((udx_t) d->tindex, sizeof *map);
 
   map[0] = nleaves++;
 
   for (idx_t i = 1; i < d->tindex; i++)
     map[i] = -1;
 
-  tokens = (token*) xnmalloc ((size_t) d->nleaves, sizeof *tokens);
-  follows = (position_set*) xnmalloc ((size_t) d->nleaves, sizeof *follows);
-  constraints = (unsigned int*) xnmalloc ((size_t) d->nleaves, sizeof *constraints);
+  tokens = (token*) xnmalloc ((udx_t) d->nleaves, sizeof *tokens);
+  follows = (position_set*) xnmalloc ((udx_t) d->nleaves, sizeof *follows);
+  constraints = (unsigned int*) xnmalloc ((udx_t) d->nleaves, sizeof *constraints);
 
   if (d->localeinfo.multibyte)
-    multibyte_prop = (char*) xnmalloc ((size_t) d->nleaves, sizeof *multibyte_prop);
+    multibyte_prop = (char*) xnmalloc ((udx_t) d->nleaves, sizeof *multibyte_prop);
   else
     multibyte_prop = NULL;
 
@@ -2544,7 +2561,7 @@ reorder_tokens (struct dfa *d)
           d->follows[i].elems[j].index = map[d->follows[i].elems[j].index];
         }
 
-      qsort (d->follows[i].elems, (size_t) d->follows[i].nelem,
+      qsort (d->follows[i].elems, (udx_t) d->follows[i].nelem,
              sizeof *d->follows[i].elems, compare);
     }
 
@@ -2570,7 +2587,7 @@ reorder_tokens (struct dfa *d)
 static void
 dfaoptimize (struct dfa *d)
 {
-  char *flags = (char*) xzalloc ((size_t) d->tindex);
+  char *flags = (char*) xzalloc ((udx_t) d->tindex);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -2593,7 +2610,7 @@ dfaoptimize (struct dfa *d)
   position_set *merged = &merged0;
   alloc_position_set (merged, d->nleaves);
 
-  d->constraints = (unsigned int*) xnmalloc ((size_t) d->tindex, sizeof *d->constraints);
+  d->constraints = (unsigned int*) xnmalloc ((udx_t) d->tindex, sizeof *d->constraints);
 
   for (idx_t i = 0; i < d->tindex; i++)
     if (flags[i] & OPT_QUEUED)
@@ -2661,7 +2678,7 @@ static void
 dfaanalyze (struct dfa *d, bool searchflag)
 {
   /* Array allocated to hold position sets.  */
-  position *posalloc = (position*) xnmalloc ((size_t) d->nleaves,
+  position *posalloc = (position*) xnmalloc ((udx_t) d->nleaves,
                                              2 * sizeof *posalloc);
   /* Firstpos and lastpos elements.  */
   position *firstpos = posalloc;
@@ -2678,7 +2695,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
     /* Counts of firstpos and lastpos sets.  */
     idx_t nfirstpos;
     idx_t nlastpos;
-  } *stkalloc = (struct stack_item*) xnmalloc ((size_t) d->depth,
+  } *stkalloc = (struct stack_item*) xnmalloc ((udx_t) d->depth,
                                                sizeof *stkalloc),
     *stk = stkalloc;
 
@@ -2698,7 +2715,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
   d->searchflag = searchflag;
   alloc_position_set (&merged, d->nleaves);
-  d->follows = (position_set*) xcalloc ((size_t) d->tindex, sizeof *d->follows);
+  d->follows = (position_set*) xcalloc ((udx_t) d->tindex, sizeof *d->follows);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -2799,7 +2816,8 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
           firstpos->index = lastpos->index = i;
           firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
-          firstpos++, lastpos++;
+          firstpos++;
+          lastpos++;
 
           break;
         }
@@ -2857,7 +2875,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
   append (pos, &tmp);
 
-  d->separates = (unsigned*) xnmalloc ((size_t) d->tindex, sizeof *d->separates);
+  d->separates = (unsigned*) xnmalloc ((udx_t) d->tindex, sizeof *d->separates);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -2912,16 +2930,16 @@ realloc_trans_if_necessary (struct dfa *d)
       d->trans = realtrans + 2;
       idx_t newalloc = d->tralloc = newalloc1 - 2;
       d->fails =
-        (state_num**) xnrealloc(d->fails, (size_t) newalloc, sizeof *d->fails);
+        (state_num**) xnrealloc(d->fails, (udx_t) newalloc, sizeof *d->fails);
       d->success =
-        (char*) xnrealloc(d->success, (size_t) newalloc, sizeof *d->success);
+        (char*) xnrealloc(d->success, (udx_t) newalloc, sizeof *d->success);
       d->newlines =
-        (state_num*) xnrealloc(d->newlines, (size_t) newalloc,
+        (state_num*) xnrealloc(d->newlines, (udx_t) newalloc,
                                sizeof *d->newlines);
       if (d->localeinfo.multibyte)
         {
           realtrans = d->mb_trans ? d->mb_trans - 2 : NULL;
-          realtrans = (state_num**) xnrealloc(realtrans, (size_t) newalloc1,
+          realtrans = (state_num**) xnrealloc(realtrans, (udx_t) newalloc1,
                                               sizeof *realtrans);
           if (oldalloc == 0)
             realtrans[0] = realtrans[1] = NULL;
@@ -3158,10 +3176,10 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
              <sb a>, it must not be <sb a> but the 2nd byte of <mb A>, so do
              not add state[0].  */
 
-          int mergeit = !d->localeinfo.multibyte;
+          int mergeit = 0 == d->localeinfo.multibyte;
           if (!mergeit)
             {
-              mergeit = 1;
+              mergeit = true;
               for (idx_t j = 0; mergeit && j < group.nelem; j++)
                 mergeit &= d->multibyte_prop[group.elems[j].index];
             }
@@ -3294,7 +3312,7 @@ static state_num
 transit_state (struct dfa *d, state_num s, unsigned char const **pp,
                unsigned char const *end)
 {
-  wint_t wc;
+  uni_int_t wc;
 
   size_t mbclen = mbs_to_wchar (&wc, (char const *) *pp, (size_t) (end - *pp),
                                 d);
@@ -3310,7 +3328,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
     s = transit_state_singlebyte (d, s, pp);
   *pp += mbclen - mbci;
 
-  if (wc == WEOF)
+  if (wc == UNI_EOF)
     {
       /* It is an invalid character, so ANYCHAR is not accepted.  */
       return s;
@@ -3373,7 +3391,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
    Given DFA state d, use mbs_to_wchar to advance MBP until it reaches
    or exceeds P, and return the advanced MBP.  If WCP is non-NULL and
    the result is greater than P, set *WCP to the final wide character
-   processed, or to WEOF if no wide character is processed.  Otherwise,
+   processed, or to UNI_EOF if no wide character is processed.  Otherwise,
    if WCP is non-NULL, *WCP may or may not be updated.
 
    Both P and MBP must be no larger than END.  */
@@ -3385,7 +3403,7 @@ skip_remains_mb (struct dfa *d, unsigned char const *p,
     return p;
   while (mbp < p)
     {
-      wint_t wc;
+      uni_int_t wc;
       mbp += mbs_to_wchar (&wc, (char const *) mbp,
                            (size_t) (end - (char const *) mbp), d);
     }
@@ -3748,15 +3766,15 @@ dfassbuild (struct dfa *d)
   sup->success = NULL;
   sup->newlines = NULL;
 
-  sup->charclasses = (charclass*) xnmalloc ((size_t) sup->calloc,
+  sup->charclasses = (charclass*) xnmalloc ((udx_t) sup->calloc,
                                             sizeof *sup->charclasses);
   if (d->cindex)
     {
       memcpy (sup->charclasses, d->charclasses,
-              (size_t) d->cindex * sizeof *sup->charclasses);
+              (udx_t) d->cindex * sizeof *sup->charclasses);
     }
 
-  sup->tokens = (token*) xnmalloc ((size_t) d->tindex,
+  sup->tokens = (token*) xnmalloc ((udx_t) d->tindex,
                                    2 * sizeof *sup->tokens);
   sup->talloc = d->tindex * 2;
 
@@ -3977,8 +3995,8 @@ icatalloc (char *old_c, char const *new_c)
   if (newsize == 0)
     return old_c;
   idx_t oldsize = (idx_t) strlen (old_c);
-  char *result = (char*) xrealloc (old_c, (size_t) (oldsize + newsize + 1));
-  memcpy (result + oldsize, new_c, (size_t) (newsize + 1));
+  char *result = (char*) xrealloc (old_c, (udx_t) (oldsize + newsize + 1));
+  memcpy (result + oldsize, new_c, (udx_t) (newsize + 1));
   return result;
 }
 
@@ -3992,7 +4010,7 @@ freelist (char **cpp)
 static char **
 enlist (char **cpp, char *new_c, idx_t len)
 {
-  new_c = (char*) memcpy (xmalloc ((size_t) len + 1), new_c, (size_t) len);
+  new_c = (char*) memcpy (xmalloc ((udx_t) len + 1), new_c, (udx_t) len);
   new_c[len] = '\0';
   /* Is there already something in the list that's new (or longer)?  */
   idx_t i;
@@ -4015,7 +4033,7 @@ enlist (char **cpp, char *new_c, idx_t len)
         cpp[i] = NULL;
       }
   /* Add the new string.  */
-  cpp = (char**) xnrealloc (cpp, (size_t) (i + 2), sizeof *cpp);
+  cpp = (char**) xnrealloc (cpp, (udx_t) (i + 2), sizeof *cpp);
   cpp[i] = new_c;
   cpp[i + 1] = NULL;
   return cpp;
@@ -4093,9 +4111,9 @@ allocmust (must *mp, idx_t size)
 {
   must *new_mp = (must*) xmalloc (sizeof *new_mp);
   new_mp->in = (char**) xzalloc (sizeof *new_mp->in);
-  new_mp->left = (char*) xzalloc ((size_t) size);
-  new_mp->right = (char*) xzalloc ((size_t) size);
-  new_mp->is = (char*) xzalloc ((size_t) size);
+  new_mp->left = (char*) xzalloc ((udx_t) size);
+  new_mp->right = (char*) xzalloc ((udx_t) size);
+  new_mp->is = (char*) xzalloc ((udx_t) size);
   new_mp->begline = false;
   new_mp->endline = false;
   new_mp->prev = mp;
@@ -4152,7 +4170,8 @@ dfamust (struct dfa const *d)
           break;
         case LPAREN:
         case RPAREN:
-          assert (!"neither LPAREN nor RPAREN may appear here");
+          assert (((void) "neither LPAREN nor RPAREN may appear here", 0));
+          FALLTHROUGH;
 
         case EMPTY:
         case BEGWORD:
@@ -4246,9 +4265,9 @@ dfamust (struct dfa const *d)
               {
                 idx_t lrlen = (idx_t) strlen (lmp->right);
                 idx_t rllen = (idx_t) strlen (rmp->left);
-                char *tp = (char*) xmalloc ((size_t) (lrlen + rllen));
-                memcpy (tp, lmp->right, (size_t) lrlen);
-                memcpy (tp + lrlen, rmp->left, (size_t) rllen);
+                char *tp = (char*) xmalloc ((udx_t) (lrlen + rllen));
+                memcpy (tp, lmp->right, (udx_t) lrlen);
+                memcpy (tp + lrlen, rmp->left, (udx_t) rllen);
                 lmp->in = enlist (lmp->in, tp, lrlen + rllen);
                 free (tp);
               }
@@ -4411,8 +4430,8 @@ dfasyntax (struct dfa *d, struct localeinfo const *linfo,
       /* POSIX requires that the five bytes in "\n\r./" (including the
          terminating NUL) cannot occur inside a multibyte character.  */
       d->syntax.never_trail[uc] = (d->localeinfo.using_utf8
-                                   ? (uc & 0xc0) != 0x80
-                                   : strchr ("\n\r./", uc) != NULL);
+                                     ? (uc & 0xc0) != 0x80
+                                     : strchr ("\n\r./", uc) != NULL);
     }
 }
 
