@@ -137,7 +137,7 @@ extern time_t timegm(struct tm *);
 extern int snprintf(char *restrict buf, size_t len, const char *restrict fmt, ...);
 #endif
 
-#ifndef HAVE_USLEEP
+#if !defined(HAVE_USLEEP) || defined(_MSC_VER)
 extern int usleep(unsigned int);
 #endif
 
