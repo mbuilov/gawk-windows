@@ -33,6 +33,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -154,7 +156,7 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 		goto out;
 	}
 
-	printf("dump_array_and_delete: incoming size is %llu\n", 0ull + count);
+	printf("dump_array_and_delete: incoming size is %" ZUFMT "\n", count);
 
 	if (! flatten_array(value2.array_cookie, & flat_array)) {
 		printf("dump_array_and_delete: could not flatten array\n");
@@ -162,9 +164,9 @@ dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unuse
 	}
 
 	if (flat_array->count != count) {
-		printf("dump_array_and_delete: flat_array->count (%llu) != count (%llu)\n",
-				0ull + flat_array->count,
-				0ull + count);
+		printf("dump_array_and_delete: flat_array->count (%" ZUFMT ") != count (%" ZUFMT ")\n",
+				flat_array->count,
+				count);
 		goto out;
 	}
 
@@ -261,9 +263,9 @@ try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 
 	if (flat_array->count != count) {
-		printf("try_modify_environ: flat_array->count (%llu) != count (%llu)\n",
-				0ull + flat_array->count,
-				0ull + count);
+		printf("try_modify_environ: flat_array->count (%" ZUFMT ") != count (%" ZUFMT ")\n",
+				flat_array->count,
+				count);
 		goto out;
 	}
 
@@ -508,7 +510,7 @@ test_array_size(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		goto out;
 	}
 
-	printf("test_array_size: incoming size is %llu\n", 0ull + count);
+	printf("test_array_size: incoming size is %" ZUFMT "\n", count);
 
 	/* clear array - length(array) should then go to zero in script */
 	if (! clear_array(value.array_cookie)) {
@@ -652,7 +654,7 @@ test_array_param(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	if (arg0.val_type != AWK_UNDEFINED) {
 		printf("test_array_param: argument is not undefined (%d)\n",
-				arg0.val_type);
+				(int) arg0.val_type);
 		goto out;
 	}
 
@@ -1017,10 +1019,10 @@ static void at_exit0(void *data, int exit_status)
 
 /* at_exit1 --- second at_exit program, runs second */
 
-static int data_for_1 = 0xDeadBeef;
+static unsigned int data_for_1 = 0xDeadBeef;
 static void at_exit1(void *data, int exit_status)
 {
-	int *data_p = (int *) data;
+	unsigned int *data_p = (unsigned int *) data;
 
 	printf("at_exit1 called (should be second):");
 	if (data) {
