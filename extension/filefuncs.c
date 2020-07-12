@@ -12,7 +12,7 @@
 /*
  * Michael M. Builov
  * mbuilov@gmail.com
- * Ported to _MSC_VER 4/2020
+ * Ported to _MSC_VER/__MINGW32__ 4-5/2020
  */
 
 /*
@@ -76,6 +76,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
+#include <wchar.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -101,11 +103,9 @@
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
-
-#ifdef _MSC_VER
-#include <direct.h> /* chdir */
-#include "xstat.h"
+#include "mscrtx/xstat.h"
+#include "mscrtx/wreadlink.h"
+#define WINDOWS_NATIVE
 #endif
 
 /* Include <locale.h> before "gawkapi.h" redefines setlocale().
@@ -123,17 +123,13 @@
 #include "gawkfts.h"
 #include "stack.h"
 
-#ifdef _MSC_VER
-#include "wreadlink.h"
-#endif
-
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 #define BAD_FILE_HANDLE		INVALID_HANDLE_VALUE
 #else
 #define BAD_FILE_HANDLE		NULL
 #endif
 
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 #define xstat(path, buf)	stat(path, buf)
 #define xlstat(path, buf)	lstat(path, buf)
 #endif
@@ -145,7 +141,7 @@
 #define readlink(f,b,bs) (-1)
 #endif
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 # ifndef S_IRUSR
 #  define S_IRUSR _S_IREAD
 # endif
@@ -161,48 +157,42 @@
 # ifndef S_ISCHR
 #  define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
 # endif
-# define S_ISBLK(m) 0
+# ifndef S_ISBLK
+#  define S_ISBLK(m) 0
+# endif
 # define st_rdev st_dev
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-#define S_IRGRP S_IRUSR
-#define S_IWGRP S_IWUSR
-#define S_IXGRP S_IXUSR
-#define S_IROTH S_IRUSR
-#define S_IWOTH S_IWUSR
-#define S_IXOTH S_IXUSR
-#define S_ISUID 0
-#define S_ISGID 0
-#define S_ISVTX 0
+#ifdef WINDOWS_NATIVE
+# ifndef S_IRGRP
+#  define S_IRGRP S_IRUSR
+# endif
+# ifndef S_IWGRP
+#  define S_IWGRP S_IWUSR
+# endif
+# ifndef S_IXGRP
+#  define S_IXGRP S_IXUSR
+# endif
+# ifndef S_IROTH
+#  define S_IROTH S_IRUSR
+# endif
+# ifndef S_IWOTH
+#  define S_IWOTH S_IWUSR
+# endif
+# ifndef S_IXOTH
+#  define S_IXOTH S_IXUSR
+# endif
+# ifndef S_ISUID
+#  define S_ISUID 0
+# endif
+# ifndef S_ISGID
+#  define S_ISGID 0
+# endif
+# ifndef S_ISVTX
+#  define S_ISVTX 0
+# endif
 #define major(s) (s)
 #define minor(s) (0)
-#endif
-
-#ifdef __MINGW32__
-/* get_inode --- get the inode of a file */
-static long long
-get_inode(const char *fname)
-{
-	HANDLE fh;
-	BOOL ok;
-	BY_HANDLE_FILE_INFORMATION info;
-
-	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS, NULL);
-	if (fh == INVALID_HANDLE_VALUE)
-		return 0;
-	ok = GetFileInformationByHandle(fh, &info);
-	CloseHandle(fh);
-	if (ok) {
-		long long inode = info.nFileIndexHigh;
-
-		inode <<= 32;
-		inode += info.nFileIndexLow;
-		return inode;
-	}
-	return 0;
-}
 #endif
 
 GAWK_PLUGIN_GPL_COMPATIBLE
@@ -327,7 +317,7 @@ format_mode(unsigned long fmode, char outbuf[12])
 static char *
 read_symlink(void *h, const char *fname, size_t bufsize, ssize_t *linksize)
 {
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	(void) fname;
 # define READLINK(h, fname, buf, bufsize) \
 	h != INVALID_HANDLE_VALUE \
@@ -381,7 +371,7 @@ read_symlink(void *h, const char *fname, size_t bufsize, ssize_t *linksize)
 
 /* device_blocksize --- try to figure out units of st_blocks */
 
-static int
+static unsigned int
 device_blocksize(void)
 {
 	/* some of this derived from GNULIB stat-size.h */
@@ -396,7 +386,7 @@ device_blocksize(void)
 #elif defined _AIX && defined _I386
 	/* AIX PS/2 counts st_blocks in 4K units.  */
 	return 4 * 1024;
-#elif defined __MINGW32__ || defined _MSC_VER
+#elif defined WINDOWS_NATIVE
 	/*
 	 * DOS doesn't have the file system block size in the
 	 * stat structure. So we have to make some sort of reasonable
@@ -473,14 +463,10 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 	/* fill in the array */
 	array_set(array, "name", make_const_string(name, strlen(name), & tmp));
 	array_set_numeric(array, "dev", sbuf->st_dev);
-#ifdef __MINGW32__
-	array_set_numeric(array, "ino", (double)get_inode (name));
-#else
 	array_set_numeric(array, "ino", (double)sbuf->st_ino);
-#endif
 	array_set_numeric(array, "mode", sbuf->st_mode);
 	array_set_numeric(array, "nlink", sbuf->st_nlink);
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	array_set_numeric(array, "uid", 0);
 	array_set_numeric(array, "gid", 0);
 #else
@@ -488,7 +474,7 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 	array_set_numeric(array, "gid", sbuf->st_gid);
 #endif
 	array_set_numeric(array, "size", (double)sbuf->st_size);
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 	array_set_numeric(array, "blocks", (double)((sbuf->st_size +
 		device_blocksize() - 1) / device_blocksize()));
 #else
@@ -507,7 +493,7 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
-#elif defined(__MINGW32__) || defined(_MSC_VER)
+#elif defined WINDOWS_NATIVE
 	array_set_numeric(array, "blksize", 4096);
 #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
@@ -552,7 +538,7 @@ stat_and_fill_array(const char *name, awk_array_t array, int do_lstat)
 	int ret = -1;
 	fts_stat_t sbuf;
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	wchar_t buf[MAX_PATH];
 	wchar_t *wp = xpathwc(name, buf, sizeof(buf)/sizeof(buf[0]));
 
@@ -581,7 +567,7 @@ stat_and_fill_array(const char *name, awk_array_t array, int do_lstat)
 	if (ret == 0)
 		ret = fill_stat_array(h, name, array, & sbuf);
 
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 	if (h != INVALID_HANDLE_VALUE)
 		CloseHandle(h);
 #endif
@@ -695,7 +681,6 @@ init_filefuncs(void)
 	unsigned int i;
 	awk_value_t value;
 
-#ifndef __MINGW32__
 	/* at least right now, only FTS needs initializing */
 
 #define FTS_NON_RECURSIVE	FTS_STOP	/* Don't step into directories.  */
@@ -724,28 +709,8 @@ init_filefuncs(void)
 		}
 	}
 
-#endif /* !__MINGW32__ */
 	return (awk_bool_t) (errors == 0);
 }
-
-#ifdef __MINGW32__
-/*  do_fts --- walk a hierarchy and fill in an array */
-
-/*
- * Usage from awk:
- *	flags = or(FTS_PHYSICAL, ...)
- *	result = fts(pathlist, flags, filedata)
- */
-
-static awk_value_t *
-do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
-{
-	fatal(_("fts is not supported on this system"));
-
-	return NULL;	/* for the compiler */
-}
-
-#else /* __MINGW32__ */
 
 static int fts_errors = 0;
 
@@ -968,6 +933,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	FTS *hierarchy;
 	int flags;
 	size_t i, count;
+	awk_bool_t b;
 	int ret = -1;
 	static const int mask = (
 		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT
@@ -1037,9 +1003,9 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	for (i = 0; i < count; i++)
 		pathvector[i] = path_array->elements[i].value.str_value.str;
 
-
 	/* clear dest array */
-	assert(clear_array(dest.array_cookie));
+	b = clear_array(dest.array_cookie);
+	assert(b);
 
 	/* let's do it! */
 	hierarchy = fts_open(pathvector, flags & ~FTS_NON_RECURSIVE, NULL);
@@ -1062,14 +1028,11 @@ out:
 
 	return make_number(ret, result);
 }
-#endif	/* ! __MINGW32__ */
 
 static awk_ext_func_t func_table[] = {
 	{ "chdir",	do_chdir, 1, 1, awk_false, NULL },
 	{ "stat",	do_stat, 3, 2, awk_false, NULL },
-#ifndef __MINGW32__
 	{ "fts",	do_fts, 3, 3, awk_false, NULL },
-#endif
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
 	{ "statvfs",	do_statvfs, 2, 2, awk_false, NULL },
 #endif
