@@ -86,6 +86,7 @@ extern int errno;
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
+#include "support/uni_char.h"
 
 #ifdef STDC_HEADERS
 #include <float.h>
@@ -220,77 +221,33 @@ typedef struct Regexp {
 #define RE_NEED_START	1	/* need to know start/end of match */
 #define RE_NO_BOL	2	/* not allowed to match ^ in regexp */
 
+#ifdef WINDOWS_NATIVE
+#include "mscrtx/xstat.h"
+#endif
+
 #include "gawkapi.h"
 
+#ifdef WINDOWS_NATIVE
+/* No system headers should be included after "mscrtx/localerpl.h".
+   But if you need this in some source file, define NO_LOCALE_RPL
+   before including "awk.h" and include "mscrtx/localerpl.h" later.  */
+#ifndef NO_LOCALE_RPL
+#include "mscrtx/localerpl.h"
+#endif
+#endif
+
+/* No asserts in optimized release build.  */
+#ifdef NDEBUG
+# ifdef assert
+#  undef assert
+# endif
+# define assert(x) ASSUME(x)
+#endif
+
 /* Stuff for losing systems. */
-#if !defined(HAVE_STRTOD)
+#ifndef HAVE_STRTOD
 extern double gawk_strtod();
 #define strtod gawk_strtod
-#endif
-
-/* Function attributes.  */
-#if !defined(__GNUC__) ||  __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-# define __attribute__(arg)
-#endif
-
-#ifndef ATTRIBUTE_UNUSED
-# define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
-#endif
-
-#ifndef ATTRIBUTE_NORETURN
-# ifdef _MSC_VER
-#  define ATTRIBUTE_NORETURN __declspec(noreturn)
-# else
-#  define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
-# endif
-#endif
-
-#ifndef ATTRIBUTE_PRINTF
-# define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
-# define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
-# define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
-#endif
-
-#ifndef ATTRIBUTE_PRINTF_AT
-# if defined(_MSC_VER) && defined(_PREFAST_)
-#  define ATTRIBUTE_PRINTF_AT(fmt) _At_(fmt, _Printf_format_string_)
-# endif
-#endif
-
-#ifndef ATTRIBUTE_PRINTF_AT1
-# if defined(_MSC_VER) && defined(_PREFAST_)
-#  define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_AT(fmt)
-# else
-#  define ATTRIBUTE_PRINTF_AT1(fmt) ATTRIBUTE_PRINTF_1
-# endif
-#endif
-
-#ifndef ATTRIBUTE_PRINTF_AT2
-# if defined(_MSC_VER) && defined(_PREFAST_)
-#  define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_AT(fmt)
-# else
-#  define ATTRIBUTE_PRINTF_AT2(fmt) ATTRIBUTE_PRINTF_2
-# endif
-#endif
-
-/* Pragmas.  */
-#ifdef _MSC_VER
-# define PRAGMA_WARNING_PUSH __pragma(warning(push))
-# define PRAGMA_WARNING_POP  __pragma(warning(pop))
-/* 4774 - 'sprintf' : format string expected in argument 2 is not a string literal */
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING __pragma(warning(disable:4774))
-/* 4127 - conditional expression is constant */
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST __pragma(warning(disable:4127))
-#else
-# define PRAGMA_WARNING_PUSH
-# define PRAGMA_WARNING_POP
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST
-#endif
-
-/* Do compile unreachable code only if COMPILE_UNREACHABLE_CODE is defined.  */
-#ifndef _MSC_VER
-# define COMPILE_UNREACHABLE_CODE
 #endif
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
@@ -314,7 +271,7 @@ extern const char *const ruletab[];
   platforms sizeof(size_t) >= sizeof(long).
 */
 
-#if defined _MSC_VER && defined __cplusplus
+#if defined __cplusplus && __cplusplus >= 201103L
 /* "long" type is dangerous - its size varies between operating systems and processor architectures:
   LINUX x86:      sizeof(long) == 32, sizeof(int) == 32
   LINUX x86_64:   sizeof(long) == 64, sizeof(int) == 32
@@ -326,11 +283,26 @@ extern const char *const ruletab[];
   Conversions from long_t to int should be explicit.
   Conversions from ulong_t to unsigned int should be explicit.
 */
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+#ifdef __clang__
+/* Const methods are pure by the definition, but clang complains about side-effects when these are
+  called in __builtin_assume(), so additionally mark const methods as pure ones;
+  for the same purposes, also mark pure inline functions as pure ones. */
+#define const_method const __attribute__((pure))
+#define pure_inline __attribute__((pure)) inline
+#else
+#define const_method const
+#define pure_inline inline
+#endif
 struct long_t {
 	long l;
 	long_t() {}
 	long_t(int i_) {l = i_;}
 	long_t(long l_) {l = l_;}
+	long_t(const long_t &l_) {l = l_.l;}
 	struct long_t &operator= (const struct long_t &l_) {l =  l_.l; return *this;}
 	struct long_t &operator+=(const struct long_t &l_) {l += l_.l; return *this;}
 	struct long_t &operator-=(const struct long_t &l_) {l -= l_.l; return *this;}
@@ -342,43 +314,43 @@ struct long_t {
 	struct long_t &operator--() {--l; return *this;}
 	struct long_t operator++(int) {long r = l++; return r;}
 	struct long_t operator--(int) {long r = l--; return r;}
-	bool operator> (const struct long_t &l_) const {return l >  l_.l;}
-	bool operator>=(const struct long_t &l_) const {return l >= l_.l;}
-	bool operator< (const struct long_t &l_) const {return l <  l_.l;}
-	bool operator<=(const struct long_t &l_) const {return l <= l_.l;}
-	bool operator==(const struct long_t &l_) const {return l == l_.l;}
-	bool operator!=(const struct long_t &l_) const {return l != l_.l;}
-	bool operator> (long l_) const {return l >  l_;}
-	bool operator>=(long l_) const {return l >= l_;}
-	bool operator< (long l_) const {return l <  l_;}
-	bool operator<=(long l_) const {return l <= l_;}
-	bool operator==(long l_) const {return l == l_;}
-	bool operator!=(long l_) const {return l != l_;}
-	bool operator> (int i_) const {return l >  i_;}
-	bool operator>=(int i_) const {return l >= i_;}
-	bool operator< (int i_) const {return l <  i_;}
-	bool operator<=(int i_) const {return l <= i_;}
-	bool operator==(int i_) const {return l == i_;}
-	bool operator!=(int i_) const {return l != i_;}
-	operator bool() const {return l != 0l;}
-	bool operator!() const {return l == 0l;}
-	long_t operator-() const {return -l;}
-	long_t operator+(const struct long_t &l_) const {return l + l_.l;}
-	long_t operator-(const struct long_t &l_) const {return l - l_.l;}
-	long_t operator+(long l_) const {return l + l_;}
-	long_t operator-(long l_) const {return l - l_;}
-	long_t operator+(int i_) const {return l + i_;}
-	long_t operator-(int i_) const {return l - i_;}
-	operator long () const {return l;}
-	operator long long () const {return l;}
+	bool operator> (const struct long_t &l_) const_method {return l >  l_.l;}
+	bool operator>=(const struct long_t &l_) const_method {return l >= l_.l;}
+	bool operator< (const struct long_t &l_) const_method {return l <  l_.l;}
+	bool operator<=(const struct long_t &l_) const_method {return l <= l_.l;}
+	bool operator==(const struct long_t &l_) const_method {return l == l_.l;}
+	bool operator!=(const struct long_t &l_) const_method {return l != l_.l;}
+	bool operator> (long l_) const_method {return l >  l_;}
+	bool operator>=(long l_) const_method {return l >= l_;}
+	bool operator< (long l_) const_method {return l <  l_;}
+	bool operator<=(long l_) const_method {return l <= l_;}
+	bool operator==(long l_) const_method {return l == l_;}
+	bool operator!=(long l_) const_method {return l != l_;}
+	bool operator> (int i_) const_method {return l >  i_;}
+	bool operator>=(int i_) const_method {return l >= i_;}
+	bool operator< (int i_) const_method {return l <  i_;}
+	bool operator<=(int i_) const_method {return l <= i_;}
+	bool operator==(int i_) const_method {return l == i_;}
+	bool operator!=(int i_) const_method {return l != i_;}
+	operator bool() const_method {return l != 0l;}
+	bool operator!() const_method {return l == 0l;}
+	long_t operator-() const_method {return -l;}
+	long_t operator+(const struct long_t &l_) const_method {return l + l_.l;}
+	long_t operator-(const struct long_t &l_) const_method {return l - l_.l;}
+	long_t operator+(long l_) const_method {return l + l_;}
+	long_t operator-(long l_) const_method {return l - l_;}
+	long_t operator+(int i_) const_method {return l + i_;}
+	long_t operator-(int i_) const_method {return l - i_;}
+	operator long () const_method {return l;}
+	operator long long () const_method {return l;}
 #ifdef _WIN64
-	explicit operator int () const {return (int) l;}
+	explicit operator int () const_method {return (int) l;}
 #else
 	/* for use long_t as array index */
-	operator int () const {return (int) l;}
+	operator int () const_method {return (int) l;}
 #endif
-	explicit operator unsigned int () const {return (unsigned int) l;}
-	explicit operator unsigned long () const {return (unsigned long) l;}
+	explicit operator unsigned int () const_method {return (unsigned int) l;}
+	explicit operator unsigned long () const_method {return (unsigned long) l;}
 private:
 	operator char () const;
 	operator short () const;
@@ -386,93 +358,100 @@ private:
 	operator unsigned short () const;
 	operator unsigned long long () const;
 };
-inline bool operator> (long l_, const struct long_t &l) {return l_ >  l.l;}
-inline bool operator>=(long l_, const struct long_t &l) {return l_ >= l.l;}
-inline bool operator< (long l_, const struct long_t &l) {return l_ <  l.l;}
-inline bool operator<=(long l_, const struct long_t &l) {return l_ <= l.l;}
-inline bool operator==(long l_, const struct long_t &l) {return l_ == l.l;}
-inline bool operator!=(long l_, const struct long_t &l) {return l_ != l.l;}
+pure_inline bool operator> (long l_, const struct long_t &l) {return l_ >  l.l;}
+pure_inline bool operator>=(long l_, const struct long_t &l) {return l_ >= l.l;}
+pure_inline bool operator< (long l_, const struct long_t &l) {return l_ <  l.l;}
+pure_inline bool operator<=(long l_, const struct long_t &l) {return l_ <= l.l;}
+pure_inline bool operator==(long l_, const struct long_t &l) {return l_ == l.l;}
+pure_inline bool operator!=(long l_, const struct long_t &l) {return l_ != l.l;}
 struct ulong_t {
 	unsigned long ul;
 	ulong_t() {}
 	ulong_t(unsigned ui_) {ul = ui_;}
 	ulong_t(unsigned long ul_) {ul = ul_;}
+	ulong_t(const ulong_t &ul_) {ul = ul_.ul;}
 	struct ulong_t &operator= (const struct ulong_t &ul_) {ul =  ul_.ul; return *this;}
 	struct ulong_t &operator+=(const struct ulong_t &ul_) {ul += ul_.ul; return *this;}
 	struct ulong_t &operator-=(const struct ulong_t &ul_) {ul -= ul_.ul; return *this;}
-	struct ulong_t &operator+=(const struct long_t &l_) {ul += l_.l; return *this;}
-	struct ulong_t &operator-=(const struct long_t &l_) {ul -= l_.l; return *this;}
+	struct ulong_t &operator+=(const struct long_t &l_) {ul += (unsigned long) l_.l; return *this;}
+	struct ulong_t &operator-=(const struct long_t &l_) {ul -= (unsigned long) l_.l; return *this;}
 	struct ulong_t &operator%=(const struct ulong_t &ul_) {ul %= ul_.ul; return *this;}
 	struct ulong_t &operator^=(const struct ulong_t &ul_) {ul ^= ul_.ul; return *this;}
-	struct ulong_t &operator+=(long l_) {ul += l_; return *this;}
-	struct ulong_t &operator-=(long l_) {ul -= l_; return *this;}
-	struct ulong_t &operator+=(int i_) {ul += i_; return *this;}
-	struct ulong_t &operator-=(int i_) {ul -= i_; return *this;}
-	struct ulong_t &operator*=(int i_) {ul *= i_; return *this;}
+	struct ulong_t &operator+=(unsigned long ul_) {ul += ul_; return *this;}
+	struct ulong_t &operator-=(unsigned long ul_) {ul -= ul_; return *this;}
+	struct ulong_t &operator+=(long l_) {ul += (unsigned long) l_; return *this;}
+	struct ulong_t &operator-=(long l_) {ul -= (unsigned long) l_; return *this;}
+	struct ulong_t &operator+=(int i_) {ul += (unsigned long) i_; return *this;}
+	struct ulong_t &operator-=(int i_) {ul -= (unsigned long) i_; return *this;}
+	struct ulong_t &operator*=(int i_) {ul *= (unsigned long) i_; return *this;}
+	struct ulong_t &operator+=(unsigned u_) {ul += u_; return *this;}
 	struct ulong_t &operator&=(unsigned u_) {ul &= u_; return *this;}
+	struct ulong_t &operator+=(unsigned char c_) {ul += c_; return *this;}
 	struct ulong_t &operator++() {++ul; return *this;}
 	struct ulong_t &operator--() {--ul; return *this;}
 	struct ulong_t &operator/=(unsigned u_) {ul /= u_; return *this;}
 	struct ulong_t operator++(int) {unsigned long r = ul++; return r;}
 	struct ulong_t operator--(int) {unsigned long r = ul--; return r;}
-	struct ulong_t operator<<(unsigned u_) const {return ul << u_;}
-	struct ulong_t operator>>(unsigned u_) const {return ul >> u_;}
-	bool operator> (const struct ulong_t &ul_) const {return ul >  ul_.ul;}
-	bool operator>=(const struct ulong_t &ul_) const {return ul >= ul_.ul;}
-	bool operator< (const struct ulong_t &ul_) const {return ul <  ul_.ul;}
-	bool operator<=(const struct ulong_t &ul_) const {return ul <= ul_.ul;}
-	bool operator==(const struct ulong_t &ul_) const {return ul == ul_.ul;}
-	bool operator!=(const struct ulong_t &ul_) const {return ul != ul_.ul;}
-	bool operator> (unsigned long ul_) const {return ul >  ul_;}
-	bool operator>=(unsigned long ul_) const {return ul >= ul_;}
-	bool operator< (unsigned long ul_) const {return ul <  ul_;}
-	bool operator<=(unsigned long ul_) const {return ul <= ul_;}
-	bool operator==(unsigned long ul_) const {return ul == ul_;}
-	bool operator!=(unsigned long ul_) const {return ul != ul_;}
-	bool operator> (unsigned ui_) const {return ul >  ui_;}
-	bool operator>=(unsigned ui_) const {return ul >= ui_;}
-	bool operator< (unsigned ui_) const {return ul <  ui_;}
-	bool operator<=(unsigned ui_) const {return ul <= ui_;}
-	bool operator==(unsigned ui_) const {return ul == ui_;}
-	bool operator!=(unsigned ui_) const {return ul != ui_;}
+	struct ulong_t operator<<(unsigned u_) const_method {return ul << u_;}
+	struct ulong_t operator>>(unsigned u_) const_method {return ul >> u_;}
+	bool operator> (const struct ulong_t &ul_) const_method {return ul >  ul_.ul;}
+	bool operator>=(const struct ulong_t &ul_) const_method {return ul >= ul_.ul;}
+	bool operator< (const struct ulong_t &ul_) const_method {return ul <  ul_.ul;}
+	bool operator<=(const struct ulong_t &ul_) const_method {return ul <= ul_.ul;}
+	bool operator==(const struct ulong_t &ul_) const_method {return ul == ul_.ul;}
+	bool operator!=(const struct ulong_t &ul_) const_method {return ul != ul_.ul;}
+	bool operator> (unsigned long ul_) const_method {return ul >  ul_;}
+	bool operator>=(unsigned long ul_) const_method {return ul >= ul_;}
+	bool operator< (unsigned long ul_) const_method {return ul <  ul_;}
+	bool operator<=(unsigned long ul_) const_method {return ul <= ul_;}
+	bool operator==(unsigned long ul_) const_method {return ul == ul_;}
+	bool operator!=(unsigned long ul_) const_method {return ul != ul_;}
+	bool operator> (unsigned ui_) const_method {return ul >  ui_;}
+	bool operator>=(unsigned ui_) const_method {return ul >= ui_;}
+	bool operator< (unsigned ui_) const_method {return ul <  ui_;}
+	bool operator<=(unsigned ui_) const_method {return ul <= ui_;}
+	bool operator==(unsigned ui_) const_method {return ul == ui_;}
+	bool operator!=(unsigned ui_) const_method {return ul != ui_;}
 #ifdef _WIN64
-	bool operator<(size_t sz_) const {return ul < sz_;}
-	bool operator>(size_t sz_) const {return ul > sz_;}
+	bool operator<(size_t sz_) const_method {return ul < sz_;}
+	bool operator>(size_t sz_) const_method {return ul > sz_;}
 #endif
-	size_t operator/(size_t sz_) const {return ul/sz_;}
-	operator bool() const {return ul != 0ul;}
-	bool operator!() const {return ul == 0ul;}
-	ulong_t operator~() const {return ~ul;}
-	ulong_t operator/(const struct ulong_t &ul_) const {return ul / ul_.ul;}
-	ulong_t operator+(const struct ulong_t &ul_) const {return ul + ul_.ul;}
-	ulong_t operator-(const struct ulong_t &ul_) const {return ul - ul_.ul;}
-	ulong_t operator|(const struct ulong_t &ul_) const {return ul | ul_.ul;}
-	ulong_t operator%(const struct ulong_t &ul_) const {return ul % ul_.ul;}
-	ulong_t operator+(long l_) const {return ul + l_;}
-	ulong_t operator-(long l_) const {return ul - l_;}
-	ulong_t operator+(int i_) const {return ul + i_;}
-	ulong_t operator-(int i_) const {return ul - i_;}
-	unsigned long long operator*(unsigned long long ull_) const {return ul * ull_;}
-	unsigned long long operator+(unsigned long long ull_) const {return ul + ull_;}
-	unsigned long long operator-(unsigned long long ull_) const {return ul - ull_;}
-	ulong_t operator*(unsigned u_) const {return ul * u_;}
-	ulong_t operator-(unsigned u_) const {return ul - u_;}
-	ulong_t operator+(const struct long_t &l_) const {return ul + l_.l;}
-	ulong_t operator-(const struct long_t &l_) const {return ul - l_.l;}
-	operator unsigned long () const {return ul;}
-	operator unsigned long long () const {return ul;}
+	size_t operator/(size_t sz_) const_method {return ul/sz_;}
+	operator bool() const_method {return ul != 0ul;}
+	bool operator!() const_method {return ul == 0ul;}
+	ulong_t operator~() const_method {return ~ul;}
+	ulong_t operator/(const struct ulong_t &ul_) const_method {return ul / ul_.ul;}
+	ulong_t operator+(const struct ulong_t &ul_) const_method {return ul + ul_.ul;}
+	ulong_t operator-(const struct ulong_t &ul_) const_method {return ul - ul_.ul;}
+	ulong_t operator|(const struct ulong_t &ul_) const_method {return ul | ul_.ul;}
+	ulong_t operator%(const struct ulong_t &ul_) const_method {return ul % ul_.ul;}
+	ulong_t operator+(unsigned long ul_) const_method {return ul + ul_;}
+	ulong_t operator-(unsigned long ul_) const_method {return ul - ul_;}
+	ulong_t operator+(long l_) const_method {return ul + (unsigned long) l_;}
+	ulong_t operator-(long l_) const_method {return ul - (unsigned long) l_;}
+	ulong_t operator+(int i_) const_method {return ul + (unsigned long) i_;}
+	ulong_t operator-(int i_) const_method {return ul - (unsigned long) i_;}
+	unsigned long long operator*(unsigned long long ull_) const_method {return ul * ull_;}
+	unsigned long long operator+(unsigned long long ull_) const_method {return ul + ull_;}
+	unsigned long long operator-(unsigned long long ull_) const_method {return ul - ull_;}
+	ulong_t operator*(unsigned u_) const_method {return ul * u_;}
+	ulong_t operator-(unsigned u_) const_method {return ul - u_;}
+	ulong_t operator+(const struct long_t &l_) const_method {return ul + (unsigned long) l_.l;}
+	ulong_t operator-(const struct long_t &l_) const_method {return ul - (unsigned long) l_.l;}
+	operator unsigned long () const_method {return ul;}
+	operator unsigned long long () const_method {return ul;}
 #ifdef _WIN64
-	explicit operator unsigned int () const {return (unsigned) ul;}
-	explicit operator int () const {return (int) ul;}
+	explicit operator unsigned int () const_method {return (unsigned) ul;}
+	explicit operator int () const_method {return (int) ul;}
 	/* for use ulong_t as array index */
-	operator long long () const {return ul;}
+	operator long long () const_method {return ul;}
 #else
-	operator size_t () const {return (size_t) ul;}
+	operator size_t () const_method {return (size_t) ul;}
 	/* for use ulong_t as array index */
-	operator int () const {return (int) ul;}
+	operator int () const_method {return (int) ul;}
 #endif
-	explicit operator double () const {return (double) ul;}
-	explicit operator long () const {return (long) ul;}
+	explicit operator double () const_method {return (double) ul;}
+	explicit operator long () const_method {return (long) ul;}
 private:
 	operator char () const;
 	operator short () const;
@@ -482,41 +461,46 @@ private:
 	operator long long () const;
 #endif
 };
-inline bool operator> (unsigned long ul_, const struct ulong_t &ul) {return ul_ >  ul.ul;}
-inline bool operator>=(unsigned long ul_, const struct ulong_t &ul) {return ul_ >= ul.ul;}
-inline bool operator< (unsigned long ul_, const struct ulong_t &ul) {return ul_ <  ul.ul;}
-inline bool operator<=(unsigned long ul_, const struct ulong_t &ul) {return ul_ <= ul.ul;}
-inline bool operator==(unsigned long ul_, const struct ulong_t &ul) {return ul_ == ul.ul;}
-inline bool operator!=(unsigned long ul_, const struct ulong_t &ul) {return ul_ != ul.ul;}
-inline bool operator==(size_t sz_, const struct ulong_t &ul) {return sz_ == ul.ul;}
-inline bool operator!=(size_t sz_, const struct ulong_t &ul) {return sz_ != ul.ul;}
-inline bool operator> (size_t sz_, const struct ulong_t &ul) {return sz_ >  ul.ul;}
-inline bool operator>=(uint32_t u32_, const struct ulong_t &ul) {return u32_ >= ul.ul;}
+pure_inline bool operator> (unsigned long ul_, const struct ulong_t &ul) {return ul_ >  ul.ul;}
+pure_inline bool operator>=(unsigned long ul_, const struct ulong_t &ul) {return ul_ >= ul.ul;}
+pure_inline bool operator< (unsigned long ul_, const struct ulong_t &ul) {return ul_ <  ul.ul;}
+pure_inline bool operator<=(unsigned long ul_, const struct ulong_t &ul) {return ul_ <= ul.ul;}
+pure_inline bool operator==(unsigned long ul_, const struct ulong_t &ul) {return ul_ == ul.ul;}
+pure_inline bool operator!=(unsigned long ul_, const struct ulong_t &ul) {return ul_ != ul.ul;}
+pure_inline bool operator==(size_t sz_, const struct ulong_t &ul) {return sz_ == ul.ul;}
+pure_inline bool operator!=(size_t sz_, const struct ulong_t &ul) {return sz_ != ul.ul;}
+pure_inline bool operator> (size_t sz_, const struct ulong_t &ul) {return sz_ >  ul.ul;}
+pure_inline bool operator>=(uint32_t u32_, const struct ulong_t &ul) {return u32_ >= ul.ul;}
 #ifdef _WIN64
-inline bool operator>=(size_t sz_, const struct ulong_t &ul) {return sz_ >= ul.ul;}
+pure_inline bool operator>=(size_t sz_, const struct ulong_t &ul) {return sz_ >= ul.ul;}
 #endif
-inline size_t operator-(size_t sz_, const struct ulong_t &ul) {return sz_ - ul.ul;}
-inline size_t operator+(size_t sz_, const struct ulong_t &ul) {return sz_ + ul.ul;}
-inline size_t operator*(size_t sz_, const struct ulong_t &ul) {return sz_ * ul.ul;}
-inline ulong_t operator+(char c, const struct ulong_t &ul) {return c + ul.ul;}
+pure_inline size_t operator-(size_t sz_, const struct ulong_t &ul) {return sz_ - ul.ul;}
+pure_inline size_t operator+(size_t sz_, const struct ulong_t &ul) {return sz_ + ul.ul;}
+pure_inline size_t operator*(size_t sz_, const struct ulong_t &ul) {return sz_ * ul.ul;}
+pure_inline ulong_t operator+(unsigned char c, const struct ulong_t &ul) {return c + ul.ul;}
 #ifdef _WIN64
-inline ulong_t operator*(unsigned u_, const struct ulong_t &ul) {return u_ * ul.ul;}
+pure_inline ulong_t operator*(unsigned u_, const struct ulong_t &ul) {return u_ * ul.ul;}
 #endif
-inline double operator/(double d_, const struct ulong_t &ul) {return d_ / ul.ul;}
+pure_inline double operator/(double d_, const struct ulong_t &ul) {return d_ / ul.ul;}
 inline size_t operator+=(size_t &sz_, const struct ulong_t &ul) {return sz_ += ul.ul;}
 inline size_t operator-=(size_t &sz_, const struct ulong_t &ul) {return sz_ -= ul.ul;}
 inline uint32_t operator%=(uint32_t &u32_, const struct ulong_t &ul) {return u32_ %= ul.ul;}
 #ifdef _WIN64
 inline size_t operator%=(size_t &sz_, const struct ulong_t &ul) {return sz_ %= ul.ul;}
 #endif
-static inline unsigned long TO_ULONG(const struct ulong_t &ul) {return ul.ul;}
-static inline long TO_LONG(const struct long_t &l) {return l.l;}
-#else /* !(_MSC_VER && __cplusplus) */
+pure_inline unsigned long TO_ULONG(const struct ulong_t &ul) {return ul.ul;}
+pure_inline long TO_LONG(const struct long_t &l) {return l.l;}
+#undef pure_inline
+#undef const_method
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+#else /* !(__cplusplus && __cplusplus >= 201103L) */
 typedef unsigned long ulong_t;
 typedef long long_t;
 #define TO_ULONG(ulw) (ulw)
 #define TO_LONG(lw) (lw)
-#endif /* !(_MSC_VER && __cplusplus) */
+#endif /* !(__cplusplus && __cplusplus >= 201103L) */
 
 /* Printf field width/precision format specifier "%*"/"%.*" requires an integer */
 #define TO_PRINTF_WIDTH(w) ((int)(w))
@@ -592,7 +576,8 @@ enum commenttype {
 
 struct exp_instruction;
 
-typedef int (*Func_print)(FILE *, const char *, ...);
+ATTRIBUTE_PRINTF_TYPEDEF(format, 2, 3)
+typedef int (*Func_print)(FILE *file, const char *format, ...);
 typedef struct exp_node **(*afunc_t)(struct exp_node *, struct exp_node *);
 typedef struct {
 	const char *name;
@@ -601,7 +586,7 @@ typedef struct {
 	afunc_t lookup;
 	afunc_t exists;
 	afunc_t clear;
-	afunc_t remove;
+	afunc_t a_remove;	/* remove may be defined as macro */
 	afunc_t list;
 	afunc_t copy;
 	afunc_t dump;
@@ -662,7 +647,7 @@ typedef struct exp_node {
 #endif
 			struct exp_node *typre;
 			char *sp;
-			wchar_t *wsp;
+			uni_char_t *wsp;
 			size_t slen;
 			size_t wslen;
 			size_t sref;
@@ -751,7 +736,7 @@ typedef struct exp_node {
 #ifdef __cplusplus
 	struct exp_node &operator=(const struct exp_node &src)
 	{
-		memcpy(this, &src, sizeof(src));
+		memcpy((void*) this, &src, sizeof(src));
 		return *this;
 	}
 #endif
@@ -788,12 +773,12 @@ typedef struct exp_node {
  * n < NF will not have a NUL terminator, since they point into the $0 buffer.
  * All other strings are NUL-terminated.
  */
-#define stptr	sub.val.sp
+#define stptr	sub.val.sp		/* note: may not be NUL-terminated! (and may contain NULs) */
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
 #define stfmt	sub.val.idx
 #define strndmode sub.val.rndmode
-#define wstptr	sub.val.wsp
+#define wstptr	sub.val.wsp		/* note: NUL-terminated! (but may contain NULs) */
 #define wstlen	sub.val.wslen
 #ifdef HAVE_MPFR
 #define mpg_numbr	sub.val.nm.mpnum
@@ -847,7 +832,7 @@ typedef struct exp_node {
 #define alookup 	array_funcs->lookup
 #define aexists 	array_funcs->exists
 #define aclear		array_funcs->clear
-#define aremove		array_funcs->remove
+#define aremove		array_funcs->a_remove
 #define alist		array_funcs->list
 #define acopy		array_funcs->copy
 #define adump		array_funcs->dump
@@ -1087,7 +1072,7 @@ typedef struct exp_instruction {
 #ifdef __cplusplus
 	struct exp_instruction &operator=(const struct exp_instruction &src)
 	{
-		memcpy(this, &src, sizeof(src));
+		memcpy((void*) this, &src, sizeof(src));
 		return *this;
 	}
 #endif
@@ -1245,7 +1230,8 @@ typedef struct exp_instruction {
 #define initval         x.xn
 
 typedef struct iobuf {
-	awk_input_buf_t publ;	/* exposed to extensions */
+	struct awk_input_buf_container pubc;	/* exposed to extensions */
+#	define publ pubc.input_buf
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -1268,7 +1254,10 @@ typedef struct iobuf {
 
 typedef void (*Func_ptr)(void);
 
-typedef int pid_t;
+#ifdef _MSC_VER
+typedef intptr_t pid_t;
+#endif
+
 #define BAD_PID -1
 
 /* structure used to dynamically maintain a linked-list of open files/pipes */
@@ -1381,9 +1370,11 @@ struct block_item {
 };
 
 struct block_header {
+#ifndef MEMDEBUG
 	struct block_item *freep;
-	size_t size;
+#endif
 	const char *name;
+	size_t size;
 	size_t highwater;
 #ifdef MEMDEBUG
 	size_t active;
@@ -1425,19 +1416,22 @@ extern unsigned OFMTidx;
 #ifdef HAVE_MPFR
 extern int MPFR_round_mode;
 #endif
+extern NODE **fmt_list;
 extern char *TEXTDOMAIN;
-extern NODE *BINMODE_node, *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
-extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
-extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
-extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
-extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node, *FPAT_node;
+extern NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
+extern NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
+extern NODE *FNR_node, *FPAT_node, *FS_node, *IGNORECASE_node, *LINT_node;
+extern NODE *NF_node, *NR_node, *OFMT_node, *OFS_node, *ORS_node, *PROCINFO_node;
+extern NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
 extern NODE *PREC_node, *ROUNDMODE_node;
+extern NODE *TEXTDOMAIN_node;
 extern NODE *Nnull_string;
 extern NODE *Null_field;
 extern NODE **fields_arr;
 extern unsigned sourceline;
 extern const char *source;
 extern unsigned errcount;
+extern INSTRUCTION *main_beginfile;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
 extern NODE *(*make_number)(double);	/* double instead of AWKNUM on purpose */
 extern NODE *(*str2number)(NODE *);
@@ -1504,7 +1498,7 @@ extern int exit_val;
 #define do_lint_old         (do_flags & DO_LINT_OLD)
 #define do_lint_extensions  (do_flags & DO_LINT_EXTENSIONS)
 #endif
-extern int gawk_mb_cur_max;
+extern unsigned gawk_mb_cur_max;
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 extern GETGROUPS_T *groupset;
@@ -1535,9 +1529,29 @@ extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
 
+/* awkgram.y */
 extern const char awk_namespace[];	/* "awk" */
 extern const char *current_namespace;
 extern bool namespace_changed;
+
+/* for debugging */
+extern INSTRUCTION *code_block;
+extern INSTRUCTION *rule_list;
+extern char **d_argv;	/* copy of argv array */
+extern FILE *output_fp;
+extern const char *command_file;	/* debugger commands */
+extern bool output_is_tty;
+extern NODE **fcall_list;
+extern ulong_t fcall_count;
+extern IOBUF *curfile;
+extern bool exiting;
+
+/* for do_print() */
+extern NODE **args_array;
+extern ulong_t max_args;
+
+/* for calling interpret() in gawkapi.c */
+extern enum defrule currule;
 
 /* ------------------------- Runtime stack -------------------------------- */
 
@@ -1632,7 +1646,7 @@ DEREF(NODE *r)
 #define is_mpg_float(n)		(((n)->flags & MPFN) != 0)
 #define is_mpg_integer(n)	(((n)->flags & MPZN) != 0)
 #define is_mpg_number(n)	(((n)->flags & (MPZN|MPFN)) != 0)
-#else
+#else /* !HAVE_MPFR */
 #define get_number_ui(n)	(unsigned long) (n)->numbr
 #define get_number_si(n)	(long) (n)->numbr
 #define get_number_d(n)		(double) (n)->numbr
@@ -1641,40 +1655,65 @@ DEREF(NODE *r)
 #define is_mpg_number(n)	0
 #define is_mpg_float(n)		0
 #define is_mpg_integer(n)	0
-#define iszero(n)		((n)->numbr == 0.0)
-#endif
 
-#define get_number_fn(n) (field_num_t) get_number_ui(n)
+static inline int iszero(const NODE *n)
+{
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+	return n->numbr == 0.0;
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+}
+#endif /* !HAVE_MPFR */
+
+static inline field_num_t
+get_number_fn(const NODE *n)
+{
+#ifdef HAVE_MPFR
+	/* check that field_num_t is equivalent to unsigned long */
+	(void) sizeof(int[1-2*!(sizeof(field_num_t) == sizeof(unsigned long))]);
+	return (field_num_t) get_number_ui(n);
+#else
+	return (field_num_t) n->numbr;
+#endif
+}
+
+static inline AWKNUM
+field_num_as_awknum(field_num_t n)
+{
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+	return (AWKNUM) n;
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+}
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
 #define get_lhs(n, r)	 (n)->type == Node_var && ! var_uninitialized(n) ? \
 				&((n)->var_value) : r_get_lhs((n), (r))
 
-#ifdef MEMDEBUG
-
-extern void *r_getblock(enum block_id id, const char *file, int line);
-extern void r_freeblock(void *, enum block_id id);
 #define getblock_at(p, id, ty, file, line)	(void) (p = (ty) r_getblock(id, file, line))
 #define freeblock(p, id)			(void) (r_freeblock(p, id))
 
-#else /* MEMDEBUG */
-
-#define getblock_at(p, id, ty, file, line) \
-	(void) (file), (void) (line), (void) (((p = (ty) nextfree[id].freep), p) ? \
-				(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
-				: (p = (ty) more_blocks(id)))
-
-#define freeblock(p, id)	 (void) (((struct block_item *) p)->freep = nextfree[id].freep, \
-					nextfree[id].freep = (struct block_item *) p)
-
-#endif /* MEMDEBUG */
-
-#define getblock(p, id, ty)	getblock_at(p, id, ty, __FILE__, __LINE__)
+#define getblock(p, id, ty)		getblock_at(p, id, ty, __FILE__, __LINE__)
 
 #define getnode_at(n,file,line)		getblock_at(n, BLOCK_NODE, NODE *, file, line)
 #define freenode(n)			freeblock(n, BLOCK_NODE)
 #define getnode(n)			getnode_at(n, __FILE__, __LINE__)
+
+static inline NODE *
+clearnode(NODE *n)
+{
+	memset((void*) n, '\0', sizeof(*n));
+	return n;
+}
 
 #define getbucket_at(b,file,line) 	getblock_at(b, BLOCK_BUCKET, BUCKET *, file, line)
 #define freebucket(b)			freeblock(b, BLOCK_BUCKET)
@@ -1691,9 +1730,9 @@ extern void r_freeblock(void *, enum block_id id);
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, file, line))
-#define	ezalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) ezalloc_real((size_t)(x), str, #var, file, line))
-#define	erealloc_at(var,ty,x,str,file,line)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, file, line))
+#define	emalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) emalloc_real(x, str, #var, file, line))
+#define	ezalloc_at(var,ty,x,str,file,line)	(void) (var = (ty) ezalloc_real(x, str, #var, file, line))
+#define	erealloc_at(var,ty,x,str,file,line)	(void) (var = (ty) erealloc_real((void *) var, x, str, #var, file, line))
 
 #define efree(p)	free(p)
 
@@ -1716,6 +1755,7 @@ extern int fatal_tag_valid;
 
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
+
 /* array.c */
 typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
 typedef enum {
@@ -1753,6 +1793,7 @@ extern NODE *do_asorti(nargs_t nargs);
 extern ulong_t (*hash)(const char *s, size_t len, ulong_t hsize, ulong_t *code);
 extern void init_env_array(NODE *env_node);
 extern void init_argv_array(NODE *argv_node, NODE *shadow_node);
+
 /* awkgram.c */
 extern NODE *variable(unsigned location, char *name, NODETYPE type);
 extern bool parse_program(INSTRUCTION **pcode, bool from_eval);
@@ -1768,7 +1809,8 @@ extern void free_srcfile(SRCFILE *thisfile);
 extern bool files_are_same(const char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
-/* function that implements a built-in */
+
+/* function implementing a built-in */
 #ifdef __cplusplus
 typedef union {
 	NODE *(*nargs_fn)(nargs_t nargs);
@@ -1799,17 +1841,21 @@ static inline builtin_func_t builtin_func_null_(void)
 #define BUILTIN_FUNC_NULL builtin_func_null_()
 #else /* !__cplusplus */
 typedef void *(*builtin_func_t)(nargs_t nargs);
-static inline bool builtin_func_is_null(builtin_func_t f)
-{
-	return f == NULL;
-}
+#define builtin_func_is_null(f) ((f) == (builtin_func_t)NULL)
 static inline bool builtin_func_is_nargs_fn(builtin_func_t f, NODE *(*nargs_fn)(nargs_t))
 {
 	return (NODE*(*)(nargs_t))f == nargs_fn;
 }
 static inline bool builtin_func_is_nargs_x_fn(builtin_func_t f, NODE *(*nargs_x_fn)(nargs_t, int))
 {
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 	return (NODE*(*)(nargs_t, int))f == nargs_x_fn;
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic pop
+#endif
 }
 static inline NODE *(*builtin_func_to_nargs_fn(builtin_func_t f))(nargs_t)
 {
@@ -1817,7 +1863,14 @@ static inline NODE *(*builtin_func_to_nargs_fn(builtin_func_t f))(nargs_t)
 }
 static inline NODE *(*builtin_func_to_nargs_x_fn(builtin_func_t f))(nargs_t, int)
 {
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 	return (NODE*(*)(nargs_t, int))f;
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic pop
+#endif
 }
 static inline builtin_func_t builtin_func_from_nargs_fn(NODE *(*nargs_fn)(nargs_t))
 {
@@ -1825,10 +1878,18 @@ static inline builtin_func_t builtin_func_from_nargs_fn(NODE *(*nargs_fn)(nargs_
 }
 static inline builtin_func_t builtin_func_from_nargs_x_fn(NODE *(*nargs_x_fn)(nargs_t, int))
 {
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 	return (void*(*)(nargs_t))nargs_x_fn;
+#if defined __GNUC__ && (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic pop
+#endif
 }
 #define BUILTIN_FUNC_NULL ((builtin_func_t)NULL)
 #endif /* !__cplusplus */
+
 extern builtin_func_t lookup_builtin(const char *name);
 extern void install_builtins(void);
 extern bool is_alpha(int c);
@@ -1837,6 +1898,7 @@ extern bool is_letter(int c);
 extern bool is_identchar(int c);
 extern NODE *make_regnode(NODETYPE type, NODE *exp);
 extern bool validate_qualified_name(const char *token);
+
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(nargs_t nargs);
@@ -1886,9 +1948,12 @@ extern NODE *do_typeof(nargs_t nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 extern int sanitize_exit_status(int status);
+
 /* debug.c */
 extern void init_debug(void);
 extern int debug_prog(INSTRUCTION *pc);
+extern void frame_popped(void);
+
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
@@ -1922,18 +1987,21 @@ extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern bool register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
+extern INSTRUCTION *unwind_stack(size_t n);
+
 /* ext.c */
 extern NODE *do_ext(nargs_t nargs);
 void load_ext(const char *lib_name);	/* temporary */
 extern void close_extensions(void);
 extern bool is_valid_identifier(const char *name);
 #ifdef DYNAMIC
-extern awk_bool_t make_builtin(const char *name_space, const awk_ext_func_t *);
+extern awk_bool_t make_builtin(const char *name_space, awk_ext_func_t *);
 extern NODE *get_argument(size_t);
 extern NODE *get_actual_argument(NODE *, size_t, bool);
 #define get_scalar_argument(n, i)  get_actual_argument((n), (i), false)
 #define get_array_argument(n, i)   get_actual_argument((n), (i), true)
 #endif
+
 /* field.c */
 extern void init_fields(void);
 extern void set_record(const char *buf, size_t cnt, const awk_fieldwidth_info_t *);
@@ -1978,7 +2046,7 @@ extern bool os_isdir(fd_t fd);
 extern bool os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
 extern bool os_is_setuid(void);
 extern int os_setbinmode(fd_t fd, int mode);
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 extern int os_fstat(int fd, gawk_stat_t *buf);
 #define os_stat(path, buf)	_stat64(path, buf)
 extern int os_xfstat(int fd, gawk_xstat_t *buf);
@@ -1993,11 +2061,12 @@ extern void os_restore_mode(fd_t fd);
 extern size_t optimal_bufsize(fd_t fd, gawk_xstat_t *sbuf);
 extern bool ispath(const char *file);
 extern bool isdirpunct(int c);
-#ifdef _MSC_VER
-extern char **convert_wargv(int argc, wchar_t **wargv);
-extern void gawk_free_argv(void);
+#ifdef WINDOWS_NATIVE
+struct wide_arg;
+extern char **convert_wargv(int argc, struct wide_arg *wargs);
+extern void gawk_cleanup(void);
 #else
-#define gawk_free_argv() ((void)0)
+#define gawk_cleanup() ((void)0)
 #endif
 
 /* io.c */
@@ -2008,8 +2077,19 @@ extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
 extern void register_two_way_processor(awk_two_way_processor_t *processor);
 extern void set_FNR(void);
 extern void set_NR(void);
+extern size_t gawk_fwrite(const void *buf, size_t size, size_t nmemb, awk_output_buf_t *outbuf);
+extern int gawk_fflush(awk_output_buf_t *outbuf);
+extern int gawk_ferror(awk_output_buf_t *outbuf);
 
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 extern struct redirect *redirect(NODE *redir_exp, enum redirval redirtype, int *errflg, bool failure_fatal);
+#if defined __cplusplus && defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+
 extern struct redirect *redirect_string(const char *redir_exp_str,
 		size_t redir_exp_len, bool not_string_flag, enum redirval redirtype,
 		int *errflg, fd_t extfd, bool failure_fatal);
@@ -2026,26 +2106,27 @@ extern NODE *do_getline_redir(bool intovar, enum redirval redirtype);
 extern NODE *do_getline(bool intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, size_t len);
 extern bool inrec(IOBUF *iop, int *errcode);
-extern long_t nextfile(IOBUF **curfile, bool skipping);
+extern long_t nextfile(IOBUF **cur, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
 extern bool is_non_fatal_redirect(const char *str, size_t len);
 extern void ignore_sigpipe(void);
 extern void set_sigpipe_to_default(void);
 extern bool non_fatal_flush_std_file(FILE *fp);
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 extern ssize_t read_wrap(fd_t fd, void *buf, size_t size);
 #else
 #define read_wrap	((ssize_t(*)(fd_t, void*, size_t)) read)
 #endif
 
 /* main.c */
+extern const char *get_spec_varname(Func_ptr fptr);
 extern bool arg_assign(char *arg, bool initing);
 extern bool is_std_var(const char *var);
 extern bool is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values(void);
 extern long_t getenv_long(const char *name);
-extern void after_beginfile(IOBUF **curfile);
+extern void after_beginfile(IOBUF **cur);
 extern void set_current_namespace(const char *new_namespace);
 
 /* mpfr.c */
@@ -2080,21 +2161,18 @@ extern NODE *mpg_node(unsigned int);
 extern const char *mpg_fmt(const char *, ...);
 extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
+
 /* msg.c */
 ATTRIBUTE_NORETURN extern void gawk_exit(int status);
 ATTRIBUTE_NORETURN extern void final_exit(int status);
-ATTRIBUTE_PRINTF(3, 0) extern void err(bool isfatal, const char *s, const char *emsg, va_list argp);
-ATTRIBUTE_PRINTF_AT1(mesg) extern void msg (const char *mesg, ...);
-ATTRIBUTE_PRINTF_AT1(mesg) extern void error (const char *mesg, ...);
-ATTRIBUTE_PRINTF_AT1(mesg) extern void r_warning (const char *mesg, ...);
-extern void set_loc (const char *file, unsigned line);
+ATTRIBUTE_PRINTF(emsg, 3, 0) extern void err(bool isfatal, const char *s, const char *emsg, va_list argp);
+ATTRIBUTE_PRINTF(mesg, 1, 2) extern void msg(const char *mesg, ...);
+ATTRIBUTE_PRINTF(mesg, 1, 2) extern void error(const char *mesg, ...);
+ATTRIBUTE_PRINTF(mesg, 1, 2) extern void r_warning(const char *mesg, ...);
+extern void set_loc(const char *file, unsigned line);
 ATTRIBUTE_NORETURN
-ATTRIBUTE_PRINTF_AT1(mesg) extern void r_fatal (const char *mesg, ...);
-#if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))
-extern void (*lintfunc)(const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-#else
-extern void (*lintfunc)(const char *mesg, ...);
-#endif
+ATTRIBUTE_PRINTF(mesg, 1, 2) extern void r_fatal(const char *mesg, ...);
+ATTRIBUTE_PRINTF_PTR(mesg, 1, 2) extern void (*lintfunc)(const char *mesg, ...);
 /* profile.c */
 extern void init_profiling_signals(void);
 extern void set_prof_file(const char *filename);
@@ -2105,21 +2183,22 @@ extern char *pp_node(NODE *n);
 extern int pp_func(INSTRUCTION *pc, void *);
 extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 		size_t namelen, int delim, bool breaklines);
+
 /* node.c */
 extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, unsigned index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern NODE *make_typed_regex(const char *re, size_t len);
-extern void *more_blocks(enum block_id id);
+extern struct block_item *more_blocks(enum block_id id);
 extern int parse_escape(const char **string_ptr);
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)
-extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
-		const wchar_t *needle, size_t needle_len);
-extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
-		const wchar_t *needle, size_t needle_len);
+extern const uni_char_t *wstrstr(const uni_char_t *haystack, size_t hs_len,
+		const uni_char_t *needle, size_t needle_len);
+extern const uni_char_t *wcasestrstr(const uni_char_t *haystack, size_t hs_len,
+		const uni_char_t *needle, size_t needle_len);
 extern void r_free_wstr(NODE *n);
 #define free_wstr(n)	do { if ((n)->flags & WSTRCUR) r_free_wstr(n); } while(0)
 extern wint_t btowc_cache[];
@@ -2128,6 +2207,31 @@ extern void init_btowc_cache(void);
 #define is_valid_character(b)	(btowc_cache[(b)&0xFF] != WEOF)
 extern bool out_of_range(NODE *n);
 extern char *format_nan_inf(NODE *n, char format);
+#ifdef MEMDEBUG
+extern void *r_getblock(enum block_id id, const char *file, unsigned line);
+extern void r_freeblock(void *, enum block_id id);
+#else /* !MEMDEBUG */
+static inline void *
+r_getblock(enum block_id id, const char *file, unsigned line)
+{
+	struct block_item *p;
+	(void) file, (void) line;
+	p = nextfree[id].freep;
+	if (p != NULL)
+		nextfree[id].freep = p->freep;
+	else
+		p = more_blocks(id);
+	return p;
+}
+static inline void
+r_freeblock(void *ptr, enum block_id id)
+{
+	struct block_item *p = (struct block_item*) ptr;
+	p->freep = nextfree[id].freep;
+	nextfree[id].freep = p;
+}
+#endif /* !MEMDEBUG */
+
 /* re.c */
 extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
 extern regoff_t research(Regexp *rp, char *str, int start, size_t len, int flags);
@@ -2168,6 +2272,7 @@ extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 extern bool check_param_names(void);
 extern bool is_all_upper(const char *name);
+extern bool cmp_keyword(const char name[], const char keyword[], unsigned len);
 
 /* floatcomp.c */
 #ifdef HAVE_UINTMAX_T
@@ -2175,6 +2280,12 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #else
 #define adjust_uint(n) (n)
 #endif
+
+/* int_array.c */
+extern AWKNUM int_kilobytes(NODE *symbol);
+
+/* str_array.c */
+extern AWKNUM str_kilobytes(NODE *symbol);
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -2398,17 +2509,17 @@ boolval(NODE *t)
 /* emalloc_real --- malloc with error checking */
 
 static inline void *
-emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+emalloc_real(size_t count, const char *where, const char *var, const char *file, unsigned line)
 {
 	void *ret;
 
 	if (count == 0)
-		fatal("%s:%d: emalloc called with zero bytes", file, line);
+		fatal("%s:%u: emalloc called with zero bytes", file, line);
 
 	ret = (void *) malloc(count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: cannot allocate %llu bytes of memory: %s"),
-			file, line, where, var, 0ull + count, strerror(errno));
+		fatal(_("%s:%u:%s: %s: cannot allocate %" ZUFMT " bytes of memory: %s"),
+			file, line, where, var, count, strerror(errno));
 
 	return ret;
 }
@@ -2416,17 +2527,17 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 /* ezalloc_real --- malloc zero-filled bytes with error checking */
 
 static inline void *
-ezalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+ezalloc_real(size_t count, const char *where, const char *var, const char *file, unsigned line)
 {
 	void *ret;
 
 	if (count == 0)
-		fatal("%s:%d: ezalloc called with zero bytes", file, line);
+		fatal("%s:%u: ezalloc called with zero bytes", file, line);
 
 	ret = (void *) calloc(1, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: cannot allocate %llu bytes of memory: %s"),
-			file, line, where, var, 0ull + count, strerror(errno));
+		fatal(_("%s:%u:%s: %s: cannot allocate %" ZUFMT " bytes of memory: %s"),
+			file, line, where, var, count, strerror(errno));
 
 	return ret;
 }
@@ -2434,17 +2545,17 @@ ezalloc_real(size_t count, const char *where, const char *var, const char *file,
 /* erealloc_real --- realloc with error checking */
 
 static inline void *
-erealloc_real(void *ptr, size_t count, const char *where, const char *var, const char *file, int line)
+erealloc_real(void *ptr, size_t count, const char *where, const char *var, const char *file, unsigned line)
 {
 	void *ret;
 
 	if (count == 0)
-		fatal("%s:%d: erealloc called with zero bytes", file, line);
+		fatal("%s:%u: erealloc called with zero bytes", file, line);
 
 	ret = (void *) realloc(ptr, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: cannot reallocate %llu bytes of memory: %s"),
-			file, line, where, var, 0ull + count, strerror(errno));
+		fatal(_("%s:%u:%s: %s: cannot reallocate %" ZUFMT " bytes of memory: %s"),
+			file, line, where, var, count, strerror(errno));
 
 	return ret;
 }
@@ -2454,11 +2565,11 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 #define make_number_node(flags) make_number_node_real(flags, __FILE__, __LINE__)
 
 static inline NODE *
-make_number_node_real(int flags, const char *file, int line)
+make_number_node_real(int flags, const char *file, unsigned line)
 {
 	NODE *r;
 	getnode_at(r, file, line);
-	memset(r, 0, sizeof(*r));
+	clearnode(r);
 	r->type = Node_val;
 	r->valref = 1u;
 	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
@@ -2499,13 +2610,13 @@ str_terminate_f(NODE *n, char *savep)
 #define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
 #define set_sigpipe_to_default() signal(SIGPIPE, SIG_DFL)
 #define die_via_sigpipe() (signal(SIGPIPE, SIG_DFL), kill(getpid(), SIGPIPE))
-#else
+#else	/* !SIGPIPE */
 #define ignore_sigpipe()
 #define set_sigpipe_to_default()
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 /* 0xC0000008 is EXCEPTION_INVALID_HANDLE, somewhat appropriate for EPIPE */
-#define die_via_sigpipe() exit(0xC0000008)
-#else  /* !__MINGW32__ && !_MSC_VER */
+#define die_via_sigpipe() exit((int)0xC0000008)
+#else	/* !WINDOWS_NATIVE */
 #define die_via_sigpipe() exit(EXIT_FATAL)
-#endif	/* !__MINGW32__ && !_MSC_VER */
-#endif
+#endif	/* !WINDOWS_NATIVE */
+#endif	/* !SIGPIPE */
