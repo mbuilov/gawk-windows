@@ -77,28 +77,37 @@ Please port the following code to your weird host;
 #define DBL_FRACTION_BITS (DBL_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
 
 /* Return the number of trailing zeros in N.  N must be nonzero.  */
-static int
+static unsigned int
 count_trailing_zeros(uintmax_t n)
 {
-#if defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= UINT_MAX
-	return __builtin_ctz(n);
-#elif defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULONG_MAX
-	return __builtin_ctzl(n);
-#elif defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULLONG_MAX
-	return __builtin_ctzll(n);
+#ifndef UINTMAX_MAX
+#error UINTMAX_MAX is undefined
+#endif
+#if (defined __clang__ \
+	|| (defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)))) \
+	&& UINTMAX_MAX <= UINT_MAX
+	return (unsigned int) __builtin_ctz(n);
+#elif (defined __clang__ \
+	|| (defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)))) \
+	&& UINTMAX_MAX <= ULONG_MAX
+	return (unsigned int) __builtin_ctzl(n);
+#elif (defined __clang__ \
+	|| (defined __GNUC__ && 3 < (__GNUC__ + (4 <= __GNUC_MINOR__))) \
+	&& UINTMAX_MAX <= ULLONG_MAX)
+	return (unsigned int) __builtin_ctzll(n);
 #elif defined _MSC_VER && UINTMAX_MAX <= ULONG_MAX
 	unsigned long Index;
 	(void) _BitScanForward(&Index, n);
-	return (int) Index;
+	return (unsigned int) Index;
 #elif defined _MSC_VER && UINTMAX_MAX <= ULLONG_MAX && defined _WIN64
 	unsigned long Index;
 	(void) _BitScanForward64(&Index, n);
-	return (int) Index;
+	return (unsigned int) Index;
 #else
-	int i = 0;
+	unsigned int i = 0;
 	for (; (n & 3) == 0; n >>= 2)
 		i += 2;
-	return i + (int) (1 & ~n);
+	return i + (unsigned int) (1 & ~n);
 #endif
 }
 
@@ -119,7 +128,7 @@ adjust_uint(uintmax_t n)
 	if (AWKNUM_FRACTION_BITS < wordbits) {
 		uintmax_t one = 1;
 		uintmax_t sentinel = one << (wordbits - AWKNUM_FRACTION_BITS);
-		int shift = count_trailing_zeros(n | sentinel);
+		unsigned int shift = count_trailing_zeros(n | sentinel);
 		uintmax_t mask = (one << AWKNUM_FRACTION_BITS) - 1;
 
 		n &= mask << shift;
