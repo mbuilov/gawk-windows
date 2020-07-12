@@ -496,22 +496,23 @@ set_PREC(void)
 	NODE *val;
 	static const struct ieee_fmt {
 		const char *name;
+		unsigned namesz;
 		mpfr_prec_t precision;
 		mpfr_exp_t emax;
 		mpfr_exp_t emin;
 	} ieee_fmts[] = {
-		{ "half",	11,	16,	-23	},	/* binary16 */
-		{ "single",	24,	128,	-148	},	/* binary32 */
-		{ "double",	53,	1024,	-1073	},	/* binary64 */
-		{ "quad",	113,	16384,	-16493	},	/* binary128 */
-		{ "oct",	237,	262144,	-262377	},	/* binary256, not in the IEEE 754-2008 standard */
+		{ "half",	sizeof("half"),		11,	16,	-23	},	/* binary16 */
+		{ "single",	sizeof("single"),	24,	128,	-148	},	/* binary32 */
+		{ "double",	sizeof("double"),	53,	1024,	-1073	},	/* binary64 */
+		{ "quad",	sizeof("quad"),		113,	16384,	-16493	},	/* binary128 */
+		{ "oct",	sizeof("oct"),		237,	262144,	-262377	},	/* binary256, not in the IEEE 754-2008 standard */
 
 		/*
- 		 * For any bitwidth = 32 * k ( k >= 4),
- 		 * precision = 13 + bitwidth - int(4 * log2(bitwidth))
+		 * For any bitwidth = 32 * k ( k >= 4),
+		 * precision = 13 + bitwidth - int(4 * log2(bitwidth))
 		 * emax = 1 << bitwidth - precision - 1
 		 * emin = 4 - emax - precision
- 		 */
+		 */
 	};
 
 	if (! do_mpfr)
@@ -525,7 +526,7 @@ set_PREC(void)
 		/* emulate IEEE-754 binary format */
 
 		for (i = 0, j = sizeof(ieee_fmts)/sizeof(ieee_fmts[0]); i < j; i++) {
-			if (strcasecmp(ieee_fmts[i].name, val->stptr) == 0)
+			if (cmp_keyword(val->stptr, ieee_fmts[i].name, ieee_fmts[i].namesz))
 				break;
 		}
 
