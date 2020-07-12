@@ -75,7 +75,7 @@ static NODE **env_store(NODE *symbol, NODE *subs);
 static NODE **env_clear(NODE *symbol, NODE *subs);
 
 /* special case for ENVIRON */
-const array_funcs_t env_array_func = {
+static const array_funcs_t env_array_func = {
 	"env",
 	str_array_init,
 	(afunc_t) 0,
@@ -480,7 +480,7 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %llu\n", 0ull + STR_CHAIN_MAX);
+	fprintf(output_fp, "STR_CHAIN_MAX: %" ZUFMT "\n", STR_CHAIN_MAX);
 	indent(indent_level);
 	fprintf(output_fp, "array_size: %lu\n", TO_ULONG(symbol->array_size));
 	indent(indent_level);
@@ -511,11 +511,11 @@ str_dump(NODE *symbol, NODE *ndump)
 		if (hash_dist[q] > 0) {
 			indent(indent_level);
 			if (q == HCNT)
-				fprintf(output_fp, "[>=%d]:%llu\n",
-					HCNT, 0ull + hash_dist[q]);
+				fprintf(output_fp, "[>=%d]:%" ZUFMT "\n",
+					HCNT, hash_dist[q]);
 			else
-				fprintf(output_fp, "[%u]:%llu\n",
-					q, 0ull + hash_dist[q]);
+				fprintf(output_fp, "[%u]:%" ZUFMT "\n",
+					q, hash_dist[q]);
 		}
 	}
 	indent_level--;
@@ -569,8 +569,7 @@ awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code)
 	 * bad idea.
 	 */
 #define HASHC   htmp = (h << 6u);  \
-		h = *s++ + htmp + (htmp << 10u) - h ; \
-		htmp &= 0xFFFFFFFFul; \
+		h = (unsigned char) *s++ + htmp + (htmp << 10u) - h; \
 		h &= 0xFFFFFFFFul
 
 	h = 0u;
@@ -737,7 +736,7 @@ gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code)
 	ulong_t ret;
 
 	while (len--) {
-		hashVal += *str++;
+		hashVal += (unsigned char) *str++;
 		hashVal += (hashVal << 10u);
 		hashVal ^= (hashVal >> 6u);
 	}
@@ -798,12 +797,16 @@ env_remove(NODE *symbol, NODE *subs)
 static NODE **
 env_clear(NODE *symbol, NODE *subs)
 {
-#ifndef _MSC_VER
+#ifndef WINDOWS_NATIVE
 	extern char **environ;
 #endif
 	NODE **val = str_clear(symbol, subs);
 
+#ifndef WINDOWS_NATIVE
 	environ = NULL;	/* ZAP! */
+#else
+	clearenv();
+#endif
 
 	/* str_clear zaps the vtable, reset it */
 	symbol->array_funcs = & env_array_func;
