@@ -1179,8 +1179,8 @@ ignrcas3::
 arrdbg:
 	@echo $@
 	@$(AWK) -v "okfile=./$@.ok" -v "mpfr_okfile=./$@-mpfr.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; else \
+	$(CMP) ./$@-mpfr.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; \
 	fi
 
 sourcesplit:
