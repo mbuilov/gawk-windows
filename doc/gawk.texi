@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2020
+@set UPDATE-MONTH July, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -34559,6 +34559,13 @@ in data received from @command{gawk}. In addition, by examining the
 @code{type} member, an extension can determine if the @code{ptr}
 member is either a GMP integer (type @code{mpz_ptr}), or an MPFR
 floating-point value (type @code{mpfr_ptr_t}), and cast it appropriately.
+
+@quotation CAUTION:
+Any MPFR or MPZ values that you create and pass to @command{gawk}
+to save are @emph{copied}. This means you are responsible to release
+the storage once you're done with it. See the sample @code{intdiv}
+extension for some example code.
+@end quotation
 
 @item typedef void *awk_scalar_t;
 Scalars can be represented as an opaque type. These values are obtained
