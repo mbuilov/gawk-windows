@@ -223,6 +223,13 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		array_set_mpz(array, "quotient", 8, quotient);
 		array_set_mpz(array, "remainder", 9, remainder);
 
+		/* values were copied, so release out local ones */
+		mpz_clear(quotient);
+		gawk_free(quotient);
+
+		mpz_clear(remainder);
+		gawk_free(remainder);
+
 		/* release temporary variables */
 		if (numer == numer_tmp)
 			mpz_clear(numer);
