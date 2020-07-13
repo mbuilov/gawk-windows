@@ -2634,3 +2634,67 @@ str_terminate_f(NODE *n, char *savep)
 #define die_via_sigpipe() exit(EXIT_FATAL)
 #endif	/* !WINDOWS_NATIVE */
 #endif	/* !SIGPIPE */
+
+
+/* ascii_digit_value --- return [0..9] if char looks like a decimal digit,
+   otherwise return -1.  */
+
+static inline int
+char_digit_value(int c)
+{
+#if \
+	'0' + 1 == '1' && '1' + 1 == '2' && '2' + 1 == '3' && \
+	'3' + 1 == '4' && '4' + 1 == '5' && '5' + 1 == '6' && \
+	'6' + 1 == '7' && '7' + 1 == '8' && '8' + 1 == '9'
+	return '0' <= c && c <= '9' ? c - '0' : -1;
+#else
+	switch (c) {
+	case '0': return 0; case '1': return 1; case '2': return 2;
+	case '3': return 3; case '4': return 4; case '5': return 5;
+	case '6': return 6; case '7': return 7; case '8': return 8;
+	case '9': return 9;
+	default: return -1;
+	}
+#endif
+}
+
+/* ascii_xdigit_value --- return [0..15] if char looks like a hexadecimal digit,
+   otherwise return -1.  */
+
+static inline int
+char_xdigit_value(int c)
+{
+#if \
+	'0' + 1 == '1' && '1' + 1 == '2' && '2' + 1 == '3' && \
+	'3' + 1 == '4' && '4' + 1 == '5' && '5' + 1 == '6' && \
+	'6' + 1 == '7' && '7' + 1 == '8' && '8' + 1 == '9' && \
+	'a' + 1 == 'b' && 'b' + 1 == 'c' && 'c' + 1 == 'd' && \
+	'd' + 1 == 'e' && 'e' + 1 == 'f' && \
+	'A' + 1 == 'B' && 'B' + 1 == 'C' && 'C' + 1 == 'D' && \
+	'D' + 1 == 'E' && 'E' + 1 == 'F'
+	return
+		'0' <= c && c <= '9' ? c - '0' :
+		'a' <= c && c <= 'f' ? c - 'a' + 10 :
+		'A' <= c && c <= 'F' ? c - 'A' + 10 : -1;
+#else
+	switch (c) {
+	case '0': return 0; case '1': return 1; case '2': return 2;
+	case '3': return 3; case '4': return 4; case '5': return 5;
+	case '6': return 6; case '7': return 7; case '8': return 8;
+	case '9': return 9;
+	case 'a': case 'A': return 10;
+	case 'b': case 'B': return 11;
+	case 'c': case 'C': return 12;
+	case 'd': case 'D': return 13;
+	case 'e': case 'E': return 14;
+	case 'f': case 'F': return 15;
+	default: return -1;
+	}
+#endif
+}
+
+/* locale-independent replacement of isdigit() */
+#define char_is_digit(c)	(char_digit_value(c) != -1)
+
+/* locale-independent replacement of isxdigit() */
+#define char_is_xdigit(c)	(char_xdigit_value(c) != -1)
