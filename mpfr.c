@@ -247,7 +247,7 @@ mpg_maybe_float(const char *str, int use_locale)
 
 /* mpg_zero --- initialize with arbitrary-precision integer(GMP) and set value to zero */
 
-static inline void
+void
 mpg_zero(NODE *n)
 {
 	if (is_mpg_float(n)) {
@@ -271,7 +271,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	char save;
 	int tval, base = 10;
 
-	if (n->stlen == 0) {
+	if (n->stlen == 0 || (n->flags & REGEX) != 0) {
 		mpg_zero(n);
 		return false;
 	}
@@ -292,6 +292,17 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 		cp1 = cp + 1;
 	else
 		cp1 = cp;
+
+	/*
+	 * Maybe "+" or "-" was the field.  mpg_strtoui
+	 * won't check for that and set errno, so we have
+	 * to check manuall.
+	 */
+	if (*cp1 == '\0') {
+		*cpend = save;
+		mpg_zero(n);
+		return false;
+	}
 
 	if (do_nondec)
 		base = get_numbase(cp1, cpend - cp1, use_locale);
@@ -1518,7 +1529,42 @@ mpg_interpret(INSTRUCTION **cp)
 	NODE **lhs;
 	int tval;	/* the ternary value returned by a MPFR function */
 
-	switch ((op = pc->opcode)) {
+	op = pc->opcode;
+	if (do_itrace) {
+		switch (op) {
+		case Op_plus_i:
+		case Op_plus:
+		case Op_minus_i:
+		case Op_minus:
+		case Op_times_i:
+		case Op_times:
+		case Op_exp_i:
+		case Op_exp:
+		case Op_quotient_i:
+		case Op_quotient:
+		case Op_mod_i:
+		case Op_mod:
+		case Op_preincrement:
+		case Op_predecrement:
+		case Op_postincrement:
+		case Op_postdecrement:
+		case Op_unary_minus:
+		case Op_unary_plus:
+		case Op_assign_plus:
+		case Op_assign_minus:
+		case Op_assign_times:
+		case Op_assign_quotient:
+		case Op_assign_mod:
+		case Op_assign_exp:
+			fprintf(stderr, "++ %s: mpg_interpret\n", opcode2str(op));
+			fflush(stderr);
+			// fall thru to break
+		default:
+			break;
+		}
+	}
+
+	switch (op) {
 	case Op_plus_i:
 		t2 = force_number(pc->memory);
 		goto plus;

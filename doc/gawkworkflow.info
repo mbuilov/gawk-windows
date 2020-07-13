@@ -1,10 +1,10 @@
-This is gawkworkflow.info, produced by makeinfo version 6.5 from
+This is gawkworkflow.info, produced by makeinfo version 6.7 from
 gawkworkflow.texi.
 
 Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
 
 
-   This is Edition 0.72 of 'Participating in 'gawk' Development'.
+   This is Edition 0.73 of 'Participating in 'gawk' Development'.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -38,7 +38,7 @@ Awk ('gawk') (http://www.gnu.org/software/gawk).
    Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
 
 
-   This is Edition 0.72 of 'Participating in 'gawk' Development'.
+   This is Edition 0.73 of 'Participating in 'gawk' Development'.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -211,7 +211,7 @@ File: gawkworkflow.info,  Node: Acknowledgments,  Next: Reviewers,  Prev: Conven
 Acknowledgments
 ===============
 
-Thanks to Ju"rgen Kahrs for his initial efforts to write a document like
+Thanks to Jürgen Kahrs for his initial efforts to write a document like
 this.  Although his prose has not survived, his material was helpful in
 preparing this Info file.
 
@@ -455,9 +455,9 @@ branches:
      the upstream.  You use the branch name without the leading
      'origin/' prefix.  For example, 'git checkout gawk-4.1-stable'.
 
-     You can then work on this branch, making commitments to it as you
-     wish.  Once things are ready to move upstream, you simply use 'git
-     push', and your changes will be pushed up to the main repo.(1)
+     You can then work on this branch, making commits to it as you wish.
+     Once things are ready to move upstream, you simply use 'git push',
+     and your changes will be pushed up to the main repo.(1)
 
      You should *never* checkout a branch using the 'origin/' prefix.
      Things will get very confused.  Always work on local tracking
@@ -773,12 +773,13 @@ File: gawkworkflow.info,  Node: Switching Branches,  Next: Starting A New Branch
 So far, we've been working in the default 'master' branch.  Let's check
 what's happening in the 'gawk-4.1-stable' branch:
 
-     $ make distclean                                          Clean up
-     $ git checkout gawk-4.1-stable                            Checkout a different branch
+     $ make distclean                          Clean up
+     $ git checkout gawk-4.1-stable            Checkout a different branch
      -| ...
-     $ git pull                                                Get up to date
+     $ git pull                                Get up to date
      -| ...
-     $ ./bootstrap.sh && ./configure && make -j && make check  Start working
+     $ ./bootstrap.sh && ./configure &&        Start working
+     > make -j && make check
 
 
 File: gawkworkflow.info,  Node: Starting A New Branch,  Next: Undoing a change,  Prev: Switching Branches,  Up: Development without commit access
@@ -1116,7 +1117,7 @@ directly on 'master'.  Here's how to commit your changes:
 
      $ git diff            Review the patch one more time
      $ git add ...         Add any files for committing
-     $ git commit          Commit the files. Include a commit message.
+     $ git commit          Commit the files, with a commit message
      $ git push            Push the files up to the repo. Ta da!
 
    The first three steps are the same described earlier (*note Starting
@@ -1152,7 +1153,7 @@ their local systems and review your changes at their leisure.
 
      $ git diff                                Review your changes
      $ git add ...                             Add any files for committing
-     $ git commit                              Commit the files. Include a commit message
+     $ git commit                              Commit the files with a commit message
      $ git push -u origin feature/python       Push the branch up to the repo
 
    When you use 'push -u origin', Git helpfully converts your purely
@@ -1182,7 +1183,7 @@ list.  Once it's approved, you can commit it yourself:
      $ gvim ...                Make any fixes, compile, test
      $ git diff                Review your changes
      $ git add ...             Add any files for committing
-     $ git commit              Commit the files. Include a commit message.
+     $ git commit              Commit the files with a commit message.
 
    When you're ready to push your changes:
 
@@ -1281,8 +1282,11 @@ feature branch.
      Since 'feature/python' is no longer needed, it can be gotten rid
      of:
 
-          $ git branch -d feature/python                 Still on master, delete feature branch
-          $ git push -u origin --delete feature/python   Delete the branch on Savannah
+          $ git branch                                  Still on master
+            ...
+          * master
+          $ git branch -d feature/python                Delete feature branch
+          $ git push -u origin --delete feature/python  Delete on Savannah
 
      The 'git push' command deletes the 'feature/python' branch from the
      Savannah repo.
@@ -1341,7 +1345,7 @@ _Removing cruft_
 
 _Renaming branches_
      Occasionally you may want to rename a branch.(1)  If your branch is
-     local and you are on it, us:
+     local and you are on it, use:
 
           $ git branch -m feature/NEW-NAME
 
@@ -1543,7 +1547,8 @@ _The (Revived) Portable C Compiler_
 
      An alternative location for the source is the 'gawk' maintainer's
      Git mirror (https://github.com/arnoldrobbins/pcc-revived) of the
-     code.
+     code.  If you're using Ubuntu GNU/Linux 18.04 or later, you need to
+     use the 'ubuntu-18' branch from this Git mirror.
 
    ---------- Footnotes ----------
 
@@ -1564,7 +1569,7 @@ for 'extensions/Makefile'.  Then run 'make'.
 '.developing' in the 'gawk' source code directory _before_ running
 'configure'.  Doing so enables additional conditionally-compiled
 debugging code within 'gawk', and adds additional warning and debugging
-options if compiling with GCC.
+options if compiling with GCC. It also disables optimization.
 
 
 File: gawkworkflow.info,  Node: Cheat Sheet,  Next: Resources,  Prev: Development Stuff,  Up: Top
@@ -1710,16 +1715,16 @@ Index
 * bootstrap.sh script:                   Cloning.              (line 41)
 * branch, main:                          Repo State.           (line 27)
 * branch, master:                        Repo State.           (line 27)
-* branches, dead:                        Repo State.           (line  8)
-* branches, feature:                     Repo State.           (line 35)
-* branches, local:                       Local Branches.       (line  6)
 * branches, origin/:                     Repo Copies.          (line 68)
+* branches, local:                       Local Branches.       (line  6)
+* branches, tracking:                    Local Branches.       (line 11)
+* branches, dead:                        Repo State.           (line  8)
+* branches, stable:                      Repo State.           (line 15)
+* branches, feature:                     Repo State.           (line 35)
 * branches, purely local:                Local State.          (line  6)
 * branches, removing:                    Removing Branches.    (line  6)
 * branches, removing <1>:                Repo Maintenance.     (line  9)
 * branches, renaming:                    Repo Maintenance.     (line 44)
-* branches, stable:                      Repo State.           (line 15)
-* branches, tracking:                    Local Branches.       (line 11)
 * ChangeLog file:                        Starting A New Branch.
                                                                (line 19)
 * ChangeLog file <1>:                    Developing patches.   (line 11)
@@ -1730,10 +1735,10 @@ Index
                                                                (line 19)
 * compilers:                             Compilers.            (line  6)
 * compiling for debugging:               Debugging.            (line  6)
-* configuration setting, pager.status:   Configuring git.      (line 24)
-* configuration setting, push.default:   Configuring git.      (line 24)
-* configuration setting, user.email:     Configuring git.      (line 16)
 * configuration setting, user.name:      Configuring git.      (line 16)
+* configuration setting, user.email:     Configuring git.      (line 16)
+* configuration setting, push.default:   Configuring git.      (line 24)
+* configuration setting, pager.status:   Configuring git.      (line 24)
 * configuration settings:                Configuring git.      (line  6)
 * configuration settings, global:        Configuring git.      (line  6)
 * configure.ac file:                     GNU Tools.            (line 15)
@@ -1755,106 +1760,106 @@ Index
 * generating a single patch:             Submitting Changes.   (line 14)
 * generating multiple patches:           Submitting Changes.   (line 24)
 * gettext:                               GNU Tools.            (line 27)
-* git add:                               Starting A New Branch.
-                                                               (line 36)
-* git add <1>:                           Developing patches.   (line 26)
-* git add <2>:                           Developing new features.
-                                                               (line 24)
-* git add <3>:                           Developing new features.
-                                                               (line 36)
-* git add <4>:                           Developing fixes.     (line 10)
-* git branch:                            Repo Copies.          (line 38)
-* git branch <1>:                        Removing Branches.    (line  9)
-* git branch <2>:                        General practices.    (line 88)
-* git branch <3>:                        Repo Maintenance.     (line 20)
 * git branch command, -a option:         Remotes.              (line  6)
-* git checkout:                          Local Branches.       (line 11)
-* git checkout <1>:                      Switching Branches.   (line  9)
-* git checkout <2>:                      Starting A New Branch.
+* git command, git branch:               Repo Copies.          (line 38)
+* git command, git clone:                Repo Copies.          (line 42)
+* git command, git checkout:             Local Branches.       (line 11)
+* git command, git push:                 Local Branches.       (line 16)
+* git command, git config:               Configuring git.      (line 11)
+* git command, git clone <1>:            Cloning.              (line  6)
+* git command, git pull:                 Cloning.              (line 32)
+* git command, git checkout <1>:         Switching Branches.   (line  9)
+* git command, git pull <1>:             Switching Branches.   (line  9)
+* git command, git checkout <2>:         Starting A New Branch.
                                                                (line 10)
-* git checkout <3>:                      Undoing a change.     (line 10)
-* git checkout <4>:                      Rebasing.             (line 10)
-* git checkout <5>:                      Submitting Changes.   (line 18)
-* git checkout <6>:                      Submitting Changes.   (line 27)
-* git checkout <7>:                      Removing Branches.    (line  9)
-* git checkout <8>:                      Points to remember.   (line 19)
-* git checkout <9>:                      Points to remember.   (line 32)
-* git checkout <10>:                     Points to remember.   (line 37)
-* git checkout <11>:                     Developing new features.
-                                                               (line  9)
-* git checkout <12>:                     Developing fixes.     (line 10)
-* git checkout <13>:                     General practices.    (line 43)
-* git checkout <14>:                     General practices.    (line 60)
-* git checkout <15>:                     General practices.    (line 73)
-* git clone:                             Repo Copies.          (line 42)
-* git clone <1>:                         Cloning.              (line  6)
-* git clone <2>:                         ssh clone.            (line 10)
-* git command, --help option:            Cheat Sheet.          (line 10)
-* git commit:                            Starting A New Branch.
-                                                               (line 49)
-* git commit <1>:                        Developing patches.   (line 26)
-* git commit <2>:                        Developing new features.
-                                                               (line 24)
-* git commit <3>:                        Developing new features.
-                                                               (line 36)
-* git commit <4>:                        Developing fixes.     (line 10)
-* git config:                            Configuring git.      (line 11)
-* git diff:                              Starting A New Branch.
-                                                               (line 29)
-* git diff <1>:                          Submitting Changes.   (line 18)
-* git diff <2>:                          Points to remember.   (line 32)
-* git diff <3>:                          Developing patches.   (line 16)
-* git diff <4>:                          Developing patches.   (line 26)
-* git diff <5>:                          Developing new features.
-                                                               (line 24)
-* git diff <6>:                          Developing new features.
-                                                               (line 36)
-* git diff <7>:                          Developing fixes.     (line 10)
-* git difftool:                          Starting A New Branch.
-                                                               (line 29)
-* git fetch:                             General practices.    (line 94)
-* git fetch <1>:                         Repo Maintenance.     (line 25)
-* git format-patch:                      Submitting Changes.   (line 24)
-* git gc:                                Repo Maintenance.     (line 33)
-* git help:                              Cheat Sheet.          (line 10)
-* git log:                               Starting A New Branch.
-                                                               (line 51)
-* git merge:                             Points to remember.   (line 37)
-* git merge <1>:                         General practices.    (line 60)
-* git merge <2>:                         General practices.    (line 73)
-* Git Project:                           Preface.              (line 10)
-* git pull:                              Cloning.              (line 32)
-* git pull <1>:                          Switching Branches.   (line  9)
-* git pull <2>:                          Rebasing.             (line 10)
-* git pull <3>:                          Removing Branches.    (line  9)
-* git pull <4>:                          Points to remember.   (line 19)
-* git pull <5>:                          Points to remember.   (line 37)
-* git pull <6>:                          Developing new features.
-                                                               (line  9)
-* git pull <7>:                          Developing fixes.     (line 10)
-* git pull <8>:                          Developing fixes.     (line 19)
-* git pull <9>:                          General practices.    (line 43)
-* git pull <10>:                         General practices.    (line 60)
-* git pull <11>:                         General practices.    (line 73)
-* git pull <12>:                         Repo Maintenance.     (line 20)
-* git push:                              Local Branches.       (line 16)
-* git push <1>:                          Developing patches.   (line 26)
-* git push <2>:                          Developing new features.
-                                                               (line 24)
-* git push <3>:                          Developing new features.
-                                                               (line 36)
-* git push <4>:                          Developing fixes.     (line 19)
-* git push <5>:                          General practices.    (line 83)
-* git push <6>:                          General practices.    (line 88)
-* git rebase:                            Rebasing.             (line 10)
-* git rebase <1>:                        Points to remember.   (line 25)
-* git rebase <2>:                        General practices.    (line 43)
-* git reset:                             Undoing a change.     (line 12)
-* git reset, --hard option:              Cheat Sheet.          (line 93)
-* git status:                            Starting A New Branch.
+* git command, git status:               Starting A New Branch.
                                                                (line 23)
-* git status <1>:                        Starting A New Branch.
+* git command, git diff:                 Starting A New Branch.
+                                                               (line 29)
+* git command, git difftool:             Starting A New Branch.
+                                                               (line 29)
+* git command, git add:                  Starting A New Branch.
+                                                               (line 36)
+* git command, git status <1>:           Starting A New Branch.
                                                                (line 41)
+* git command, git commit:               Starting A New Branch.
+                                                               (line 49)
+* git command, git log:                  Starting A New Branch.
+                                                               (line 51)
+* git command, git checkout <3>:         Undoing a change.     (line 10)
+* git command, git reset:                Undoing a change.     (line 12)
+* git command, git rebase:               Rebasing.             (line 10)
+* git command, git checkout <4>:         Rebasing.             (line 10)
+* git command, git pull <2>:             Rebasing.             (line 10)
+* git command, git checkout <5>:         Submitting Changes.   (line 18)
+* git command, git diff <1>:             Submitting Changes.   (line 18)
+* git command, git format-patch:         Submitting Changes.   (line 24)
+* git command, git checkout <6>:         Submitting Changes.   (line 27)
+* git command, git checkout <7>:         Removing Branches.    (line  9)
+* git command, git pull <3>:             Removing Branches.    (line  9)
+* git command, git branch <1>:           Removing Branches.    (line  9)
+* git command, git checkout <8>:         Points to remember.   (line 19)
+* git command, git pull <4>:             Points to remember.   (line 19)
+* git command, git rebase <1>:           Points to remember.   (line 25)
+* git command, git checkout <9>:         Points to remember.   (line 32)
+* git command, git diff <2>:             Points to remember.   (line 32)
+* git command, git checkout <10>:        Points to remember.   (line 37)
+* git command, git pull <5>:             Points to remember.   (line 37)
+* git command, git merge:                Points to remember.   (line 37)
+* git command, git clone <2>:            ssh clone.            (line 10)
+* git command, git diff <3>:             Developing patches.   (line 16)
+* git command, git diff <4>:             Developing patches.   (line 26)
+* git command, git add <1>:              Developing patches.   (line 26)
+* git command, git commit <1>:           Developing patches.   (line 26)
+* git command, git push <1>:             Developing patches.   (line 26)
+* git command, git checkout <11>:        Developing new features.
+                                                               (line  9)
+* git command, git pull <6>:             Developing new features.
+                                                               (line  9)
+* git command, git diff <5>:             Developing new features.
+                                                               (line 24)
+* git command, git add <2>:              Developing new features.
+                                                               (line 24)
+* git command, git commit <2>:           Developing new features.
+                                                               (line 24)
+* git command, git push <2>:             Developing new features.
+                                                               (line 24)
+* git command, git diff <6>:             Developing new features.
+                                                               (line 36)
+* git command, git add <3>:              Developing new features.
+                                                               (line 36)
+* git command, git commit <3>:           Developing new features.
+                                                               (line 36)
+* git command, git push <3>:             Developing new features.
+                                                               (line 36)
+* git command, git checkout <12>:        Developing fixes.     (line 10)
+* git command, git pull <7>:             Developing fixes.     (line 10)
+* git command, git add <4>:              Developing fixes.     (line 10)
+* git command, git commit <4>:           Developing fixes.     (line 10)
+* git command, git diff <7>:             Developing fixes.     (line 10)
+* git command, git pull <8>:             Developing fixes.     (line 19)
+* git command, git push <4>:             Developing fixes.     (line 19)
+* git command, git checkout <13>:        General practices.    (line 43)
+* git command, git pull <9>:             General practices.    (line 43)
+* git command, git rebase <2>:           General practices.    (line 43)
+* git command, git checkout <14>:        General practices.    (line 60)
+* git command, git pull <10>:            General practices.    (line 60)
+* git command, git merge <1>:            General practices.    (line 60)
+* git command, git checkout <15>:        General practices.    (line 73)
+* git command, git pull <11>:            General practices.    (line 73)
+* git command, git merge <2>:            General practices.    (line 73)
+* git command, git push <5>:             General practices.    (line 83)
+* git command, git branch <2>:           General practices.    (line 88)
+* git command, git push <6>:             General practices.    (line 88)
+* git command, git fetch:                General practices.    (line 97)
+* git command, git pull <12>:            Repo Maintenance.     (line 20)
+* git command, git branch <3>:           Repo Maintenance.     (line 20)
+* git command, git fetch <1>:            Repo Maintenance.     (line 25)
+* git command, git gc:                   Repo Maintenance.     (line 33)
+* git command, git help:                 Cheat Sheet.          (line 10)
+* git command, --help option:            Cheat Sheet.          (line 10)
+* git command, git reset, --hard option: Cheat Sheet.          (line 93)
+* Git Project:                           Preface.              (line 10)
 * GitHub:                                Contributing.         (line 57)
 * global configuration settings:         Configuring git.      (line  6)
 * GNU autoconf:                          GNU Tools.            (line 15)
@@ -1864,7 +1869,7 @@ Index
 * GNU makeinfo:                          GNU Tools.            (line 41)
 * GNU software tools:                    GNU Tools.            (line  6)
 * GNU Texinfo:                           GNU Tools.            (line 41)
-* Kahrs, Ju"rgen:                        Acknowledgments.      (line  6)
+* Kahrs, Jürgen:                         Acknowledgments.      (line  6)
 * libtool:                               GNU Tools.            (line 34)
 * local branches:                        Local Branches.       (line  6)
 * main branch:                           Repo State.           (line 27)
@@ -1888,9 +1893,9 @@ Index
 * purely local branches:                 Local State.          (line  6)
 * push.default configuration setting:    Configuring git.      (line 24)
 * rebasing:                              Rebasing.             (line  6)
-* removing branches:                     Removing Branches.    (line  6)
-* removing cruft:                        Repo Maintenance.     (line 27)
-* removing old branches:                 Repo Maintenance.     (line  9)
+* removing, branches:                    Removing Branches.    (line  6)
+* removing, old branches:                Repo Maintenance.     (line  9)
+* removing, cruft:                       Repo Maintenance.     (line 27)
 * renaming branches:                     Repo Maintenance.     (line 44)
 * Repository, gawk, URL for:             Cloning.              (line 13)
 * Repository, gawk, URL for <1>:         ssh clone.            (line 10)
@@ -1930,51 +1935,56 @@ Ref: savannah-repo16352
 Ref: your-repo17385
 Ref: Repo Copies-Footnote-119079
 Node: Local Branches19136
-Ref: your-repo-220914
-Ref: Local Branches-Footnote-121995
-Node: Branches are state22053
-Node: Repo State22776
-Node: Local State24896
-Node: Remotes25560
-Node: Configuring git26874
-Ref: Configuring git-Footnote-129227
-Node: Development without commit access29396
-Node: Cloning30398
-Node: Switching Branches32257
-Node: Starting A New Branch32910
-Ref: Starting A New Branch-Footnote-134798
-Ref: Starting A New Branch-Footnote-234856
-Node: Undoing a change34932
-Node: Updating35533
-Node: Rebasing36035
-Node: Merge Conflicts36647
-Node: Submitting Changes38147
-Ref: Submitting Changes-Footnote-140291
-Ref: Submitting Changes-Footnote-240328
-Ref: Submitting Changes-Footnote-340364
-Node: Removing Branches40410
-Node: Points to remember40946
-Node: Development with commit access42623
-Node: Initial setup43268
-Node: ssh clone44056
-Node: Developing patches44653
-Node: Developing new features45989
-Node: Developing fixes47893
-Node: General practices48980
-Node: Repo Maintenance53722
-Ref: Repo Maintenance-Footnote-156491
-Node: Development Stuff56624
-Node: Coding style57187
-Ref: Coding style-Footnote-157845
-Node: Doing paperwork57935
-Node: Tools58730
-Node: GNU Tools59312
-Node: Compilers61473
-Ref: Compilers-Footnote-163967
-Node: Debugging64005
-Node: Cheat Sheet64711
-Node: Resources68398
-Node: TODO68841
-Node: Index69061
+Ref: your-repo-220909
+Ref: Local Branches-Footnote-121990
+Node: Branches are state22048
+Node: Repo State22771
+Node: Local State24891
+Node: Remotes25555
+Node: Configuring git26869
+Ref: Configuring git-Footnote-129222
+Node: Development without commit access29391
+Node: Cloning30393
+Node: Switching Branches32252
+Node: Starting A New Branch32870
+Ref: Starting A New Branch-Footnote-134758
+Ref: Starting A New Branch-Footnote-234816
+Node: Undoing a change34892
+Node: Updating35493
+Node: Rebasing35995
+Node: Merge Conflicts36607
+Node: Submitting Changes38107
+Ref: Submitting Changes-Footnote-140251
+Ref: Submitting Changes-Footnote-240288
+Ref: Submitting Changes-Footnote-340324
+Node: Removing Branches40370
+Node: Points to remember40906
+Node: Development with commit access42583
+Node: Initial setup43228
+Node: ssh clone44016
+Node: Developing patches44613
+Node: Developing new features45945
+Node: Developing fixes47845
+Node: General practices48928
+Node: Repo Maintenance53747
+Ref: Repo Maintenance-Footnote-156517
+Node: Development Stuff56650
+Node: Coding style57213
+Ref: Coding style-Footnote-157871
+Node: Doing paperwork57961
+Node: Tools58756
+Node: GNU Tools59338
+Node: Compilers61499
+Ref: Compilers-Footnote-164109
+Node: Debugging64147
+Node: Cheat Sheet64884
+Node: Resources68571
+Node: TODO69014
+Node: Index69234
 
 End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

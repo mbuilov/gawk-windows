@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Marzo 2020
+@set UPDATE-MONTH Giugno 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -2469,7 +2469,7 @@ Grazie a Michael Brennan per le Prefazioni.
 @cindex Berry, Karl
 @cindex Smith, Gavin
 Grazie a Patrice Dumas per il nuovo programma @command{makeinfo}.
-Grazie a Karl Berry, che per il lavoro svolto in passato
+Grazie a Karl Berry, per il lavoro svolto in passato
 su Texinfo, e a Gavin Smith, che continua a lavorare per
 migliorare il linguaggio di marcatura Texinfo.
 
@@ -5019,6 +5019,7 @@ e @command{gawk} non ha pi@`u bisogno di usare @env{AWKPATH}.
 @node AWKLIBPATH (Variabile)
 @subsection Ricerca di librerie condivise @command{awk} su varie directory.
 @cindex @env{AWKLIBPATH} (variabile d'ambiente)
+@cindex variabili d'ambiente @subentry @env{AWKLIBPATH}
 @cindex directory @subentry ricerca di estensioni caricabili
 @cindex percorso di ricerca @subentry per estensioni
 @cindex differenze tra @command{awk} e @command{gawk} @subentry @code{AWKLIBPATH} (variabile d'ambiente)
@@ -5036,7 +5037,7 @@ attraverso la direttiva @code{@@load}
 Se la variabile d'ambiente @env{AWKLIBPATH} non esiste, o se ha come valore
 la stringa nulla, @command{gawk} usa un percorso di ricerca di default;
 questo normalmente vale @samp{/usr/local/lib/gawk}, anche se il suo valore
-pu@`o essere diverso, a seconda di come @`e stato installato
+pu@`o essere diverso, a seconda di come @`e stato compilato
 @command{gawk}.@footnote{La vostra versione di @command{gawk}
 pu@`o utilizzare una directory differente; dipende da come @command{gawk}
 @`e stato generato e installato.  La directory utilizzata ha il valore
@@ -5579,7 +5580,7 @@ sia contenuto nel primo argomento "non-opzione".
 
 @item
 Tutti gli argomenti "non-opzione", tranne il testo del programma
-specificato come primo argomento "non-opzione" sono messi nel vettore
+specificato come primo argomento "non-opzione", sono messi nel vettore
 @code{ARGV} come spiegato in @ref{ARGC e ARGV}, e sono trattati come
 descritto in @ref{Altri argomenti}.
 @c And I wrote:
@@ -5881,7 +5882,7 @@ vengono elaborate solo due cifre.
 @cindex @code{\} (barra inversa) @subentry @code{\/} (sequenza di protezione)
 @cindex barra inversa (@code{\}) @subentry @code{\/} (sequenza di protezione)
 @item \/
-Una barra (dovrebbe essere usato solo per costanti @dfn{regexp}).
+Una barra (dovrebbe essere usata solo per costanti @dfn{regexp}).
 Questa sequenza si usa per inserire una costante @dfn{regexp}
 che contiene una barra
 (come @code{/.*:\/home\/[[:alnum:]]+:.*/}; la notazione @samp{[[:alnum:]]}
@@ -6149,7 +6150,7 @@ spiegato pi@`u avanti in questa lista.)
 La parentesi sinistra (di apertura) @`e sempre un metacarattere;
 per cercare una corrispondenza letterale con una tale parentesi,
 occorre farla precedere da una barra inversa.  Comunque, la
-parentesi destra (di chiusura), @`e speciale solo se eesiste la
+parentesi destra (di chiusura) @`e speciale solo se esiste la
 relativa parentesi sinistra; una parentesi destra senza la
 corrispondente parentesi sinistra @`e considerata (senza dare
 alcun messaggio di avviso) come un normale carattere.
@@ -10736,7 +10737,7 @@ programma @command{awk}:
 
 @example
 awk 'BEGIN @{ print "Nome      Numero"
-             print " --- -     ------ " @}
+             print "----      ------" @}
            @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
@@ -10746,7 +10747,7 @@ risultati usando solo istruzioni @code{printf}:
 
 @example
 awk 'BEGIN @{ printf "%-10s %s\n", "Nome", "Numero"
-             printf "%-10s %s\n", " --- -", " ---  --- " @}
+             printf "%-10s %s\n", "----", "------" @}
            @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
@@ -10761,7 +10762,7 @@ evidenziare memorizzandola in una variabile, cos@`{@dotless{i}}:
 @example
 awk 'BEGIN @{ format = "%-10s %s\n"
              printf format, "Nome", "Numero"
-             printf format, " --- -", " ---  --- " @}
+             printf format, "----", "------" @}
            @{ printf format, $1, $2 @}' mail-list
 @end example
 
@@ -12182,6 +12183,9 @@ e
 @item
 Come parametro in una chiamata a una funzione definita dall'utente
 (@pxref{Funzioni definite dall'utente}).
+
+@item
+Come valore restituito da una funzione definita dall'utente.
 
 @item
 Sul lato destro di un assegnamento di variabile:
@@ -15661,14 +15665,14 @@ corrisponde al valore dell'espressione, viene eseguita la sezione
 @code{default}, se @`e stata specificata.
 
 Ogni @code{case} contiene una singola costante, che pu@`o essere un numero,
-una stringa, o
-una @dfn{regexp}.  Viene valutata l'espressione @code{switch}, e poi la
-costante di ogni @code{case} viene confrontata
-di volta in volta con il valore risultante.
-Il tipo di costante determina quale sar@`a il confronto: per i tipi numerici o
-stringa si seguono le regole abituali.  Per una costante @dfn{regexp} viene
-effettuato un confronto tra l'espressione e il valore di tipo stringa
-dell'espressione originale.
+una stringa, o una @dfn{regexp}.  Viene valutata l'espressione @code{switch},
+e poi la costante di ogni @code{case} viene confrontata di volta in volta
+con il valore risultante.
+Il tipo di costante determina come sar@`a eseguito il confronto: per i tipi
+numerici o stringa si seguono le regole abituali.  Per una costante
+@dfn{regexp} (sia regolare, @code{/pippo/}, che fortemente tipizzata,
+@code{@@/pippo/}) viene effettuato un confronto tra l'espressione e il
+valore di tipo stringa dell'espressione originale.
 Il formato generale dell'istruzione @code{switch} @`e simile a questo:
 
 @example
@@ -17991,7 +17995,7 @@ che a loro volta vengono prima dei sottovettori.
 
 Se si sceglie di utilizzare questa funzionalit@`a per esaminare
 tutti gli elementi di @code{FUNCTAB} (@pxref{Variabili auto-assegnate}),
-allora l'ordine in cui sono presentati gli elementi @`e: dapprima le
+l'ordine in cui sono presentati gli elementi @`e: dapprima le
 funzioni predefinite (@pxref{Funzioni predefinite}), poi
 le funzioni definite dall'utente (@pxref{Funzioni definite dall'utente})
 e infine le funzioni caricate da un'estensione
@@ -19219,11 +19223,12 @@ a[3] = "ultimo"
 @end example
 
 @quotation NOTA
-A motivo di limitazioni dovute all'implementazione, non si possono usare
-n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come argomenti di queste 
-funzioni, neppure se si specifica un secondo vettore da utilizzare
-per effettuare l'ordinamento.  Se si tenta di farlo, viene generato
-un errore fatale.  Questa limitazione potrebbe venire meno in futuro.
+Non si pu@`o usare n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come secondo
+argomento di queste funzioni.  Se si tenta di farlo, viene generato un
+errore fatale.
+Questi vettori possono essere usati come primo argomento, ma soltanto
+se si specifica un secondo vettore da usare per contenere il risultato
+dell'ordinamento.
 @end quotation
 
 @item @code{gensub(@var{regexp}, @var{rimpiazzo}, @var{come}} [@code{, @var{obiettivo}}]@code{) #}
@@ -21561,7 +21566,6 @@ ma dipende dall'utente la loro definizione
 * Esempio di funzione::         Un esempio di definizione di
                                 funzione e spiegazione della stessa.
 * Chiamata di una funzione::    Chiamare funzioni definite dall'utente.
-* Precisazioni sulle funzioni:: Cose a cui prestare attenzione.
 * Istruzione return::           Specificare il valore che una
                                 funzione restituisce.
 * Variabili di tipo dinamico::  Come cambiare tipo a una variabile in
@@ -24652,7 +24656,7 @@ di due punti (@code{:}).
 Se l'argomento corrente sulla riga di comando non corrisponde a
 quest'espressione regolare, vuol dire che non si tratta di un'opzione, e
 quindi viene terminata l'elaborazione delle opzioni.
-A questo punto si controlla se stiamo processando un'opzione corta (che
+A questo punto si controlla se stiamo elaborando un'opzione corta (che
 consiste di una sola lettera), oppure un'opzione lunga (indicata da due
 trattini, p.es. @samp{--filename}).  Se si tratta di un'opzione corta,
 il programma prosegue cos@`{@dotless{i}}:
@@ -27675,11 +27679,8 @@ Si spera che siano interessanti e divertenti.
 @cindex documenti @subentry ricerca in
 Un errore comune quando si scrive un testo lungo @`e quello di ripetere
 accidentalmente delle parole.  Tipicamente lo si pu@`o vedere in testi del tipo
-``questo questo programma fa quanto segue@dots{}''  Quando il testo @`e pubblicato in rete, spesso
+``questo programma fa quanto segue segue@dots{}''  Quando il testo @`e pubblicato in rete, spesso
 le parole duplicate sono poste tra il termine di
-@iftex
-di
-@end iftex
 una riga e l'inizio di un'altra, il che rende difficile scoprirle.
 @c as here!
 
@@ -30908,7 +30909,7 @@ TCP del sistema locale.
 Stampa poi il risultato e chiude la connessione.
 
 Poich@'e questo tema @`e molto ampio, l'uso di @command{gawk} per
-la programmazione TCP/IP viene documentata separatamente.
+la programmazione TCP/IP viene documentato separatamente.
 @ifinfo
 Si veda
 @inforef{Top, , General Introduction, gawkinet, @value{GAWKINETTITLE}},
@@ -33666,7 +33667,7 @@ sono i seguenti:
 
 @c nested table
 @table @asis
-@item @code{-} (Meno)
+@item @code{-} (meno)
 Stampa righe prima delle ultime righe stampate.
 
 @item @code{+}
@@ -33828,7 +33829,7 @@ eseguire programmi piccoli e che non richiedono molto tempo di esecuzione.
 Il debugger di @command{gawk} accetta solo codice sorgente fornito con
 l'opzione @option{-f}.
 Se si sta usando uno @dfn{script} di shell che contiene un programma
-@command{awk} che fa parte della riga di comando, e si deve usare il debugge,
+@command{awk} che fa parte della riga di comando, e si deve usare il debugger,
 si pu@`o scrivere lo @dfn{script} in un file temporaneo, e quindi usarlo come
 programma, tramite l'opzione @option{-f}.  Ci@`o si potrebbe fare nel modo
 seguente:
@@ -34436,7 +34437,7 @@ un'estensione che sfrutta uno spazio-dei-nomi condiviso fra del
 codice scritto in C e del codice @command{awk}, che collaborano
 fra loro.
 
-@node Sommario dello Spazio-dei-nomi
+@node Sommario sugli spazi-dei-nomi
 @section Sommario
 
 @itemize @value{BULLET}
@@ -37823,8 +37824,9 @@ specificare a quale spazio-di-nomi appartiene @code{nome}.
 Se vale @code{""} o @code{"awk"}, allora @code{nome} @`e cercato nello
 spazio-di-nomi di default, ossia @code{awk}.
 
-Note that @code{namespace} is a C++ keyword. For interoperability with C++,
-you should avoid using that identifier in C code.
+Si noti che @code{namespace} @`e una parola chiave di C++. Per ragioni di
+interoperabilit@`a con C++, si dovrebbe evitare di usare questo identificativo
+nel codice C.
 
 @item awk_bool_t sym_update(const char *nome, awk_value_t *valore);
 Aggiorna la variabile il cui nome @`e contenuto nella stringa @code{nome},
@@ -40452,7 +40454,7 @@ corretta sul tipo di file.
 
 Per default, se non @`e possibile aprire una directory (p.es. per problemi
 di autorizzazione), @command{gawk} termina l'esecuzione.
-Come @`e il caso per i file normali, questa situazione pu@`o
+Come per i file normali, questa situazione pu@`o
 essere gestita usando una regola @code{BEGINFILE} che controlli il
 contenuto della variabile @code{ERRNO} e stampi un messaggio di
 errore oppure gestisca il problema in qualche altro modo.
@@ -42961,7 +42963,7 @@ di @command{gawk}.
 
 @item
 @cindex Guerrero, Juan Manuel
-Juan Manuel Guerrero ha preso in carico la manutenzione dellla
+Juan Manuel Guerrero ha preso in carico la manutenzione della
 versione DJGPP di @command{gawk}.
 
 @item
@@ -43896,7 +43898,7 @@ Tuttavia si conclude regolarmente, e poi @samp{make} procede come ci si
 aspetta.
 
 @cindex installare @command{gawk} @subentry su Cygwin
-SI pu@`o anche installare @command{gawk} con la procedura di installazione
+Si pu@`o anche installare @command{gawk} con la procedura di installazione
 normalmente usata per tutto il software Cygwin.
 In generale, Cygwin fornisce l'ultima versione rilasciata di @command{gawk}.
 
@@ -45548,18 +45550,18 @@ sistemi operativi possono avere limiti differenti.
 @multitable @columnfractions .40 .60
 @headitem Caratteristica @tab Limiti
 @item Caratteri in una classe di caratteri @tab 2^(numero di bit per byte)
-@item Lunghezza di un record in input @tab @code{MAX_INT}
+@item Lunghezza di un record in input @tab @code{ULONG_MAX}
 @item Lunghezza di un record in output @tab Illimitata
 @item Lunghezza di una riga di codice sorgente @tab Illimitata
-@item Numero di campi in un record @tab @code{MAX_LONG}
+@item Numero di campi in un record @tab @code{ULONG_MAX}
 @item Numero di ridirezioni di file @tab Illimitata
 @item Numero di record in input in un singolo file @tab @code{MAX_LONG}
 @item Numero totale di record in input @tab @code{MAX_LONG}
 @item Numero di ridirezioni via @dfn{pipe} @tab min(numero processi per utente, numero di file aperti)
 @item Valori numerici @tab Numeri in virgola mobile in doppia precisione (se non si usa la funzionalit@`a MPFR)
-@item Dimensione di un campo @tab @code{MAX_INT}
-@item Dimensione di una stringa letterale @tab @code{MAX_INT}
-@item Dimensione di una stringa di @dfn{printf} @tab @code{MAX_INT}
+@item Dimensione di un campo @tab @code{ULONG_MAX}
+@item Dimensione di una stringa letterale @tab @code{ULONG_MAX}
+@item Dimensione di una stringa di @dfn{printf} @tab @code{ULONG_MAX}
 @end multitable
 
 @node Progetto delle estensioni
@@ -46678,7 +46680,7 @@ sono @code{sqrt()} ([square root], la  radice quadrata di un numero) e
 @command{gawk} fornisce funzioni per la gestione di data e ora,
 le operazioni a livello di bit, l'ordinamento di
 vettori, il controllo di tipo [di variabile] e la traduzione di stringhe
-in fase di esecuzione di progranna.
+in fase di esecuzione di programma.
 (@xref{Funzioni predefinite}).
 
 @item @command{gawk}

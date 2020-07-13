@@ -682,7 +682,6 @@ init_filefuncs(void)
 	awk_value_t value;
 
 	/* at least right now, only FTS needs initializing */
-
 #define FTS_NON_RECURSIVE	FTS_STOP	/* Don't step into directories.  */
 	static const struct flagtab {
 		const char *name;

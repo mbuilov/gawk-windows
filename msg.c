@@ -107,18 +107,9 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 	(void) fprintf(stderr, "\n");
 	(void) fflush(stderr);
 
-	if (isfatal) {
-#ifdef GAWKDEBUG
-		// GLIBC 2.27 doesn't necessarily flush on abort. Sigh.
-		fflush(NULL);
-
-		/* Windows: do not show a message box on abort() - this breaks the
-		   testsuite on a test which should normally fail.  */
-		if (getenv("GAWKTESTING") == NULL)
-			abort();
-#endif
+	if (isfatal)
 		gawk_exit(EXIT_FATAL);
-	}
+
 }
 
 /* msg --- take a varargs error message and print it */

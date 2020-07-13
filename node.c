@@ -314,22 +314,17 @@ r_dupnode(NODE *n)
 		return n;
 	}
 #endif
+	getnode(r);
+	*r = *n;
 
 #ifdef HAVE_MPFR
 	if ((n->flags & MPZN) != 0) {
-		r = mpg_integer();
+		mpz_init(r->mpg_i);
 		mpz_set(r->mpg_i, n->mpg_i);
-		r->flags = n->flags;
 	} else if ((n->flags & MPFN) != 0) {
-		r = mpg_float();
+		mpfr_init(r->mpg_numbr);
 		int tval = mpfr_set(r->mpg_numbr, n->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
-		r->flags = n->flags;
-	} else {
-#endif
-		getnode(r);
-		*r = *n;
-#ifdef HAVE_MPFR
 	}
 #endif
 
@@ -347,6 +342,7 @@ r_dupnode(NODE *n)
 		emalloc(r->stptr, char *, n->stlen + 1, "r_dupnode");
 		memcpy(r->stptr, n->stptr, n->stlen);
 		r->stptr[n->stlen] = '\0';
+		r->stlen = n->stlen;
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
 			emalloc(r->wstptr, uni_char_t *, sizeof(uni_char_t) * (n->wstlen + 1), "r_dupnode");
@@ -487,6 +483,11 @@ make_typed_regex(const char *re, size_t len)
 
 	n2 = make_string(re, len);
 	n2->typed_re = n;
+#if HAVE_MPFR
+	if (do_mpfr)
+		mpg_zero(n2);
+	else
+#endif
 	n2->numbr = 0;
 	n2->flags |= NUMCUR|STRCUR|REGEX; 
 	n2->flags &= ~(STRING|NUMBER);

@@ -338,7 +338,7 @@ fts_open(char * const *argv, int options,
 
 	return (sp);
 
-mem4:	if (sp->fts_array)
+mem4:	if (sp->fts_array != NULL)
 		free(sp->fts_array);
 mem3:	*tail = NULL;
 	fts_lfree(root);

@@ -184,8 +184,8 @@ awk_value_to_node(const awk_value_t *retval)
 			if (! do_mpfr)
 				fatal(_("awk_value_to_node: not in MPFR mode"));
 			ext_ret_val = make_number_node(MPFN);
-			memcpy(&ext_ret_val->mpg_numbr, retval->num_ptr, sizeof(ext_ret_val->mpg_numbr));
-			freempfr(retval->num_ptr);
+			int tval = mpfr_set(ext_ret_val->mpg_numbr, (mpfr_ptr) retval->num_ptr, ROUND_MODE);
+			IEEE_FMT(ext_ret_val->mpg_numbr, tval);
 			break;
 #else
 			fatal(_("awk_value_to_node: MPFR not supported"));
@@ -195,8 +195,7 @@ awk_value_to_node(const awk_value_t *retval)
 			if (! do_mpfr)
 				fatal(_("awk_value_to_node: not in MPFR mode"));
 			ext_ret_val = make_number_node(MPZN);
-			memcpy(&ext_ret_val->mpg_i, retval->num_ptr, sizeof(ext_ret_val->mpg_i));
-			freempz(retval->num_ptr);
+			mpz_set(ext_ret_val->mpg_i, (mpz_ptr) retval->num_ptr);
 			break;
 #else
 			fatal(_("awk_value_to_node: MPFR not supported"));

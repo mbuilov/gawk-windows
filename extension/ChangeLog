@@ -1,3 +1,24 @@
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Miscellanious fixes from Michael Builov <mbuilov@gmail.com>.
+
+	* fts.c (fts_open): Fix memory leak: fts_sort() allocates
+	sp->fts_array, but it's not freed if next fts_alloc() fails.
+	(fts_build): Need to free "head" list before returning NULL
+	on failure.
+	* readdir.c (get_inode): On Windows handle leak: opened handle
+	was not closed.
+	* filefuncs.c (get_inode): On Windows handle leak: opened handle
+	was not closed.
+	(fill_stat_array): Correct the block size calculation.
+	(init_filefuncs, do_fts): According to the documentation,
+	setting the FTS_NOCHDIR flag should only disable the optimization of
+	changing the current directory when scanning directories.
+	However, setting this flag in the gawk script also included setting
+	FTS_SKIP, which prevented recursive directory traversal. Fix this.
+	* rwarray0.c (read_value): Result of read_array() is awk_bool_t,
+	not error code. Fix the check.
+
 2020-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 5.1.0: Release tar ball made.

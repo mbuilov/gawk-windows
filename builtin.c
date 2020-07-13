@@ -2704,6 +2704,8 @@ do_match(nargs_t nargs)
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array)
 			fatal(_("match: third argument is not an array"));
+		check_symtab_functab(dest, "match", 
+				_("%s: cannot use %s as third argument"));
 		assoc_clear(dest);
 	}
 	tre = POP();
@@ -3540,7 +3542,7 @@ do_and(nargs_t nargs)
 	AWKNUM val;
 
 	res = ~(uintmax_t) 0;	/* start off with all ones */
-	if (nargs < 2)
+	if (nargs < 2u)
 		fatal(_("%s: called with less than two arguments"), "" "and");
 
 	for (; nargs; nargs--) {
@@ -4359,4 +4361,16 @@ fmt:
 			buf[i] = (char) toupper((unsigned char) buf[i]);
 	}
 	return buf;
+}
+
+
+/* check_symtab_functab --- check if dest is SYMTAB or FUNCTAB, fatal if so */
+
+void
+check_symtab_functab(NODE *dest, const char *fname, const char *msg)
+{
+	if (dest == symbol_table)
+		fatal(msg, fname, "SYMTAB");
+	else if (dest == func_table)
+		fatal(msg, fname, "FUNCTAB");
 }

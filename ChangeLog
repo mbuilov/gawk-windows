@@ -1,3 +1,231 @@
+2020-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mpfr.c (mpg_interpret): Make the instruction tracing more sane.
+
+	Fix the testext test for MPFR.
+
+	* gawkapi.c (awk_value_to_node): Use correct code to copy
+	MPFR/MPN numbers and don't free the original values.
+	* interpret.h (r_interpret): At Op_ext_builtin, separate out calls
+	to the external function and awk_value_to_node, for ease in a
+	debugger.
+	* NEWS: Updated.
+
+2020-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+	
+	Fix printf issues. Thanks to Michal Jaegermann for the report.
+
+	* cint_array.c (cint_dump): Fix printf formats.
+	* debug.c (print_symbol): Ditto.
+	* mpfr.c (mpg_interpret): Ditto.
+
+2020-07-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix dbugeval2 test for MPFR.
+
+	* debug.c (do_eval): Preserve DO_MPFR flag in do_flags before
+	parsing the string to be evaluated.
+
+	Fix indirect call tests for MPFR:
+
+	* awkgram.y (lookup_builtin): Only return the MPFR builtin
+	function if the pointer is not NULL.
+
+	Unrelated:
+
+	* config.guess, config.sub: Updated from GNULIB.
+
+2020-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* str_array.c (str_lookup): If a pure number, copy to a string. Fixes
+	at printfchar test for MPFR.
+
+	Fix typeregex2 and typedregex3 tests for MPFR:
+
+	* mpfr.c (mpg_zero): No longer static inline.
+	(force_mpnum): Handle the case of a strongly typed regex.
+	(mpg_interpret): Add tracing for do_itrace.
+	* awk.h (mpg_zero): Add declaration.
+	* node.c (make_typed_regex): Init to zero for MPFR via mpg_zero.
+
+2020-07-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Turn all the flag defines into enums. GDB can then show
+	the bit maps directly.
+
+	Unrelated: Fix another MFPF bug, reported by Hyunho Cho
+	<mug896@naver.com>.
+
+	* mpfr.c (force_mpnum): Restore the character at the end of
+	the string if only saw + or -.
+
+2020-07-07         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* node.c (r_dupnode): Sanitize the code, particularly for MPFR.
+
+2020-07-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Bug fixes in MPFR, reported by Hyunho Cho<mug896@naver.com>.
+
+	* node.c (r_dupnode): Set strndmode and also set stlen of new string.  (How
+	did that one get by us for so long?)
+	* mpfr.c (force_mpnum): Check for a + or - sign with nothing following it.
+
+	Unrelated. Make do_itrace a real variable so that it's easier to
+	change the value from a debugger.
+
+	* awk.h (do_itrace): Declare.
+	(DO_ITRACE, do_itrace): Remove macros.
+	* main.c (do_itrace): Define.
+	(parse_args): Set do_itrace.
+
+2020-07-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a double free error with -M.  Thanks to
+	"NIDE, Naoyuki" <nide@ics.nara-wu.ac.jp> for the report.
+
+	* field.c (clear_mpfr):  New macro, clears MPFR and NUMCUR bits.
+	(reset_record): Use it on the newly copied field values.
+	(purge_record): Add introductory comment since we're in the file.
+
+2020-07-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* eval.c (posix_compare): Rewrite contributed by
+	Michael Builov <mbuilov@gmail.com>.
+
+	Unrelated:
+
+	* awk.h: New option: do_itrace.
+	* interpret.h (r_interpret): Print instruction trace if enabled.
+	* main.c (optab): New option: -I/--trace.
+	(parse_args): Update optlist and the code to handle it.
+	* NEWS: Updated.
+
+2020-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c: Cleanup messages. Error messages start with lower
+	case letter.
+	* TODO: Updated.
+
+2020-06-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Disallow SYMTAB and FUNCTAB as destination arguments to builtin
+	functions that clear arrays:
+
+	* awk.h (check_symtab_functab): Add declaration.
+	* array.c (asort_actual): Call it in check for second argument.
+	* builtin.c (check_symtab_functab): New function.
+	(do_match): Call it in check for third argument.
+	* field.c (do_patsplit, do_split): Call it in checks for fourth and
+	second arguments.
+
+2020-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (asort_actual): If SYMTAB or FUNCTAB is the second argument,
+	fatal out.   If they are the first argument, make it work when a
+	second argument is supplied.
+	* TODO, NEWS: Updated.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	More miscellaneous fixes from Michael Builov <mbuilov@gmail.com>.
+
+	* node.c (r_unref): Handle GAWKDEBUG same as in awk.h:unref.
+	(parse_escape): isxdigit/isdigit/isupper called with possible negative
+	int: fixed. Dead code under "if (do_lint && j > 2)" eliminated,
+	j cannot be > 2.
+	(init_btowc_cache): Also initialize wide-char at index 255.
+
+	And so that `make check' passes with GAWKDEBUG defined:
+
+	* msg.c (err): Remvoe abort() call if fatal. Didn't really do
+	anything special for us.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Regenerated with bison 3.6.3.
+	* NEWS: Updated.
+
+2020-06-10         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Convert exec_count from long long to unsigned long long.
+	* awk.h (INSTRUCTION): Change ldl type from long long to unsigned
+	long long.
+	* debug.c (print_instruction): Fix printf format for exec_count.
+	* profile.c (indent): The argument is now an unsigned long long,
+	and fix the printf format to match.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Miscellaneous fixes from Michael Builov <mbuilov@gmail.com>.
+
+	* awkgram.y (rule_block): Fix size declaration
+	(parse_program): Adjust memset call.
+	(get_comment): Check for end of file before checking for space.
+	* io.c (gawk_popen): Move os_close_on_exec call inside #endif.
+	* builtin.c (do_bindtextdomain): Don't pass NULL to strlen.
+	* debug.c (set_breakpoint): Don't dereference NULL pointer in D_func.
+	(serialize_list): Get the buffer management right to avoid overrun.
+
+2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Thanks to Andrew Schorr for suggestion of better way to
+	handle exec_count being a long long.
+
+	* awk.h (INSTRUCTION): Make new ldl member be the long long.
+	(exec_count): Is now ldl.
+	* profile.c (pprint): Fix printf of exec_count.
+
+2020-06-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (tokexpand): Use size_t instead of int for size of
+	buffer.
+
+2020-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: Fix `print $"2"' case. Thanks to Ed Morton
+	Morton <mortoneccc@comcast.net> for the report.
+
+	Unrelated:
+
+	* awk.h (INSTRUCTION): Make dl a long long for profiling
+	counts on 32 bit systems. Thanks to Peter Lindgren
+	for the report.
+	* profile.c (indent): Take a long long parameter and fix
+	the printf format.
+
+2020-06-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: Allow @/foo/ as return expression in a function.
+	Oops.
+
+2020-06-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add call to AM_PROG_AR for use in
+	cross compiles.  Thanks to Sergei Trofimovich <slyfox@gentoo.org>
+	for the patch.
+
+2020-05-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.sub: Updated from GNULIB.
+
+2020-05-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Rebuild with Bison 3.6.
+	* NEWS: Updated.
+
+2020-05-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add lint check for string + string. It's not concatenation
+	in awk, but is in most other languages. Thanks to Roland Illig
+	<roland.illig@gmx.de> for the suggestion.
+
+	* awk.h (Op_lint_plus): New opcode.
+	* awkgram.y (mk_binary): Add it into the list in the right place
+	if do_lint.
+	* eval.c (optypes): Add case for Op_lint_plus.
+	* interpret.h (r_interpret): Ditto.
+
 2020-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 5.1.0: Release tar ball made.

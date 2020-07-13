@@ -1596,6 +1596,12 @@ call :runtest_in      parse1                                  || exit /b
 call :runtest_in      parsefld                                || exit /b
 call :runtest_fail    parseme                                 || exit /b
 call :runtest         pcntplus                                || exit /b
+
+setlocal & set CALL_STAT=0
+call :change_locale "en_US.UTF-8"                             || goto :exit_local
+call :runtest         posix_compare --posix                   || goto :exit_local
+endlocal & set /A CALL_STAT+=%CALL_STAT%
+
 call :runtest         posix2008sub --posix                    || exit /b
 call :runtest_in      prdupval                                || exit /b
 call :runtest         prec                                    || exit /b
@@ -1687,6 +1693,7 @@ call :runtest_in      splitvar                                || exit /b
 call :runtest         splitwht                                || exit /b
 call :runtest         status-close                            || exit /b
 call :runtest         strcat1                                 || exit /b
+call :runtest_in      strfieldnum                             || exit /b
 call :runtest         strnum1                                 || exit /b
 call :runtest         strnum2                                 || exit /b
 call :runtest_in      strtod                                  || exit /b
@@ -1972,6 +1979,7 @@ call :runtest         lintexp    --lint                       || exit /b
 call :runtest         lintindex  --lint                       || exit /b
 call :runtest         lintint    --lint                       || exit /b
 call :runtest         lintlength --lint                       || exit /b
+call :runtest         lintplus   --lint                       || exit /b
 call :runtest_in      lintold    --lint-old                   || exit /b
 call :runtest         lintset                                 || exit /b
 call :runtest_fail    lintwarn   --lint                       || exit /b

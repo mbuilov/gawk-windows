@@ -28,10 +28,10 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH February, 2019
+@set UPDATE-MONTH June, 2020
 
 @set TITLE Participating in @command{gawk} Development
-@set EDITION 0.72
+@set EDITION 0.73
 
 @iftex
 @set DOCUMENT booklet
@@ -613,12 +613,12 @@ represents the state of the repo on Savannah:
 @end smallexample
 @end float
 
-@cindex @code{git branch}
+@cindex @command{git} command @subentry @code{git branch}
 After you clone the repo, on your local system you will have a single
 branch named @code{master} that's visible when you use @samp{git branch}
 to see your branches.
 
-@cindex @code{git clone}
+@cindex @command{git} command @subentry @code{git clone}
 @example
 $ @kbd{git clone http://git.savannah.gnu.org/r/gawk.git}  @ii{Clone the repo}
 $ @kbd{cd gawk}                                           @ii{Change to local copy}
@@ -653,7 +653,7 @@ the @samp{T} column for the moment):
 
 @noindent
 @cindex @code{origin/} branches
-@cindex branches, @code{origin/}
+@cindex branches @subentry @code{origin/}
 Note that what is simply @code{gawk-4.1-stable} in the upstream repo
 is now referred to as @code{origin/gawk-4.1-stable}.  The @samp{origin/}
 branches are a snapshot of the state of the upstream repo. This is
@@ -672,7 +672,7 @@ this @value{DOCUMENT}.)
 @section Local Branches
 
 @cindex local branches
-@cindex branches, local
+@cindex branches @subentry local
 Let's talk about local branches in more detail.  (The terminology used
 here is my own, not official Git jargon.) There are two kinds of local
 branches:
@@ -680,15 +680,15 @@ branches:
 @table @dfn
 @item Tracking Branches
 @cindex tracking branches
-@cindex branches, tracking 
-@cindex @code{git checkout}
+@cindex branches @subentry tracking 
+@cindex @command{git} command @subentry @code{git checkout}
 Tracking branches track branches from the upstream repository.  You first
 create a tracking branch simply by checking out a branch from the
 upstream. You use the branch name without the leading @samp{origin/}
 prefix. For example, @samp{git checkout gawk-4.1-stable}.
 
-@cindex @code{git push}
-You can then work on this branch, making commitments to it as you wish.
+@cindex @command{git} command @subentry @code{git push}
+You can then work on this branch, making commits to it as you wish.
 Once things are ready to move upstream, you simply use @samp{git push},
 and your changes will be pushed up to the main repo.@footnote{Assuming
 you have permission to do so, of course.}
@@ -761,7 +761,7 @@ as how to use your own branches.
 There are several kinds of branches in the Savannah repository.
 
 @table @dfn
-@cindex branches, dead
+@cindex branches @subentry dead
 @cindex dead branches
 @item Dead Branches
 Branches with the prefix @samp{dead-branches/} (such as
@@ -770,7 +770,7 @@ main code base. For example, a feature which was started, but later
 deemed to be unwise to add.  These branches keep the code available,
 but they are not updated.
 
-@cindex branches, stable
+@cindex branches @subentry stable
 @cindex stable branches
 @item Stable Branches
 These branches are used for bug fixes to released versions
@@ -796,7 +796,7 @@ off of this branch.
 Feature branches are typically based off this branch as well, and when
 the feature is deemed complete, merged back into it.
 
-@cindex branches, feature
+@cindex branches @subentry feature
 @cindex feature branches
 @item Feature Branches
 Often, a proposed new feature or code improvement is quite involved.
@@ -816,7 +816,7 @@ merging commits from one branch to another.
 @node Local State
 @subsection Branches in Your Local Repository
 
-@cindex branches, purely local
+@cindex branches @subentry purely local
 @cindex purely local branches
 Purely local branches are where you do your own development.
 You may use purely local branches because you don't have commit rights
@@ -868,13 +868,13 @@ from @samp{git branch -a}, nothing more.
 @cindex configuration settings
 @cindex settings, configuration
 @cindex global configuration settings
-@cindex configuration settings, global
+@cindex configuration settings @subentry global
 Before starting to use Git, you should configure it with some important
 settings that won't change as you use Git.  You may configure options
 both globally, and on a per-repository basis.  Here, we discuss only
 global configuration settings.
 
-@cindex @code{git config}
+@cindex @command{git} command @subentry @code{git config}
 You can configure Git using either @samp{git config}, or by editing
 the relevant files with your favorite text editor.@footnote{You are
 required to use either Vim or Emacs, other text editors are not
@@ -886,8 +886,8 @@ The first things to set are your email address and your real name:
 
 @cindex @code{user.name} configuration setting
 @cindex @code{user.email} configuration setting
-@cindex configuration setting, @code{user.name}
-@cindex configuration setting, @code{user.email}
+@cindex configuration setting @subentry @code{user.name}
+@cindex configuration setting @subentry @code{user.email}
 @example
 $ @kbd{git config --global user.name "J.P. Developer"}     @ii{Set full name}
 $ @kbd{git config --global user.email jpdev@@example.com}   @ii{Set email address}
@@ -900,8 +900,8 @@ the @command{gawk} maintainer recommends that you use are:
 
 @cindex @code{push.default} configuration setting
 @cindex @code{pager.status} configuration setting
-@cindex configuration setting, @code{push.default}
-@cindex configuration setting, @code{pager.status}
+@cindex configuration setting @subentry @code{push.default}
+@cindex configuration setting @subentry @code{pager.status}
 @example
 $ @kbd{git config --global push.default simple}    @ii{Only push current branch}
 $ @kbd{git config --global pager.status true}      @ii{Use pager for output of} git status
@@ -976,16 +976,16 @@ to the Git repo, and so you cannot push your changes directly.
 @node Cloning
 @section Cloning The Repo
 
-@cindex @code{git clone}
+@cindex @command{git} command @subentry @code{git clone}
 Clone the Savannah repo using @samp{git clone}. You may do so using
 either the native Git protocol, or using HTTP if you must go through a
 gateway or firewall that won't pass the Git protocol.
 
-@cindex URL, for cloning repositories
+@cindex URL @subentry for cloning repositories
 To choose which method, you supply a @dfn{URL} for the repo when you
 clone it, as follows.
 
-@cindex URL, for @command{gawk} repository
+@cindex URL @subentry for @command{gawk} repository
 @cindex Repository, @command{gawk}, URL for
 @itemize @bullet
 @item
@@ -1014,7 +1014,7 @@ $ @kbd{cd gawk}                                           @ii{Start working}
 contents using other Git commands. For example, after coming back from
 your vacation in the Bahamas:
 
-@cindex @code{git pull}
+@cindex @command{git} command @subentry @code{git pull}
 @example
 $ @kbd{cd gawk}               @ii{Move to the repo}
 $ @kbd{make distclean}        @ii{A good idea before updating}
@@ -1045,15 +1045,16 @@ configuration tools.
 So far, we've been working in the default @code{master} branch.
 Let's check what's happening in the @code{gawk-4.1-stable} branch:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
 @example
-$ @kbd{make distclean}                                          @ii{Clean up}
-$ @kbd{git checkout gawk-4.1-stable}                            @ii{Checkout a different branch}
+$ @kbd{make distclean}                          @ii{Clean up}
+$ @kbd{git checkout gawk-4.1-stable}            @ii{Checkout a different branch}
 @print{} ...
-$ @kbd{git pull}                                                @ii{Get up to date}
+$ @kbd{git pull}                                @ii{Get up to date}
 @print{} ...
-$ @kbd{./bootstrap.sh && ./configure && make -j && make check}  @ii{Start working}
+$ @kbd{./bootstrap.sh && ./configure &&}        @ii{Start working}
+> @kbd{make -j && make check}
 @end example
 
 @node Starting A New Branch
@@ -1064,7 +1065,7 @@ you might decide to add Python syntax support.@footnote{Just joking.
 Please don't attempt this for real.} You should create a
 new branch on which to work.  First, switch back to @code{master}:
 
-@cindex @code{git checkout}
+@cindex @command{git} command @subentry @code{git checkout}
 @example
 $ @kbd{make distclean}
 $ @kbd{git checkout master}
@@ -1084,7 +1085,7 @@ You now do massive amounts of work in order to add Python syntax support.
 As you do each defined chunk of work, you update the @file{ChangeLog}
 file with your changes before @dfn{committing} them to the repo.
 
-@cindex @code{git status}
+@cindex @command{git} command @subentry @code{git status}
 Let's say you've added a new file @file{python.c} and updated several
 others. Use @samp{git status} to see what's changed:
 
@@ -1093,8 +1094,8 @@ $ @kbd{git status}
 @print{} ...
 @end example
 
-@cindex @code{git diff}
-@cindex @code{git difftool}
+@cindex @command{git} command @subentry @code{git diff}
+@cindex @command{git} command @subentry @code{git difftool}
 @cindex @command{meld} utility
 Before committing the current set of changes, you can use @samp{git diff}
 to view the changes. You may also use @samp{git difftool}@footnote{Don't
@@ -1106,7 +1107,7 @@ $ @kbd{git diff}                           @ii{Regular built-in tool}
 $ @kbd{git difftool --tool=meld}           @ii{GUI diff tool}
 @end example
 
-@cindex @code{git add}
+@cindex @command{git} command @subentry @code{git add}
 When you're happy with the changes, use @samp{git add} to tell
 Git which of the changed and/or new files you wish to have ready to
 be committed:
@@ -1115,7 +1116,7 @@ be committed:
 $ @kbd{git add ...}
 @end example
 
-@cindex @code{git status}
+@cindex @command{git} command @subentry @code{git status}
 Use @samp{git status} to see that your changes are scheduled for committing:
 
 @example
@@ -1125,13 +1126,13 @@ $ @kbd{git status}
 
 Now you can commit your changes to your branch:
 
-@cindex @code{git commit}
+@cindex @command{git} command @subentry @code{git commit}
 @example
 $ @kbd{git commit}
 @end example
 
 @noindent
-@cindex @code{git log}
+@cindex @command{git} command @subentry @code{git log}
 Running @samp{git commit} causes Git to invoke an editor
 (typically from the @env{$EDITOR} environment variable)
 in which you can compose a commit message. Please supply a
@@ -1145,12 +1146,12 @@ Should you need to undo a change that you have not yet
 committed (so that you can start over), you can do so on
 per-file basis by simply checking out the file again:
 
-@cindex @code{git checkout}
+@cindex @command{git} command @subentry @code{git checkout}
 @example
 git checkout awkgram.y      @ii{Undo changes to} awkgram.y@ii{. There is no output}
 @end example
 
-@cindex @code{git reset}
+@cindex @command{git} command @subentry @code{git reset}
 To start over completely, use @samp{git reset --hard}.
 Note that this will @emph{throw away} all your changes, with no
 chance for recovery, so be sure you really want to do it.
@@ -1177,9 +1178,9 @@ For purely local branches, bringing  your branch up to date is called
 started from the latest version of @code{master}.  The steps are as
 follows:
 
-@cindex @code{git rebase}
-@cindex @code{git checkout}
-@cindex @code{git pull}
+@cindex @command{git} command @subentry @code{git rebase}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
 @example
 $ @kbd{git checkout master}                @ii{Checkout} master
 $ @kbd{git pull}                           @ii{Update it}
@@ -1244,8 +1245,8 @@ There are two ways to submit your changes for review.
 To do this, simply compare your branch
 to the branch off which it is based:
 
-@cindex @code{git checkout}
-@cindex @code{git diff}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git diff}
 @example
 $ @kbd{git checkout feature/python}
 $ @kbd{git diff master > /tmp/python.diff}
@@ -1254,13 +1255,13 @@ $ @kbd{git diff master > /tmp/python.diff}
 Mail the @file{python.diff} file to the appropriate mailing list
 along with a description of what you've changed and why.
 
-@cindex @code{git format-patch}
+@cindex @command{git} command @subentry @code{git format-patch}
 @cindex generating multiple patches
 @cindex patches, multiple, generation of
 @item Generate a set of patches that in toto comprise your changes
 To do this, use @samp{git format-patch}:
 
-@cindex @code{git checkout}
+@cindex @command{git} command @subentry @code{git checkout}
 @example
 $ @kbd{git checkout feature/python}
 $ @kbd{git format-patch}
@@ -1291,14 +1292,14 @@ can commit those changes.  @xref{Doing paperwork}, for more information.
 @node Removing Branches
 @section Removing Branches
 
-@cindex removing branches
-@cindex branches, removing
+@cindex removing @subentry branches
+@cindex branches @subentry removing
 Once the maintainer has integrated your changes, you can get
 rid of your local branch:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git branch}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git branch}
 @example
 $ @kbd{git checkout master}                 @ii{Move to upstream branch}
 $ @kbd{git pull}                            @ii{Update}
@@ -1326,8 +1327,8 @@ Make sure your tracking branches are up-to-date before doing anything
 with them, particularly using them as the basis for a rebase
 or merge.  This typically means a three-step process:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
 @example
 $ @kbd{git checkout master}             @ii{Get to local copy}
 $ @kbd{git pull}                        @ii{Bring it up to date}
@@ -1337,7 +1338,7 @@ $ @kbd{git checkout feature/python}     @ii{Go back to your branch}
 @noindent
 You can then do the actual rebase:
 
-@cindex @code{git rebase}
+@cindex @command{git} command @subentry @code{git rebase}
 @example
 $ @kbd{git rebase master}               @ii{Now rebase your feature off of master}
 @end example
@@ -1348,8 +1349,8 @@ operations.  For example, when comparing files with the regular
 @command{diff} command, the usage is @samp{diff @var{oldfile} @var{newfile}}.
 For @samp{git diff}, the current branch takes the place of @var{newfile}, thus:
 
-@cindex @code{git checkout}
-@cindex @code{git diff}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git diff}
 @example
 $ @kbd{git checkout feature/python}
 $ @kbd{git diff master}                 @ii{Compare} master @ii{to current branch}
@@ -1358,9 +1359,9 @@ $ @kbd{git diff master}                 @ii{Compare} master @ii{to current branc
 @noindent
 or if merging:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git merge}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git merge}
 @example
 $ @kbd{git checkout master}             @ii{Checkout} master
 $ @kbd{git pull}                        @ii{Update tracking branch}
@@ -1390,7 +1391,7 @@ Congratulations!  After becoming a quality contributor to @command{gawk}
 development, you've been invited to join the private development list
 and to accept having commit access to the repo.
 
-@cindex Savannah, creating an account
+@cindex Savannah @subentry creating an account
 @cindex account, Savannah, creation of
 @cindex @code{ssh} key
 The first thing to do is to create an account on Savannah, choosing a
@@ -1411,8 +1412,8 @@ clone it using an @samp{ssh://} URL.
 Cloning the repo with @command{ssh} is similar to cloning
 with the Git protocol or with HTTP, but the URL is different:
 
-@cindex @code{git clone}
-@cindex URL, for @command{gawk} repository
+@cindex @command{git} command @subentry @code{git clone}
+@cindex URL @subentry for @command{gawk} repository
 @cindex Repository, @command{gawk}, URL for
 @example
 $ @kbd{git clone ssh://yourname@@git.sv.gnu.org/srv/git/gawk.git}
@@ -1443,7 +1444,7 @@ Update the @file{ChangeLog}.
 If necessary, update the documentation: @file{doc/gawktexi.in}
 and/or @file{doc/gawk.1}.
 
-@cindex @code{git diff}
+@cindex @command{git} command @subentry @code{git diff}
 @item
 Use @samp{git diff > mychange.diff} to create a patch file.
 
@@ -1459,14 +1460,14 @@ it up to the repo yourself!
 Let's assume you've made a bug fix directly on @code{master}.
 Here's how to commit your changes:
 
-@cindex @code{git diff}
-@cindex @code{git add}
-@cindex @code{git commit}
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git diff}
+@cindex @command{git} command @subentry @code{git add}
+@cindex @command{git} command @subentry @code{git commit}
+@cindex @command{git} command @subentry @code{git push}
 @example
 $ @kbd{git diff}            @ii{Review the patch one more time}
 $ @kbd{git add @dots{}}         @ii{Add any files for committing}
-$ @kbd{git commit}          @ii{Commit the files. Include a commit message.}
+$ @kbd{git commit}          @ii{Commit the files, with a commit message}
 $ @kbd{git push}            @ii{Push the files up to the repo. Ta da!}
 @end example
 
@@ -1484,8 +1485,8 @@ that you have pushed your change.
 Developing a new feature can be easier once you have commit access
 to the repo.  First, create a new branch to hold your feature:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
 @example
 $ @kbd{git checkout master}                     @ii{Start from} master
 $ @kbd{git pull}                                @ii{Be sure to be up to date}
@@ -1502,14 +1503,14 @@ changes at their leisure.
 
 To push your branch up initially:
 
-@cindex @code{git diff}
-@cindex @code{git add}
-@cindex @code{git commit}
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git diff}
+@cindex @command{git} command @subentry @code{git add}
+@cindex @command{git} command @subentry @code{git commit}
+@cindex @command{git} command @subentry @code{git push}
 @example
 $ @kbd{git diff}                                @ii{Review your changes}
 $ @kbd{git add @dots{}}                             @ii{Add any files for committing}
-$ @kbd{git commit}                              @ii{Commit the files. Include a commit message}
+$ @kbd{git commit}                              @ii{Commit the files with a commit message}
 $ @kbd{git push -u origin feature/python}       @ii{Push the branch up to the repo}
 @end example
 
@@ -1522,10 +1523,10 @@ and you checked it out locally.
 As you continue to work on your branch, the workflow simplifies
 into this:
 
-@cindex @code{git diff}
-@cindex @code{git add}
-@cindex @code{git commit}
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git diff}
+@cindex @command{git} command @subentry @code{git add}
+@cindex @command{git} command @subentry @code{git commit}
+@cindex @command{git} command @subentry @code{git push}
 @example
 $ @kbd{git diff}                @ii{Review your changes}
 $ @kbd{git add @dots{}}             @ii{Add any files for committing}
@@ -1541,24 +1542,24 @@ stable branch, you work the same way, by producing and discussing
 a diff on the mailing list.  Once it's approved, you can commit it
 yourself:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git add}
-@cindex @code{git commit}
-@cindex @code{git diff}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git add}
+@cindex @command{git} command @subentry @code{git commit}
+@cindex @command{git} command @subentry @code{git diff}
 @example
 $ @kbd{git checkout master}     @ii{Move to} master
 $ @kbd{git pull}                @ii{Make sure we're up to date with the maintainer}
 $ @kbd{gvim @dots{}}                @ii{Make any fixes, compile, test}
 $ @kbd{git diff}                @ii{Review your changes}
 $ @kbd{git add @dots{}}             @ii{Add any files for committing}
-$ @kbd{git commit}              @ii{Commit the files. Include a commit message.}
+$ @kbd{git commit}              @ii{Commit the files with a commit message.}
 @end example
 
 When you're ready to push your changes:
 
-@cindex @code{git pull}
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git push}
 @example
 $ @kbd{git pull}                @ii{Download latest version; Git will merge}
 $ @kbd{gvim ...}                @ii{Resolve any merge conflicts with} git add @ii{and} git commit
@@ -1612,9 +1613,9 @@ one you use depends upon the nature of your new feature branch.
 You should use @samp{git rebase}
 to the keep the branch synchronized with the original branch from which it was forked:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git rebase}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git rebase}
 @example
 $ @kbd{git checkout master}             @ii{Move to} master
 $ @kbd{git pull}                        @ii{Bring it up to date}
@@ -1636,9 +1637,9 @@ continue when such conflicts occur.
 You @emph{must} use @samp{git merge} to bring your feature branch up
 to date.  That flow looks like this:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git merge}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git merge}
 @example
 $ @kbd{git checkout master}             @ii{Move to} master
 $ @kbd{git pull}                        @ii{Bring it up to date}
@@ -1656,9 +1657,9 @@ maintainer merges the branch to @code{master}. But
 there's really no magic involved, the merge is simply
 done in the other direction:
 
-@cindex @code{git checkout}
-@cindex @code{git pull}
-@cindex @code{git merge}
+@cindex @command{git} command @subentry @code{git checkout}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git merge}
 @example
 $ @kbd{git checkout feature/python}     @ii{Checkout feature branch}
 $ @kbd{git pull}                        @ii{Bring it up to date}
@@ -1671,7 +1672,7 @@ If you've been keeping @samp{feature/python} in sync with
 @code{master}, then there should be no merge conflicts to
 resolve, and you can push the result to Savannah:
 
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git push}
 @example
 $ @kbd{git push}                        @ii{Push up to Savannah}
 @end example
@@ -1679,17 +1680,20 @@ $ @kbd{git push}                        @ii{Push up to Savannah}
 Since @samp{feature/python} is no longer needed, it can be
 gotten rid of:
 
-@cindex @code{git branch}
-@cindex @code{git push}
+@cindex @command{git} command @subentry @code{git branch}
+@cindex @command{git} command @subentry @code{git push}
 @example
-$ @kbd{git branch -d feature/python}                 @ii{Still on} master@ii{, delete feature branch}
-$ @kbd{git push -u origin --delete feature/python}   @ii{Delete the branch on Savannah}
+$ @kbd{git branch}                                  @ii{Still on} master
+  @dots{}
+* master
+$ @kbd{git branch -d feature/python}                @ii{Delete feature branch}
+$ @kbd{git push -u origin --delete feature/python}  @ii{Delete on Savannah}
 @end example
 
 The @samp{git push} command deletes the @code{feature/python}
 branch from the Savannah repo.
 
-@cindex @code{git fetch}
+@cindex @command{git} command @subentry @code{git fetch}
 @noindent
 Finally, you should send an email to developer's list describing
 what you've done so that everyone else can delete their
@@ -1709,9 +1713,9 @@ There are a few commands you should know about to help keep
 your local repo clean.
 
 @table @emph
-@cindex removing old branches
+@cindex removing @subentry old branches
 @cindex old branches, removing
-@cindex branches, removing
+@cindex branches @subentry removing
 @item Removing old branches
 Developers add branches to the Savannah repo and when development
 on them is done, they
@@ -1724,8 +1728,8 @@ need them, then you can clean up your repo as follows.
 
 First, remove any related tracking branch you may have:
 
-@cindex @code{git pull}
-@cindex @code{git branch}
+@cindex @command{git} command @subentry @code{git pull}
+@cindex @command{git} command @subentry @code{git branch}
 @example
 $ @kbd{git pull}                                @ii{Get up to date}
 $ @kbd{git branch -d feature/merged-feature}    @ii{Remove tracking branch}
@@ -1733,12 +1737,12 @@ $ @kbd{git branch -d feature/merged-feature}    @ii{Remove tracking branch}
 
 Then, ask Git to clean things up for you:
 
-@cindex @code{git fetch}
+@cindex @command{git} command @subentry @code{git fetch}
 @example
 $ @kbd{git fetch --prune}                       @ii{Remove unneeded branches}
 @end example
 
-@cindex removing cruft
+@cindex removing @subentry cruft
 @cindex cruft, removing
 @item Removing cruft
 As Git works, occasional ``cruft'' collects in the repository.
@@ -1747,7 +1751,7 @@ concerned about disk usage, you can do so yourself
 using @samp{git gc} (short for ``garbage collect''). For
 example:
 
-@cindex @code{git gc}
+@cindex @command{git} command @subentry @code{git gc}
 @example
 $ @kbd{du -s .}                               @ii{Check disk usage}
 @print{} 99188   .                            @ii{Almost 10 megabytes}
@@ -1762,12 +1766,12 @@ $ @kbd{du -s .}                               @ii{Check disk usage again}
 @end example
 
 @cindex renaming branches
-@cindex branches, renaming
+@cindex branches @subentry renaming
 @item Renaming branches
 Occasionally you may want to rename a branch.@footnote{This discussion
 adopted from
 @uref{https://multiplestates.wordpress.com/2015/02/05/rename-a-local-and-remote-branch-in-git, here}.}
-If your branch is local and you are on it, us:
+If your branch is local and you are on it, use:
 
 @example
 $ @kbd{git branch -m feature/@var{new-name}}
@@ -1996,10 +2000,12 @@ See @uref{http://pcc.ludd.ltu.se, the project's home page} for more
 information. See @uref{http://pcc.ludd.ltu.se/supported-platforms}
 for instructions about obtaining the code using CVS and building it.
 
-@cindex @command{pcc} compiler, Git mirror
+@cindex @command{pcc} compiler @subentry Git mirror
 An alternative location for the source is the @command{gawk}
 maintainer's @uref{https://github.com/arnoldrobbins/pcc-revived,
-Git mirror} of the code.
+Git mirror} of the code.  If you're using Ubuntu GNU/Linux 18.04 
+or later, you need to use the @code{ubuntu-18} branch from this
+Git mirror.
 @end table
 
 @node Debugging
@@ -2019,6 +2025,7 @@ named @file{.developing} in the @command{gawk} source code directory
 @emph{before} running @command{configure}.  Doing so enables additional
 conditionally-compiled debugging code within @command{gawk}, and adds
 additional warning and debugging options if compiling with GCC.
+It also disables optimization.
 
 @node Cheat Sheet
 @appendix Git Command Cheat Sheet
@@ -2027,9 +2034,9 @@ This @value{APPENDIX} provides an alphabetical list of the Git commands
 cited in this @value{DOCUMENT}, along with brief descriptions of
 what the commands do.
 
-@cindex @code{git help}
+@cindex @command{git} command @subentry @code{git help}
 @cindex @option{--help} option for @command{git}
-@cindex @command{git} command, @option{--help} option
+@cindex @command{git} command @subentry @option{--help} option
 Note that you may always use either @samp{git help @var{command}}
 or @samp{git @var{command} --help} to get short, man-page style
 help on how to use any given Git command.
@@ -2115,7 +2122,7 @@ This is how you keep your local, in-progress changes up-to-date
 with respect to the original branch from which they were started.
 
 @item git reset
-@cindex @code{git reset}, @option{--hard} option
+@cindex @command{git} command @subentry @code{git reset} @subentry @option{--hard} option
 Restore the original state of the repo, especially with the
 @option{--hard} option.  Read up on this command, and use it carefully.
 
@@ -2136,7 +2143,7 @@ Start at the @uref{http://git-scm.org, Git Project home page}.
 In particular, the @uref{https://git-scm.com/book/en/v2,
 @cite{Pro Git} book} is available online.
 
-@cindex Savannah, using Git guide
+@cindex Savannah @subentry using Git guide
 See also @uref{http://savannah.gnu.org/maintenance/UsingGit,
 the Savannah quick introduction to Git}.
 

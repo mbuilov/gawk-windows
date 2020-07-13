@@ -90,6 +90,8 @@ static Regexp *FPAT_re_no_case = NULL;
 static Regexp *FPAT_regexp = NULL;
 NODE *Null_field = NULL;
 
+#define clear_mpfr(n) ((n)->flags &= ~(MPFN | MPZN | NUMCUR))
+
 /* init_fields --- set up the fields array to start with */
 
 void
@@ -231,6 +233,7 @@ rebuild_record(void)
 			}
 
 			n->stptr = cops;
+			clear_mpfr(n);
 			unref(r);
 			fields_arr[i] = n;
 			assert((n->flags & WSTRCUR) == 0);
@@ -347,6 +350,11 @@ reset_record(void)
 		update_PROCINFO_str("FS", current_field_sep_str());
 	}
 }
+
+/*
+ * purge_record --- throw away the fields, make sure that
+ * 	individual nodes remain valid.
+ */
 
 static void
 purge_record(void)
@@ -985,6 +993,8 @@ do_split(nargs_t nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("split: fourth argument is not an array"));
+		check_symtab_functab(sep_arr, "split",
+				_("%s: cannot use %s as fourth argument"));
 		if ((do_lint_extensions || do_lint_old) && ! warned) {
 			warned = true;
 			lintwarn(_("split: fourth argument is a gawk extension"));
@@ -995,6 +1005,8 @@ do_split(nargs_t nargs)
 	arr = POP_PARAM();
 	if (arr->type != Node_var_array)
 		fatal(_("split: second argument is not an array"));
+	check_symtab_functab(arr, "split",
+			_("%s: cannot use %s as second argument"));
 
 	if (sep_arr != NULL) {
 		if (sep_arr == arr)
@@ -1078,11 +1090,15 @@ do_patsplit(nargs_t nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("patsplit: fourth argument is not an array"));
+		check_symtab_functab(sep_arr, "patsplit",
+				_("%s: cannot use %s as fourth argument"));
 	}
 	sep = POP();
 	arr = POP_PARAM();
 	if (arr->type != Node_var_array)
 		fatal(_("patsplit: second argument is not an array"));
+	check_symtab_functab(arr, "patsplit",
+			_("%s: cannot use %s as second argument"));
 
 	src = TOP_STRING();
 

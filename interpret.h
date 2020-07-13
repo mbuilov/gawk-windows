@@ -102,7 +102,13 @@ top:
 		}
 #endif
 
-		switch ((op = pc->opcode)) {
+		op = pc->opcode;
+		if (do_itrace) {
+			fprintf(stderr, "+ %s\n", opcode2str(op));
+			fflush(stderr);
+		}
+
+		switch (op) {
 		case Op_rule:
 			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline */
 			/* fall through */
@@ -412,6 +418,15 @@ uninitialized_scalar:
 					cant_happen();
 				}
 			}
+			break;
+
+		case Op_lint_plus:
+			// no need to check do_lint, this opcode won't
+			// be generated if that's not true
+			t1 = TOP();
+			t2 = PEEK(1);
+			if ((t1->flags & STRING) != 0 && (t2->flags & STRING) != 0)
+				lintwarn(_("operator `+' used on two string values"));
 			break;
 
 		case Op_K_break:
@@ -1020,7 +1035,8 @@ arrayfor:
 						pc[1].func_name, TO_ULONG(arg_count), max_expect);
 
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc((int) arg_count, & result, f));
+			awk_value_t *ef_ret = pc->extfunc((int) arg_count, & result, f);
+			r = awk_value_to_node(ef_ret);
 			(void) POP_CODE();
 			while (arg_count--) {
 				t1 = POP();

@@ -153,15 +153,15 @@ init_profiling_signals(void)
 /* indent --- print out enough tabs */
 
 static void
-indent(ulong_t count)
+indent(unsigned long long count)
 {
 	unsigned i;
 
 	if (do_profile) {
-		if (!count)
+		if (count == 0)
 			fprintf(prof_fp, "\t");
 		else
-			fprintf(prof_fp, "%6lu  ", TO_ULONG(count));
+			fprintf(prof_fp, "%6llu  ", count);
 	}
 
 	for (i = 0; i < indent_level; i++)
@@ -312,8 +312,8 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags)
 					ip1 = (pc + 1)->firsti;
 					ip2 = (pc + 1)->lasti;
 
-					if (do_profile && ip1->exec_count)
-						fprintf(prof_fp, " # %lu", TO_ULONG(ip1->exec_count));
+					if (do_profile && ip1->exec_count > 0)
+						fprintf(prof_fp, " # %llu", ip1->exec_count);
 
 					end_line(ip1);
 					skip_comment = true;
@@ -1057,8 +1057,8 @@ cleanup:
 			pp_free(t1);
 
 			ip1 = pc->branch_if;
-			if (ip1->exec_count)
-				fprintf(prof_fp, " # %lu", TO_ULONG(ip1->exec_count));
+			if (ip1->exec_count > 0)
+				fprintf(prof_fp, " # %llu", ip1->exec_count);
 			ip1 = end_line(ip1);
 			indent_in();
 			if (pc->comment != NULL)

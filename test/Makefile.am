@@ -79,6 +79,7 @@ EXTRA_DIST = \
 	arraysort2.ok \
 	arraytype.awk \
 	arraytype.ok \
+	arraytype-mpfr.ok \
 	arrdbg.awk \
 	arrymem1.awk \
 	arrymem1.ok \
@@ -340,6 +341,7 @@ EXTRA_DIST = \
 	fnparydl.ok \
 	forcenum.awk \
 	forcenum.ok \
+	forcenum-mpfr.ok \
 	fordel.awk \
 	fordel.ok \
 	fork.awk \
@@ -625,6 +627,8 @@ EXTRA_DIST = \
 	lintold.awk \
 	lintold.in \
 	lintold.ok \
+	lintplus.awk \
+	lintplus.ok \
 	lintset.awk \
 	lintset.ok \
 	lintwarn.awk \
@@ -698,6 +702,12 @@ EXTRA_DIST = \
 	mpfrbigint2.awk \
 	mpfrbigint2.in \
 	mpfrbigint2.ok \
+	mpfrcase.awk \
+	mpfrcase.in \
+	mpfrcase.ok \
+	mpfrcase2.awk \
+	mpfrcase2.in \
+	mpfrcase2.ok \
 	mpfrexprange.awk \
 	mpfrexprange.ok \
 	mpfrfield.awk \
@@ -709,6 +719,9 @@ EXTRA_DIST = \
 	mpfrmemok1.ok \
 	mpfrnegzero.awk \
 	mpfrnegzero.ok \
+	mpfrnonum.awk \
+	mpfrnonum.in \
+	mpfrnonum.ok \
 	mpfrnr.awk \
 	mpfrnr.in \
 	mpfrnr.ok \
@@ -832,6 +845,7 @@ EXTRA_DIST = \
 	numindex.ok \
 	numrange.awk \
 	numrange.ok \
+	numrange-mpfr.ok \
 	numstr1.awk \
 	numstr1.ok \
 	numsubstr.awk \
@@ -903,11 +917,13 @@ EXTRA_DIST = \
 	pipeio2.awk \
 	pipeio2.in \
 	pipeio2.ok \
+	posix2008sub.awk \
+	posix2008sub.ok \
+	posix_compare.awk \
+	posix_compare.ok \
 	posix.awk \
 	posix.in \
 	posix.ok \
-	posix2008sub.awk \
-	posix2008sub.ok \
 	poundbang.awk \
 	prdupval.awk \
 	prdupval.in \
@@ -1163,6 +1179,9 @@ EXTRA_DIST = \
 	status-close.ok \
 	strcat1.awk \
 	strcat1.ok \
+	strfieldnum.awk \
+	strfieldnum.in \
+	strfieldnum.ok \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
@@ -1243,6 +1262,7 @@ EXTRA_DIST = \
 	tailrecurse.awk \
 	tailrecurse.ok \
 	testext.ok \
+	testext-mpfr.ok \
 	time.awk \
 	time.ok \
 	timeout.awk \
@@ -1361,7 +1381,7 @@ BASIC_TESTS = \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
 	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 paramdup paramres paramtyp paramuninitglobal \
-	parse1 parsefld parseme pcntplus posix2008sub prdupval prec printf0 \
+	parse1 parsefld parseme pcntplus posix_compare posix2008sub prdupval prec printf0 \
 	printf1 printfchar prmarscl prmreuse prt1eval prtoeval \
 	rand randtest range1 range2 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
@@ -1369,7 +1389,8 @@ BASIC_TESTS = \
 	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
-	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
+	splitdef splitvar splitwht status-close \
+	strcat1 strfieldnum strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
@@ -1396,7 +1417,7 @@ GAWK_EXT_TESTS = \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
 	indirectbuiltin indirectcall indirectcall2 intarray isarrayunset \
-	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
+	lint lintexp lintindex lintint lintlength lintplus lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
 	nsawk1a nsawk1b nsawk1c nsawk2a nsawk2b \
@@ -1446,22 +1467,22 @@ NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 dbugeval3 symtab10
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
-	defref fmtspcl lintexp lintindex lintint lintlength lintwarn \
+	defref fmtspcl lintexp lintindex lintint lintlength lintplus lintwarn \
 	noeffect nofmtch nonl shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold
 
 # List of tests that must be run with -M
-NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
-	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
+NEED_MPFR = mpfrbigint mpfrbigint2 mpfrcase mpfrcase2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
+	mpfrnegzero mpfrnonum mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
 	mpfrstrtonum mpgforcenum mpfruplus mpfranswer42
 
 # List of tests that need --non-decimal-data
 NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
 
 # List of tests that need --posix
-NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
+NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix posix_compare
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
@@ -1488,7 +1509,7 @@ FAIL_CODE1 = \
 
 # List of files which have .ok versions for MPFR
 CHECK_MPFR = \
-	rand fnarydel fnparydl
+	arraytype fnarydel fnparydl forcenum numrange rand
 
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
@@ -1496,8 +1517,9 @@ NEED_LOCALE_C = \
 
 NEED_LOCALE_EN = \
 	backbigs1 backsmalls1 backsmalls2 concat4 dfamb1 ignrcas2 lc_num1 \
-	mbfw1 mbprintf1 mbprintf3 mbprintf4 mbstr1 mbstr2 printhuge reint2 \
-	rri1 subamp subi18n wideidx wideidx2 widesub widesub2 widesub3 widesub4
+	mbfw1 mbprintf1 mbprintf3 mbprintf4 mbstr1 mbstr2 posix_compare \
+	printhuge reint2 rri1 subamp subi18n wideidx wideidx2 \
+	widesub widesub2 widesub3 widesub4
 
 # Unused at the moment, since nlstringtest has additional stufff it does
 # NEED_LOCALE_FR =
@@ -1565,7 +1587,7 @@ VALGRIND =
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
 LOCALES = LANGUAGE= LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
-AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
+AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG) $(GAWK_TEST_ARGS)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
@@ -2228,7 +2250,9 @@ testext::
 	@echo $@
 	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt; else \
+	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
+	fi
 
 getfile:
 	@echo $@
@@ -2375,8 +2399,11 @@ ignrcas3::
 
 arrdbg:
 	@echo $@
-	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok
+	@$(AWK) -v "okfile=./$@.ok" -v "mpfr_okfile=./$@-mpfr.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; else \
+	$(CMP) ./$@-mpfr.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; \
+	fi
+
 
 sourcesplit:
 	@echo $@

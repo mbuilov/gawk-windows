@@ -607,7 +607,7 @@ print_lines(const char *src, unsigned start_line, unsigned nlines)
 	}
 
 	if (os_xfstat(s->fd, &sbuf) == 0 && s->mtime < sbuf.st_mtime) {
-		fprintf(out_fp, _("WARNING: source file `%s' modified since program compilation.\n"),
+		fprintf(out_fp, _("warning: source file `%s' modified since program compilation.\n"),
 				src);
 		efree(s->line_offset);
 		s->line_offset = NULL;
@@ -861,7 +861,7 @@ do_info(CMDARG *arg, enum argtype cmd)
 						b->number, disp, (b->flags & BP_ENABLE) != 0 ? "yes" : "no",
 					 	b->src,	b->bpi->source_line);
 				if (b->hit_count)
-					gprintf(out_fp, _("\tno of hits = %lu\n"), TO_ULONG(b->hit_count));
+					gprintf(out_fp, _("\tnumber of hits = %lu\n"), TO_ULONG(b->hit_count));
 				if ((b->flags & BP_IGNORE) != 0)
 					gprintf(out_fp, _("\tignore next %lu hit(s)\n"), TO_ULONG(b->ignore_count));
 				if (b->cndn.code != NULL)
@@ -1211,7 +1211,7 @@ print_subscript(NODE *arr, const char *arr_name, CMDARG *a, unsigned count)
 	subs = a->a_node;
 	r = in_array(arr, subs);
 	if (r == NULL)
-		fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"), TO_PRINTF_WIDTH(subs->stlen), subs->stptr, arr_name);
+		fprintf(out_fp, _("subscript \"%.*s\" is not in array `%s'\n"), TO_PRINTF_WIDTH(subs->stlen), subs->stptr, arr_name);
 	else if (r->type == Node_var_array) {
 		if (count > 1)
 			print_subscript(r, r->vname, a->next, count - 1);
@@ -1264,7 +1264,7 @@ do_print_var(CMDARG *arg, enum argtype cmd)
 					subs = a->a_node;
 					value = in_array(r, subs);
 					if (value == NULL) {
-						fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"),
+						fprintf(out_fp, _("subscript \"%.*s\" is not in array `%s'\n"),
 									TO_PRINTF_WIDTH(subs->stlen), subs->stptr, name);
 						break;
 					} else if (value->type != Node_var_array) {
@@ -1594,11 +1594,11 @@ do_delete_item(struct list_item *list, CMDARG *arg)
 			if ((d = find_item(list, (unsigned) arg->a_int)) == NULL) {
 				/* split into two for easier message translation */
 				if (list == &display_list)
-					d_error(_("No display item numbered %ld"),
-						TO_LONG(arg->a_int));
+					d_error(_("no display item numbered %lu"),
+						TO_ULONG(arg->a_int));
 				else
-					d_error(_("No watch item numbered %ld"),
-						TO_LONG(arg->a_int));
+					d_error(_("no watch item numbered %lu"),
+						TO_ULONG(arg->a_int));
 			} else
 				delete_item(d);
 		}
@@ -1623,7 +1623,7 @@ display(struct list_item *d)
 			sub = d->subs[i];
 			r = in_array(symbol, sub);
 			if (r == NULL) {
-				fprintf(out_fp, _("%u: [\"%.*s\"] not in array `%s'\n"),
+				fprintf(out_fp, _("%u: subscript \"%.*s\" is not in array `%s'\n"),
 							d->number, TO_PRINTF_WIDTH(sub->stlen), sub->stptr, d->sname);
 				break;
 			}
@@ -2503,7 +2503,7 @@ set_breakpoint(CMDARG *arg, bool temporary)
 	case D_int:		/* break lineno */
 		ln = arg->a_int;
 		if (ln <= 0 || (unsigned long) ln > s->srclines)
-			d_error(_("line number %ld in file `%s' out of range"), TO_LONG(ln), src);
+			d_error(_("line number %ld in file `%s' is out of range"), TO_LONG(ln), src);
 		else {
 			lineno = (unsigned) ln;
 			rp = find_rule(src, lineno);
@@ -3099,7 +3099,7 @@ do_run(CMDARG *arg, enum argtype cmd)
 		restart(true);	/* does not return */
 	}
 
-	fprintf(out_fp, _("Starting program: \n"));
+	fprintf(out_fp, _("Starting program:\n"));
 
 	prog_running = true;
 	fatal_tag_valid = 1;
@@ -3380,7 +3380,7 @@ do_finish(CMDARG *arg, enum argtype cmd)
 	}
 	assert(fcall_count > cur_frame);
 	stop.fcall_count = fcall_count - cur_frame - 1;
-	fprintf(out_fp, _("Run till return from "));
+	fprintf(out_fp, _("Run until return from "));
 	print_numbered_frame(cur_frame);
 	stop.check_func = check_finish;
 	stop.command = cmd;
@@ -4246,7 +4246,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		break;
 
 	case Op_exec_count:
-		print_func(fp, "[exec_count = %lu]\n", TO_ULONG(pc->exec_count));
+		print_func(fp, "[exec_count = %llu]\n", pc->exec_count);
 		break;
 
  	case Op_store_var:
@@ -4613,8 +4613,8 @@ serialize_subscript(char *buf, size_t buflen, const struct list_item *item)
 }
 
 
-
-/* serialize_list--- convert a list structure to a byte stream and
+/*
+ * serialize_list--- convert a list structure to a byte stream and
  *               save in environment.
  */
 
@@ -4790,9 +4790,9 @@ enlarge_buffer:
 				}
 
 				if (sz > 0) {	/* non-empty commands list */
-					sz += strlen("commands ") + 20/*cnum*/ + 1/*CSEP*/ + strlen("end") + 1/*FSEP*/;
+					sz += strlen("commands ") + 20 /*cnum*/ + 1 /*CSEP*/ + strlen("end") + 1 /*FSEP*/;
 					if (sz >= buflen - bl) {
-						buflen = bl + sz + 1/*RSEP*/;
+						buflen = bl + sz + 1 /*RSEP*/;
 						erealloc(buf, char *, buflen + 1/*'\0'*/, "serialize_list");
 					}
 					bl += (unsigned) sprintf(buf + bl, "commands %u", cnum);
@@ -4827,8 +4827,8 @@ enlarge_buffer:
 				if (cndn->expr) {
 					bl--;	/* undo RSEP from above */
 					sz = strlen(cndn->expr);
-					if (sz + 1/*FSEP*/ >= buflen - bl) {
-						buflen = bl + sz + 1/*FSEP*/ + 1/*RSEP*/;
+					if (sz + 1 /*FSEP*/ >= buflen - bl) {
+						buflen = bl + sz + 1 /*FSEP*/ + 1 /*RSEP*/;
 						erealloc(buf, char *, buflen + 1/*'\0'*/, "serialize_list");
 					}
 					memcpy(buf + bl, cndn->expr, sz);
@@ -5790,7 +5790,7 @@ do_eval(CMDARG *arg, enum argtype cmd)
 	ctxt->install_func = append_symbol;	/* keep track of newly installed globals */
 	push_context(ctxt);
 	the_source = add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
-	do_flags = false;
+	do_flags &= DO_MPFR;	// preserve this flag only
 	err = parse_program(&code, true);
 	do_flags = save_flags;
 	remove_params(this_func);
@@ -5940,7 +5940,7 @@ static void
 check_symbol(NODE *r)
 {
 	invalid_symbol++;
-	d_error(_("No symbol `%s' in current context"), r->vname);
+	d_error(_("no symbol `%s' in current context"), r->vname);
 	/* install anyway, but keep track of it */
 	append_symbol(r);
 }

@@ -105,6 +105,9 @@ AC_EXEEXT
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+# support/ builds libsupport.a, allow for cross version of ar
+AM_PROG_AR
+
 # This is mainly for my use during testing and development.
 # Yes, it's a bit of a hack.
 AC_MSG_CHECKING([for special development options])

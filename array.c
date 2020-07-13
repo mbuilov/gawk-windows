@@ -832,6 +832,9 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 			fatal(_("%s: second argument is not an array"),
 				ctxt == ASORT ? "asort" : "asorti");
 		}
+		check_symtab_functab(dest,
+				ctxt == ASORT ? "asort" : "asorti",
+				_("%s: cannot use %s as second argument"));
 	}
 
 	array = POP_PARAM();
@@ -839,11 +842,11 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 		fatal(_("%s: first argument is not an array"),
 			ctxt == ASORT ? "asort" : "asorti");
 	}
-	else if (array == symbol_table)
-		fatal(_("%s: first argument cannot be SYMTAB"),
+	else if (array == symbol_table && dest == NULL)
+		fatal(_("%s: first argument cannot be SYMTAB without a second argument"),
 			ctxt == ASORT ? "asort" : "asorti");
-	else if (array == func_table)
-		fatal(_("%s: first argument cannot be FUNCTAB"),
+	else if (array == func_table && dest == NULL)
+		fatal(_("%s: first argument cannot be FUNCTAB without a second argument"),
 			ctxt == ASORT ? "asort" : "asorti");
 
 	if (dest != NULL) {
@@ -914,7 +917,15 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 
 			if (r->type == Node_val)
 				value = dupnode(r);
-			else {
+			else if (r->type == Node_var)
+				/* SYMTAB ... */
+				value = dupnode(r->var_value);
+			else if (r->type == Node_builtin_func
+				 || r->type == Node_func
+				 || r->type == Node_ext_func) {
+				/* FUNCTAB ... */
+				value = make_string(r->vname, strlen(r->vname));
+			} else {
 				NODE *arr;
 				arr = make_array();
 				subs = force_string(subs);

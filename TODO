@@ -1,4 +1,4 @@
-Wed Mar 18 22:05:22 IST 2020
+Mon Jun 29 11:16:12 IDT 2020
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -15,9 +15,6 @@ TODO
 Minor Cleanups and Code Improvements
 ------------------------------------
 
-	Allow SYMTAB and FUNCTAB as arguments to asort/asorti if a
-	destination array is provided.
-
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
@@ -30,13 +27,10 @@ Minor Cleanups and Code Improvements
 	Fully synchronize whitespace tests (for \s, \S in Unicode
 	environment) with those of GNU grep.
 
-	See if something like  b = a "" can be optimized to not do
-	a concatenation, but instead just set STRCUR on a.
+	Lint option which would allow extensions and only complain
+	about genuine errors.
 
 	Message cleanup:
-	* Messages in debug.c start with capital letters, but not in
-	  other files.
-
 	* Messages are inconsistent about final punctuation (periods etc.)
 
 Minor New Features
@@ -126,6 +120,10 @@ Things To Think About That May Never Happen
 
 Things That We Decided We Will Never Do
 =======================================
+
+	See if something like  b = a "" can be optimized to not do
+	a concatenation, but instead just set STRCUR on a.
+	(Tried this; the type of b doesn't come out correctly.)
 
 	Consider moving var_value info into Node_var itself to reduce
 	memory usage. This would break all uses of get_lhs in the

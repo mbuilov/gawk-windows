@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH March, 2020
+@set UPDATE-MONTH June, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -4093,6 +4093,18 @@ or on the command line.
 
 Files named with @option{-i} are treated as if they had @samp{@@namespace "awk"}
 at their beginning.  @xref{Changing The Namespace}, for more information.
+
+@item @option{-I}
+@itemx @option{--trace}
+@cindex @option{-I} option
+@cindex @option{--trace} option
+@cindex trace, internal instructions
+@cindex instructions, trace of internal
+@cindex op-codes, trace of internal
+Print the internal byte code names as they are executed when running
+the program. The trace is printed to standard error. Each ``op code''
+is preceded by a @code{+}
+sign in the output.
 
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
@@ -11721,6 +11733,9 @@ As a parameter in a call to a user-defined function
 (@pxref{User-defined}).
 
 @item
+As the return value of a user-defined function.
+
+@item
 On the righthand side of an assignment to a variable: @samp{some_var = @@/foo/}.
 In this case, the type of @code{some_var} is regexp. Additionally, @code{some_var}
 can be used with @samp{~} and @samp{!~}, passed to one of the built-in functions
@@ -15102,13 +15117,14 @@ the execution of statements based on a @code{case} match. Case statements
 are checked for a match in the order they are defined.  If no suitable
 @code{case} is found, the @code{default} section is executed, if supplied.
 
-Each @code{case} contains a single constant, be it numeric, string, or
-regexp.  The @code{switch} expression is evaluated, and then each
-@code{case}'s constant is compared against the result in turn. The type of constant
-determines the comparison: numeric or string do the usual comparisons.
-A regexp constant does a regular expression match against the string
-value of the original expression.  The general form of the @code{switch}
-statement looks like this:
+Each @code{case} contains a single constant, be it numeric, string,
+or regexp.  The @code{switch} expression is evaluated, and then each
+@code{case}'s constant is compared against the result in turn. The
+type of constant determines the comparison: numeric or string do the
+usual comparisons.  A regexp constant (either regular, @code{/foo/}, or
+strongly typed, @code{@@/foo/}) does a regular expression match against
+the string value of the original expression.  The general form of the
+@code{switch} statement looks like this:
 
 @example
 switch (@var{expression}) @{
@@ -18419,10 +18435,10 @@ a[3] = "middle"
 @end example
 
 @quotation NOTE
-Due to implementation limitations, you may not use either @code{SYMTAB}
-or @code{FUNCTAB} as arguments to these functions, even if providing a
-second array to use for the actual sorting.  Attempting to do so produces
-a fatal error.  This restriction may be lifted in the future.
+You may not use either @code{SYMTAB} or @code{FUNCTAB} as the second
+argument to these functions.  Attempting to do so produces a fatal error.
+You may use them as the first argument, but only if providing a second
+array to use for the actual sorting.
 @end quotation
 
 @item @code{gensub(@var{regexp}, @var{replacement}, @var{how}} [@code{, @var{target}}]@code{) #}
@@ -42846,18 +42862,18 @@ different limits.
 @multitable @columnfractions .40 .60
 @headitem Item @tab Limit
 @item Characters in a character class @tab 2^(number of bits per byte)
-@item Length of input record @tab @code{MAX_INT}
+@item Length of input record in bytes @tab @code{ULONG_MAX}
 @item Length of output record @tab Unlimited
 @item Length of source line @tab Unlimited
-@item Number of fields in a record @tab @code{MAX_LONG}
+@item Number of fields in a record @tab @code{ULONG_MAX}
 @item Number of file redirections @tab Unlimited
 @item Number of input records in one file @tab @code{MAX_LONG}
 @item Number of input records total @tab @code{MAX_LONG}
 @item Number of pipe redirections @tab min(number of processes per user, number of open files)
 @item Numeric values @tab Double-precision floating point (if not using MPFR)
-@item Size of a field @tab @code{MAX_INT}
-@item Size of a literal string @tab @code{MAX_INT}
-@item Size of a printf string @tab @code{MAX_INT}
+@item Size of a field in bytes @tab @code{ULONG_MAX}
+@item Size of a literal string in bytes @tab @code{ULONG_MAX}
+@item Size of a printf string in bytes @tab @code{ULONG_MAX}
 @end multitable
 
 @node Extension Design

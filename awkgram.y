@@ -1123,7 +1123,7 @@ non_compound_stmt
 	  {
 		if (! in_function)
 			yyerror(_("`return' used outside function context"));
-	  } opt_exp statement_term {
+	  } opt_fcall_exp statement_term {
 		if (called_from_eval)
 			$1->opcode = Op_K_return_from_eval;
 
@@ -1183,7 +1183,7 @@ simple_stmt
 			if ($3 != NULL) {
 				NODE *n = $3->nexti->nexti->memory;
 
-				if (! iszero(n))
+				if ((n->flags & (STRING|STRCUR)) != 0 || ! iszero(n))
 					goto regular_print;
 
 				bcfree($3->lasti);			/* Op_field_spec */
@@ -1641,6 +1641,12 @@ fcall_expression_list
 fcall_exp
 	: exp { $$ = $1; }
 	| typed_regexp { $$ = list_create($1); }
+	;
+
+opt_fcall_exp
+	: /* empty */
+	  { $$ = NULL; }
+	| fcall_exp { $$ = $1; }
 	;
 
 /* Expressions, not including the comma operator.  */
@@ -5466,7 +5472,7 @@ dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 static INSTRUCTION *
 mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 {
-	INSTRUCTION *ip1,*ip2;
+	INSTRUCTION *ip1,*ip2, *lint_plus;
 	AWKNUM res;
 
 	ip2 = s2->nexti;
@@ -5545,6 +5551,8 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 				op->opcode = Op_mod_i;
 				break;
 			case Op_plus:
+				if (do_lint)
+					goto regular;
 				op->opcode = Op_plus_i;
 				break;
 			case Op_minus:
@@ -5567,6 +5575,10 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 regular:
 	/* append lists s1, s2 and add `op' bytecode */
 	(void) list_merge(s1, s2);
+	if (do_lint && op->opcode == Op_plus) {
+		lint_plus = instruction(Op_lint_plus);
+		(void) list_append(s1, lint_plus);
+	}
 	return list_append(s1, op);
 }
 
@@ -6503,7 +6515,7 @@ lookup_builtin(const char *name)
 		return builtin_func_from_nargs_x_fn(do_sub);
 
 #ifdef HAVE_MPFR
-	if (do_mpfr)
+	if (do_mpfr && tokentab[mid].ptr2 != NULL)
 		return builtin_func_from_nargs_fn(tokentab[mid].ptr2);
 #endif
 

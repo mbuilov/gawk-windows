@@ -593,74 +593,12 @@ typedef struct {
 	afunc_t store;
 } array_funcs_t;
 
-/*
- * NOTE - this struct is a rather kludgey -- it is packed to minimize
- * space usage, at the expense of cleanliness.  Alter at own risk.
- */
-typedef struct exp_node {
-	union node_sub_ {
-		struct {
-			union {
-				struct exp_node *lptr;
-				struct exp_instruction *li;
-				long_t lx;
-				ulong_t ulx;
-				const array_funcs_t *lp;
-			} l;
-			union {
-				struct exp_node *rptr;
-				Regexp *preg[2];
-				struct exp_node **av;
-				BUCKET **bv;
-				void (*uptr)(void);
-				struct exp_instruction *iptr;
-			} r;
-			union {
-				struct exp_node *extra;
-				void (*aptr)(void);
-				unsigned lvl;
-				void *cmnt;	// used by pretty printer
-			} x;
-			char *name;
-			size_t reserved;
-			struct exp_node *rn;
-			ulong_t cnt;
-			union {
-				size_t sz;
-				ulong_t ulsz;
-				unsigned refl;
-#				define	CONSTANT	1
-#				define	FS_DFLT		2
-			} s;
-		} nodep;
+enum reflagvals {
+	CONSTANT = 1,
+	FS_DFLT  = 2,
+};
 
-		struct {
-#ifdef HAVE_MPFR
-			union {
-				AWKNUM fltnum;
-				mpfr_t mpnum;
-				mpz_t mpi;
-			} nm;
-			int rndmode;
-#else
-			AWKNUM fltnum;
-#endif
-			struct exp_node *typre;
-			char *sp;
-			uni_char_t *wsp;
-			size_t slen;
-			size_t wslen;
-			size_t sref;
-			unsigned idx;
-			enum commenttype comtype;
-		} val;
-#ifdef __cplusplus
-		node_sub_() {}
-#endif
-	} sub;
-	NODETYPE type;
-	int flags;
-
+enum flagvals {
 /* type = Node_val */
 	/*
 	 * STRING and NUMBER are mutually exclusive, except for the special
@@ -707,32 +645,98 @@ typedef struct exp_node {
 	 *
 	 * We hope that the rest of the flags are self-explanatory. :-)
 	 */
-#		define	MALLOC	0x0001       /* stptr can be free'd, i.e. not a field node pointing into a shared buffer */
-#		define	STRING	0x0002       /* assigned as string */
-#		define	STRCUR	0x0004       /* string value is current */
-#		define	NUMCUR	0x0008       /* numeric value is current */
-#		define	NUMBER	0x0010       /* assigned as number */
-#		define	USER_INPUT 0x0020    /* user input: if NUMERIC then
-		                              * a NUMBER */
-#		define	INTLSTR	0x0040       /* use localized version */
-#		define	NUMINT	0x0080       /* numeric value is an integer */
-#		define	INTIND	0x0100	     /* integral value is array index;
-		                              * lazy conversion to string.
-		                              */
-#		define	WSTRCUR	0x0200       /* wide str value is current */
-#		define	MPFN	0x0400       /* arbitrary-precision floating-point number */
-#		define	MPZN	0x0800       /* arbitrary-precision integer */
-#		define	NO_EXT_SET 0x1000    /* extension cannot set a value for this variable */
-#		define	NULL_FIELD 0x2000    /* this is the null field */
+	MALLOC	= 0x0001,       /* stptr can be free'd, i.e. not a field node pointing into a shared buffer */
+	STRING	= 0x0002,       /* assigned as string */
+	STRCUR	= 0x0004,       /* string value is current */
+	NUMCUR	= 0x0008,       /* numeric value is current */
+	NUMBER	= 0x0010,       /* assigned as number */
+	USER_INPUT = 0x0020,    /* user input: if NUMERIC then
+				 * a NUMBER */
+	INTLSTR	= 0x0040,       /* use localized version */
+	NUMINT	= 0x0080,       /* numeric value is an integer */
+	INTIND	= 0x0100,	/* integral value is array index;
+				 * lazy conversion to string.
+				 */
+	WSTRCUR	= 0x0200,       /* wide str value is current */
+	MPFN	= 0x0400,       /* arbitrary-precision floating-point number */
+	MPZN	= 0x0800,       /* arbitrary-precision integer */
+	NO_EXT_SET = 0x1000,    /* extension cannot set a value for this variable */
+	NULL_FIELD = 0x2000,    /* this is the null field */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x4000       /* array is at max size */
-#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
-		                                      * See cint_array.c */
-#		define	XARRAY		0x10000
-#		define	NUMCONSTSTR	0x20000	/* have string value for numeric constant */
-#		define  REGEX           0x40000 /* this is a typed regex */
+	ARRAYMAXED	= 0x4000,       /* array is at max size */
+	HALFHAT		= 0x8000,       /* half-capacity Hashed Array Tree;
+					 * See cint_array.c */
+	XARRAY		= 0x10000,
+	NUMCONSTSTR	= 0x20000,	/* have string value for numeric constant */
+	REGEX           = 0x40000,	/* this is a typed regex */
+};
 
+/*
+ * NOTE - this struct is a rather kludgey -- it is packed to minimize
+ * space usage, at the expense of cleanliness.  Alter at own risk.
+ */
+typedef struct exp_node {
+	union node_sub_ {
+		struct {
+			union {
+				struct exp_node *lptr;
+				struct exp_instruction *li;
+				long_t lx;
+				ulong_t ulx;
+				const array_funcs_t *lp;
+			} l;
+			union {
+				struct exp_node *rptr;
+				Regexp *preg[2];
+				struct exp_node **av;
+				BUCKET **bv;
+				void (*uptr)(void);
+				struct exp_instruction *iptr;
+			} r;
+			union {
+				struct exp_node *extra;
+				void (*aptr)(void);
+				unsigned lvl;
+				void *cmnt;	// used by pretty printer
+			} x;
+			char *name;
+			size_t reserved;
+			struct exp_node *rn;
+			ulong_t cnt;
+			union {
+				size_t sz;
+				ulong_t ulsz;
+				enum reflagvals reflags;
+			} s;
+		} nodep;
+
+		struct {
+#ifdef HAVE_MPFR
+			union {
+				AWKNUM fltnum;
+				mpfr_t mpnum;
+				mpz_t mpi;
+			} nm;
+			int rndmode;
+#else
+			AWKNUM fltnum;
+#endif
+			struct exp_node *typre;
+			char *sp;
+			uni_char_t *wsp;
+			size_t slen;
+			size_t wslen;
+			size_t sref;
+			unsigned idx;
+			enum commenttype comtype;
+		} val;
+#ifdef __cplusplus
+		node_sub_() {}
+#endif
+	} sub;
+	NODETYPE type;
+	enum flagvals flags;
 #ifdef __cplusplus
 	struct exp_node &operator=(const struct exp_node &src)
 	{
@@ -759,7 +763,7 @@ typedef struct exp_node {
 
 /* Node_regex, Node_dynregex */
 #define re_reg	sub.nodep.r.preg
-#define re_flags sub.nodep.s.refl
+#define re_flags sub.nodep.s.reflags
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
 #define re_cnt	flags
@@ -989,6 +993,7 @@ typedef enum opcodeval {
 	Op_exec_count,
 	Op_breakpoint,
 	Op_lint,
+	Op_lint_plus,
 	Op_atexit,
 	Op_stop,
 
@@ -1036,6 +1041,7 @@ typedef struct exp_instruction {
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
 		LINTTYPE dlt;
+		unsigned long long ldl;	// for exec_count
 		ulong_t du;
 		unsigned dui;
 		OPCODE dc;
@@ -1200,7 +1206,7 @@ typedef struct exp_instruction {
 
 /*------------------ pretty printing/profiling --------*/
 /* Op_exec_count */
-#define exec_count      d.du
+#define exec_count      d.ldl
 
 /* Op_K_while */
 #define while_body      d.di
@@ -1229,6 +1235,13 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
+enum iobuf_flags {
+	IOP_IS_TTY	= 1,
+	IOP_AT_EOF	= 2,
+	IOP_CLOSED	= 4,
+	IOP_AT_START	= 8,
+};
+
 typedef struct iobuf {
 	struct awk_input_buf_container pubc;	/* exposed to extensions */
 #	define publ pubc.input_buf
@@ -1245,11 +1258,7 @@ typedef struct iobuf {
 	bool valid;
 	int errcode;
 
-	int flag;
-#		define	IOP_IS_TTY	1
-#		define  IOP_AT_EOF      2
-#		define  IOP_CLOSED      4
-#		define  IOP_AT_START    8
+	enum iobuf_flags flag;
 } IOBUF;
 
 typedef void (*Func_ptr)(void);
@@ -1260,21 +1269,24 @@ typedef intptr_t pid_t;
 
 #define BAD_PID -1
 
+enum redirect_flags {
+	RED_FILE	= 1,
+	RED_PIPE	= 2,
+	RED_READ	= 4,
+	RED_WRITE	= 8,
+	RED_APPEND	= 16,
+	RED_NOBUF	= 32,
+	RED_USED	= 64,	/* closed temporarily to reuse fd */
+	RED_EOF		= 128,
+	RED_TWOWAY	= 256,
+	RED_PTY		= 512,
+	RED_SOCKET	= 1024,
+	RED_TCP		= 2048,
+};
+
 /* structure used to dynamically maintain a linked-list of open files/pipes */
 struct redirect {
-	unsigned int flag;
-#		define	RED_FILE	1
-#		define	RED_PIPE	2
-#		define	RED_READ	4
-#		define	RED_WRITE	8
-#		define	RED_APPEND	16
-#		define	RED_NOBUF	32
-#		define	RED_USED	64	/* closed temporarily to reuse fd */
-#		define	RED_EOF		128
-#		define	RED_TWOWAY	256
-#		define	RED_PTY		512
-#		define	RED_SOCKET	1024
-#		define	RED_TCP		2048
+	enum redirect_flags flag;
 	char *value;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;
@@ -1289,10 +1301,10 @@ struct redirect {
 /* values for BINMODE, used as bit flags */
 
 enum binmode_values {
-	TEXT_TRANSLATE = 0,	/* usual \r\n ---> \n translation */
-	BINMODE_INPUT = 1,	/* no translation for input files */
-	BINMODE_OUTPUT = 2,	/* no translation for output files */
-	BINMODE_BOTH = 3	/* no translation for either */
+	TEXT_TRANSLATE	= 0,	/* usual \r\n ---> \n translation */
+	BINMODE_INPUT	= 1,	/* no translation for input files */
+	BINMODE_OUTPUT	= 2,	/* no translation for output files */
+	BINMODE_BOTH	= 3	/* no translation for either */
 };
 
 enum srctype {
@@ -1449,11 +1461,11 @@ extern NODE *success_node;
 extern struct block_header nextfree[];
 extern bool field0_valid;
 
-extern int do_flags;
+extern bool do_itrace;	/* separate so can poke from a debugger */
 
 extern SRCFILE *srcfiles; /* source files */
 
-enum do_flag_values {
+extern enum do_flag_values {
 	DO_LINT_INVALID	   = 0x00001,	/* only warn about invalid */
 	DO_LINT_EXTENSIONS = 0x00002,	/* warn about gawk extensions */
 	DO_LINT_ALL	   = 0x00004,	/* warn about all things */
@@ -1469,8 +1481,8 @@ enum do_flag_values {
 	DO_SANDBOX	   = 0x01000,	/* sandbox mode - disable 'system' function & redirections */
 	DO_PROFILE	   = 0x02000,	/* profile the program */
 	DO_DEBUG	   = 0x04000,	/* debug the program */
-	DO_MPFR		   = 0x08000	/* arbitrary-precision floating-point math */
-};
+	DO_MPFR		   = 0x08000,	/* arbitrary-precision floating-point math */
+} do_flags;
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
 #define do_posix            (do_flags & DO_POSIX)
@@ -1948,6 +1960,7 @@ extern NODE *do_typeof(nargs_t nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 extern int sanitize_exit_status(int status);
+extern void check_symtab_functab(NODE *dest, const char *fname, const char *msg);
 
 /* debug.c */
 extern void init_debug(void);
@@ -2160,6 +2173,7 @@ extern void cleanup_mpfr(void);
 extern NODE *mpg_node(unsigned int);
 extern const char *mpg_fmt(const char *, ...);
 extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
+extern void mpg_zero(NODE *n);
 #endif
 
 /* msg.c */
