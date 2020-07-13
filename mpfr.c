@@ -1554,9 +1554,9 @@ mpg_interpret(INSTRUCTION **cp)
 		case Op_assign_exp:
 			fprintf(stderr, "++ %s: mpg_interpret\n", opcode2str(op));
 			fflush(stderr);
-			// fall thru to break
-		default:
 			break;
+		default:
+			return true;	/* unhandled */
 		}
 	}
 
