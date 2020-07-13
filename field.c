@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2019 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2020 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -72,6 +72,9 @@ static field_num_t parse_high_water = 0; /* field number that we have parsed so 
 static field_num_t nf_high_water = 0;	/* size of fields_arr */
 static bool resave_fs;
 static NODE *save_FS;		/* save current value of FS when line is read,
+				 * to be used in deferred parsing
+				 */
+static NODE *save_FPAT;		/* save current value of FPAT when line is read,
 				 * to be used in deferred parsing
 				 */
 static awk_fieldwidth_info_t *FIELDWIDTHS = NULL;
@@ -467,7 +470,9 @@ re_parse_field(field_num_t up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 
-	if (RS_is_null && default_FS) {
+	bool default_field_splitting = (RS_is_null && default_FS);
+
+	if (default_field_splitting) {
 		sep = scan;
 		while (scan < end && (*scan == ' ' || *scan == '\t' || *scan == '\n'))
 			scan++;
@@ -508,7 +513,7 @@ re_parse_field(field_num_t up_to,	/* parse only up to this field number */
            			(size_t) (REEND(rp, scan) - RESTART(rp, scan)), sep_arr);
 		scan += REEND(rp, scan);
 		field = scan;
-		if (scan == end)	/* FS at end of record */
+		if (scan == end && ! default_field_splitting)	/* FS at end of record */
 			(*set)(++nf, field, 0, n);
 	}
 	if (nf != up_to && scan < end) {
@@ -848,6 +853,8 @@ get_field(field_num_t requested, Func_ptr *assign)
 	bool in_middle = false;
 	static bool warned = false;
 	extern enum defrule currule;
+	NODE *saved_fs;
+	Regexp *fs_regexp;
 
 	if (do_lint && currule == END && ! warned) {
 		warned = true;
@@ -863,10 +870,17 @@ get_field(field_num_t requested, Func_ptr *assign)
 			/* first, parse remainder of input record */
 			if (NF == BAD_NF) {
 				in_middle = (parse_high_water != 0);
+				if (current_field_sep() == Using_FPAT) {
+					saved_fs = save_FPAT;
+					fs_regexp = FPAT_regexp;
+				} else {
+					saved_fs = save_FS;
+					fs_regexp = FS_regexp;
+				}
 				NF = (*parse_field)(UNLIMITED - 1, &parse_extent,
 		    			fields_arr[0]->stlen -
 					(parse_extent - fields_arr[0]->stptr),
-		    			save_FS, FS_regexp, set_field,
+					saved_fs, fs_regexp, set_field,
 					(NODE *) NULL,
 					(NODE *) NULL,
 					in_middle);
@@ -1431,7 +1445,6 @@ void
 set_FPAT(void)
 {
 	static bool warned = false;
-	static NODE *save_fpat = NULL;
 	bool remake_re = true;
 	NODE *fpat;
 
@@ -1454,9 +1467,9 @@ set_FPAT(void)
 	 * This comparison can't use cmp_nodes(), which pays attention
 	 * to IGNORECASE, and that's not what we want.
 	 */
-	if (save_fpat
-		&& FPAT_node->var_value->stlen == save_fpat->stlen
-		&& memcmp(FPAT_node->var_value->stptr, save_fpat->stptr, save_fpat->stlen) == 0) {
+	if (save_FPAT
+		&& FPAT_node->var_value->stlen == save_FPAT->stlen
+		&& memcmp(FPAT_node->var_value->stptr, save_FPAT->stptr, save_FPAT->stlen) == 0) {
 		if (FPAT_regexp != NULL)
 			FPAT_regexp = (IGNORECASE ? FPAT_re_no_case : FPAT_re_yes_case);
 
@@ -1469,8 +1482,8 @@ set_FPAT(void)
 		}
 	}
 
-	unref(save_fpat);
-	save_fpat = dupnode(FPAT_node->var_value);
+	unref(save_FPAT);
+	save_FPAT = dupnode(FPAT_node->var_value);
 	refree(FPAT_re_yes_case);
 	refree(FPAT_re_no_case);
 	FPAT_re_yes_case = FPAT_re_no_case = FPAT_regexp = NULL;

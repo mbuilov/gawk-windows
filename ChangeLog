@@ -1,3 +1,149 @@
+2020-04-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 5.1.0: Release tar ball made.
+
+2020-04-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (save_FPAT): New global variable.
+	(get_field): Check if using FPAT or not in order to pass in
+	the right variables to parse_field function.  Fixes bug in
+	delayed field parsing when using FPAT.  Thanks to
+	luciole75w <luciole75w@gmail.com> for the bug report.
+	(set_FPAT): Use global save_FPAT instead of local save_fpat.
+
+	Unrelated:
+
+	* awkgram.c, command.c: Rebuild with Bison 3.5.4.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* awk.h (do_lint_extensions): Define to zero if NO_LINT.
+
+2020-04-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (re_parse_field): If default parsing and trailing
+	whitespace, don't set a null field at the end. Thanks to
+	Ed Morton <mortoneccc@comcast.net> for the report.
+
+2020-03-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* TODO: Add more stuff.
+
+2020-03-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (zos-diffout): New target.
+	* awkgram.y, command.y: Upgrade to Bison 3.5.3.
+	* NEWS: Updated.
+
+2020-03-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c: Further message update. Thanks again to
+	Roland Illig <roland.illig@gmx.de>.
+
+2020-03-09         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* array.c (sort_up_value_string): If either arg is not a Node_val,
+	call out to sort_up_value_type instead. If cmp_strings returns zero,
+	fall back to sort_up_index_string as a tie-breaker.
+	(sort_up_value_number): If either arg is not a Node_val, call out to
+	sort_up_value_type instead. If cmp_strings returns zero, fall back
+	to sort_up_index_string as a tie-breaker.
+	(do_sort_up_value_type): Renamed from sort_up_value_type with one
+	change: if both arguments have type Node_var, we compare the
+	var_value NODEs instead.
+	(sort_up_value_type): New wrapper function around do_sort_up_value_type
+	to fall back to sort_up_index_string as a tie-breaker.
+
+2020-03-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c, awk.h, awkgram.y, builtin.c, command.y, debug.c,
+	ext.c, int_array.c, io.c, main.c, symbol.c: Messages refined
+	based on suggestions from Roland Illig <roland.illig@gmx.de>.
+
+2020-03-06         Jannick               <thirdedition@gmx.net>
+
+	* Makefile.am: Replace AM_MAKEFLAGS with AM_CFLAGS and AM_LDFLAGS.
+	Put pc/Makefile.tst into BUILT_SOURCES, instead of in dist-hook.
+	Add $(srcdir) to rules for the yacc files. Use AM_LDFLAGS in
+	the efence rule.
+	* configure.ac: Use GAWK_CANONICAL_HOST instead of AC_CANONICAL_HOST;
+	this supplies MSYS2 support. Remove use of EXEEXT.
+
+2020-03-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* NEWS: Updated.
+
+2020-02-13         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* custom.h: OpenVMS needs _REGEX_INCLUDE_LIMITS_H defined.
+
+2020-02-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: Add lint check for assignment in condition to
+	if and for statements. Thanks to Jannick <thirdedition@gmx.net>
+	for the suggestion.
+	* debug.c (do_eval): Remove @eval from the symbol table if there
+	was a syntax error in the statement being evaluated. Thanks again
+	to Jannick, for the report.
+
+2020-02-04         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* custom.h: Fix OpenVMS SIZE_MAX value.
+
+2020-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, dfa.c: Move include of mbsupport.h to ...
+	* custom.h: ... here.
+	* configure.ac: Add check for isblank.
+
+2020-01-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* custom.h: Fix non-VMS compilation.
+
+2020-01-26         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* custom.h: Additional OpenVMS typedefs needed.
+	* getext.h: Fix macro for implementations without gettext
+	to not force the result to be a const char *.
+
+2020-01-26         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* array.c (sort_up_value_type): Small efficiency tweak. Only
+	run through the list of other types if both values are not scalars.
+
+2020-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c, profile.c, cint_array.c, builtin.c, interpret.h,
+	main.c: Update copyright years.
+
+2020-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (sort_up_value_type): Handle other types of nodes,
+	in case someone applies PROCINFO["sorted_in"] to SYMTAB or
+	FUNCTAB. This threw an assertion error if assertions were
+	enabled. Thanks to John Namam <Gawer@703n.com> for the report.
+	(asort_actual): Disallow SYMTAB and FUNCTAB as first arguments.
+	* TODO: Note that we should should eventually allow SYMTAB/FUNCTAB
+	passed to asort/asaorti if a destination array is provided. (The
+	current code breaks right now.)
+
+2020-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_top): New macro.
+	(pprint): Be smarter for print[f] with redirection that was
+	parenthesized, to not print `printf(("hello\n")) > "..."'.
+
+	Unrelated:
+	* compile, config.guess, config.rpath, config.sub, depcomp: Updated
+	from GNULIB.
+
+2020-01-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* cint_array.c (cint_array_init): Fix off-by-one error in array 
+	bounds overflow check for an NHAT value set in the environment.
+	Thanks to Michael Builov <mbuilov@gmail.com> for the report.
+
 2020-01-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix a number of subtle memory leaks. Thanks to the
@@ -18,7 +164,7 @@
 
 	* interpret.h (Op_subscript): When retrieving from SYMTAB, check
 	for Node_var_new; variables can exist but have not been assigned
-	a value.
+	a value. Thanks to Denis Shirokov <cosmogen@gmail.com> for the report.
 
 	Unrelated:
 
@@ -61,7 +207,7 @@
 2019-11-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* field.c (get_field): Remove special case code for fpat_parse_field.
-	Fixes a bug reported by Ed Morton <mortoneccc@comcast.net.
+	Fixes a bug reported by Ed Morton <mortoneccc@comcast.net>.
 
 2019-10-19         Arnold D. Robbins     <arnold@skeeve.com>
 

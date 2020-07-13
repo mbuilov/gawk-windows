@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.5.  */
+/* A Bison parser, made by GNU Bison 3.5.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2019 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.5"
+#define YYBISON_VERSION "3.5.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -1028,7 +1028,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, int yyrule)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
+                       yystos[+yyssp[yyi + 1 - yynrhs]],
                        &yyvsp[(yyi + 1) - (yynrhs)]
                                               );
       YYFPRINTF (stderr, "\n");
@@ -1206,7 +1206,7 @@ yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
   */
   if (yytoken != YYEMPTY)
     {
-      int yyn = yypact[*yyssp];
+      int yyn = yypact[+*yyssp];
       YYPTRDIFF_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
       yysize = yysize0;
       yyarg[yycount++] = yytname[yytoken];
@@ -1673,7 +1673,7 @@ yyreduce:
 			if (input_from_tty) {
 				dbg_prompt = eval_prompt;
 				fprintf(out_fp,
-		_("Type (g)awk statement(s). End with the command \"end\"\n"));
+		_("Type (g)awk statement(s). End with the command `end'\n"));
 				rl_inhibit_completion = 1;
 			}
 			cmd_idx = -1;
@@ -1759,7 +1759,7 @@ yyreduce:
           {
 		int idx = find_argument(yyvsp[0]);
 		if (idx < 0)
-			yyerror(_("info: invalid option - \"%s\""), yyvsp[0]->a_string);
+			yyerror(_("info: invalid option - `%s'"), yyvsp[0]->a_string);
 		else {
 			efree(yyvsp[0]->a_string);
 			yyvsp[0]->a_string = NULL;
@@ -1810,7 +1810,7 @@ yyreduce:
 #line 322 "command.y"
           {
 		if (in_cmd_src(yyvsp[0]->a_string))
-			yyerror(_("source \"%s\": already sourced."), yyvsp[0]->a_string);
+			yyerror(_("source: `%s': already sourced."), yyvsp[0]->a_string);
 	  }
 #line 1816 "command.c"
     break;
@@ -1819,7 +1819,7 @@ yyreduce:
 #line 327 "command.y"
           {
 		if (! input_from_tty)
-			yyerror(_("save \"%s\": command not permitted."), yyvsp[0]->a_string);
+			yyerror(_("save: `%s': command not permitted."), yyvsp[0]->a_string);
 	  }
 #line 1825 "command.c"
     break;
@@ -1836,7 +1836,7 @@ yyreduce:
 		if (dbg_errcount != 0)
 			;
 		else if (in_commands)
-			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
+			yyerror(_("cannot use command `commands' for breakpoint/watchpoint commands"));
 		else if (yyvsp[0] == NULL && D_illegal == (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
 		else if (yyvsp[0] != NULL && D_illegal == (type = has_break_or_watch_point(&num, false)))
@@ -1847,7 +1847,7 @@ yyreduce:
 				dbg_prompt = commands_prompt;
 				fprintf(out_fp, _("Type commands for when %s %u is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
-				fprintf(out_fp, _("End with the command \"end\"\n"));
+				fprintf(out_fp, _("End with the command `end'\n"));
 			}
 		}
 	  }
@@ -1882,7 +1882,7 @@ yyreduce:
           {
 		int idx = find_argument(yyvsp[0]);
 		if (idx < 0)
-			yyerror(_("trace: invalid option - \"%s\""), yyvsp[0]->a_string);
+			yyerror(_("trace: invalid option - `%s'"), yyvsp[0]->a_string);
 		else {
 			efree(yyvsp[0]->a_string);
 			yyvsp[0]->a_string = NULL;
@@ -1991,7 +1991,7 @@ yyreduce:
 #line 460 "command.y"
           {
 		if (find_option(yyvsp[0]->a_string) < 0)
-			yyerror(_("option: invalid parameter - \"%s\""), yyvsp[0]->a_string);
+			yyerror(_("option: invalid parameter - `%s'"), yyvsp[0]->a_string);
  	  }
 #line 1997 "command.c"
     break;
@@ -2000,7 +2000,7 @@ yyreduce:
 #line 465 "command.y"
           {
 		if (find_option(yyvsp[-2]->a_string) < 0)
-			yyerror(_("option: invalid parameter - \"%s\""), yyvsp[-2]->a_string);
+			yyerror(_("option: invalid parameter - `%s'"), yyvsp[-2]->a_string);
  	  }
 #line 2006 "command.c"
     break;
@@ -2011,7 +2011,7 @@ yyreduce:
 		NODE *n;
 		n = lookup(yyvsp[0]->a_string);
 		if (n == NULL || n->type != Node_func)
-			yyerror(_("no such function - \"%s\""), yyvsp[0]->a_string);
+			yyerror(_("no such function - `%s'"), yyvsp[0]->a_string);
 		else {
 			yyvsp[0]->type = D_func;
 			efree(yyvsp[0]->a_string);
@@ -2069,7 +2069,7 @@ yyreduce:
           {
 		int idx = find_argument(yyvsp[-1]);
 		if (idx < 0)
-			yyerror(_("enable: invalid option - \"%s\""), yyvsp[-1]->a_string);
+			yyerror(_("enable: invalid option - `%s'"), yyvsp[-1]->a_string);
 		else {
 			efree(yyvsp[-1]->a_string);
 			yyvsp[-1]->a_string = NULL;
@@ -2535,7 +2535,7 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp);
+                  yystos[+*yyssp], yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -2861,7 +2861,7 @@ again:
 				/* force a quit, and let do_quit (in debug.c) exit */
 				if (! seen_eof) {
 					if (errno != 0)	{
-						fprintf(stderr, _("can't read command (%s)\n"), strerror(errno));
+						fprintf(stderr, _("cannot read command: %s\n"), strerror(errno));
 						exit_val = EXIT_FAILURE;
 					} /* else
 						exit_val = EXIT_SUCCESS; */
@@ -2875,7 +2875,7 @@ again:
 					return '\n';	/* end command 'quit' */
 			}
 			if (errno != 0)
-				d_error(_("can't read command (%s)"), strerror(errno));
+				d_error(_("cannot read command: %s"), strerror(errno));
 			if (pop_cmd_src() == 0)
 				goto again;
 			exit(EXIT_FATAL);	/* shouldn't happen */
@@ -2962,7 +2962,7 @@ again:
 			}
 			return cmdtab[cmd_idx].cls;
 		} else {
-			yyerror(_("unknown command - \"%.*s\", try help"),
+			yyerror(_("unknown command - `%.*s', try help"),
 				TO_PRINTF_WIDTH(toklen), tokstart);
 			return '\n';
 		}

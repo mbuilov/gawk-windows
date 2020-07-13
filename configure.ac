@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2019 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2020 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk],[5.0.61],[bug-gawk@gnu.org],[gawk])
+AC_INIT([GNU Awk],[5.1.0],[bug-gawk@gnu.org],[gawk])
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -88,7 +88,7 @@ AC_ARG_ENABLE([versioned-extension-dir],
 # set default shared library location
 AC_SUBST([pkgextensiondir], ['${pkglibdir}'${EXTENSIONDIR}])
 
-AC_CANONICAL_HOST
+GAWK_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 
 dnl checks for programs
@@ -296,7 +296,7 @@ esac
 AC_CHECK_FUNCS(__etoa_l atexit btowc fmod gai_strerror \
 	getgrent getgroups grantpt \
 	fwrite_unlocked \
-	isascii iswctype iswlower iswupper mbrlen \
+	isascii isblank iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid sigprocmask \
 	snprintf strchr \
@@ -458,12 +458,10 @@ AH_BOTTOM([#include "custom.h"])
 dnl Crude but small hack to make plug-ins work on Mac OS X
 dnl We should really use the libtool value for shrext_cmds, but that
 dnl is not available here, since we do not use libtool at the top level.
-AS_VAR_IF([EXEEXT],[.exe],[GAWKLIBEXT=dll],[
 case $acl_shlibext in
 dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
 *) GAWKLIBEXT=$acl_shlibext ;;
 esac
-])
 AC_SUBST(GAWKLIBEXT)
 
 AC_CONFIG_FILES(Makefile

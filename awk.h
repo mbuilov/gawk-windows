@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2019 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2020 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -86,8 +86,6 @@ extern int errno;
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
-
-#include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */
 
 #ifdef STDC_HEADERS
 #include <float.h>
@@ -1505,6 +1503,7 @@ extern int exit_val;
 #ifdef NO_LINT
 #define do_lint 0
 #define do_lint_old 0
+#define do_lint_extensions 0
 #else
 #define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
 #define do_lint_old         (do_flags & DO_LINT_OLD)
@@ -2388,7 +2387,7 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) malloc(count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %llu bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot allocate %llu bytes of memory: %s"),
 			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;
@@ -2406,7 +2405,7 @@ ezalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	ret = (void *) calloc(1, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't allocate %llu bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot allocate %llu bytes of memory: %s"),
 			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;
@@ -2424,7 +2423,7 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 
 	ret = (void *) realloc(ptr, count);
 	if (ret == NULL)
-		fatal(_("%s:%d:%s: %s: can't reallocate %llu bytes of memory (%s)"),
+		fatal(_("%s:%d:%s: %s: cannot reallocate %llu bytes of memory: %s"),
 			file, line, where, var, 0ull + count, strerror(errno));
 
 	return ret;

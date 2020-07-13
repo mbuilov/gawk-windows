@@ -1,4 +1,4 @@
-Tue Jul 16 20:33:19 IDT 2019
+Wed Mar 18 22:05:22 IST 2020
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -15,6 +15,9 @@ TODO
 Minor Cleanups and Code Improvements
 ------------------------------------
 
+	Allow SYMTAB and FUNCTAB as arguments to asort/asorti if a
+	destination array is provided.
+
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
@@ -29,6 +32,12 @@ Minor Cleanups and Code Improvements
 
 	See if something like  b = a "" can be optimized to not do
 	a concatenation, but instead just set STRCUR on a.
+
+	Message cleanup:
+	* Messages in debug.c start with capital letters, but not in
+	  other files.
+
+	* Messages are inconsistent about final punctuation (periods etc.)
 
 Minor New Features
 ------------------
@@ -47,6 +56,13 @@ Minor New Features
 
 	? Optional third argument for index indicating where to start the
 	search.
+
+	Suggested by Jannick:
+	* It is possible to make gawk look for a file with extension name
+	plus API version number(s) in case a shared lib with the expected
+	basename cannot be found?  This would help have extension versions
+	compiled against different API versions in one single directory
+	and make gawk pick the extension with the right API version.
 
 Major New Features
 ------------------

@@ -11,7 +11,7 @@
  */
 
 /*
- * Copyright (C) 1995-2004, 2008, 2009, 2011, 2016, 2018, 2019
+ * Copyright (C) 1995-2004, 2008, 2009, 2011, 2016, 2018, 2019, 2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -44,18 +44,32 @@
 #include <fp.h>
 /* isnan () macro is broken */
 #undef isnan
+/* VMS has POSIX confirming limits.h */
+#ifndef _REGEX_INCLUDE_LIMITS_H
+#define _REGEX_INCLUDE_LIMITS_H 1
+#endif
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
-#endif
+#endif /* _GNU_SOURCE */
 #ifndef SIZE_MAX
-#define SIZE_MAX __INT32_MAX
-#endif
+#define SIZE_MAX (__UINT32_MAX)
+#endif /* SIZE_MAX */
+#define ULONG_WIDTH 32
 #ifndef __VAX
 #ifndef ULLONG_MAX
 #define ULLONG_MAX __UINT64_MAX
-#endif
-#endif
-#endif
+#endif /* ULLONG_MAX */
+#endif /* __VAX */
+typedef char int_least8_t;
+typedef unsigned char uint_least8_t;
+typedef short int_least16_t;
+typedef unsigned short uint_least16_t;
+#ifndef __VAX
+typedef long long int_fast64_t;
+typedef unsigned long long uint_fast64_t;
+#endif /* __VAX */
+#endif /* __VMS */
+
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
 #ifdef __QNX__
@@ -85,3 +99,5 @@
 #else
 # define _GL_ATTRIBUTE_PURE /* empty */
 #endif
+
+#include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */

@@ -14,7 +14,7 @@
   */
 
 /*
- * Copyright (C) 2009-2014, 2017, 2018 the Free Software Foundation, Inc.
+ * Copyright (C) 2009-2014, 2017, 2018, 2020 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -147,13 +147,13 @@ do_writea(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* filename is first arg, array to dump is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, _("do_writea: argument 0 is not a string\n"));
+		warning(ext_id, _("do_writea: first argument is not a string"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, _("do_writea: argument 1 is not an array\n"));
+		warning(ext_id, _("do_writea: second argument is not an array"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -199,7 +199,7 @@ write_array(FILE *fp, awk_array_t array)
 	awk_flat_array_t *flat_array;
 
 	if (! flatten_array(array, & flat_array)) {
-		fprintf(stderr, _("write_array: could not flatten array\n"));
+		warning(ext_id, _("write_array: could not flatten array"));
 		return awk_false;
 	}
 
@@ -217,7 +217,7 @@ write_array(FILE *fp, awk_array_t array)
 	}
 
 	if (! release_flattened_array(array, flat_array)) {
-		fprintf(stderr, _("write_array: could not release flattened array\n"));
+		warning(ext_id, _("write_array: could not release flattened array"));
 		return awk_false;
 	}
 
@@ -325,13 +325,13 @@ do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* directory is first arg, array to read is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, _("do_reada: argument 0 is not a string\n"));
+		warning(ext_id, _("do_reada: first argument is not a string"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, _("do_reada: argument 1 is not an array\n"));
+		warning(ext_id, _("do_reada: second argument is not an array"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -375,7 +375,7 @@ do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	if (! clear_array(array.array_cookie)) {
 		errno = ENOMEM;
-		fprintf(stderr, _("do_reada: clear_array failed\n"));
+		warning(ext_id, _("do_reada: clear_array failed"));
 		goto done1;
 	}
 
@@ -414,7 +414,7 @@ read_array(FILE *fp, awk_array_t array)
 
 		/* add to array */
 		if (! set_array_element_by_elem(array, & new_elem)) {
-			fprintf(stderr, _("read_array: set_array_element failed\n"));
+			warning(ext_id, _("read_array: set_array_element failed"));
 			return awk_false;
 		}
 	}

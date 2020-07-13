@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2018, 2019,
+ * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2018, 2019, 2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -35,6 +35,7 @@ static size_t SUBSEPlen;
 static char *SUBSEP;
 static const char indent_char[] = "    ";
 
+static int sort_up_value_type(const void *p1, const void *p2);
 static NODE **null_lookup(NODE *symbol, NODE *subs);
 static NODE **null_dump(NODE *symbol, NODE *subs);
 static const array_funcs_t null_array_func = {
@@ -785,7 +786,7 @@ do_adump(nargs_t nargs)
 	}
 	symbol = POP_PARAM();
 	if (symbol->type != Node_var_array)
-		fatal(_("adump: first argument not an array"));
+		fatal(_("%s: first argument is not an array"), "adump");
 
 	ndump.type = Node_dump_array;
 	ndump.adepth = depth;
@@ -826,31 +827,33 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 	if (nargs >= 2u) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
-			fatal(ctxt == ASORT ?
-				_("asort: second argument not an array") :
-				_("asorti: second argument not an array"));
+			fatal(_("%s: second argument is not an array"),
+				ctxt == ASORT ? "asort" : "asorti");
 		}
 	}
 
 	array = POP_PARAM();
 	if (array->type != Node_var_array) {
-		fatal(ctxt == ASORT ?
-			_("asort: first argument not an array") :
-			_("asorti: first argument not an array"));
+		fatal(_("%s: first argument is not an array"),
+			ctxt == ASORT ? "asort" : "asorti");
 	}
+	else if (array == symbol_table)
+		fatal(_("%s: first argument cannot be SYMTAB"),
+			ctxt == ASORT ? "asort" : "asorti");
+	else if (array == func_table)
+		fatal(_("%s: first argument cannot be FUNCTAB"),
+			ctxt == ASORT ? "asort" : "asorti");
 
 	if (dest != NULL) {
 		for (r = dest->parent_array; r != NULL; r = r->parent_array) {
 			if (r == array)
-				fatal(ctxt == ASORT ?
-					_("asort: cannot use a subarray of first arg for second arg") :
-					_("asorti: cannot use a subarray of first arg for second arg"));
+				fatal(_("%s: cannot use a subarray of first argument for second argument"),
+					ctxt == ASORT ? "asort" : "asorti");
 		}
 		for (r = array->parent_array; r != NULL; r = r->parent_array) {
 			if (r == dest)
-				fatal(ctxt == ASORT ?
-					_("asort: cannot use a subarray of second arg for first arg") :
-					_("asorti: cannot use a subarray of second arg for first arg"));
+				fatal(_("%s: cannot use a subarray of second argument for first argument"),
+					ctxt == ASORT ? "asort" : "asorti");
 		}
 	}
 
@@ -1078,19 +1081,19 @@ static int
 sort_up_value_string(const void *p1, const void *p2)
 {
 	const NODE *t1, *t2;
+	int ret;
 
 	t1 = *((const NODE *const *) p1 + 1);
 	t2 = *((const NODE *const *) p2 + 1);
 
-	if (t1->type == Node_var_array) {
-		/* return 0 if t2 is a sub-array too, else return 1 */
-		return (t2->type != Node_var_array);
-	}
-	if (t2->type == Node_var_array)
-		return -1;		/* t1 (scalar) < t2 (sub-array) */
+	if (t1->type != Node_val || t2->type != Node_val)
+		return sort_up_value_type(p1, p2);
 
 	/* t1 and t2 both have string values */
-	return cmp_strings(t1, t2);
+	ret = cmp_strings(t1, t2);
+	if (ret != 0)
+		return ret;
+	return sort_up_index_string(p1, p2);
 }
 
 
@@ -1114,12 +1117,8 @@ sort_up_value_number(const void *p1, const void *p2)
 	t1 = *((NODE *const *) p1 + 1);
 	t2 = *((NODE *const *) p2 + 1);
 
-	if (t1->type == Node_var_array) {
-		/* return 0 if t2 is a sub-array too, else return 1 */
-		return (t2->type != Node_var_array);
-	}
-	if (t2->type == Node_var_array)
-		return -1;		/* t1 (scalar) < t2 (sub-array) */
+	if (t1->type != Node_val || t2->type != Node_val)
+		return sort_up_value_type(p1, p2);
 
 	ret = cmp_numbers(t1, t2);
 	if (ret != 0)
@@ -1129,9 +1128,10 @@ sort_up_value_number(const void *p1, const void *p2)
 	 * Use string value to guarantee same sort order on all
 	 * versions of qsort().
 	 */
-	t1 = force_string(t1);
-	t2 = force_string(t2);
-	return cmp_strings(t1, t2);
+	ret = cmp_strings(force_string(t1), force_string(t2));
+	if (ret != 0)
+		return ret;
+	return sort_up_index_string(p1, p2);
 }
 
 
@@ -1144,24 +1144,58 @@ sort_down_value_number(const void *p1, const void *p2)
 }
 
 
-/* sort_up_value_type --- qsort comparison function; ascending value type */
+/* do_sort_up_value_type --- backend comparison on ascending value type */
 
 static int
-sort_up_value_type(const void *p1, const void *p2)
+do_sort_up_value_type(const void *p1, const void *p2)
 {
 	NODE *n1, *n2;
+
+	static const NODETYPE element_types[] = {
+		Node_builtin_func,
+		Node_func,
+		Node_ext_func,
+		Node_var_new,
+		Node_var,
+		Node_var_array,
+		Node_val,
+		Node_illegal
+	};
 
 	/* we want to compare the element values */
 	n1 = *((NODE *const *) p1 + 1);
 	n2 = *((NODE *const *) p2 + 1);
 
-	/* 1. Arrays vs. scalar, scalar is less than array */
+	if (n1->type == Node_var && n2->type == Node_var) {
+		/* compare the values of the variables */
+		n1 = n1->var_value;
+		n2 = n2->var_value;
+	}
+
+	/* 1. Arrays vs. everything else, everything else is less than array */
 	if (n1->type == Node_var_array) {
 		/* return 0 if n2 is a sub-array too, else return 1 */
 		return (n2->type != Node_var_array);
 	}
 	if (n2->type == Node_var_array) {
-		return -1;		/* n1 (scalar) < n2 (sub-array) */
+		return -1;              /* n1 (non-array) < n2 (sub-array) */
+	}
+
+	/* 2. Non scalars */
+	if (n1->type != Node_val || n2->type != Node_val) {
+		int n1_pos, n2_pos, i;
+
+		n1_pos = n2_pos = -1;
+		for (i = 0; element_types[i] != Node_illegal; i++) {
+			if (n1->type == element_types[i])
+				n1_pos = i;
+
+			if (n2->type == element_types[i])
+				n2_pos = i;
+		}
+
+		assert(n1_pos != -1 && n2_pos != -1);
+		return (n1_pos - n2_pos);
 	}
 
 	/* two scalars */
@@ -1181,6 +1215,17 @@ sort_up_value_type(const void *p1, const void *p2)
 
 	/* 4. Two strings */
 	return cmp_strings(n1, n2);
+}
+
+/* sort_up_value_type --- qsort comparison function; ascending value type */
+
+static int
+sort_up_value_type(const void *p1, const void *p2)
+{
+	int rc = do_sort_up_value_type(p1, p2);
+
+	/* use a tie-breaker if do_sort_up_value_type has no opinion */
+	return rc ? rc : sort_up_index_string(p1, p2);
 }
 
 /* sort_down_value_type --- qsort comparison function; descending value type */

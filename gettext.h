@@ -1,6 +1,6 @@
 /* Convenience header for conditional use of GNU <libintl.h>.
-   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2018 Free Software
-   Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2018, 2020,
+   Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
 # undef gettext
-# define gettext(Msgid) ((const char *) (Msgid))
+# define gettext(Msgid) ((char *) (Msgid))
 # undef dgettext
 # define dgettext(Domainname, Msgid) ((void) (Domainname), gettext (Msgid))
 # undef dcgettext

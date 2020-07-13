@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2015, 2017, 2018, 2019,
+ * Copyright (C) 1986, 1988, 1989, 1991-2015, 2017-2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -694,7 +694,7 @@ check_param_names(void)
 
 			if (in_array(func_table, & n)) {
 				error(
-			_("function `%s': can't use function `%s' as a parameter name"),
+			_("function `%s': cannot use function `%s' as a parameter name"),
 					list[i]->stptr,
 					f->fparms[j].vname);
 				result = false;
@@ -824,7 +824,7 @@ pop_context(void)
 
 	assert(curr_ctxt != NULL);
 	if (curr_ctxt->prev == NULL)
-		fatal(_("can not pop main context"));
+		fatal(_("cannot pop main context"));
 	ctxt = curr_ctxt->prev;
 	/* restore source and sourceline */
 	sourceline = ctxt->sourceline;

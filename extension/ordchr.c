@@ -9,7 +9,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2011, 2012, 2013, 2018
+ * Copyright (C) 2001, 2004, 2011, 2012, 2013, 2018, 2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -80,7 +80,7 @@ do_ord(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
 	} else if (do_lint)
-		lintwarn(ext_id, _("ord: called with inappropriate argument(s)"));
+		lintwarn(ext_id, _("ord: first argument is not a string"));
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -109,7 +109,7 @@ do_chr(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		str[0] = (char) ret;
 		str[1] = '\0';
 	} else if (do_lint)
-		lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
+		lintwarn(ext_id, _("chr: first argument is not a number"));
 
 	/* Set the return value */
 	return make_const_string(str, 1, result);

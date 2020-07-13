@@ -3,7 +3,8 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2019 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2020,
+ * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -526,12 +527,12 @@ wmain(int argc, wchar_t **wargv)
 
 	if ((BINMODE & BINMODE_INPUT) != 0)
 		if (os_setbinmode(fileno(stdin), O_BINARY) == -1)
-			fatal(_("can't set binary mode on stdin (%s)"), strerror(errno));
+			fatal(_("cannot set binary mode on stdin: %s"), strerror(errno));
 	if ((BINMODE & BINMODE_OUTPUT) != 0) {
 		if (os_setbinmode(fileno(stdout), O_BINARY) == -1)
-			fatal(_("can't set binary mode on stdout (%s)"), strerror(errno));
+			fatal(_("cannot set binary mode on stdout: %s"), strerror(errno));
 		if (os_setbinmode(fileno(stderr), O_BINARY) == -1)
-			fatal(_("can't set binary mode on stderr (%s)"), strerror(errno));
+			fatal(_("cannot set binary mode on stderr: %s"), strerror(errno));
 	}
 
 #ifdef GAWKDEBUG
@@ -740,10 +741,7 @@ usage(int exitval, FILE *fp)
 #endif
 
 	/* This is one string to make things easier on translators. */
-	/* TRANSLATORS: --help output 5 (end)
-	   TRANSLATORS: the placeholder indicates the bug-reporting address
-	   for this application.  Please add _another line_ with the
-	   address for translation bugs.
+	/* TRANSLATORS: --help output (end)
 	   no-wrap */
 	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info'\n\
 which is section `Reporting Problems and Bugs' in the\n\
@@ -757,8 +755,8 @@ or by using a web forum such as Stack Overflow.\n\n"), fp);
 By default it reads standard input and writes standard output.\n\n"), fp);
 
 	/* ditto */
-	fputs(_("Examples:\n\tgawk '{ sum += $1 }; END { print sum }' file\n\
-\tgawk -F: '{ print $1 }' /etc/passwd\n"), fp);
+	fprintf(fp, _("Examples:\n\t%s '{ sum += $1 }; END { print sum }' file\n\
+\t%s -F: '{ print $1 }' /etc/passwd\n"), myname, myname);
 
 	fflush(fp);
 
@@ -772,9 +770,9 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 			die_via_sigpipe();
 
 		if (fp == stdout)
-			awkwarn(_("error writing standard output (%s)"), strerror(errno));
+			awkwarn(_("error writing standard output: %s"), strerror(errno));
 		else if (fp == stderr)
-			awkwarn(_("error writing standard error (%s)"), strerror(errno));
+			awkwarn(_("error writing standard error: %s"), strerror(errno));
 
 		// some other problem than SIGPIPE
 		exit(EXIT_FAILURE);
@@ -825,7 +823,7 @@ PRAGMA_WARNING_POP
 #endif
 		/* don't warn about stdout if EPIPE, but do error exit */
 		if (errno != EPIPE)
-			awkwarn(_("error writing standard output (%s)"), strerror(errno));
+			awkwarn(_("error writing standard output: %s"), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

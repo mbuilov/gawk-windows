@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016, 2017, 2019,
+ * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016, 2017, 2019, 2020,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -239,7 +239,7 @@ int_lookup(NODE *symbol, NODE *subs)
 	/*
 	 * N.B: symbol->table_size is the total # of non-integers (symbol->xarray)
 	 *	and integer elements. Also, symbol->xarray must have at least one
-	 *	item in it, and can not exist if there are no integer elements.
+	 *	item in it, and cannot exist if there are no integer elements.
 	 * 	In that case, symbol->xarray is promoted to 'symbol' (See int_remove).
 	 */
 

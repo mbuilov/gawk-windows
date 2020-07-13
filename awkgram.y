@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2019 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2020 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1004,6 +1004,7 @@ regular_loop:
 		}
 		if ($11 != NULL)
 			$12 = list_prepend($12, $11);
+		add_lint($6, LINT_assign_in_cond);
 		$$ = mk_for_loop($1, $3, $6, $9, $12);
 
 		break_allowed--;
@@ -1435,6 +1436,7 @@ if_statement
 	  {
 		if ($5 != NULL)
 			$1->comment = $5;
+		add_lint($3, LINT_assign_in_cond);
 		$$ = mk_condition($3, $1, $6, NULL, NULL);
 	  }
 	| LEX_IF '(' exp r_paren opt_nls statement
@@ -1444,6 +1446,7 @@ if_statement
 			$1->comment = $5;
 		if ($8 != NULL)
 			$7->comment = $8;
+		add_lint($3, LINT_assign_in_cond);
 		$$ = mk_condition($3, $1, $6, $7, $9);
 	  }
 	;
@@ -2016,7 +2019,7 @@ func_call
 		f->opcode = Op_indirect_func_call;
 		name = estrdup(f->func_name, strlen(f->func_name));
 		if (is_std_var(name))
-			yyerror(_("can not use special variable `%s' for indirect function call"), name);
+			yyerror(_("cannot use special variable `%s' for indirect function call"), name);
 		indirect_var = variable(f->source_line, name, Node_var_new);
 		t = instruction(Op_push);
 		t->memory = indirect_var;
@@ -2865,8 +2868,8 @@ add_srcfile(enum srctype stype, const char *src, SRCFILE *thisfile, bool *alread
 		}
 		/* use full messages to ease translation */
 		fatal(stype != SRC_EXTLIB
-			? _("can't open source file `%s' for reading (%s)")
-			: _("can't open shared library `%s' for reading (%s)"),
+			? _("cannot open source file `%s' for reading: %s")
+			: _("cannot open shared library `%s' for reading: %s"),
 				src,
 				errno_val ? strerror(errno_val) : _("reason unknown"));
 	}
@@ -2877,7 +2880,7 @@ add_srcfile(enum srctype stype, const char *src, SRCFILE *thisfile, bool *alread
 			if (stype == SRC_INC || stype == SRC_EXTLIB) {
 				/* eliminate duplicates */
 				if ((stype == SRC_INC) && (s->stype == SRC_FILE))
-					fatal(_("can't include `%s' and use it as a program file"), src);
+					fatal(_("cannot include `%s' and use it as a program file"), src);
 
 				if (do_lint) {
 					unsigned line = sourceline;
@@ -2901,7 +2904,7 @@ add_srcfile(enum srctype stype, const char *src, SRCFILE *thisfile, bool *alread
 			} else {
 				/* duplicates are allowed for -f */
 				if (s->stype == SRC_INC)
-					fatal(_("can't include `%s' and use it as a program file"), src);
+					fatal(_("cannot include `%s' and use it as a program file"), src);
 				/* no need to scan for further matches, since
 				 * they must be of homogeneous type */
 				break;
@@ -2943,7 +2946,7 @@ include_source(INSTRUCTION *file, void **srcfile_p)
 		if (already_included)
 			return true;
 		error_ln(file->source_line,
-			_("can't open source file `%s' for reading (%s)"),
+			_("cannot open source file `%s' for reading: %s"),
 			src, errcode ? strerror(errcode) : _("reason unknown"));
 		return false;
 	}
@@ -3003,7 +3006,7 @@ load_library(INSTRUCTION *file, void **srcfile_p)
 			if (already_included)
 				return true;
 			error_ln(file->source_line,
-				_("can't open shared library `%s' for reading (%s)"),
+				_("cannot open shared library `%s' for reading: %s"),
 				src, errcode ? strerror(errcode) : _("reason unknown"));
 			return false;
 		}
@@ -3172,7 +3175,7 @@ get_src_buf(void)
 			/* suppress file name and line no. in error mesg */
 			in = source;
 			source = NULL;
-			error(_("can't open source file `%s' for reading (%s)"),
+			error(_("cannot open source file `%s' for reading: %s"),
 				in, strerror(errno));
 			errcount++;
 			lexeof = true;
@@ -3241,7 +3244,7 @@ get_src_buf(void)
 
 	n = (*readfunc)(sourcefile->fd, lexptr, sourcefile->bufsize - savelen);
 	if (n == -1) {
-		error(_("can't read sourcefile `%s' (%s)"),
+		error(_("cannot read source file `%s': %s"),
 				source, strerror(errno));
 		errcount++;
 		lexeof = true;
@@ -3311,7 +3314,8 @@ check_bad_char(int c)
 	}
 
 	if (iscntrl(c) && ! isspace(c))
-		fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), c & 0xFF);
+		// This is a PEBKAC error, but we'll be nice and not say so.
+		fatal(_("error: invalid character '\\%03o' in source code"), c & 0xFF);
 }
 
 /* nextc --- get the next input character */
@@ -3892,9 +3896,9 @@ retry:
 				if (! did_warn_assgn) {
 					did_warn_assgn = true;
 					if (do_lint)
-						lintwarn(_("POSIX does not allow operator `**='"));
+						lintwarn(_("POSIX does not allow operator `%s'"), "**=");
 					if (do_lint_old)
-						lintwarn(_("old awk does not support operator `**='"));
+						lintwarn(_("operator `%s' is not supported in old awk"), "**=");
 				}
 				yylval = GET_INSTRUCTION(Op_assign_exp);
 				return ASSIGNOP;
@@ -3903,9 +3907,9 @@ retry:
 				if (! did_warn_op) {
 					did_warn_op = true;
 					if (do_lint)
-						lintwarn(_("POSIX does not allow operator `**'"));
+						lintwarn(_("POSIX does not allow operator `%s'"), "**");
 					if (do_lint_old)
-						lintwarn(_("old awk does not support operator `**'"));
+						lintwarn(_("operator `%s' is not supported in old awk"), "**");
 				}
 				yylval = GET_INSTRUCTION(Op_exp);
 				return lasttok = '^';
@@ -3940,7 +3944,7 @@ retry:
 		if (nextc(true) == '=') {
 			if (do_lint_old && ! did_warn_assgn) {
 				did_warn_assgn = true;
-				lintwarn(_("operator `^=' is not supported in old awk"));
+				lintwarn(_("operator `%s' is not supported in old awk"), "^=");
 			}
 			yylval = GET_INSTRUCTION(Op_assign_exp);
 			return lasttok = ASSIGNOP;
@@ -3948,7 +3952,7 @@ retry:
 		pushback();
 		if (do_lint_old && ! did_warn_op) {
 			did_warn_op = true;
-			lintwarn(_("operator `^' is not supported in old awk"));
+			lintwarn(_("operator `%s' is not supported in old awk"), "^");
 		}
 		yylval = GET_INSTRUCTION(Op_exp);
 		return lasttok = '^';
@@ -4605,7 +4609,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			ip = arg->lasti;
 			if (ip->opcode == Op_push_i) {
 				if (do_lint)
-					lintwarn(_("%s: string literal as last arg of substitute has no effect"),
+					lintwarn(_("%s: string literal as last argument of substitute has no effect"),
 						oper);
 				r->sub_flags |=	LITERAL;
 			} else {
@@ -4928,7 +4932,7 @@ dump_vars(const char *fname)
 	else if (strcmp(fname, "-") == 0)
 		fp = stdout;
 	else if ((fp = fopen(fname, "w")) == NULL) {
-		awkwarn(_("could not open `%s' for writing (%s)"), fname, strerror(errno));
+		awkwarn(_("could not open `%s' for writing: %s"), fname, strerror(errno));
 		awkwarn(_("sending variable list to standard error"));
 		fp = stderr;
 	}
@@ -4937,7 +4941,7 @@ dump_vars(const char *fname)
 	print_vars(vars, fprintf, fp);
 	efree(vars);
 	if (fp != stdout && fp != stderr && fclose(fp) != 0)
-		awkwarn(_("%s: close failed (%s)"), fname, strerror(errno));
+		awkwarn(_("%s: close failed: %s"), fname, strerror(errno));
 }
 
 /* dump_funcs --- print all functions */
@@ -5098,10 +5102,10 @@ check_params(char *fname, ulong_t pcount, INSTRUCTION *list)
 		if (strcmp(name, fname) == 0) {
 			/* check for function foo(foo) { ... }.  bleah. */
 			error_ln(p->source_line,
-				_("function `%s': can't use function name as parameter name"), fname);
+				_("function `%s': cannot use function name as parameter name"), fname);
 		} else if (is_std_var(name)) {
 			error_ln(p->source_line,
-				_("function `%s': can't use special variable `%s' as a function parameter"),
+				_("function `%s': cannot use special variable `%s' as a function parameter"),
 					fname, name);
 		} else if (strchr(name, ':') != NULL)
 			error_ln(p->source_line,

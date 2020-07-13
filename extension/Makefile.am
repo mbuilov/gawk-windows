@@ -1,7 +1,8 @@
 #
 # extension/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2006, 2012-2015, 2017 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2006, 2012-2015, 2017, 2020,
+# the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -53,7 +54,7 @@ noinst_LTLIBRARIES =	\
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
-# On Cygwin, gettext requires that we link with -lintl 
+# On Cygwin, gettext requires that we link with -lintl
 MY_LIBS = $(LTLIBINTL)
 
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
@@ -151,7 +152,7 @@ dist_man_MANS = \
 	revtwoway.3am rwarray.3am time.3am
 
 # gettext requires this
-SUBDIRS = po 
+SUBDIRS = po
 
 distclean-local:
 	rm -fr .deps

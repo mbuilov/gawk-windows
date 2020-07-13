@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Settembre 2019
+@set UPDATE-MONTH Marzo 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -309,7 +309,7 @@ Some comments on the layout for TeX.
 Tel.: +1-617-542-5942 Fax: +1-617-542-2652 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2019
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2020
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -331,7 +331,7 @@ Italian Linux Documentation Project (ILDP)
 Email: <emailildp@@pluto.it
 URL: <ulink url="http://www.pluto.it/ildp">http://www.pluto.it/ildp/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 2016&ndash;2019
+<literallayout class="normal">Copyright &copy; 2016&ndash;2020
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -339,7 +339,7 @@ All Rights Reserved.
 
 @ifnotdocbook
 @iftex
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2019 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2020 @*
 Free Software Foundation, Inc.
 @end iftex
 @end ifnotdocbook
@@ -685,6 +685,7 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Campi con dati a larghezza fissa::    Valore di campi con dati a larghezza
                                         fissa.
 * Separazione in base al contenuto::    Definire campi dal loro contenuto.
+* File CSV::                            Ancora sui file CSV.
 * Controllare la creazione di campi::   Controllare come @command{gawk} sta
                                         dividendo i record.
 * Righe multiple::                      Record su righe multiple
@@ -1515,8 +1516,8 @@ L'implementazione GNU di @command{awk} @`e chiamata @command{gawk}; se
 invocato con le opzioni o con le variabili d'ambiente appropriate,
 (@pxref{Opzioni}), @`e pienamente
 compatibile con le specifiche
-POSIX@footnote{Lo standard POSIX 2008 @`e accessibile in rete all'indirizzo
-@w{@url{https://pubs.opengroup.org/onlinepubs/9699919799/}.}}
+POSIX@footnote{Lo standard POSIX 2018 @`e accessibile in rete all'indirizzo
+@url{https://pubs.opengroup.org/onlinepubs/9699919799/}.}
 del linguaggio @command{awk}
 e con la versione Unix di @command{awk} mantenuta
 da Brian Kernighan.
@@ -2046,7 +2047,8 @@ Questo @value{SECTION} documenta brevemente le convenzioni tipografiche usate in
 @end ifinfo
 
 Gli esempi da immettere sulla riga di comando sono preceduti dai
-comuni prompt di shell primario e secondario, @samp{$} e @samp{>}.
+comuni prompt di shell primario e secondario, rispettivamente
+@samp{$} e @samp{>}.
 L'input che si inserisce viene mostrato @kbd{in questo modo}.
 @c 8/2014: @print{} is stripped from the texi to make docbook.
 @ifclear FOR_PRINT
@@ -2235,7 +2237,7 @@ titolo @cite{Effective awk Programming}, e O'Reilly ha pubblicato
 la terza edizione nel 2001
 @end ifset
 
-Questa edizione mantiene la struttra di base delle edizioni precedenti.
+Questa edizione mantiene la struttura di base delle edizioni precedenti.
 Per l'edizione FSF 4.0, il contenuto era stato accuratamente rivisto
 e aggiornato.  Tutti i riferimenti a versioni di @command{gawk} anteriori alla
 versione 4.0 sono stati eliminati.
@@ -2243,7 +2245,7 @@ Di particolare interesse in quella edizione era l'aggiunta del @ref{Debugger}.
 
 Per l'edizione FSF
 @ifclear FOR_PRINT
-@value{EDITION},
+5.0,
 @end ifclear
 @ifset FOR_PRINT
 @value{EDITION}
@@ -2439,7 +2441,6 @@ Michal Jaegermann,
 J@"urgen Kahrs,
 Stepan Kasal,
 John Malmberg,
-Dave Pitts,
 Chet Ramey,
 Pat Rankin,
 Andrew Schorr,
@@ -2466,9 +2467,11 @@ Grazie a Michael Brennan per le Prefazioni.
 
 @cindex Duman, Patrice
 @cindex Berry, Karl
+@cindex Smith, Gavin
 Grazie a Patrice Dumas per il nuovo programma @command{makeinfo}.
-Grazie a Karl Berry, che continua a lavorare per tenere
-aggiornato il linguaggio di marcatura Texinfo.
+Grazie a Karl Berry, che per il lavoro svolto in passato
+su Texinfo, e a Gavin Smith, che continua a lavorare per
+migliorare il linguaggio di marcatura Texinfo.
 
 @cindex Kernighan, Brian
 @cindex Brennan, Michael
@@ -2485,7 +2488,7 @@ sulla sua documentazione senza il suo aiuto.
 
 Brian @`e un fuoriclasse sia come programmatore che come autore di manuali
 tecnici.  @`E mio dovere ringraziarlo (una volta di pi@`u) per la sua costante
-amicizia e per essere stato per me un modello da seguire ormai da quasi
+amicizia e per essere stato per me un modello da seguire ormai per oltre
 30 anni!  Averlo come revisiore @`e per me un privilegio eccitante, ma @`e
 stata anche un'esperienza che mi ha fatto sentire molto piccolo@enddots{}
 
@@ -2507,7 +2510,7 @@ vantaggio da quelle opportunit@`a.
 Arnold Robbins @*
 Nof Ayalon @*
 Israel @*
-Febbraio 2015
+Marzo 2020
 @end ifnotdocbook
 
 @ifnotinfo
@@ -2875,16 +2878,11 @@ come se si fosse digitato @samp{awk -f consiglio}:
 
 @example
 $ @kbd{chmod +x consiglio}
-$ @kbd{consiglio}
+$ @kbd{./consiglio}
 @print{} Non v'allarmate!
 @end example
 
 @noindent
-(Si suppone che la directory corrente sia tra quelle contenute nella variabile
-che indica il "percorso" di ricerca [solitamente @code{$PATH}].  In caso
-contrario si potrebbe aver bisogno di digitare @samp{./consiglio} nella
-shell.)
-
 @dfn{Script} @command{awk} autocontenuti sono utili se si vuol scrivere un
 programma che gli utenti possono richiamare senza dover essere informati che
 il programma @`e scritto in @command{awk}.
@@ -2908,7 +2906,7 @@ richiama l'interpretatore con gli argomenti dati e con l'intera lista di
 argomenti con cui era stato invocato il programma.  Il primo argomento nella
 lista @`e l'intero @value{FN} del programma @command{awk}.  Il resto della lista
 degli argomenti contiene opzioni per  @command{awk}, oppure @value{DF}, o
-entrambi.  (Si noti che in molti sistemi @command{awk} pu@`o essere trovato in
+entrambi.  (Si noti che in molti sistemi @command{awk} si trova in
 @file{/usr/bin} invece che in @file{/bin}.)
 
 Alcuni sistemi limitano la lunghezza del nome del programma interpretarore a
@@ -3202,8 +3200,8 @@ $ @kbd{awk 'BEGIN @{ print "Questo @`e un doppio apice <\42>" @}'}
 @end example
 
 @noindent
-Questo funziona bene, ma sai dovrebbe commentare chiaramente quel che
-il testo protetto significa.
+Questo funziona bene, ma si dovrebbe commentare chiaramente quel che
+la sequenza di protezione significa.
 
 Una quarta possibilit@`a @`e di usare assegnamenti di variabili sulla riga di
 comando, cos@`{@dotless{i}}:
@@ -3739,12 +3737,13 @@ andando a capo sarebbe considerata conclusa, @`e possibile @dfn{continuare}
 nella riga successiva terminando la prima riga con un carattere di
 barra inversa (@samp{\}).  La barra inversa dev'essere l'ultimo carattere
 sulla riga, per essere riconosciuto come un carattere di continuazione.
-Una barra inversa @`e consentita in ogni parte dell'istruzione, anche in mezzo
+Una barra inversa seguita da un ritorno a capo  @`e consentita
+in ogni parte dell'istruzione, anche in mezzo
 a una stringa o a un'espressione regolare.  Per esempio:
 
 @example
 awk '/Questa espressione regolare @`e troppo lunga, quindi\
-la continuiamo sulla riga seguente/ @{ print $1 @}'
+ la continuiamo sulla riga seguente/ @{ print $1 @}'
 @end example
 
 @noindent
@@ -3755,6 +3754,7 @@ una riga, quindi la continuazione tramite barra inversa non @`e mai strettamente
 necessaria; serve soltanto a migliorare la leggibilit@`a del programma.
 Per la stessa ragione, ma anche per amore di chiarezza, abbiamo tenuto
 concise molte istruzioni nei programmi presentati in questo @value{DOCUMENT}.
+
 La continuazione tramite barra inversa @`e molto utile quando il proprio
 programma @command{awk} si trova in un file sorgente separato, invece di
 essere immesso nella riga di comando.  Si noti anche che molte implementazioni
@@ -4073,7 +4073,7 @@ chiave.  La parola chiave pu@`o essere abbreviata, a condizione che
 l'abbreviazione identifichi univocamente l'opzione.  Se l'opzione prevede un
 argomento, la parola chiave @`e immediatamente seguita da un segno di uguale
 (@samp{=}) e dal valore dell'argomento, oppure la parola chiave e il valore
-dell'argomento sono separati da spazi.
+dell'argomento sono separati da spazio bianco (spazi o caratteri TAB).
 Se un'opzione con un valore viene immessa pi@`u di una volta,
 l'ultimo valore @`e quello che conta.
 
@@ -4111,7 +4111,7 @@ Quest'opzione pu@`o essere data pi@`u volte; il programma @command{awk}
 I file specificati dall'opzione @option{-f} sono considerati
 appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
 a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
-informazioni.
+informazioni riguardo a questa funzionalit@`a avanzata.
 
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
@@ -4424,14 +4424,23 @@ Non sono consentiti spazi tra @option{-L} e @var{valore}, se
 viene indicato il @var{valore}.
 Alcuni avvertimenti vengono emessi quando @command{gawk} legge preliminarmente
 il programma.  Altri vengono emessi quando il programma viene eseguito.
-Con l'argomento opzionale @samp{fatal}, gli avvertimenti @dfn{lint} sono
-considerati come errori gravi.  Potrebbe essere una misura drastica, per@`o il
+L'argomento opzionale pu@`o essere uno dei seguenti:
+
+@table @code
+@item fatal
+Richiede che gli avvertimenti di lint siano considerati errori gravi.
+Potrebbe essere una misura drastica, per@`o il
 suo uso incoragger@`a certamente lo sviluppo di programmi @command{awk} pi@`u
-corretti.  Con l'argomento opzionale @samp{invalid}, vengono emessi solo gli
+corretti.
+
+@item invalid
+Vengono emessi solo gli
 avvertimenti relativi a quello che @`e effettivamente non valido (funzionalit@`a
-non ancora completamente implementata).  Con un argomento opzionale di
-@samp{no-ext}, gli avvertimenti relativi alle estensioni @command{gawk} sono
-disabilitati.
+non ancora completamente implementata).
+
+@item no-ext
+Gli avvertimenti relativi alle estensioni @command{gawk} sono disabilitati.
+@end table
 
 Alcuni avvertimenti vengono stampati solo una volta, anche se i costrutti dubbi
 per i quali vengono emessi avvisi ricorrono diverse volte nel programma
@@ -4632,7 +4641,7 @@ Inoltre, non consente di aggiungere nomi di file ad @code{ARGV} che
 non siano gi@`a presenti all'inizio dell'esecuzione di @command{gawk}.
 @`E particolarmente utile quando si vogliono eseguire @dfn{script} @command{awk}
 da sorgenti dubbie e si vuol essere ricuri che gli @dfn{script} non abbiano
-accesso al sistema (oltre al @value{DF} di input specificato).
+accesso al sistema (oltre ai @value{DF} di input specificati).
 
 @item @option{-t}
 @itemx @option{--lint-old}
@@ -4703,7 +4712,7 @@ di dati).
 Siccome @`e scomodo usare il meccanismo di @command{awk} standard per combinare
 file sorgenti e programmi @command{awk} da riga di comando, @command{gawk}
 fornisce l'opzione @option{-e}.  Questo non richiede di evitare l'uso dello
-standard input per immettere codice sorgente; consente di combinare
+standard input per immettere codice sorgente, e consente di combinare
 facilmente codice sorgente da riga di comando e da libreria
 (@pxref{AWKPATH (Variabile)}).
 Come per @option{-f}, le opzioni @option{-e} e @option{-i}
@@ -4789,13 +4798,17 @@ awk -f programma.awk file1 ./count=1 file2
 @cindex @code{ARGIND} (variabile) @subentry argomenti da riga di comando
 @cindex @code{ARGV} (vettore) @subentry indicizzare all'interno di
 @cindex @code{ARGC}/@code{ARGV} (variabili) @subentry argomenti da riga di comando
+@cindex @command{gawk} @subentry @code{PROCINFO} (vettore) vettori in
+@cindex @code{PROCINFO} (vettore) @subentry vettori in
 Tutti gli argomenti da riga di comando sono resi disponibili al programma
 @command{awk} nel vettore @code{ARGV} (@pxref{Variabili predefinite}).  Opzioni da
 riga di comando e il testo del programma (se presente) sono esclusi da
 @code{ARGV}.  Tutti gli altri argomenti, compresi gli assegnamenti di
 variabile, sono inclusi.  Come ogni elemento di @code{ARGV} viene elaborato,
 @command{gawk} imposta @code{ARGIND} all'indice in @code{ARGV}
-dell'elemento corrente.
+dell'elemento corrente.  (@command{gawk} mette a disposizione l'intera
+riga di comando, ed @`e contenuta in @code{PROCINFO["argv"]};
+@pxref{Variabili auto-assegnate}.)
 
 @c FIXME: One day, move the ARGC and ARGV node closer to here.
 La modifica di @code{ARGC} e @code{ARGV} nel proprio programma @command{awk}
@@ -4978,8 +4991,11 @@ Il valore di default di @env{AWKPATH} @`e
 @samp{.:/usr/local/share/awk}.@footnote{La versione di @command{gawk}
 che state usando potrebbe usare una directory diversa; ci@`o dipende da come
 @command{gawk} @`e stato compilato e installato.  La directory effettiva @`e il
-valore di @code{$(datadir)} generato quando @`e stato configurato
-@command{gawk}.  Non @`e comunque il caso di preoccuparsi per questo.}
+valore di @code{$(pkgdatadir)} generato quando @`e stato configurato
+@command{gawk}.
+(Per ulteriori dettagli si veda il file @file{INSTALL} nella distribuzione
+in formato sorgente, e anche @ref{Installazione veloce}.
+Non @`e comunque il caso di preoccuparsi per questo.)}
 Poich@'e @file{.} @`e incluso all'inizio, @command{gawk} cerca dapprima nella
 directory corrente, e poi in @file{/usr/local/share/awk}.
 In pratica, questo vuol dire che solo raramente ci sar@`a bisogno di cambiare
@@ -5020,7 +5036,15 @@ attraverso la direttiva @code{@@load}
 Se la variabile d'ambiente @env{AWKLIBPATH} non esiste, o se ha come valore
 la stringa nulla, @command{gawk} usa un percorso di ricerca di default;
 questo normalmente vale @samp{/usr/local/lib/gawk}, anche se il suo valore
-pu@`o essere diverso, a seconda di come @`e stato installato @command{gawk}.
+pu@`o essere diverso, a seconda di come @`e stato installato
+@command{gawk}.@footnote{La vostra versione di @command{gawk}
+pu@`o utilizzare una directory differente; dipende da come @command{gawk}
+@`e stato generato e installato.  La directory utilizzata ha il valore
+che @`e stato generato per @code{$(pkgextensiondir)} nel momento in cui
+@`e stata fatta la configurazione di @command{gawk}.
+(Per ulteriori dettagli si veda il file @file{INSTALL} nella distribuzione
+in formato sorgente e anche @ref{Installazione veloce}.
+Non @`e comunque il caso di preoccuparsi per questo.)}
 
 @xref{File da usare a inizio sessione}, per informazioni su funzioni che possono
 essere di aiuto per gestire la variabile @env{AWKPATH}.
@@ -5857,7 +5881,7 @@ vengono elaborate solo due cifre.
 @cindex @code{\} (barra inversa) @subentry @code{\/} (sequenza di protezione)
 @cindex barra inversa (@code{\}) @subentry @code{\/} (sequenza di protezione)
 @item \/
-Una barra (necessario solo per costanti @dfn{regexp}).
+Una barra (dovrebbe essere usato solo per costanti @dfn{regexp}).
 Questa sequenza si usa per inserire una costante @dfn{regexp}
 che contiene una barra
 (come @code{/.*:\/home\/[[:alnum:]]+:.*/}; la notazione @samp{[[:alnum:]]}
@@ -5876,7 +5900,7 @@ ad @command{awk} di andare avanti a scandire il resto della @dfn{regexp}.
 @cindex @code{\} (barra inversa) @subentry @code{\"} (sequenza di protezione)
 @cindex barra inversa (@code{\}) @subentry @code{\"} (sequenza di protezione)
 @item \"
-Un doppio apice (necessario solo per costanti stringa).
+Un doppio apice (dovrebbe essere usato solo per costanti stringa).
 Questa sequenza si usa per inserire in una costante stringa il carattere
 doppio apice
 (come @code{"Egli le disse \"ciao!\"."}).
@@ -6645,7 +6669,8 @@ cifre, o trattini bassi (@samp{_}):
 @cindex barra inversa (@code{\}) @subentry @code{\s} (operatore @command{gawk})
 @cindex @code{\} (barra inversa) @subentry @code{\s} (operatore @command{gawk})
 @item \s
-Corrisponde a ogni carattere bianco.
+Corrisponde a ogni carattere bianco,
+come definito nella localizzazione corrente.
 Lo si pu@`o pensare come un'abbreviazione di
 @w{@samp{[[:space:]]}}.
 
@@ -6653,7 +6678,8 @@ Lo si pu@`o pensare come un'abbreviazione di
 @cindex barra inversa (@code{\}) @subentry @code{\S} (operatore @command{gawk})
 @cindex @code{\} (barra inversa) @subentry @code{\S} (operatore @command{gawk})
 @item \S
-Corrisponde a ogni carattere che non @`e uno spazio bianco.
+Corrisponde a ogni carattere che non @`e uno spazio bianco,
+come definito nella localizzazione corrente.
 Lo si pu@`o pensare come un'abbreviazione di
 @w{@samp{[^[:space:]]}}.
 
@@ -7364,6 +7390,7 @@ file interi.  Se si usa  @command{gawk}, si veda
 @cindex campi
 @cindex accesso ai campi
 @cindex campi @subentry esame dei
+@cindex spazio bianco @subentry definizione di
 Quando @command{awk} legge un record in input, il record @`e
 automaticamente @dfn{analizzato} o separato da @command{awk} in "pezzi"
 chiamati @dfn{campi}.  Per default, i campi sono separati da
@@ -8464,6 +8491,10 @@ per un esempio di tale funzione).
 @node Separazione in base al contenuto
 @section Definire i campi in base al contenuto
 
+@menu
+* File CSV::                    Ancora sui file CSV.
+@end menu
+
 @c O'Reilly doesn't like it as a note the first thing in the section.
 @ifnotinfo
 Questa
@@ -8511,7 +8542,9 @@ regolare.  L'espressione regolare descrive il contenuto di ciascun campo.
 
 Nel caso dei dati CSV visti prima, ogni campo @`e ``qualsiasi cosa che non
 sia una virgola,'' oppure ``doppi apici, seguiti da qualsiasi cosa che non
-siano doppi apici, e doppi apici di chiusura''.  Se fosse scritta come una
+siano doppi apici, e doppi apici di chiusura''.  (Ci sono definizioni di
+dati CSV pi@`u complicate, vedere pi@`u sotto.)
+Se fosse scritta come una
 costante @dfn{regexp}
 @iftex
 (@pxrefil{Espressioni regolari}),
@@ -8571,17 +8604,10 @@ questo tipo:
 
 @example
 if (substr($i, 1, 1) == "\"") @{
-len = length($i)
-$i = substr($i, 2, len - 2) # Ottiene il testo tra doppi apici
+    len = length($i)
+    $i = substr($i, 2, len - 2) # Ottiene il testo tra doppi apici
 @}
 @end example
-
-Come per @code{FS}, la variabile @code{IGNORECASE}
-(@pxref{Variabili modificabili dall'utente}) ha effetto sulla separazione dei
-campi con @code{FPAT}.
-
-Se si assegna un valore a @code{FPAT} la divisione in campi non viene
-effettuata utilizzando @code{FS} o @code{FIELDWIDTHS}.
 
 @quotation NOTA
 Alcuni programmi esportano dei dati CSV che contengono dei ritorni a capo al
@@ -8606,8 +8632,81 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 @c (star in latter part of value) to allow quoted strings to be empty.
 @c Per email from Ed Morton <mortoneccc@comcast.net>
 
+Come per @code{FS}, la variabile @code{IGNORECASE}
+(@pxref{Variabili modificabili dall'utente}) ha effetto sulla separazione dei
+campi con @code{FPAT}.
+
+Se si assegna un valore a @code{FPAT} la divisione in campi non viene
+effettuata utilizzando @code{FS} o @code{FIELDWIDTHS}.
+
 Infine, la funzione @code{patsplit()} rende la stessa funzionalit@`a disponibile
 per suddividere normali stringhe (@pxref{Funzioni per stringhe}).
+
+@node File CSV
+@subsection Ancora sui file CSV
+
+@cindex Collado, Manuel
+Manuel Collado fa notare che, oltre alle virgole, un campo CSV pu@`o anche
+contenere apici, che devono essere protetti raddoppiandoli.
+Le espressione regolari descritte sopra non sono in grado di accettare
+campi fra apici che contengano al loro interno sia virgole che apici.
+Egli suggerisce che l'espressione pi@`u semplice di @code{FPAT} in grado
+di riconoscere tale tipo di campi @`e @code{/([^,]*)|("([^"]|"")+")/}.
+Egli ha preparato questo input come test per riconoscere queste varianti:
+
+@example
+@c file eg/misc/sample.csv
+p,"q,r",s
+p,"q""r",s
+p,"q,""r",s
+p,"",s
+p,,s
+@c endfile
+@end example
+
+@noindent
+E questo @`e il suo programma di test:
+
+@example
+@c file eg/misc/test-csv.awk
+@group
+BEGIN @{
+     fp[0] = "([^,]+)|(\"[^\"]+\")"
+     fp[1] = "([^,]*)|(\"[^\"]+\")"
+     fp[2] = "([^,]*)|(\"([^\"]|\"\")+\")"
+     FPAT = fp[fpat+0]
+@}
+@end group
+
+@group
+@{
+     print "<" $0 ">"
+     printf("NF = %s ", NF)
+     for (i = 1; i <= NF; i++) @{
+         printf("<%s>", $i)
+     @}
+     print ""
+@}
+@end group
+@c endfile
+@end example
+
+Se eseguito usando la terza variante di @code{FPAT},
+il programma produce in output:
+
+@example
+$ @kbd{gawk -v fpat=2 -f test-csv.awk sample.csv}
+@print{} <p,"q,r",s>
+@print{} NF = 3 <p><"q,r"><s>
+@print{} <p,"q""r",s>
+@print{} NF = 3 <p><"q""r"><s>
+@print{} <p,"q,""r",s>
+@print{} NF = 3 <p><"q,""r"><s>
+@print{} <p,"",s>
+@print{} NF = 3 <p><""><s>
+@print{} <p,,s>
+@print{} NF = 3 <p><><s>
+@end example
 
 @node Controllare la creazione di campi
 @section Controllare come @command{gawk} sta dividendo i record
@@ -16899,8 +16998,8 @@ $ @kbd{gawk -f risposta.awk}
 @quotation NOTA
 Per evitare seri paradossi temporali,
 @footnote{Per non parlare dei grossi problemi di implementazione.}
-n@'e @code{FUNCTAB} n@'e @code{SYMTAB}
-sono disponibili come elementi all'interno del vettore @code{SYMTAB}.
+n@'e @code{FUNCTAB} n@'e @code{SYMTAB} sono disponibili come
+elemento all'interno del vettore @code{SYMTAB}.
 @end quotation
 @end table
 
@@ -17890,24 +17989,42 @@ che a loro volta vengono prima dei sottovettori.
 (I sottovettori non sono ancora stati descritti;
 @pxref{Vettori di vettori}.)
 
+Se si sceglie di utilizzare questa funzionalit@`a per esaminare
+tutti gli elementi di @code{FUNCTAB} (@pxref{Variabili auto-assegnate}),
+allora l'ordine in cui sono presentati gli elementi @`e: dapprima le
+funzioni predefinite (@pxref{Funzioni predefinite}), poi
+le funzioni definite dall'utente (@pxref{Funzioni definite dall'utente})
+e infine le funzioni caricate da un'estensione
+(@pxref{Estensioni dinamiche}).
+
 @item "@@val_str_asc"
 Ordinare secondo il valore degli elementi in ordine crescente (invece che in
 base agli indici).  I valori scalari sono confrontati come stringhe.
-I sottovettori, se presenti, vengono per ultimi.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+Quando si confrontano valori di tipo non-scalare si usa il criterio di
+ordinamento @code{"@@val_type_asc"} e per questo i sottovettori, se
+presenti, vengono per ultimi.
 
 @item "@@val_num_asc"
 Ordinare secondo il valore degli elementi in ordine crescente (invece che in
 base agli indici).  I valori scalari sono confrontati come numeri.
-I sottovettori, se presenti, vengono per ultimi.
-Quando i valori numerici coincidono, vengono usati i valori di tipo stringa
-per stabilire un ordinamento: ci@`o garantisce risultati coerenti tra differenti
-versioni della funzione C @code{qsort()},@footnote{Quando due elementi
+I valori non-scalari sono confrontati usando il criterio di ordinamento
+@code{"@@val_type_asc"} e per questo i sottovettori, se presenti,
+vengono per ultimi.
+Quando i valori numerici coincidono, vengono confrontati i valori di
+tipo stringa per stabilire un ordinamento: ci@`o garantisce risultati
+coerenti tra differenti versioni della funzione C
+@code{qsort()},@footnote{Quando due elementi
 risultano uguali, la funzione C @code{qsort()} non garantisce
 che dopo l'ordinamento venga rispettato il loro ordine relativo originale.
 Usando il valore di stringa per stabilire un ordinamento univoco quando i
 valori numerici sono uguali assicura che il comportamento di @command{gawk}
 sia coerente in differenti ambienti.} che @command{gawk} usa internamente
 per effettuare l'ordinamento.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+
 
 @item "@@ind_str_desc"
 Ordinare come fa @code{"@@ind_str_asc"}, ma gli
@@ -17925,12 +18042,21 @@ I sottovettori, se presenti, vengono per primi.
 @item "@@val_str_desc"
 Ordinare come fa @code{"@@val_str_asc"}, ma i valori degli
 elementi, trattati come stringhe, sono ordinati dal pi@`u alto al pi@`u basso.
-I sottovettori, se presenti, vengono per primi.
+Quando i valori delle stringhe coincidono, vengono confrontati i valori
+degli indici delle stringhe.
+Quando si confrontano valori di tipo non-scalare si usa il criterio di
+ordinamento @code{"@@val_type_desc"} e per questo i sottovettori, se
+presenti, vengono per primi.
 
 @item "@@val_num_desc"
 Ordinare come fa @code{"@@val_num_asc"}, ma i valori degli
 elementi, trattati come numeri, sono ordinati dal pi@`u alto al pi@`u basso.
-I sottovettori, se presenti, vengono per primi.
+Quando i valori numerici coincidono, vengono confrontati i valori di
+tipo stringa.  Se anche questi sono identici, veogno confrontati i valori
+della stringa di indice.
+I valori non-scalari sono confrontati usando il criterio di ordinamento
+@code{"@@val_type_desc"} e per questo i sottovettori, se presenti,
+vengono per primi.
 @end table
 
 L'ordine in cui il vettore @`e visitato viene determinato prima di iniziare
@@ -19091,6 +19217,14 @@ a[1] = "mediano"
 a[2] = "primo"
 a[3] = "ultimo"
 @end example
+
+@quotation NOTA
+A motivo di limitazioni dovute all'implementazione, non si possono usare
+n@'e @code{SYMTAB} n@'e @code{FUNCTAB} come argomenti di queste 
+funzioni, neppure se si specifica un secondo vettore da utilizzare
+per effettuare l'ordinamento.  Se si tenta di farlo, viene generato
+un errore fatale.  Questa limitazione potrebbe venire meno in futuro.
+@end quotation
 
 @item @code{gensub(@var{regexp}, @var{rimpiazzo}, @var{come}} [@code{, @var{obiettivo}}]@code{) #}
 @cindexgawkfunc{gensub}
@@ -24404,17 +24538,29 @@ main(int argc, char *argv[])
 @}
 @end example
 
+La versione fornita dal progetto GNU dei programmi di utilit@`a
+originali Unix hanno popolarizzato l'uso della versione lunga
+delle opzioni immesse nella riga di comando.  Per esempio,
+@option{--help} in aggiunta a @option{-h}.  Gli argomenti per queste
+opzioni lunghe sono forniti come argomenti separati [da uno o
+pi@`u spazi] sulla riga di comando (@samp{--source '@var{program-text}'})
+oppure sono separati dalla relativa opzione da un segno @samp{=}
+(@samp{--source='@var{program-text}'}).
+
 Incidentalmente, @command{gawk} al suo interno usa la funzione GNU
 @code{getopt_long()} per elaborare sia le normali opzioni che quelle lunghe
 in stile GNU
 (@pxref{Opzioni}).
 
-L'astrazione fornita da @code{getopt()} @`e molto utile ed @`e piuttosto comoda
-anche nei programmi @command{awk}.  Di seguito si riporta una versione
-@command{awk} di @code{getopt()}.  Questa funzione mette in evidenza uno dei
+L'astrazione fornita da @code{getopt()} @`e molto utile ed @`e piuttosto
+comoda anche nei programmi @command{awk}.  Di seguito si riporta una
+versione @command{awk} di @code{getopt()} che accetta sia le opzioni+
+lunghe che quelle corte.
+
+Questa funzione mette in evidenza uno dei
 maggiori punti deboli di @command{awk}, che @`e quello di essere molto carente
-nella manipolazione di caratteri singoli.  Sono necessarie ripetute chiamate a
-@code{substr()} per accedere a caratteri singoli.
+nella manipolazione di caratteri singoli.  La funzione deve usare ripetute
+chiamate a @code{substr()} per accedere a caratteri singoli
 (@pxref{Funzioni per stringhe}).@footnote{Questa funzione
 @`e stata scritta prima che @command{gawk} acquisisse la capacit@`a di
 dividere le stringhe in caratteri singoli usando @code{""} come separatore.
@@ -24428,6 +24574,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 @example
 @c file eg/lib/getopt.awk
 # getopt.awk --- imita in awk la funzione di libreria C getopt(3)
+#                Supporta anche le opzioni lunghe.
 @c endfile
 @ignore
 @c file eg/lib/getopt.awk
@@ -24436,6 +24583,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 #
 # Initial version: March, 1991
 # Revised: May, 1993
+# Opzioni lunghe aggiunte da Greg Minshall, Gennaio 2020
 @c endfile
 @end ignore
 @c file eg/lib/getopt.awk
@@ -24449,7 +24597,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 # Restituisce:
 #    -1     alla fine delle opzioni
 #    "?"    per un'opzione non riconosciuta
-#    <c>    un carattere che rappresenta l'opzione corrente
+#    <s>    una stringa che rappresenta l'opzione corrente
 
 # Dati privati:
 #    _opti  -- indice in un'opzione multipla, p.es., -abc
@@ -24463,19 +24611,19 @@ ogni altra variabile che @`e
 documentazione @`e essenziale per qualsiasi programma, e in modo particolare per
 le funzioni di libreria.
 
-La funzione @code{getopt()} dapprima controlla che sia stata effettivamente
+La funzione @code{getopt()} dapprima controlla di essere stata effettivamente
 chiamata con una stringa di opzioni (il parametro @code{opzioni}).  Se
-@code{opzioni} ha lunghezza zero, @code{getopt()} restituisce immediatamente
-@minus{}1:
+sia @code{opzioni} che @code{opzioni_lunghe} hanno lunghezza zero,
+@code{getopt()} restituisce immediatamente @minus{}1:
 
 @cindex @code{getopt()} @subentry funzione definita dall'utente
 @cindex funzione definita dall'utente @subentry @code{getopt()}
 @example
 @c file eg/lib/getopt.awk
-function getopt(argc, argv, opzioni,    unaopz, i)
+function getopt(argc, argv, opzioni, opzioni_lunghe,    unaopz, i)
 @{
-    if (length(opzioni) == 0)    # nessuna opzione specificata
-        return -1
+    if (length(opzioni) == 0 && length(opzioni_lunghe) == 0)
+        return -1                # nessuna opzione specificata
 
 @group
     if (argv[Optind] == "--") @{  # fatto tutto
@@ -24492,37 +24640,41 @@ function getopt(argc, argv, opzioni,    unaopz, i)
 
 Il successivo controllo cerca la fine delle opzioni.  Due trattini
 (@option{--}) marcano la fine delle opzioni da riga di comando, e lo stesso
-fa qualsiasi
-argomento sulla riga di comando che non inizi con @samp{-}.  @code{Optind} @`e
-usato per scorrere il vettore degli argomenti presenti sulla riga di comando;
-mantiene il suo valore attraverso chiamate successive a @code{getopt()}, perch@'e
-@`e una variabile globale.
+fa qualsiasi argomento sulla riga di comando che non inizi con @samp{-}
+(a meno che non sia un argomento all'opzione immediatamente precedente).
+@code{Optind} @`e usato per scorrere il vettore degli argomenti presenti
+sulla riga di comando; mantiene il suo valore attraverso chiamate
+successive a @code{getopt()}, perch@'e @`e una variabile globale.
 
-L'espressione regolare che viene usata, @code{@w{/^-[^:[:space:]/}},
-chiede di cercare un
+L'espressione regolare @code{@w{/^-[^:[:space:]/}}, chiede di cercare un
 @samp{-} seguito da qualsiasi cosa che non sia uno spazio vuoto o un carattere
 di due punti (@code{:}).
 Se l'argomento corrente sulla riga di comando non corrisponde a
 quest'espressione regolare, vuol dire che non si tratta di un'opzione, e
-quindi viene terminata l'elaborazione delle opzioni. Continuando:
+quindi viene terminata l'elaborazione delle opzioni.
+A questo punto si controlla se stiamo processando un'opzione corta (che
+consiste di una sola lettera), oppure un'opzione lunga (indicata da due
+trattini, p.es. @samp{--filename}).  Se si tratta di un'opzione corta,
+il programma prosegue cos@`{@dotless{i}}:
 
 @example
 @c file eg/lib/getopt.awk
-    if (_opti == 0)
-        _opti = 2
-    unaopz = substr(argv[Optind], _opti, 1)
-    Optopt = unaopz
-    i = index(opzioni, unaopz)
-    if (i == 0) @{
-        if (Opterr)
-            printf("%c -- opzione non ammessa\n", unaopz) > "/dev/stderr"
+    if (argv[Optind] !~ /^--/) @{        # se opzione corta
+        if (_opti == 0)
+            _opti = 2
+        unaopz = substr(argv[Optind], _opti, 1)
+        Optopt = unaopz
+        i = index(opzioni, unaopz)
+        if (i == 0) @{
+            if (Opterr)
+                printf("%c -- opzione non ammessa\n", unaopz) > "/dev/stderr"
         if (_opti >= length(argv[Optind])) @{
             Optind++
             _opti = 0
         @} else
             _opti++
-        return "?"
-    @}
+         return "?"
+        @}
 @c endfile
 @end example
 
@@ -24559,15 +24711,15 @@ conoscere quale lettera di opzione @`e quella non valida. Proseguendo:
 
 @example
 @c file eg/lib/getopt.awk
-    if (substr(opzioni, i + 1, 1) == ":") @{
-        # ottiene un argomento di opzione
-        if (length(substr(argv[Optind], _opti + 1)) > 0)
-            Optarg = substr(argv[Optind], _opti + 1)
-        else
-            Optarg = argv[++Optind]
-        _opti = 0
-    @} else
-        Optarg = ""
+        if (substr(opzioni, i + 1, 1) == ":") @{
+            # ottiene un argomento di opzione
+            if (length(substr(argv[Optind], _opti + 1)) > 0)
+                Optarg = substr(argv[Optind], _opti + 1)
+            else
+                Optarg = argv[++Optind]
+             _opti = 0
+        @} else
+            Optarg = ""
 @c endfile
 @end example
 
@@ -24584,23 +24736,105 @@ Continuando:
 
 @example
 @c file eg/lib/getopt.awk
-    if (_opti == 0 || _opti >= length(argv[Optind])) @{
+        if (_opti == 0 || _opti >= length(argv[Optind])) @{
+            Optind++
+            _opti = 0
+        @} else
+            _opti++
+        return unaopz
+@c endfile
+@end example
+
+Infine, per un'opzione corta, se @code{_opti} @`e zero o maggiore della
+lunghezza dell'argomento corrente sulla riga di comando, significa che
+l'elaborazione di quest'elemento in @code{argv} @`e terminata, quindi
+@code{Optind} @`e incrementato per puntare al successivo elemento
+in @code{argv}.  Se nessuna delle condizioni @`e vera, viene incrementato
+solo @code{_opti}, cosicch@'e la successiva lettera di opzione pu@`o
+essere elaborata con la successiva chiamata a @code{getopt()}.
+
+D'altra parte, se il test precedente determina che si ha a che fare con
+un'opzione lunga, il programma prosegue in maniera differente:
+
+@example
+@c file eg/lib/getopt.awk
+    @} else @{
+        j = index(argv[Optind], "=")
+        if (j > 0)
+            unaopz = substr(argv[Optind], 3, j - 3)
+        else
+            unaopz = substr(argv[Optind], 3)
+        Optopt = unaopz
+@c endfile
+@end example
+
+Per prima cosa cerchiamo di vedere se quest'opzione contiene al suo
+interno un segno "=", in quanto per le opzioni lunghe
+(p.es. @samp{--unaopzione}) @`e possibile che il relativo argomento
+sia specificato sia come @samp{--unaopzione=valore} che come
+@samp{@w{--unaopzione valore}}.
+
+@example
+@c file eg/lib/getopt.awk
+        i = match(opzioni_lunghe, "(^|,)" unaopz "($|[,:])")
+        if (i == 0) @{
+            if (Opterr)
+                 printf("%s -- opzione non ammessa\n", unaopz) > "/dev/stderr"
+            Optind++
+            return "?"
+        @}
+@c endfile
+@end example
+
+Poi, si tenta di trovare l'opzione corrente in @code{opzioni_lunghe}.
+L'espressione regolare fornita a @code{match()},
+@code{@w{"(^|,)" unaopz "($|[,:])"}},
+trova una corrispondenza per quest'opzione all'inizio di
+@code{opzioni_lunghe}, o all'inizio di una successiva opzione lunga
+(l'opzione lunga precedente dovrebbe essere delimitata da una
+virgola) e, comunque, o alla fine della stringa @code{opzioni_lunghe}
+(@samp{$}), oppure seguita da una virgola
+(che separa quest'opzione da un'opzione successiva)  da un
+":" (che indica che quest'opzione lunga accetta un argomento
+(@samp{@w{[,:]}}).
+
+Utilizzando quest'espressione regolare, si controlla che l'opzione
+corrente @`e presente oppure no in @code{opzioni_lunghe} (anche nel caso
+in cui la stringa @code{opzioni_lunghe} non sia stata specificata, il test
+dar@`a un risultato negativo).  In caso di errore, si pu@`o stampare un
+messaggio di errore e poi restituire @code{"?"}.
+Si continua poi:
+
+@example
+@c file eg/lib/getopt.awk
+        if (substr(opzioni_lunghe, i+1+length(unaopz), 1) == ":") @{
+            if (j > 0)
+                Optarg = substr(argv[Optind], j + 1)
+            else
+                Optarg = argv[++Optind]
+        @} else
+            Optarg = ""
+@c endfile
+@end example
+
+A questo punto si vede se quest'opzione accetta un argomento e, se
+cos@`{@dotless{i}} @`e, si imposta @code{Optarg} al valore di tale argomento
+(sia che si tratti del valore che segue il segno "=" sulla riga
+di comando, sia che si tratti del successivo argomento sulla riga
+si comando stessa).
+
+@example
+@c file eg/lib/getopt.awk
         Optind++
-        _opti = 0
-    @} else
-        _opti++
-    return unaopz
+        return unaopz
+    @}
 @}
 @c endfile
 @end example
 
-Infine, se @code{_opti} @`e zero o maggiore della lunghezza dell'argomento
-corrente sulla riga di comando, significa che l'elaborazione di
-quest'elemento in @code{argv} @`e
-terminata, quindi @code{Optind} @`e incrementato per
-puntare al successivo elemento in @code{argv}.  Se nessuna delle condizioni @`e
-vera, viene incrementato solo @code{_opti}, cosicch@'e la successiva lettera di
-opzione pu@`o essere elaborata con la successiva chiamata a @code{getopt()}.
+Incrementiamo @code{Optind} (che era gi@`a stato incrementato una volta
+se un argomento richiesto era separato dalla relativa opzione con un
+segno di "="), e restituiamo l'opzione lunga (senza i trattini iniziali).
 
 La regola @code{BEGIN} inizializza sia @code{Opterr} che @code{Optind} a uno.
 @code{Opterr} viene impostato a uno, perch@'e il comportamento di default per
@@ -24617,13 +24851,14 @@ BEGIN @{
 
     # programma di controllo
     if (_getopt_test) @{
-        while ((_go_c = getopt(ARGC, ARGV, "ab:cd")) != -1)
-            printf("c = <%c>, Optarg = <%s>\n",
-                                       _go_c, Optarg)
+        _myshortopts = "ab:cd"
+        _mylongopts = "longa,longb:,otherc,otherd"
+
+        while ((_go_c = getopt(ARGC, ARGV, _myshortopts, _mylongopts)) != -1)
+            printf("c = <%s>, Optarg = <%s>\n", _go_c, Optarg)
         printf("argomenti che non sono opzioni:\n")
         for (; Optind < ARGC; Optind++)
-            printf("\tARGV[%d] = <%s>\n",
-                                    Optind, ARGV[Optind])
+            printf("\tARGV[%d] = <%s>\n", Optind, ARGV[Optind])
     @}
 @}
 @c endfile
@@ -24631,7 +24866,7 @@ BEGIN @{
 
 Il resto della regola @code{BEGIN} @`e un semplice programma di controllo.  Qui
 sotto si riportano i risultati di
-due esecuzioni di prova
+alcune esecuzioni di prova
 del programma di controllo:
 
 @example
@@ -24650,9 +24885,21 @@ $ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -x -- xyz abc}
 @print{} argomenti che non sono opzioni:
 @print{}         ARGV[4] = <xyz>
 @print{}         ARGV[5] = <abc>
+
+$ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a \}
+> @kbd{--longa -b xx --longb=foo=bar --otherd --otherc arg1 arg2}
+@print{} c = <a>, Optarg = <>
+@print{} c = <longa>, Optarg = <>
+@print{} c = <b>, Optarg = <xx>
+@print{} c = <longb>, Optarg = <foo=bar>
+@print{} c = <otherd>, Optarg = <>
+@print{} c = <otherc>, Optarg = <>
+@print{} argomenti che non sono opzioni:
+@print{} 	ARGV[8] = <arg1>
+@print{} 	ARGV[9] = <arg2>
 @end example
 
-In entrambe le esecuzioni, il primo @option{--} fa terminare gli argomenti dati
+In tutte le esecuzioni, il primo @option{--} fa terminare gli argomenti dati
 ad @command{awk}, in modo che @command{awk} non tenti di interpretare le opzioni
 @option{-a}, etc. come sue opzioni.
 
@@ -28212,6 +28459,28 @@ print dati[righe[i]], righe[i]
 @noindent
 Questo si pu@`o fare perch@'e @code{dati[$0]} @`e incrementato ogni volta che una
 riga @`e stata trovata.
+
+@c rick@openfortress.nl, Tue, 24 Dec 2019 13:43:06 +0100
+Rick van Rein offre il seguente programma in una riga per fare lo stesso
+lavoro, ossia rimuovere le righe doppie da un testo che non sia stato
+precedentemente ordinato alfabeticamente:
+
+@example
+awk '@{ if (! visto[$0]++) print @}'
+@end example
+
+Questo programma pu@`o essere ulteriormente semplificato, con il rischio
+di diventare quasi indecifrabile:
+
+@example
+awk '! visto[$0]++'
+@end example
+
+@noindent
+Questa versione usa l'espressione come regola da soddisfare,
+ed esegue l'azione di default di @command{awk} (ossia stampa
+la riga), quando la regola @`e verificata [ossia se il record non
+@`e stato ancora "visto"].
 
 @node Programma extract
 @subsection Estrarre programmi da un file sorgente Texinfo
@@ -40989,8 +41258,8 @@ La possibilit@`a di eliminare completamente un vettore con l'istruzione
 @xref{Estensioni comuni} per una lista delle estensioni comuni
 non previste nello standard POSIX.
 
-Lo standard POSIX 2008 @`e reperibile online a:
-@url{http://www.opengroup.org/onlinepubs/9699919799/}.
+Lo standard POSIX 2018 @`e reperibile online a:
+@url{https://pubs.opengroup.org/onlinepubs/9699919799/}.
 
 
 @node BTL
@@ -42227,7 +42496,15 @@ scrivere del codice che tiene conto di piattaforma / sistema operativo.
 La @value{PVERSION} 5.1 @`e stata creata per distribuire @command{gawk} con
 un nuovo numero di versione maggiore per l'API.  Sfortunatamente questo
 dettaglio era stato dimenticato al momento in cui era stata preparata la
-@value{PVERSION} 5.0.
+@value{PVERSION} 5.0.  Sono state aggiunte le seguenti funzionalit@`a:
+
+@itemize
+@item
+L'indice analitico di questo manuale @`e stato completamente rimaneggiato.
+
+@item
+@`E stato aggiunto il supporto per MSYS2.
+@end itemize
 
 @c XXX ADD MORE STUFF HERE
 @end ifclear
@@ -42384,9 +42661,9 @@ modificato la definizione di intervallo, e che, al di fuori delle
 localizzazioni @code{"C"} e @code{"POSIX"}, il significato di espressione
 di intervallo era ora
 @emph{indefinito}.@footnote{Si veda
-@uref{http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05, lo standard}
+@uref{https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05, lo standard}
 e
-@uref{http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05, le motivazioni}.}
+@uref{https://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05, le motivazioni}.}
 
 Adottando questo simpatico termine tecnico, lo standard permette agli
 implementatori di implementare gli intervalli nella maniera che preferiscono.
@@ -42686,6 +42963,10 @@ di @command{gawk}.
 @cindex Guerrero, Juan Manuel
 Juan Manuel Guerrero ha preso in carico la manutenzione dellla
 versione DJGPP di @command{gawk}.
+
+@item
+@cindex Jannick
+``Jannick'' ha fornito il supporto per l'ambiente MSYS2.
 
 @item
 @cindex Robbins @subentry Arnold
@@ -43638,6 +43919,9 @@ Questo pu@`o causare problemi con altri componenti di tipo Unix che sono stati
 resi disponibile in MS-Windows, che si aspettano che @command{gawk} faccia
 automaticamente la conversione di @code{"\r\n"}, mentre cos@`{@dotless{i}} non @`e.
 
+In ambiente MSYS2, la compilazione usando i comandi classici
+@samp{./configure && make} funziona senza necessitare di alcuna modifica.
+
 @node Installazione su VMS
 @appendixsubsec Compilare e installare @command{gawk} su Vax/VMS e OpenVMS
 
@@ -44206,7 +44490,6 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 @c put the index entries outside the table, for docbook
 @cindex Buening, Andreas
 @cindex Malmberg, John
-@cindex Pitts, Dave
 @cindex G., Daniel Richard
 @cindex Robbins @subentry Arnold
 @cindex Zaretskii, Eli
@@ -44230,7 +44513,6 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 @item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
 @item z/OS (OS/390) @tab Daniel Richard G.@: @EMAIL{skunk@@iSKUNK.ORG,skunk at iSKUNK.ORG}
-@item  @tab Dave Pitts (Maintainer Emeritus), @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 Se il problema riscontrato @`e riproducibile anche sotto Unix,
@@ -44538,7 +44820,7 @@ per poter scaricare il file.
 @item
 @command{gawk} pu@`o essere installato anche su sistemi non-POSIX.  I sistemi
 correntemente supportati sono MS-Windows, usando
-MSYS, DJGPP, MinGW, e Cygwin,
+MSYS, MSYS2, DJGPP, MinGW e Cygwin,
 @c OS/2,
 e sia Vax/VMS che OpenVMS.  Le istruzioni per ognuno di questi sistemi sono
 incluse in questa @value{APPENDIX}.
@@ -45505,7 +45787,7 @@ potente, per creare estensioni.
 @node Futuri sviluppi delle estensioni
 @appendixsubsec Possibilit@`a di sviluppo futuro
 
-L'API pu@`o ancora essere ampliata, in due modi:
+L'API pu@`o ancora essere ampliata, come minimo nei modi seguenti:
 
 @itemize @value{BULLET}
 @item
@@ -45515,15 +45797,10 @@ identificativo a @command{gawk} a ogni chiamata di funzione.  Questo meccanismo
 consente a @command{gawk} di identificare l'estensione che lo chiama, se la
 cosa dovesse risultare necessaria.
 
-@item
-Analogamente, l'estensione passa uno ``spazio-dei-nomi'' a @command{gawk}
-in fase di registrazione di ogni funzione estesa.  Questo @`e fatto in vista di
-un possibile futuro meccanismo per raggruppare funzioni di estensione, e per
-evitare in questo modo possibili conflitti nei nomi di funzione.
 @end itemize
 
 Naturalmente, al momento in cui queste righe sono state scritte, nessuna
-decisione @`e stata presa riguardo ai punti sopra descritti.
+decisione @`e stata presa riguardo a quanto descritto sopra.
 
 @node Sommario delle note
 @appendixsec Sommario
@@ -46666,9 +46943,10 @@ Il nome di una serie di standard che specificano l'interfaccia di un Sistema
 Operativo Portabile (Portable Operating System).  La ``IX'' specifica
 che questi standard sono stati originati dallo Unix.
 Lo standard pi@`u rilevante per gli utenti @command{awk} @`e lo
-@cite{IEEE Standard for Information Technology, Standard 1003.1-2008}.
-Lo standard POSIX 2008 pu@`o essere trovato in rete all'indirizzo:
-@url{http://pubs.opengroup.org/onlinepubs/9699919799/}.
+@cite{IEEE Standard for Information Technology, Standard 1003.1@sup{TM}-2017
+(Revisione dello Standard IEEE 1003.1-2008)}.
+Lo standard POSIX 2018 pu@`o essere trovato in rete all'indirizzo:
+@w{@url{https://pubs.opengroup.org/onlinepubs/9699919799/}}.
 
 @item Precedenza
 L'ordine in cui le operazioni sono eseguite quando si usano degli operatori

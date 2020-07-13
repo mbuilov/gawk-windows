@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2019 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2020 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -369,6 +369,9 @@ EXTRA_DIST = \
 	fpat7.awk \
 	fpat7.in \
 	fpat7.ok \
+	fpat8.awk \
+	fpat8.in \
+	fpat8.ok \
 	fpatnull.awk \
 	fpatnull.in \
 	fpatnull.ok \
@@ -961,6 +964,8 @@ EXTRA_DIST = \
 	profile12.awk \
 	profile12.in \
 	profile12.ok \
+	profile13.awk \
+	profile13.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -1061,6 +1066,9 @@ EXTRA_DIST = \
 	rsnul1nl.ok \
 	rsnulbig.ok \
 	rsnulbig2.ok \
+	rsnulw.awk \
+	rsnulw.in \
+	rsnulw.ok \
 	rsstart1.awk \
 	rsstart1.in \
 	rsstart1.ok \
@@ -1224,6 +1232,8 @@ EXTRA_DIST = \
 	symtab10.awk \
 	symtab10.in \
 	symtab10.ok \
+	symtab11.awk \
+	symtab11.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -1355,8 +1365,8 @@ BASIC_TESTS = \
 	printf1 printfchar prmarscl prmreuse prt1eval prtoeval \
 	rand randtest range1 range2 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
-	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
-	rstest4 rstest5 rswhite \
+	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rsnulw \
+	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
@@ -1378,8 +1388,8 @@ GAWK_EXT_TESTS = \
 	clos1way6 crlf \
 	dbugeval dbugeval2 dbugeval3 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dfacheck1 dumpvars \
-	errno exit \
-	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpat7 fpatnull \
+	errno exit fieldwdth forcenum \
+	fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpat7 fpat8 fpatnull \
 	fsfwfs funlen functab1 functab2 functab3 \
 	fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 fwtest7 fwtest8 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
@@ -1393,15 +1403,15 @@ GAWK_EXT_TESTS = \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 profile12 profile13 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	sandbox1 shadow shadowbuiltin sortfor sortfor2 sortu \
 	sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 \
 	stupid1 stupid2 stupid3 stupid4 \
-	switch2 symtab1 symtab2 \
-	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
+	switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
+	symtab8 symtab9 symtab10 symtab11 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
 	typedregex5 typedregex6 \
 	typeof1 typeof2 typeof3 typeof4 typeof5 \
@@ -1455,7 +1465,7 @@ NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimpo
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
-	profile4 profile5 profile8 profile9 profile10 profile11
+	profile4 profile5 profile8 profile9 profile10 profile11 profile13
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2
@@ -1517,13 +1527,14 @@ EXPECTED_FAIL_MINGW = \
 # List of tests that fail on z/OS
 EXPECTED_FAIL_ZOS = \
 	aasort aasorti arraysort asort asorti backbigs1 backsmalls1 \
-	backsmalls2 charasbytes concat4 dfamb1 double1 double2 fmttest \
-	forcenum gsubtst5 ignrcas2 lc_num1 localenl mbfw1 mbprintf1 \
-	mbprintf2 mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 numrange \
-	printhuge profile5 regrange reint2 rri1 sigpipe1 sortfor sortu \
-	subamp subi18n symtab1 symtab8 timeout wideidx wideidx2 \
-	widesub widesub2 widesub3 widesub4 \
-	beginfile1 beginfile2 clos1way6 errno getlndir nofile nonfatal2 space
+	backsmalls2 beginfile1 beginfile2 charasbytes clos1way6 concat4 \
+	dfamb1 double1 double2 errno fmttest forcenum getlndir gsubtst5 \
+	ignrcas2 lc_num1 localenl localenl mbfw1 mbprintf1 mbprintf2 \
+	mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 mtchi18n nlstringtest \
+	nofile nonfatal2 numrange printhuge profile5 profile5 rebt8b2 \
+	regrange reint2 rri1 sigpipe1 sort1 sortfor sortu space sprintfc \
+	subamp subi18n symtab1 symtab11 symtab8 timeout wideidx wideidx2 \
+	widesub widesub2 widesub3 widesub4
 
 ZOS_FAIL = @ZOS_FAIL@
 
@@ -2013,6 +2024,12 @@ profile3:
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+profile5:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) --pretty=_$@ -f $@.awk 2> _$@.err
+	@cat _$@.err >> _$@ ; rm -f _$@.err
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 profile6:
 	@echo $@
 	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
@@ -2448,6 +2465,14 @@ diffout:
 		fi ; \
 		fi ; \
 	done | more
+
+# make things easier for z/OS
+zos-diffout:
+	@for i in $(EXPECTED_FAIL_ZOS); do \
+		if [ -f _$$i ]; then mv -f _$$i X_$$i ; fi ; \
+		if [ ! -f X_$$i ]; then echo $$i apparently passed! please check ; fi ; done
+	@echo checking for new failures ...
+	@$(MAKE) diffout
 
 # convenient way to scan valgrind results for errors
 valgrind-scan:
