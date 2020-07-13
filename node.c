@@ -122,8 +122,9 @@ r_force_number(NODE *n)
 	}
 
 	if (cpend - cp == 1) {		/* only one character */
-		if (isdigit((unsigned char) *cp)) {	/* it's a digit! */
-			n->numbr = (AWKNUM)(*cp - '0');
+		int d = char_digit_value((unsigned char) *cp);
+		if (d != -1) {	/* it's a digit! */
+			n->numbr = (AWKNUM) d;
 			if (n->stlen == 1)		/* no white space */
 				n->flags |= NUMINT;
 			goto goodnum;
@@ -542,7 +543,6 @@ parse_escape(const char **string_ptr)
 {
 	int c = *(*string_ptr)++;
 	unsigned i, j, count;
-	const char *start;
 
 	if (do_lint_old) {
 		switch (c) {
@@ -606,29 +606,24 @@ parse_escape(const char **string_ptr)
 		}
 		if (do_posix)
 			return ('x');
-		if (! isxdigit((unsigned char) (*string_ptr)[0])) {
-			awkwarn(_("no hex digits in `\\x' escape sequence"));
-			return ('x');
-		}
-		start = *string_ptr;
 		for (i = j = 0; j < 2; j++) {
 			/* do outside test to avoid multiple side effects */
-			c = (unsigned char) *(*string_ptr)++;
-			if (isxdigit(c)) {
+			int d = char_xdigit_value((unsigned char) *(*string_ptr)++);
+			if (d != -1) {
 				i *= 16;
-				if (isdigit(c))
-					i += (unsigned) (c - (unsigned char) '0');
-				else if (isupper(c))
-					i += (unsigned) (c - (unsigned char) 'A' + 10);
-				else
-					i += (unsigned) (c - (unsigned char) 'a' + 10);
+				i += (unsigned) d;
 			} else {
 				(*string_ptr)--;
 				break;
 			}
 		}
-		if (do_lint && j == 2 && isxdigit((unsigned char)*(*string_ptr)))
-			lintwarn(_("hex escape \\x%.*s of %d characters probably not interpreted the way you expect"), 3, start, 3);
+		if (j == 0) {
+			awkwarn(_("no hex digits in `\\x' escape sequence"));
+			return ('x');
+		}
+		if (do_lint && j == 2 && char_is_xdigit((unsigned char) *(*string_ptr)))
+			lintwarn(_("hex escape \\x%.*s of %d characters probably not interpreted the way you expect"),
+				3, (*string_ptr) - 2, 3);
 		return (int) i;
 	case '\\':
 	case '"':
@@ -680,18 +675,18 @@ get_numbase(const char *s, size_t len, bool use_locale)
 	 *
 	 * These beasts can have trailing whitespace. Deal with that too.
 	 */
-	for (; len > 0; len--, str++) {
+	for (len--, str++; len > 0; len--, str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
 			return 10;
-		else if (! isdigit((unsigned char) *str))
+		else if (! char_is_digit((unsigned char) *str))
 			break;
 	}
 
-	if (! isdigit((unsigned char) s[1])
-			|| s[1] == '8' || s[1] == '9'
-	)
-		return 10;
-	return 8;
+	/* 00, 01 .. 07 */
+	if ((unsigned) char_digit_value((unsigned char) s[1]) <= 7)
+		return 8;
+
+	return 10;
 }
 
 /* str2wstr --- convert a multibyte string to a wide string */
