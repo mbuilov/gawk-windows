@@ -329,6 +329,13 @@ enum AWK_NUMBER_TYPE {
 	AWK_NUMBER_TYPE_MPZ
 };
 
+/*
+ * When type is AWK_NUMBER_MPFR or AWK_NUMBER_MPZ, the memory pointed to
+ * by the ptr member belongs to gawk if it came from gawk.  Otherwise the
+ * memory belongs to the extension and gawk copies it when its received.
+ * See the manual for further discussion.
+ */
+
 typedef struct awk_number {
 	double d;	/* always populated in data received from gawk */
 	enum AWK_NUMBER_TYPE type;
@@ -1035,8 +1042,7 @@ make_number(double num, awk_value_t *result)
 
 /*
  * make_number_mpz --- make an mpz number value in result.
- * The mpz_ptr must be from a call to get_mpz_ptr. Gawk will now
- * take ownership of this memory.
+ * The mpz_ptr must be from a call to get_mpz_ptr.
  */
 
 static inline awk_value_t *
@@ -1050,8 +1056,7 @@ make_number_mpz(void *mpz_ptr, awk_value_t *result)
 
 /*
  * make_number_mpfr --- make an mpfr number value in result.
- * The mpfr_ptr must be from a call to get_mpfr_ptr. Gawk will now
- * take ownership of this memory.
+ * The mpfr_ptr must be from a call to get_mpfr_ptr.
  */
 
 static inline awk_value_t *

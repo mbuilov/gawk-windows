@@ -25,14 +25,6 @@
 
 #include "awk.h"
 
-#ifdef HAVE_MPFR
-#define getmpfr(n)	getblock(n, BLOCK_MPFR, mpfr_ptr)
-#define freempfr(n)	freeblock(n, BLOCK_MPFR)
-
-#define getmpz(n)	getblock(n, BLOCK_MPZ, mpz_ptr)
-#define freempz(n)	freeblock(n, BLOCK_MPZ)
-#endif
-
 /* Declare some globals used by api_get_file: */
 extern IOBUF *curfile;
 extern INSTRUCTION *main_beginfile;
@@ -1310,7 +1302,7 @@ api_get_mpfr(awk_ext_id_t id)
 {
 #ifdef HAVE_MPFR
 	mpfr_ptr p;
-	getmpfr(p);
+	emalloc(p, mpfr_ptr, sizeof(mpfr_t), "api_get_mpfr");
 	mpfr_init(p);
 	return p;
 #else
@@ -1326,7 +1318,8 @@ api_get_mpz(awk_ext_id_t id)
 {
 #ifdef HAVE_MPFR
 	mpz_ptr p;
-	getmpz(p);
+	emalloc(p, mpz_ptr, sizeof (mpz_t), "api_get_mpz");
+
 	mpz_init(p);
 	return p;
 #else
