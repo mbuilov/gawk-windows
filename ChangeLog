@@ -1,3 +1,20 @@
+2020-07-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish cleaning up MPFR valgrind issues.
+
+	* awk.h (struct block_header): Remove MPFR and GMP enums.
+	* gawkapi.c (getmpfr, freempfr, getmpz, freempz): Removed
+	(api_get_mpfr): Use emalloc instead of getmpfr.
+	(api_get_mpz): Use emalloc instead of getmpz.
+	* gawkapi.h: Add comments on MPFR and MPZ
+	(make_number_mpfr, make_number_mpz): Update comments.
+	* node.c (nextfree): Remove mpfr and mpz entries.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* config.guess, config.sub: Updated from GNULIB.
+
 2020-07-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mpfr.c (mpg_interpret): Small speedup. If do_itrace and opcode is

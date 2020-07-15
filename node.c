@@ -1024,10 +1024,6 @@ void init_btowc_cache()
 struct block_header nextfree[BLOCK_MAX] = {
 	{ NULL, sizeof(NODE), "node" },
 	{ NULL, sizeof(BUCKET), "bucket" },
-#ifdef HAVE_MPFR
-	{ NULL, sizeof(mpfr_t), "mpfr" },
-	{ NULL, sizeof(mpz_t), "mpz" },
-#endif
 };
 
 #ifdef MEMDEBUG

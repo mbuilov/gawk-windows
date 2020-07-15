@@ -1074,8 +1074,6 @@ struct block_header {
 enum block_id {
 	BLOCK_NODE = 0,
 	BLOCK_BUCKET,
-	BLOCK_MPFR,
-	BLOCK_MPZ,
 	BLOCK_MAX	/* count */
 };
 
