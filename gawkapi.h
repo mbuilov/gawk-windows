@@ -297,7 +297,7 @@ typedef struct awk_two_way_processor {
 } awk_two_way_processor_t;
 
 #define gawk_api_major_version 3
-#define gawk_api_minor_version 0
+#define gawk_api_minor_version 1
 
 /* Current version of the API. */
 enum {

@@ -296,7 +296,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	/*
 	 * Maybe "+" or "-" was the field.  mpg_strtoui
 	 * won't check for that and set errno, so we have
-	 * to check manuall.
+	 * to check manually.
 	 */
 	if (*cp1 == '\0') {
 		*cpend = save;
