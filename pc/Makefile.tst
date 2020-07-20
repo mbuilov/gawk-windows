@@ -343,6 +343,7 @@ EXPECTED_FAIL_ZOS = \
 	ignrcas2 lc_num1 localenl localenl mbfw1 mbprintf1 mbprintf2 \
 	mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 mtchi18n nlstringtest \
 	nofile nonfatal2 numrange printhuge profile5 profile5 rebt8b2 \
+	posix_compare \
 	regrange reint2 rri1 sigpipe1 sort1 sortfor sortu space sprintfc \
 	subamp subi18n symtab1 symtab11 symtab8 timeout wideidx wideidx2 \
 	widesub widesub2 widesub3 widesub4
@@ -2035,7 +2036,7 @@ pcntplus:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 posix_compare:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

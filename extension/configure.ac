@@ -55,7 +55,7 @@ AC_LANG([C])
 dnl initialize GNU gettext
 dnl this seems to help with finding MPFR on some systems, too.
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.19.7])
+AM_GNU_GETTEXT_VERSION([0.20.2])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
