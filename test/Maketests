@@ -801,7 +801,7 @@ pcntplus:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 posix_compare:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
