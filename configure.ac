@@ -35,14 +35,16 @@ AC_INIT([GNU Awk],[5.1.0],[bug-gawk@gnu.org],[gawk])
 
 if test "$INSTALL" = ""
 then
-	INSTALL="$srcdir/install-sh -c"
+	INSTALL="$srcdir/build-aux/install-sh -c"
 	export INSTALL
 fi
 
 AC_PREREQ([2.69])
-AM_INIT_AUTOMAKE([1.15 dist-xz dist-lzip])
 
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
+AM_INIT_AUTOMAKE([1.16 dist-xz dist-lzip])
 
 AC_ARG_ENABLE([lint],
 	[AS_HELP_STRING([--disable-lint],[do not compile in gawk lint checking])],
