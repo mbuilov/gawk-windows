@@ -137,7 +137,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 	$(am__configure_deps) $(include_HEADERS) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -171,7 +171,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/array.Po ./$(DEPDIR)/awkgram.Po \
 	./$(DEPDIR)/builtin.Po ./$(DEPDIR)/cint_array.Po \
@@ -204,7 +204,7 @@ AM_V_YACC = $(am__v_YACC_@AM_V@)
 am__v_YACC_ = $(am__v_YACC_@AM_DEFAULT_V@)
 am__v_YACC_0 = @echo "  YACC    " $@;
 am__v_YACC_1 = 
-YLWRAP = $(top_srcdir)/ylwrap
+YLWRAP = $(top_srcdir)/build-aux/ylwrap
 SOURCES = $(gawk_SOURCES)
 DIST_SOURCES = $(gawk_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -278,10 +278,20 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = support . extension extras doc awklib po test
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/configh.in ABOUT-NLS \
-	AUTHORS COPYING ChangeLog INSTALL NEWS README TODO ar-lib \
-	awkgram.c command.c compile config.guess config.rpath \
-	config.sub depcomp install-sh missing mkinstalldirs ylwrap
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/configh.in \
+	$(top_srcdir)/build-aux/ar-lib $(top_srcdir)/build-aux/compile \
+	$(top_srcdir)/build-aux/config.guess \
+	$(top_srcdir)/build-aux/config.rpath \
+	$(top_srcdir)/build-aux/config.sub \
+	$(top_srcdir)/build-aux/depcomp \
+	$(top_srcdir)/build-aux/install-sh \
+	$(top_srcdir)/build-aux/missing $(top_srcdir)/build-aux/ylwrap \
+	ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS README TODO \
+	awkgram.c build-aux/ChangeLog build-aux/ar-lib \
+	build-aux/compile build-aux/config.guess \
+	build-aux/config.rpath build-aux/config.sub build-aux/depcomp \
+	build-aux/install-sh build-aux/missing build-aux/texinfo.tex \
+	build-aux/ylwrap command.c missing mkinstalldirs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
