@@ -27,8 +27,8 @@ AC_INIT([GNU Awk Bundled Extensions],[5.1.0],[bug-gawk@gnu.org],[gawk-extensions
 
 AC_PREREQ([2.69])
 
-AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([../m4])
+AC_CONFIG_AUX_DIR([../build-aux])
 
 AM_INIT_AUTOMAKE([1.16 -Wall -Werror])
 

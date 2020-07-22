@@ -23,7 +23,12 @@ Changes from 5.1.0 to 5.1.1
 
 5. The API now handles MPFR/GMP values slightly differently, requiring
    different memory management for those values. See the manual for the
-   details if you have an extension using those values.
+   details if you have an extension using those values.  As a result,
+   the minor version was incremented.
+
+6. The duplication of m4 and build-aux directories between the main
+   directory and the extension directory has been removed. This
+   simplifies the distribution.
 
 Changes from 5.0.1 to 5.1.0
 ---------------------------
