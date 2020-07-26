@@ -34764,7 +34764,16 @@ The arguments are the same as for the @code{emalloc()} macro.
 
 Two additional functions allocate MPFR and GMP objects for use
 by extension functions that need to create and then return such
-values:
+values.
+
+@quotation NOTE
+These functions are obsolete. Extension functions that need local MPFR
+and GMP values should simply allocate them on the stack and clear them,
+as any other code would.
+@end quotation
+
+@noindent
+The functions are:
 
 @table @code
 @item void *get_mpfr_ptr();
@@ -34786,6 +34795,9 @@ which is included from @code{<mpfr.h>}).  The actual return values are of
 types @code{mpfr_ptr} and @code{mpz_ptr} respectively, and you should cast
 the return values appropriately before assigning the results to variables
 of the correct types.
+
+The memory allocated by these functions should be freed with
+@code{gawk_free()}.
 
 @node Constructor Functions
 @subsection Constructor Functions
@@ -34881,22 +34893,18 @@ way to ``transfer ownership'' of MPFR and GMP objects.  Thus, code in
 an extension should look like this:
 
 @example
-part1 = get_mpz_ptr();                  @ii{have} gawk @ii{allocate a GMP value}
-part2 = get_mpz_ptr();
-answer = get_mpz_ptr();
+mpz_t part1, part2, answer;             @ii{declare local values}
 
 mpz_set_si(part1, 21);                  @ii{do some computations}
 mpz_set_si(part2, 21);
 mpz_add(answer, part1, part2);
 @dots{}
-// assume that result is a parameter of type (awk_value_t *).
+/* assume that result is a parameter of type (awk_value_t *). */
 make_number_mpz(answer, & result);      @ii{set it with final GMP value}
 
 mpz_clear(part1);                       @ii{release intermediate values}
-gawk_free(part1);                       @ii{and free memory}
-
 mpz_clear(part2);
-gawk_free(part2);
+mpz_clear(answer);
 
 return result;
 @end example
