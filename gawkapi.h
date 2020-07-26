@@ -782,16 +782,16 @@ typedef struct gawk_api {
 	void (*api_free)(void *ptr);
 
 	/*
-	 * A function that returns mpfr data should call this function
-	 * to allocate and initialize an mpfr_ptr for use in an
-	 * awk_value_t structure that will be handed to gawk.
+	 * Obsolete function, should not be used. It remains only
+	 * for binary compatibility.  Any value it returns should be
+	 * freed via api_free.
 	 */
 	void *(*api_get_mpfr)(awk_ext_id_t id);
 
 	/*
-	 * A function that returns mpz data should call this function
-	 * to allocate and initialize an mpz_ptr for use in an
-	 * awk_value_t structure that will be handed to gawk.
+	 * Obsolete function, should not be used. It remains only
+	 * for binary compatibility.  Any value it returns should be
+	 * freed via api_free.
 	 */
 	void *(*api_get_mpz)(awk_ext_id_t id);
 
@@ -935,6 +935,7 @@ typedef struct gawk_api {
 #define get_file(name, namelen, filetype, fd, ibuf, obuf) \
 	(api->api_get_file(ext_id, name, namelen, filetype, fd, ibuf, obuf))
 
+/* These two are obsolete and should not be used. */
 #define get_mpfr_ptr() (api->api_get_mpfr(ext_id))
 #define get_mpz_ptr() (api->api_get_mpz(ext_id))
 
