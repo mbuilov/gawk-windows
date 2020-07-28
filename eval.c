@@ -976,7 +976,7 @@ set_LINT()
 			}
 		}
 	} else {
-		if (! iszero(n))
+		if (! is_zero(n))
 			do_flags |= DO_LINT_ALL;
 	}
 

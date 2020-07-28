@@ -3059,7 +3059,7 @@ regular_loop:
 			if (yyvsp[-1] != NULL) {
 				NODE *n = yyvsp[-1]->nexti->nexti->memory;
 
-				if ((n->flags & (STRING|STRCUR)) != 0 || ! iszero(n))
+				if ((n->flags & (STRING|STRCUR)) != 0 || ! is_zero(n))
 					goto regular_print;
 
 				bcfree(yyvsp[-1]->lasti);			/* Op_field_spec */
@@ -4901,7 +4901,7 @@ negate_num(NODE *n)
 
 #ifdef HAVE_MPFR
 	if (is_mpg_integer(n)) {
-		if (! iszero(n)) {
+		if (! is_zero(n)) {
 			mpz_neg(n->mpg_i, n->mpg_i);
 			return;
 		}

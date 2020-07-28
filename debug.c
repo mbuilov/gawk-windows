@@ -1616,7 +1616,7 @@ condition_triggered(struct condition *cndn)
 		return false;   /* not triggered */
 
 	force_number(r);
-	di = ! iszero(r);
+	di = ! is_zero(r);
 	DEREF(r);
 	return di;
 }

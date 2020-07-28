@@ -1307,7 +1307,7 @@ DEREF(NODE *r)
 
 #define get_number_uj(n)	numtype_choose((n), mpfr_get_uj((n)->mpg_numbr, ROUND_MODE), (uintmax_t) mpz_get_d((n)->mpg_i), (uintmax_t) (n)->numbr)
 
-#define iszero(n)		numtype_choose((n), mpfr_zero_p((n)->mpg_numbr), (mpz_sgn((n)->mpg_i) == 0), ((n)->numbr == 0.0))
+#define is_zero(n)		numtype_choose((n), mpfr_zero_p((n)->mpg_numbr), (mpz_sgn((n)->mpg_i) == 0), ((n)->numbr == 0.0))
 
 #define IEEE_FMT(r, t)		(void) (do_ieee_fmt && format_ieee(r, t))
 
@@ -1325,7 +1325,7 @@ DEREF(NODE *r)
 #define is_mpg_number(n)	0
 #define is_mpg_float(n)		0
 #define is_mpg_integer(n)	0
-#define iszero(n)		((n)->numbr == 0.0)
+#define is_zero(n)		((n)->numbr == 0.0)
 #endif
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
@@ -1983,7 +1983,7 @@ boolval(NODE *t)
 {
 	(void) fixtype(t);
 	if ((t->flags & NUMBER) != 0)
-		return ! iszero(t);
+		return ! is_zero(t);
 	return (t->stlen > 0);
 }
 
