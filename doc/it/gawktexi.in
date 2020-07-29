@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Giugno 2020
+@set UPDATE-MONTH Luglio 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -1033,7 +1033,7 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Controllo dei breakpoint::            Controllo dei punti d'interruzione.
 * Controllo esecuzione debugger::       Controllo di esecuzione.
 * Vedere e modificare dati::            Vedere e modificare dati.
-* Stack di esecuzione::                 Lavorare con lo stack.
+* Stack di esecuzione::                 Lavorare con lo @dfn{stack}.
 * Informazioni sul debugger::           Ottenere informazioni sullo stato
                                         del programma e del debugger.
 * Comandi vari del debugger::           Comandi vari del debugger.
@@ -1084,6 +1084,7 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Intro funzioni estensione API:: Introduzione alle funzioni dell'API.
 * Tipi di dati generali::               I tipi di dati.
 * Funzioni di allocazione memoria::     Funzioni per allocare memoria.
+* API e gestione valori MPFR e GMP::    Gestione valori MPFR e GMP.
 * Funzioni di costruzione::             Funzioni per creare valori.
 * Funzioni di registrazione::           Funzioni per registrare cose con
                                         @command{gawk}.
@@ -4391,6 +4392,21 @@ appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
 a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
 informazioni.
 
+@item @option{-I}
+@itemx @option{--trace}
+@cindex @option{-I} (opzione)
+@cindex opzione @subentry @option{-I}
+@cindex @option{--trace} (opzione)
+@cindex opzione @subentry @option{--trace}
+@cindex tracciatura @subentry codice-byte interno di istruzioni
+@cindex istruzioni @subentry tracciatura @subentry codice-byte interno
+@cindex codice-byte interno @subentry tracciatura del
+Stampa i nomi del codice-byte generato internamente, nell'ordine
+in cui sono incontrati durante l'esecuzione del programma.
+Questa trace @`e stampata sullo standard error.
+Ogni ``codice operativo'' @`e preceduto da un segno @code{+}
+nell'output.
+
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
 @cindex @option{-l} (opzione)
@@ -5146,7 +5162,7 @@ dovrebbero esserci differenze, ma a volte la teoria non coincide con la
 pratica).
 
 @item GAWK_STACKSIZE
-Specifica di quanto @command{gawk} dovrebbe accrescere il suo stack di
+Specifica di quanto @command{gawk} dovrebbe accrescere il suo @dfn{stack} di
 valutazione interno, all'occorrenza.
 
 @item INT_CHAIN_MAX
@@ -31330,8 +31346,8 @@ di esecuzione di ogni singola
 istruzione. Questo pu@`o essere d'aiuto nel determinare quali parti del programma
 potrebbero portar via la maggior parte del tempo, consentendo cos@`{@dotless{i}} di
 aggiustarli pi@`u agevolmente.  Inviando il segnale @code{USR1} durante la
-profilazione @command{gawk} scrive il profilo, includendo la
-stack della chiamata alla funzione e prosegue nell'elaborazione.
+profilazione @command{gawk} scrive il profilo, includendo lo
+@dfn{stack} della chiamata alla funzione e prosegue nell'elaborazione.
 
 @item
 Si pu@`o anche fare solo una ``stampa elegante'' del programma.
@@ -32436,7 +32452,7 @@ questo @value{CHAPTER}:
 @cindex debugger @subentry pila di chiamata
 @cindex @dfn{stack frame} (debugger)
 @cindex debugger @subentry @dfn{stack frame}
-@item Stack frame
+@item @dfn{Stack frame}
 Durante la loro esecuzione i programmi normalmente chiamano delle funzioni.
 Una funzione pu@`o  a sua volta chiamarne un'altra, o pu@`o richiamare se stessa
 (ricorsione).  La
@@ -32901,7 +32917,7 @@ argomenti.
 * Controllo dei breakpoint::       Controllo dei punti d'interruzione.
 * Controllo esecuzione debugger::  Controllo di esecuzione.
 * Vedere e modificare dati::       Vedere e modificare dati.
-* Stack di esecuzione::            Lavorare con le pile.
+* Stack di esecuzione::            Lavorare con lo @dfn{stack}.
 * Informazioni sul debugger::      Ottenere informazioni sullo stato del
                                    programma e del debugger.
 * Comandi vari del debugger::      Comandi vari del debugger.
@@ -33118,7 +33134,7 @@ fermarsi nuovamente.
 @cindex comando del debugger @subentry @code{finish}
 @cindex @code{finish} (comando del debugger)
 @item @code{finish}
-Esegue fino a quando lo stack frame selezionato completa l'esecuzione.
+Esegue fino a quando lo @dfn{stack frame} selezionato completa l'esecuzione.
 Stampa il valore restituito.
 
 @cindex comando del debugger @subentry @code{n} (alias per @code{next})
@@ -33338,8 +33354,8 @@ argomenti) dalla lista dei punti d'osservazione.
 
 @end table
 
-@node Stack di esecuzione
-@subsection Lavorare con lo stack
+@node @dfn{Stack} di esecuzione
+@subsection Lavorare con lo @dfn{stack}
 
 Ogni volta che si esegue un programma che contiene chiamate di funzione,
 @command{gawk} mantiene una pila contenente la lista delle chiamate di funzione
@@ -33358,11 +33374,11 @@ che hanno chiamato quella in cui ci si trova.  I comandi per far questo sono:
 @cindex descrizione di @subentry @dfn{stack}, pila delle @subentry nel debugger
 @cindex @dfn{stack} (pila) delle chiamate @subentry visualizzare nel debugger
 @cindex pila (@dfn{stack}) delle chiamate @subentry visualizzare nel debugger
-@cindex tracciatura a ritroso @subentry mostrare nel debugger
+@cindex tracciatura @subentry a ritroso @subentry mostrare nel debugger
 @item @code{backtrace} [@var{contatore}]
 @itemx @code{bt} [@var{contatore}]
 @itemx @code{where} [@var{contatore}]
-Stampa a ritroso una traccia di tutte le chiamate di funzione (stack frame), o
+Stampa a ritroso una traccia di tutte le chiamate di funzione (@dfn{stack frame}), o
 i dei @var{contatore} frame pi@`u interni se @var{contatore} > 0. Stampa i
 @var{contatore} frame pi@`u esterni se @var{contatore} < 0.  La tracciatura a
 ritroso mostra il nome e gli argomenti di ciascuna funzione, il sorgente
@@ -33931,7 +33947,7 @@ dato momento (a differenza del comportamento atteso).
 
 @item
 Come la maggior parte dei debugger, il debugger di @command{gawk} funziona in
-termini di stack frame, e si possono inserire sia punti d'interruzione
+termini di @dfn{stack frame}, e si possono inserire sia punti d'interruzione
 (interruzioni a un certo punto del codice) sia punti d'osservazione
 (interruzioni quando il valore di un dato cambia).
 
@@ -36049,6 +36065,7 @@ Questo
 * Tipi di dati generali::                 I tipi di dati.
 * Funzioni di allocazione memoria::       Funzioni per allocare memoria.
 * Funzioni di costruzione::               Funzioni per creare valori.
+* API e gestione valori MPFR e GMP::      Gestione valori MPFR e GMP.
 * Funzioni di registrazione::             Funzioni per registrare cose con
                                           @command{gawk}.
 * Stampare messaggi::                     Funzioni per stampare messaggi.
@@ -36202,10 +36219,21 @@ Autotools GNU e includere un file
 @item
 Tutti i puntatori messi a disposizione da @command{gawk} puntano ad aree
 di memoria gestite da @command{gawk} e dovrebbero essere trattati
-dall'estensione come in sola lettura.  Le aree di memoria che contengono @emph{tutte} le stringhe passate a
+dall'estensione come in sola lettura.
+
+Le aree di memoria che contengono @emph{tutte} le stringhe passate a
 @command{gawk} dall'estensione @emph{devono} provenire da una chiamata a
 @code{gawk_malloc()}, @code{gawk_calloc()} o @code{gawk_realloc()},
 e sono gestite da @command{gawk} da quel punto in avanti.
+
+La memoria che contiene valori MPFR/GMP provenienti da @command{gawk}
+dovrebbe anche essere trattata come in sola lettura.
+Inoltre, a differenza di quel che succede per le stringhe, 
+la memoria che contiene valori MPFR/GMP allocati da un'estensione
+e passati in seguito a @command{gawk} @`e @emph{copiata} da @command{gawk};
+@`e quindi l'estensione che dovrebbe liberare quelle aree di memoria,
+per evitare perdite di memoria.  Ulteriori dettagli a questo
+riguardo si possono trovare in @ref{API e gestione valori MPFR e GMP}.
 
 @item
 L'API definisce parecchie semplici strutture @code{struct} che mappano dei valori
@@ -36400,6 +36428,15 @@ ricevuti da @command{gawk}.  Inoltre, esaminando il membro
 da @code{ptr} sia un numero intero GMP (tipo @code{mpz_ptr}), o un numero
 MPFR in virgola mobile (tipo @code{mpfr_ptr_t}), e trasformarlo a seconda
 delle necessit@`a.
+
+@quotation ATTENZIONE
+Ogni valore MPFR o MPZ da voi creato e poi passato a @command{gawk}
+per essere salvato viene @emph{copiato}.  Ci@`o significa che la
+responsabilit@`a di liberare la memoria una volta che non serva pi@`u
+@`e a carico di chi scrive l'estensione.  Vedere il codice
+dell'estensione di esempio @code{intdiv} per un esempio di questo
+tipo.
+@end quotation
 
 @item typedef void *awk_scalar_t;
 La variabili scalari possono essere rappresentate da un tipo opaco.  Questi
@@ -36637,7 +36674,17 @@ Gli argomenti sono gli stessi della macro @code{emalloc()}.
 
 Due ulteriori funzioni allocano oggetti MPFR e GMP per essere usati
 da funzioni di estensione che necessitino di creare e di
-restituire valori di questo tipo:
+restituire valori di questo tipo.
+
+@quotation NOTA
+Queste funzioni sono obsolete.  Funzioni di estensione che intendano
+usare valori MPFR e GMP locali dovrebbero semplicemente allocarli
+sullo @dfn{stack} e in seguito liberarli come farebbe qualsiasi altro
+pezzo di codice.
+@end quotation
+
+@noindent
+Le funzioni sono:
 
 @table @code
 @item void *get_mpfr_ptr();
@@ -36660,6 +36707,9 @@ che @`e incluso da @code{<mpfr.h>}).  I codici di ritorno effettivamente
 restituiti sono di tipo @code{mpfr_ptr} e @code{mpz_ptr} rispettivamente,
 e si dovrebbero assegnare in maniera appropriata questi codici di ritorno
 prima di assegnare i risultati a variabili del tipo corretto.
+
+La memoria allocata da queste funzioni dovrebbe essere liberata a fine
+utilizzo, richiamando @code{gawk_free()}.
 
 @node Funzioni di costruzione
 @subsection Funzioni per creare valori
@@ -36713,14 +36763,11 @@ Questa funzione crea semplicemente un valore numerico nella variabile
 Questa funzione crea un valore di numero GMP in @code{result}.
 @code{mpz} deve provenire da una chiamata a @code{get_mpz_ptr()}
 (e quindi essere veramente del corrispondente tipo @code{mpz_ptr}).
-@command{gawk} assume la propriet@`a di questa memoria.
 
 @item static inline awk_value_t *
 @itemx make_number_mpfr(void *mpfr, awk_value_t *result);
 Questa funzione crea un valore di numero MPFR in @code{result}.
-@code{mpz} deve provenire da una chiamata a @code{get_mpfr_ptr()}
-(e quindi essere veramente del corrispondente tipo @code{mpfr_ptr}).
-@command{gawk} assume la propriet@`a di questa memoria.
+@code{mpz} deve provenire da una chiamata a @code{get_mpfr_ptr()}.
 
 @item static inline awk_value_t *
 @itemx make_const_user_input(const char *stringa, size_t lunghezza, awk_value_t *risultato);
@@ -36749,6 +36796,49 @@ dati ottenuti in precedenza tramite una chiamata a
 @code{gawk_malloc()}, @code{gawk_calloc()} o @code{gawk_realloc()}.
 
 @end table
+
+@node API e gestione valori MPFR e GMP
+@subsection Gestione valori MPFR e GMP
+@cindex MPFR @subentry gestione valori nell'API
+@cindex GMP @subentry gestione valori nell'API
+@cindex API (estensione) @subentry gestione valori MPFR e GMP
+
+I valori MPFR e GMP sono differenti dai valori di tipo stringa,
+nei quali @`e possibile ``prendere possesso'' del valore semplicemente
+assegnandogli dei puntatori. Per esempio:
+
+@example
+char *p = gawk_malloc(42);      p @ii{``possiede'' la memoria}
+char *q = p;
+p = NULL;                       @ii{ora} q @ii{la ``possiede''}
+@end example
+
+Gli oggetti MPFR e GMP sono certamente allocati sullo @dfn{stack}
+oppure dinamicamente, ma le librerie MPFR e GMP trattano questi
+oggetti come valori, allo stesso modo in cui si passa normalmente
+un valore intero (@code{int}) o uno a virgola mobile a doppia
+precisione (@code{double}) per valore.  Non c'@`e modo di
+``trasferire il possesso'' di oggetti MPFR e GMP.
+Per questo motivo, il codice in un'estensione dovrebbe essere
+simile a questo:
+
+@example
+mpz_t part1, part2, risposta;      @ii{dichiarare valori locali}
+
+mpz_set_si(part1, 21);             @ii{fare alcuni calcoli}
+mpz_set_si(part2, 21);
+mpz_add(risposta, part1, part2);
+@dots{}
+/* si suppone che il risultato sia un parametro */
+/* di tipo (awk_value_t *). */
+make_number_mpz(risposta, & risultato); @ii{assegnare valore finale GMP}
+
+mpz_clear(part1);                    @ii{rilasciare valori intermedi}
+mpz_clear(part2);
+mpz_clear(risposta);
+
+return result;
+@end example
 
 @node Funzioni di registrazione
 @subsection Funzioni di registrazione
@@ -38826,7 +38916,7 @@ insieme contiene informazioni su come @command{gawk} @`e stato invocato.
 
 @node Versione dell'estensione
 @subsubsection Costanti e variabili della versione dell'API
-@cindex API @subentry versione dell'estensione
+@cindex API (estensione) @subentry versione
 @cindex versione @subentry dell'estensione API @command{gawk}
 @cindex estensione API @subentry @command{gawk}, versione API
 
@@ -38946,7 +39036,7 @@ chiama @code{check_mpfr_version()}.
 
 @node Variabili informative di estens. API
 @subsubsection Variabili informative
-@cindex API @subentry variabili informative dell'estensione
+@cindex API (estensione) @subentry variabili informative
 @cindex variabili @subentry informative dell'API
 @cindex estensione API @subentry variabili informative
 
@@ -42353,7 +42443,7 @@ La funzione @code{getline} ridiretta @`e stata resa possibile all'interno di
 
 @item
 Il comando @code{where} @`e stato aggiunto al debugger
-(@pxref{Stack di esecuzione}).
+(@pxref{@dfn{Stack} di esecuzione}).
 
 @item
 Il supporto per Ultrix @`e stato rimosso.
@@ -45082,7 +45172,7 @@ e @code{0}.
 Fornire un commento descrittivo di una riga per ogni funzione.
 
 @item
-Non usare la funzione @code{alloca()} per allocare memoria dalla @dfn{stack}.
+Non usare la funzione @code{alloca()} per allocare memoria dallo @dfn{stack}.
 Il farlo genera dei problemi di portabilit@`a che non giustificano il vantaggio
 secondario di non doversi preoccupare di liberare la memoria.  Usare invece
 @code{malloc()} e @code{free()}.
