@@ -99,5 +99,6 @@ typedef unsigned long long uint_fast64_t;
 #else
 # define _GL_ATTRIBUTE_PURE /* empty */
 #endif
+#define FLEXIBLE_ARRAY_MEMBER	1
 
 #include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */
