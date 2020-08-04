@@ -1,3 +1,14 @@
+2020-08-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Simplify handling of tests that have an -mpfr.ok file.
+
+	* Gentests: Remove CHECK_MPFR handling. Instead, read the
+	EXTRA_DIST list of files and generate better checking tests
+	for tests that have an -mpfr.ok file. Use GAWK_TEST__ARGS
+	instead of AWKFLAGS.
+	* Makefile.am (CHECK_MPFR): Removed.
+	(arrdbg, testext): Checks updated.
+
 2020-07-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (EXPECTED_FAIL_ZOS): Add posix_compare to the list.
