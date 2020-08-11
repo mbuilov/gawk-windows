@@ -26,11 +26,7 @@
 
 #include "awk.h"
 
-extern FILE *output_fp;
-extern void indent(unsigned indent_level);
-extern NODE **is_integer(NODE *symbol, NODE *subs);
-
-static ulong_t INT_CHAIN_MAX = 2u;
+static awk_ulong_t INT_CHAIN_MAX = 2u;
 
 static NODE **int_array_init(NODE *symbol, NODE *subs);
 static NODE **int_lookup(NODE *symbol, NODE *subs);
@@ -41,9 +37,9 @@ static NODE **int_list(NODE *symbol, NODE *t);
 static NODE **int_copy(NODE *symbol, NODE *newsymb);
 static NODE **int_dump(NODE *symbol, NODE *ndump);
 
-static uint32_t int_hash(long_t k, ulong_t hsize);
-static inline NODE **int_find(NODE *symbol, long_t k, uint32_t hash1);
-static NODE **int_insert(NODE *symbol, long_t k, uint32_t hash1);
+static uint32_t int_hash(awk_long_t k, size_t hsize);
+static inline NODE **int_find(NODE *symbol, awk_long_t k, uint32_t hash1);
+static NODE **int_insert(NODE *symbol, awk_long_t k, uint32_t hash1);
 static void grow_int_table(NODE *symbol);
 
 const array_funcs_t int_array_func = {
@@ -69,11 +65,11 @@ int_array_init(NODE *symbol, NODE *subs)
 	(void) subs;
 
 	if (symbol == NULL) {	/* first time */
-		long newval;
+		awk_long_t newval;
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("INT_CHAIN_MAX")) > 0)
-			INT_CHAIN_MAX = (unsigned long) newval;
+			INT_CHAIN_MAX = (awk_ulong_t) newval;
 	} else
 		null_array(symbol);
 
@@ -101,10 +97,10 @@ standard_integer_string(const char *s, size_t len)
 	if (*s == '-' && ++s == end)
 		return false;
 	/* check first char is [1-9] */
-	if (*s < '1' || *s > '9')
+	if (char_digit_value((unsigned char) *s) < 1)
 		return false;
 	while (++s < end) {
-		if (*s < '0' || *s > '9')
+		if (!char_is_digit((unsigned char) *s))
 			return false;
 	}
 	return true;
@@ -115,11 +111,8 @@ standard_integer_string(const char *s, size_t len)
 NODE **
 is_integer(NODE *symbol, NODE *subs)
 {
-#ifndef CHECK_INTEGER_USING_FORCE_NUMBER
-	long l;
-#endif
 	AWKNUM d;
-	(void) symbol, (void) subs;
+	(void) symbol;
 
 	if ((subs->flags & NUMINT) != 0)
 		/* quick exit */
@@ -144,7 +137,7 @@ is_integer(NODE *symbol, NODE *subs)
 	if ((subs->flags & NUMCUR) != 0) {
 #endif /* CHECK_INTEGER_USING_FORCE_NUMBER */
 		d = subs->numbr;
-		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d) {
+		if (AWKLONGMIN <= d && d <= AWKLONGMAX && d == (AWKNUM) (awk_long_t) d) {
 			/*
 			 * The numeric value is an integer, but we must
 			 * protect against strings that cannot be generated
@@ -171,11 +164,13 @@ is_integer(NODE *symbol, NODE *subs)
 	 */
 
 	/* must be a STRING */
-	char *cp = subs->stptr, *cpend, *ptr;
-	char save;
-	size_t len = subs->stlen;
+	const char *cp = subs->stptr;
+	size_t const len = subs->stlen;
+	const char *const cpend = cp + len;
+	bool in_range = true;
+	awk_long_t l;
 
-	if (len == 0 || (! isdigit((unsigned char) *cp) && *cp != '-'))
+	if (len == 0 || ((l = char_digit_value((unsigned char) *cp)) == -1 && *cp != '-'))
 		return NULL;
 
 	if (len > 1 &&
@@ -184,8 +179,9 @@ is_integer(NODE *symbol, NODE *subs)
 		)
 	)
 		return NULL;
-	if (len == 1 && *cp != '-') {	/* single digit */
-		subs->numbr = (long) (*cp - '0');
+
+	if (len == 1 && l != -1) {	/* single digit */
+		subs->numbr = (AWKNUM) l;
 		if ((subs->flags & USER_INPUT) != 0) {
 			/* leave USER_INPUT set */
 			subs->flags &= ~STRING;
@@ -195,24 +191,52 @@ is_integer(NODE *symbol, NODE *subs)
 		return & success_node;
 	}
 
-	cpend = cp + len;
-	save = *cpend;
-	*cpend = '\0';
-
-	errno = 0;
-	l = strtol(cp, & ptr, 10);
-	*cpend = save;
-	if (errno != 0 || ptr != cpend)
+	/* Try to parse a signed integer.  */
+	if (l == -1 && (len == 1 || (l = char_digit_value((unsigned char) *++cp)) == -1))
 		return NULL;
 
-	subs->numbr = l;
+	while (++cp != cpend) {
+		int i = char_digit_value((unsigned char) *cp);
+		if (i == -1)
+			return NULL;
+		if (l <= AWKLONGMAX/10) {
+			l *= 10;
+			if (i <= AWKLONGMAX - l) {
+				l += i;
+				continue;
+			}
+			/* Compile-time check that, for example, -128 + 1 == -127 */
+			(void) sizeof(int[1-2*!(AWKLONGMIN + 1 == -AWKLONGMAX)]);
+			if (--i == AWKLONGMAX - l &&
+			    *subs->stptr == '-' &&
+			    cp + 1 == cpend)
+			{
+				l = AWKLONGMIN;
+				break;
+			}
+		}
+		in_range = false;	/* Out of range */
+	}
+
+	/* Good integer.  According to logic of force_number(),
+	   ignore truncation error if integer value can't be
+	   stored in subs->numbr without loss.  */
+
+	if (!in_range)
+		l = (*subs->stptr == '-') ? AWKLONGMIN : AWKLONGMAX;
+	else if (l > 0 && *subs->stptr == '-')
+		l = -l;
+
+	subs->numbr = (AWKNUM) l;
 	if ((subs->flags & USER_INPUT) != 0) {
 		/* leave USER_INPUT set */
 		subs->flags &= ~STRING;
 		subs->flags |= NUMBER;
 	}
 	subs->flags |= NUMCUR;
-	if (l <= INT32_MAX && l >= INT32_MIN) {
+
+	/* Check if parsed integer has been stored without loss.  */
+	if (in_range && l == (awk_long_t) subs->numbr) {
 		subs->flags |= NUMINT;
 		return & success_node;
 	}
@@ -231,8 +255,8 @@ static NODE **
 int_lookup(NODE *symbol, NODE *subs)
 {
 	uint32_t hash1;
-	long_t k;
-	ulong_t size;
+	awk_long_t k;
+	size_t size;
 	NODE **lhs;
 	NODE *xn;
 
@@ -256,7 +280,7 @@ int_lookup(NODE *symbol, NODE *subs)
 		return assoc_lookup(xn, subs);
 	}
 
-	k = (long) subs->numbr;
+	k = (awk_long_t) subs->numbr;
 	if (symbol->buckets == NULL)
 		grow_int_table(symbol);
 
@@ -292,7 +316,7 @@ int_lookup(NODE *symbol, NODE *subs)
 static NODE **
 int_exists(NODE *symbol, NODE *subs)
 {
-	long_t k;
+	awk_long_t k;
 	uint32_t hash1;
 
 	if (! is_integer(symbol, subs)) {
@@ -304,7 +328,7 @@ int_exists(NODE *symbol, NODE *subs)
 	if (symbol->buckets == NULL)
 		return NULL;
 
-	k = (long) subs->numbr;
+	k = (awk_long_t) subs->numbr;
 	hash1 = int_hash(k, symbol->array_size);
 	return int_find(symbol, k, hash1);
 }
@@ -314,8 +338,7 @@ int_exists(NODE *symbol, NODE *subs)
 static NODE **
 int_clear(NODE *symbol, NODE *subs)
 {
-	ulong_t i;
-	size_t j;
+	size_t i, j;
 	BUCKET *b, *next;
 	NODE *r;
 	(void) subs;
@@ -327,7 +350,7 @@ int_clear(NODE *symbol, NODE *subs)
 		symbol->xarray = NULL;
 	}
 
-	for (i = 0u; i < symbol->array_size; i++) {
+	for (i = 0; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = next) {
 			next = b->ainext;
 			for (j = 0; j < b->aicount; j++) {
@@ -357,7 +380,7 @@ int_remove(NODE *symbol, NODE *subs)
 {
 	uint32_t hash1;
 	BUCKET *b, *prev = NULL;
-	long_t k;
+	awk_long_t k;
 	size_t i;
 	NODE *xn = symbol->xarray;
 
@@ -371,12 +394,12 @@ int_remove(NODE *symbol, NODE *subs)
 			freenode(xn);
 			symbol->xarray = NULL;
 		}
-		assert(symbol->table_size > 1u);
+		assert(symbol->table_size > 1);
 		symbol->table_size--;
 		return & success_node;
 	}
 
-	k = (long) subs->numbr;
+	k = (awk_long_t) subs->numbr;
 	hash1 = int_hash(k, symbol->array_size);
 
 	for (b = symbol->buckets[hash1]; b != NULL; prev = b, b = b->ainext) {
@@ -453,8 +476,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 {
 	BUCKET **old_b, **new_b, **pnew;
 	BUCKET *chain, *newchain;
-	size_t j;
-	ulong_t i, cursize;
+	size_t j, i, cursize;
 
 	assert(symbol->buckets != NULL);
 
@@ -466,7 +488,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 
 	old_b = symbol->buckets;
 
-	for (i = 0u; i < cursize; i++) {
+	for (i = 0; i < cursize; i++) {
 		for (chain = old_b[i], pnew = & new_b[i]; chain != NULL;
 				chain = chain->ainext
 		) {
@@ -525,13 +547,12 @@ static NODE**
 int_list(NODE *symbol, NODE *t)
 {
 	NODE **list = NULL;
-	ulong_t num_elems, i;
+	size_t num_elems, i;
 	size_t list_size, k = 0;
 	BUCKET *b;
 	NODE *r, *subs, *xn;
 	size_t j;
 	unsigned elem_size = 1;
-	long num;
 	static char buf[100];
 	assoc_kind_t assoc_kind;
 
@@ -541,7 +562,7 @@ int_list(NODE *symbol, NODE *t)
 	assoc_kind = (assoc_kind_t) t->flags;
 	num_elems = symbol->table_size;
 	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
-		num_elems = 1u;
+		num_elems = 1;
 
 	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
@@ -551,7 +572,7 @@ int_list(NODE *symbol, NODE *t)
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
 		assert(list != NULL);
-		if (num_elems == 1u || num_elems == xn->table_size)
+		if (num_elems == 1 || num_elems == xn->table_size)
 			return list;
 		erealloc(list, NODE **, list_size * sizeof(NODE *), "int_list");
 		k = elem_size * xn->table_size;
@@ -560,15 +581,15 @@ int_list(NODE *symbol, NODE *t)
 
 	/* populate it */
 
-	for (i = 0u; i < symbol->array_size; i++) {
+	for (i = 0; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext) {
 			for (j = 0; j < b->aicount; j++) {
 				/* index */
-				num = b->ainum[j];
+				awk_long_t num = b->ainum[j];
 				if ((assoc_kind & AISTR) != 0) {
-					sprintf(buf, "%ld", num);
+					sprintf(buf, "%" AWKLONGFMT "", TO_AWK_LONG(num));
 					subs = make_string(buf, strlen(buf));
-					subs->numbr = num;
+					subs->numbr = (AWKNUM) num;
 					subs->flags |= (NUMCUR|NUMINT);
 				} else {
 					subs = make_number((AWKNUM) num);
@@ -602,11 +623,12 @@ int_list(NODE *symbol, NODE *t)
 AWKNUM
 int_kilobytes(NODE *symbol)
 {
-	ulong_t i, bucket_cnt = 0u;
+	size_t i;
+	awk_ulong_t bucket_cnt = 0u;
 	BUCKET *b;
 	AWKNUM kb;
 
-	for (i = 0u; i < symbol->array_size; i++) {
+	for (i = 0; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL; b = b->ainext)
 			bucket_cnt++;
 	}
@@ -630,11 +652,9 @@ int_dump(NODE *symbol, NODE *ndump)
 	unsigned indent_level;
 	BUCKET *b;
 	NODE *xn = NULL;
-	ulong_t str_size = 0u, int_size = 0u;
-	ulong_t i;
+	size_t i, str_size = 0, int_size = 0;
 	unsigned k;
-	size_t j, bucket_cnt;
-	static unsigned long hash_dist[HCNT + 1];
+	size_t hash_dist[HCNT + 1];
 
 	indent_level = ndump->alevel;
 
@@ -657,12 +677,12 @@ int_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "INT_CHAIN_MAX: %lu\n", TO_ULONG(INT_CHAIN_MAX));
+	fprintf(output_fp, "INT_CHAIN_MAX: %" AWKULONGFMT "\n", TO_AWK_ULONG(INT_CHAIN_MAX));
 	indent(indent_level);
-	fprintf(output_fp, "array_size: %lu (int)\n", TO_ULONG(symbol->array_size));
+	fprintf(output_fp, "array_size: %" ZUFMT " (int)\n", symbol->array_size);
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %lu (total), %lu (int), %lu (str)\n",
-			TO_ULONG(symbol->table_size), TO_ULONG(int_size), TO_ULONG(str_size));
+	fprintf(output_fp, "table_size: %" ZUFMT " (total), %" ZUFMT " (int), %" ZUFMT " (str)\n",
+			symbol->table_size, int_size, str_size);
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain (int): %.2g\n",
 			((AWKNUM) int_size) / symbol->array_size);
@@ -673,8 +693,8 @@ int_dump(NODE *symbol, NODE *ndump)
 	/* hash value distribution */
 
 	memset(hash_dist, 0, sizeof(hash_dist));
-	for (i = 0u; i < symbol->array_size; i++) {
-		bucket_cnt = 0;
+	for (i = 0; i < symbol->array_size; i++) {
+		size_t bucket_cnt = 0;
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ainext) {
 			bucket_cnt += b->aicount;
 			if (bucket_cnt >= HCNT) {
@@ -692,10 +712,10 @@ int_dump(NODE *symbol, NODE *ndump)
 		if (hash_dist[k] > 0) {
 			indent(indent_level);
 			if (k == HCNT)
-				fprintf(output_fp, "[>=%d]:%lu\n",
+				fprintf(output_fp, "[>=%d]:%" ZUFMT "\n",
 					HCNT, hash_dist[k]);
 			else
-				fprintf(output_fp, "[%u]:%lu\n",
+				fprintf(output_fp, "[%u]:%" ZUFMT "\n",
 					k, hash_dist[k]);
 		}
 	}
@@ -713,10 +733,11 @@ int_dump(NODE *symbol, NODE *ndump)
 		subs = make_number((AWKNUM) 0);
 		subs->flags |= (INTIND|NUMINT);
 
-		for (i = 0u; i < symbol->array_size; i++) {
+		for (i = 0; i < symbol->array_size; i++) {
 			for (b = symbol->buckets[i]; b != NULL; b = b->ainext) {
-				for (j = 0; j < b->aicount; j++) {
-					subs->numbr = TO_LONG(b->ainum[j]);
+				size_t j = 0;
+				for (; j < b->aicount; j++) {
+					subs->numbr = (AWKNUM) b->ainum[j];
 					assoc_info(subs, b->aivalue[j], ndump, aname);
 				}
 			}
@@ -738,7 +759,7 @@ int_dump(NODE *symbol, NODE *ndump)
 /* int_hash --- calculate the hash function of the integer subs */
 
 static uint32_t
-int_hash(long_t k, ulong_t hsize)
+int_hash(awk_long_t k, size_t hsize)
 {
 	uint32_t h = (uint32_t) k;
 
@@ -765,7 +786,7 @@ int_hash(long_t k, ulong_t hsize)
 /* int_find --- locate symbol[subs] */
 
 static inline NODE **
-int_find(NODE *symbol, long_t k, uint32_t hash1)
+int_find(NODE *symbol, awk_long_t k, uint32_t hash1)
 {
 	BUCKET *b;
 	size_t i;
@@ -784,7 +805,7 @@ int_find(NODE *symbol, long_t k, uint32_t hash1)
 /* int_insert --- install subs in the assoc array */
 
 static NODE **
-int_insert(NODE *symbol, long_t k, uint32_t hash1)
+int_insert(NODE *symbol, awk_long_t k, uint32_t hash1)
 {
 	BUCKET *b;
 	size_t i;
@@ -815,15 +836,15 @@ grow_int_table(NODE *symbol)
 {
 	BUCKET **old_b, **new_b;
 	BUCKET *chain, *next;
-	size_t i, j;
-	ulong_t oldsize, newsize, k;
+	size_t i;
+	size_t oldsize, newsize, k;
 
 	/*
 	 * This is an array of primes. We grow the table by an order of
 	 * magnitude each time (not just doubling) so that growing is a
 	 * rare operation. We expect, on average, that it won't happen
 	 * more than twice.  The final size is also chosen to be small
-	 * enough so that MS-DOG mallocs can handle it. When things are
+	 * enough so that MS-DOS mallocs can handle it. When things are
 	 * very large (> 8K), we just double more or less, instead of
 	 * just jumping from 8K to 64K.
 	 */
@@ -839,9 +860,9 @@ grow_int_table(NODE *symbol)
 	/* find next biggest hash size */
 	newsize = oldsize = symbol->array_size;
 
-	for (i = 0, j = sizeof(sizes)/sizeof(sizes[0]); i < j; i++) {
-		if (oldsize < sizes[i]) {
-			newsize = sizes[i];
+	for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++) {
+		if (oldsize < (size_t) sizes[i]) {
+			newsize = (size_t) sizes[i];
 			break;
 		}
 	}
@@ -864,11 +885,10 @@ grow_int_table(NODE *symbol)
 	/* old hash table there, move stuff to new, free old */
 	/* note that symbol->table_size does not change if an old array. */
 
-	for (k = 0u; k < oldsize; k++) {
-		long_t num;
+	for (k = 0; k < oldsize; k++) {
 		for (chain = old_b[k]; chain != NULL; chain = next) {
 			for (i = 0; i < chain->aicount; i++) {
-				num = chain->ainum[i];
+				const awk_long_t num = chain->ainum[i];
 				*int_insert(symbol, num, int_hash(num, newsize)) = chain->aivalue[i];
 			}
 			next = chain->ainext;
