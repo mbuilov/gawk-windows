@@ -127,10 +127,10 @@ lookup(const char *name)
 /* make_params --- allocate function parameters for the symbol table */
 
 NODE *
-make_params(char **pnames, ulong_t pcount)
+make_params(char **pnames, awk_ulong_t pcount)
 {
 	NODE *p, *parms;
-	ulong_t i;
+	awk_ulong_t i;
 
 	if (!pcount || pnames == NULL)
 		return NULL;
@@ -151,7 +151,7 @@ make_params(char **pnames, ulong_t pcount)
 void
 install_params(NODE *func)
 {
-	ulong_t i, pcount;
+	awk_ulong_t i, pcount;
 	NODE *parms;
 
 	if (func == NULL)
@@ -176,7 +176,7 @@ void
 remove_params(NODE *func)
 {
 	NODE *parms, *p;
-	ulong_t i, pcount;
+	awk_ulong_t i, pcount;
 
 	if (func == NULL)
 		return;
@@ -241,8 +241,8 @@ destroy_symbol(NODE *r)
 	case Node_func:
 		if (r->param_cnt) {
 			NODE *n;
-			ulong_t i;
-			ulong_t pcount = r->param_cnt;
+			awk_ulong_t i, pcount;
+			pcount = r->param_cnt;
 
 			/* function parameters of type Node_param_list */
 			for (i = 0u; i < pcount; i++) {
@@ -375,12 +375,10 @@ typedef enum { FUNCTION = 1, VARIABLE } SYMBOL_TYPE;
 static NODE **
 get_symbols(SYMBOL_TYPE what, bool sort)
 {
-	ulong_t i;
 	NODE **table;
 	NODE **list;
 	NODE *r;
-	ulong_t count;
-	ulong_t max;
+	size_t i, count, max;
 	NODE *the_table;
 
 	/*
@@ -392,12 +390,12 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 
 	if (what == FUNCTION) {
 		the_table = func_table;
-		max = the_table->table_size * 2u;
+		max = the_table->table_size * 2;
 
 		list = assoc_list(the_table, "@unsorted", ASORTI);
 		emalloc(table, NODE **, (func_count + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = count = 0u; i < max; i += 2) {
+		for (i = count = 0; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_ext_func || r->type == Node_builtin_func)
 				continue;
@@ -408,13 +406,13 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 		update_global_values();
 
 		the_table = symbol_table;
-		max = the_table->table_size * 2u;
+		max = the_table->table_size * 2;
 
 		list = assoc_list(the_table, "@unsorted", ASORTI);
 		/* add three: one for FUNCTAB, one for SYMTAB, and one for a final NULL */
 		emalloc(table, NODE **, (var_count + 1 + 1 + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = count = 0u; i < max; i += 2) {
+		for (i = count = 0; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_val)	/* non-variable in SYMTAB */
 				continue;
@@ -427,8 +425,8 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 
 	efree(list);
 
-	if (sort && count > 1u)
-		qsort(table, TO_ULONG(count), sizeof(NODE *), comp_symbol);	/* Shazzam! */
+	if (sort && count > 1)
+		qsort(table, count, sizeof(NODE *), comp_symbol);	/* Shazzam! */
 	table[count] = NULL; /* null terminate the list */
 	return table;
 }
@@ -468,7 +466,7 @@ print_vars(NODE **table, Func_print print_func, FILE *fp)
 			continue;
 		print_func(fp, "%s: ", r->vname);
 		if (r->type == Node_var_array)
-			print_func(fp, "array, %lu elements\n", TO_ULONG(assoc_length(r)));
+			print_func(fp, "array, %" ZUFMT " elements\n", assoc_length(r));
 		else if (r->type == Node_var_new)
 			print_func(fp, "untyped variable\n");
 		else if (r->type == Node_var)
@@ -555,7 +553,7 @@ load_symbols(void)
 	NODE *sym_array;
 	NODE **aptr;
 	unsigned i;
-	ulong_t j, max;
+	size_t j, max;
 	NODE *user, *extension, *untyped, *scalar, *array, *built_in;
 	NODE **list;
 	NODE *tables[4];
@@ -594,7 +592,7 @@ load_symbols(void)
 		max = tables[i]->table_size * 2u;
 		if (!max)
 			continue;
-		for (j = 0u; j < max; j += 2) {
+		for (j = 0; j < max; j += 2) {
 			r = list[j+1];
 			if (   r->type == Node_ext_func
 			    || r->type == Node_func
@@ -647,7 +645,8 @@ check_param_names(void)
 {
 	NODE **list;
 	NODE *f;
-	ulong_t j, i, max;
+	size_t i, max;
+	awk_ulong_t j;
 	bool result = true;
 	NODE n;
 
@@ -676,7 +675,7 @@ check_param_names(void)
 
 	list = assoc_list(func_table, "@unsorted", ASORTI);
 
-	for (i = 0u; i < max; i += 2) {
+	for (i = 0; i < max; i += 2) {
 		f = list[i+1];
 		if (f->type == Node_builtin_func || !f->param_cnt)
 			continue;
