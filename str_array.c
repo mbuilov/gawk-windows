@@ -42,10 +42,7 @@
  * 11/2002: Modern machines are bigger, cut this down from 10.
  */
 
-static size_t STR_CHAIN_MAX = 2;
-
-extern FILE *output_fp;
-extern void indent(unsigned indent_level);
+static awk_ulong_t STR_CHAIN_MAX = 2u;
 
 static NODE **str_array_init(NODE *symbol, NODE *subs);
 static NODE **str_lookup(NODE *symbol, NODE *subs);
@@ -89,14 +86,14 @@ static const array_funcs_t env_array_func = {
 	env_store,
 };
 
-static inline NODE **str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1);
+static inline NODE **str_find(NODE *symbol, NODE *s1, awk_ulong_t code1, size_t hash1);
 static void grow_table(NODE *symbol);
 
-static ulong_t gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code);
-static ulong_t scramble(ulong_t x);
-static ulong_t awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code);
+static size_t gst_hash_string(const char *str, size_t len, size_t hsize, awk_ulong_t *code);
+static awk_ulong_t scramble(awk_ulong_t x);
+static size_t awk_hash(const char *s, size_t len, size_t hsize, awk_ulong_t *code);
 
-ulong_t (*hash)(const char *s, size_t len, ulong_t hsize, ulong_t *code) = awk_hash;
+size_t (*hash)(const char *s, size_t len, size_t hsize, awk_ulong_t *code) = awk_hash;
 
 
 /* str_array_init --- array initialization routine */
@@ -105,12 +102,12 @@ static NODE **
 str_array_init(NODE *symbol, NODE *subs)
 {
 	if (symbol == NULL) {		/* first time */
-		long newval;
+		awk_long_t newval;
 		const char *val;
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("STR_CHAIN_MAX")) > 0)
-			STR_CHAIN_MAX = (unsigned long) newval;
+			STR_CHAIN_MAX = (awk_ulong_t) newval;
 		if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
 			hash = gst_hash_string;
 	} else
@@ -133,10 +130,10 @@ str_array_init(NODE *symbol, NODE *subs)
 static NODE **
 str_lookup(NODE *symbol, NODE *subs)
 {
-	ulong_t hash1;
+	size_t hash1;
 	NODE **lhs;
 	BUCKET *b;
-	ulong_t code1;
+	awk_ulong_t code1;
 
 	subs = force_string(subs);
 
@@ -223,8 +220,8 @@ str_lookup(NODE *symbol, NODE *subs)
 static NODE **
 str_exists(NODE *symbol, NODE *subs)
 {
-	ulong_t hash1;
-	ulong_t code1;
+	size_t hash1;
+	awk_ulong_t code1;
 
 	if (!symbol->table_size)
 		return NULL;
@@ -239,12 +236,12 @@ str_exists(NODE *symbol, NODE *subs)
 static NODE **
 str_clear(NODE *symbol, NODE *subs)
 {
-	ulong_t i;
+	size_t i;
 	BUCKET *b, *next;
 	NODE *r;
 	(void) subs;
 
-	for (i = 0u; i < symbol->array_size; i++) {
+	for (i = 0; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL; b = next) {
 			next = b->ahnext;
 			r = b->ahvalue;
@@ -272,10 +269,9 @@ str_clear(NODE *symbol, NODE *subs)
 static NODE **
 str_remove(NODE *symbol, NODE *subs)
 {
-	ulong_t hash1;
 	BUCKET *b, *prev;
 	NODE *s2;
-	size_t s1_len;
+	size_t hash1, s1_len;
 
 	if (!symbol->table_size)
 		return NULL;
@@ -324,9 +320,9 @@ str_remove(NODE *symbol, NODE *subs)
 static NODE **
 str_copy(NODE *symbol, NODE *newsymb)
 {
-	BUCKET **b_old, **b_new, **pnew;
+	BUCKET **old_b, **new_b, **pnew;
 	BUCKET *chain, *newchain;
-	ulong_t cursize, i;
+	size_t cursize, i;
 
 	assert(symbol->table_size);
 
@@ -334,12 +330,12 @@ str_copy(NODE *symbol, NODE *newsymb)
 	cursize = symbol->array_size;
 
 	/* allocate new table */
-	ezalloc(b_new, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
+	ezalloc(new_b, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
 
-	b_old = symbol->buckets;
+	old_b = symbol->buckets;
 
-	for (i = 0u; i < cursize; i++) {
-		for (chain = b_old[i], pnew = & b_new[i]; chain != NULL;
+	for (i = 0; i < cursize; i++) {
+		for (chain = old_b[i], pnew = & new_b[i]; chain != NULL;
 				chain = chain->ahnext
 		) {
 			NODE *oldval, *newsubs;
@@ -375,7 +371,7 @@ str_copy(NODE *symbol, NODE *newsymb)
 	}
 
 	newsymb->table_size = symbol->table_size;
-	newsymb->buckets = b_new;
+	newsymb->buckets = new_b;
 	newsymb->array_size = cursize;
 	newsymb->flags = symbol->flags;
 	return NULL;
@@ -390,7 +386,7 @@ str_list(NODE *symbol, NODE *t)
 	NODE **list;
 	NODE *subs, *val;
 	BUCKET *b;
-	ulong_t num_elems, list_size, i, k = 0u;
+	size_t num_elems, list_size, i, k = 0;
 	unsigned elem_size = 1;
 	assoc_kind_t assoc_kind;
 
@@ -405,13 +401,13 @@ str_list(NODE *symbol, NODE *t)
 	num_elems = symbol->table_size;
 	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
 		num_elems = 1u;
-	list_size =  elem_size * num_elems;
+	list_size = elem_size * num_elems;
 
 	emalloc(list, NODE **, list_size * sizeof(NODE *), "str_list");
 
 	/* populate it */
 
-	for (i = 0u; i < symbol->array_size; i++) {
+	for (i = 0; i < symbol->array_size; i++) {
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
 			/* index */
 			subs = b->ahname;
@@ -443,7 +439,7 @@ str_list(NODE *symbol, NODE *t)
 AWKNUM
 str_kilobytes(NODE *symbol)
 {
-	ulong_t bucket_cnt;
+	size_t bucket_cnt;
 	AWKNUM kb;
 
 	bucket_cnt = symbol->table_size;
@@ -463,10 +459,10 @@ str_dump(NODE *symbol, NODE *ndump)
 #define HCNT	31
 
 	unsigned indent_level;
-	ulong_t i;
-	unsigned q, bucket_cnt;
+	size_t i;
+	unsigned q;
 	BUCKET *b;
-	static size_t hash_dist[HCNT + 1];
+	size_t hash_dist[HCNT + 1];
 
 	indent_level = ndump->alevel;
 
@@ -482,11 +478,11 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %" ZUFMT "\n", STR_CHAIN_MAX);
+	fprintf(output_fp, "STR_CHAIN_MAX: %" AWKULONGFMT "\n", TO_AWK_ULONG(STR_CHAIN_MAX));
 	indent(indent_level);
-	fprintf(output_fp, "array_size: %lu\n", TO_ULONG(symbol->array_size));
+	fprintf(output_fp, "array_size: %" ZUFMT "\n", symbol->array_size);
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %lu\n", TO_ULONG(symbol->table_size));
+	fprintf(output_fp, "table_size: %" ZUFMT "\n", symbol->table_size);
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain: %.2g\n",
 				((AWKNUM) symbol->table_size) / symbol->array_size);
@@ -497,8 +493,8 @@ str_dump(NODE *symbol, NODE *ndump)
 	/* hash value distribution */
 
 	memset(hash_dist, '\0', (HCNT + 1) * sizeof(size_t));
-	for (i = 0u; i < symbol->array_size; i++) {
-		bucket_cnt = 0;
+	for (i = 0; i < symbol->array_size; i++) {
+		size_t bucket_cnt = 0;
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
 			if (++bucket_cnt == HCNT)
 				break;
@@ -543,11 +539,11 @@ str_dump(NODE *symbol, NODE *ndump)
 
 /* awk_hash --- calculate the hash function of the string in subs */
 
-static ulong_t
-awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code)
+static size_t
+awk_hash(const char *s, size_t len, size_t hsize, awk_ulong_t *code)
 {
-	ulong_t h;
-	ulong_t htmp;
+	awk_ulong_t h;
+	awk_ulong_t htmp;
 
 	/*
 	 * Ozan Yigit's original sdbm hash, copied from Margo Seltzers
@@ -607,7 +603,7 @@ awk_hash(const char *s, size_t len, ulong_t hsize, ulong_t *code)
 /* str_find --- locate symbol[subs] */
 
 static inline NODE **
-str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1)
+str_find(NODE *symbol, NODE *s1, awk_ulong_t code1, size_t hash1)
 {
 	BUCKET *b;
 	size_t s2_len;
@@ -616,7 +612,7 @@ str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1)
 		/*
 		 * This used to use cmp_nodes() here.  That's wrong.
 		 * Array indexes are strings; compare as such, always!
-	 	 */
+		 */
 		s2_len = b->ahname_len;
 
 		if (code1 == b->ahcode
@@ -635,11 +631,10 @@ str_find(NODE *symbol, NODE *s1, ulong_t code1, ulong_t hash1)
 static void
 grow_table(NODE *symbol)
 {
-	BUCKET **b_old, **b_new;
+	BUCKET **old_b, **new_b;
 	BUCKET *chain, *next;
 	unsigned i;
-	ulong_t oldsize, newsize, k;
-	ulong_t hash1;
+	size_t oldsize, newsize, k;
 
 	/*
 	 * This is an array of primes. We grow the table by an order of
@@ -663,8 +658,8 @@ grow_table(NODE *symbol)
 	newsize = oldsize = symbol->array_size;
 
 	for (i = 0; i < sizeof(sizes)/sizeof(sizes[0]); i++) {
-		if (oldsize < sizes[i]) {
-			newsize = sizes[i];
+		if (oldsize < (size_t) sizes[i]) {
+			newsize = (size_t) sizes[i];
 			break;
 		}
 	}
@@ -674,15 +669,15 @@ grow_table(NODE *symbol)
 	}
 
 	/* allocate new table */
-	ezalloc(b_new, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
+	ezalloc(new_b, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
 
-	b_old = symbol->buckets;
-	symbol->buckets = b_new;
+	old_b = symbol->buckets;
+	symbol->buckets = new_b;
 	symbol->array_size = newsize;
 
 	/* brand new hash table, set things up and return */
-	if (b_old == NULL) {
-		symbol->table_size = 0u;
+	if (old_b == NULL) {
+		symbol->table_size = 0;
 		return;
 	}
 
@@ -693,17 +688,17 @@ grow_table(NODE *symbol)
 	 * and is explicitly set to 0 if a new one.
 	 */
 
-	for (k = 0u; k < oldsize; k++) {
-		for (chain = b_old[k]; chain != NULL; chain = next) {
+	for (k = 0; k < oldsize; k++) {
+		for (chain = old_b[k]; chain != NULL; chain = next) {
+			size_t hash1 = chain->ahcode % newsize;
 			next = chain->ahnext;
-			hash1 = chain->ahcode % newsize;
 
 			/* remove from old list, add to new */
-			chain->ahnext = b_new[hash1];
-			b_new[hash1] = chain;
+			chain->ahnext = new_b[hash1];
+			new_b[hash1] = chain;
 		}
 	}
-	efree(b_old);
+	efree(old_b);
 }
 
 
@@ -731,11 +726,11 @@ Paolo
  * ADR: Slightly modified to work w/in the context of gawk.
  */
 
-static ulong_t
-gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code)
+static size_t
+gst_hash_string(const char *str, size_t len, size_t hsize, awk_ulong_t *code)
 {
-	ulong_t hashVal = 1497032417ul;    /* arbitrary value */
-	ulong_t ret;
+	awk_ulong_t hashVal = 1497032417ul;    /* arbitrary value */
+	awk_ulong_t ret;
 
 	while (len--) {
 		hashVal += (unsigned char) *str++;
@@ -754,13 +749,13 @@ gst_hash_string(const char *str, size_t len, ulong_t hsize, ulong_t *code)
 	return ret;
 }
 
-static ulong_t
-scramble(ulong_t x)
+static awk_ulong_t
+scramble(awk_ulong_t x)
 {
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_DISABLE_COND_IS_CONST
 	if (sizeof(x) == 4) {
-		ulong_t y = ~x;
+		awk_ulong_t y = ~x;
 
 		x += (y << 10u) | (y >> 22u);
 		x += (x << 6u)  | (x >> 26u);
