@@ -42,9 +42,9 @@ static const char* _os2_unixroot_path(const char *path);
 #endif /* __EMX__ */
 
 #ifdef WINDOWS_NATIVE
+
 #ifdef HAVE_SOCKETS
 #include "socket.h"
-
 #undef socket
 #undef setsockopt
 #undef bind
@@ -55,19 +55,15 @@ static const char* _os2_unixroot_path(const char *path);
 #undef shutdown
 #endif /* HAVE_SOCKETS */
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include "mscrtx/arg_parser.h"
 #include "mscrtx/utf8env.h"
 #include "mscrtx/locale_helpers.h"
 #include "mscrtx/localerpl.h"
+
 #endif /* WINDOWS_NATIVE */
 
 #ifdef WINDOWS_NATIVE
-#define close(fd)		_close(fd)
-#define lseek(fd, off, set)	_lseek(fd, off, set)
-#define setmode(fd, mode)	_setmode(fd, mode)
-#define isatty(fd)		_isatty(fd)
+#include "oldnames.h"
 #endif
 
 #if ! defined(S_ISREG) && defined(S_IFREG)
@@ -291,41 +287,12 @@ isdirpunct(int c)
 	return (strchr(":\\/", c) != NULL);
 }
 
-#ifdef WINDOWS_NATIVE
-static HANDLE osf_to_handle(const intptr_t h)
-{
-#if 0
-#ifndef __cplusplus
-#if defined __GNUC__ && __GNUC__ >= 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wbad-function-cast" /* cast from function call of type 'intptr_t' {aka 'long long int'} to non-matching type 'void *' */
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbad-function-cast" /* cast from function call of type 'intptr_t' (aka 'int') to non-matching type 'HANDLE' (aka 'void *') */
-#endif
-#endif
-#endif
-	return (HANDLE)h;
-#if 0
-#ifndef __cplusplus
-#if defined __GNUC__ && __GNUC__ >= 6
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-#endif
-#endif
-}
-#endif
-
 /* os_close_on_exec --- set close on exec flag, print warning if fails */
 
 void
 os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 {
-#if (defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)) || defined __EMX__
+#if (defined(__DJGPP__) && __DJGPP__ > 2 - (__DJGPP_MINOR__ >= 4)) || defined __EMX__
 	if (fd <= 2)	/* sanity */
 		return;
 
@@ -334,14 +301,16 @@ os_close_on_exec(fd_t fd, const char *name, const char *what, const char *dir)
 			what, dir, name, strerror(errno));
 #endif
 #ifdef WINDOWS_NATIVE
-	HANDLE fh;
+	HANDLE h;
 	SOCKET s = valid_socket (fd);
 	if (s != INVALID_SOCKET)
-		fh = (HANDLE)s;
-	else
-		fh = osf_to_handle(_get_osfhandle(fd));
-	if (fh != INVALID_HANDLE_VALUE)
-		SetHandleInformation(fh, HANDLE_FLAG_INHERIT, 0);
+		h = (HANDLE)s;
+	else {
+		intptr_t p = _get_osfhandle(fd);
+		h = (HANDLE)p;
+	}
+	if (h != INVALID_HANDLE_VALUE)
+		SetHandleInformation(h, HANDLE_FLAG_INHERIT, 0);
 #endif
 	(void) name, (void) what, (void) dir;
 }
@@ -725,22 +694,16 @@ void *os2_dlsym(void *handle, const char *name)
 
 #endif /* __EMX__ */
 
-#ifdef WINDOWS_NATIVE
 
-/* MinGW 3.21 and later defines usleep as an inline function in
-   unistd.h, which conflicts with the version below.  */
-#if defined(_MSC_VER) || (__MINGW32_MAJOR_VERSION + (__MINGW32_MINOR_VERSION > 20) < 4)
-int
-usleep(unsigned int usec)
+/* uninterruptible, so always returns 0 */
+int os_sleep(unsigned mills)
 {
-  DWORD msec = (DWORD) (usec / 1000);
-  usec %= 1000;
-
-  Sleep (msec);
-
-  return (int) usec;
+	Sleep(mills);
+	return 0;
 }
-#endif
+
+
+#ifdef WINDOWS_NATIVE
 
 /* On Posix systems, 'setlocale' looks at LC_* variables in the
    environment, and Gawk users might expect that on Windows as well.  */
@@ -827,7 +790,8 @@ nl_langinfo (int item)
     }
 }
 
-int w32_execvp(const char *, char **);
+/* Original Unicode arguments of the program.  */
+static struct wide_arg *gawk_wargs = NULL;
 
 /*
  * On MS-Windows with MinGW, execvp causes the shell and the re-exec'ed
@@ -837,9 +801,124 @@ int w32_execvp(const char *, char **);
  */
 int w32_execvp(const char *file, char **argv)
 {
-	if (spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
+	intptr_t status;
+	if (argv == d_argv && file == d_argv[0]) {
+		/* If called from debug.c:restart(), may use original program arguments.  */
+		wchar_t *argptrs[64], **warr = argptrs;
+		unsigned n = 0;
+		struct wide_arg *wa = gawk_wargs;
+		for (; wa; wa = wa->next)
+			n++;
+		if (n >= sizeof(argptrs)/sizeof(argptrs[0])) {
+			warr = (wchar_t**) malloc(sizeof(wchar_t*)*(n + 1));
+			if (warr == NULL)
+				return -1;
+		}
+		for (n = 0, wa = gawk_wargs; wa; wa = wa->next)
+			warr[n++] = wa->value;
+		warr[n] = NULL;
+		status = _wspawnvp(_P_WAIT, warr[0], (const wchar_t *const *) warr);
+		if (warr != argptrs)
+			free(warr);
+	}
+	else
+		status = spawnvp(_P_WAIT, file, (const char *const*) argv);
+	if (status != -1)
 		exit(EXIT_SUCCESS);
 	return -1;
+}
+
+int w32_system(const char *cmd)
+{
+  const wchar_t *cmdexe = _wgetenv(L"ComSpec");
+  if (cmdexe != NULL) {
+    wchar_t buf[512];
+    wchar_t *wcmd = wquote_cmd(cmd, buf, sizeof(buf)/sizeof(buf[0]));
+    if (wcmd != NULL) {
+      int ret = (int) _wspawnl(_P_WAIT, cmdexe, L"cmd.exe", L"/D /S /C", wcmd, NULL);
+      if (wcmd != buf)
+        free(wcmd);
+      return ret;
+    }
+  }
+  return -1;
+}
+
+int w32_kill(intptr_t pid, int sig)
+{
+  HANDLE ph;
+
+  /* We only support SIGKILL.  */
+  if (sig != SIGKILL)
+    {
+      errno = ENOSYS;
+      return -1;
+    }
+
+  /* pid must be result of _wspawnl(_P_NOWAIT, ...) */
+  ph = (HANDLE) pid;
+
+  if (!TerminateProcess(ph, (UINT) -1))
+    {
+      errno = EPERM;
+      return -1;
+    }
+
+  return 0;
+}
+
+static void *qalloc(size_t sz)
+{
+  /* Reserve space for surrounding double-quotes.  */
+  if (sz <= (size_t)-1 - 2*sizeof(wchar_t)) {
+    void *mem = malloc(sz + 2*sizeof(wchar_t));
+    if (mem != NULL)
+      return (char*) mem + sizeof(wchar_t);
+  }
+  else
+    errno = ENOMEM;
+  return NULL;
+}
+
+wchar_t *wquote_cmd(const char *cmd, wchar_t buf[], size_t bufsz)
+{
+  /* The command will be invoked via cmd.exe, whose behavior wrt
+     quoted commands is to remove the first and the last quote
+     characters, and leave the rest (including any quote characters
+     inside the outer pair) intact.  */
+
+  /* M.B. Note: if cmd.exe is run without "/S" switch, then:
+    spawnl(P_WAIT, cmdexe, "cmd.exe", "/C", quote_cmd("c:\\x y\\foo"), NULL);
+   will result in calling
+    cmd /c "c:\x y\foo"
+   which in turn will try to run "c:\x y\foo.exe" (instead of "c:\x.exe"
+    - it will be called only if "c:\x y\foo.exe" does not exist).
+   This oddly behaviour can be avoided by the "/S" switch:
+    spawnl(P_WAIT, cmdexe, "cmd.exe", "/S /C", quote_cmd("c:\\x y\\foo"), NULL);
+   will result in calling
+    cmd /s /c "c:\x y\foo"
+   which in turn will run "c:\x.exe" with "y\foo" as the argument.
+   So, if the path to executable may contain spaces, put the path into
+    double-quotes (like under Unix, e.g.: /bin/sh -c '"/my executable"').
+   See https://stackoverflow.com/questions/9866962/what-is-cmd-s-for */
+
+  /* MSDN states that argument list of _wspawnl should not exceed the limit of 1024 bytes. */
+  size_t lim = 1024/sizeof(wchar_t);
+
+  wchar_t *quoted = xpathwc_alloc(cmd,
+    bufsz > 2 ? buf + 1 : NULL,
+    bufsz > 2 ? bufsz - 2 : 0,
+    lim, qalloc);
+
+  if (quoted != NULL) {
+    size_t len = wcslen(quoted);
+    quoted[-1] = L'"';
+    quoted[len] = L'"';
+    quoted[len + 1] = L'\0';
+    return quoted - 1;
+  }
+
+  return NULL;
 }
 
 #ifdef DYNAMIC
@@ -852,7 +931,7 @@ static DWORD dllast_err;
 void *
 dlopen (const char *file, int mode)
 {
-  wchar_t dllfn_buf[MAX_PATH + 2/*red zone*/], *dllfn, *p;
+  wchar_t dllfn_buf[MAX_PATH], *dllfn, *p;
   HANDLE dllhandle;
 
   if (mode != RTLD_LAZY)
@@ -982,7 +1061,7 @@ int os_fstat(int fd, gawk_stat_t *buf)
   if (is_socket(fd)) {
     memset(buf, 0, sizeof(*buf));
     buf->st_mode = S_IFSOCK;
-    buf->st_dev = (dev_t)-1;
+    buf->st_dev = (_dev_t)-1;
     return 0;
   }
 #endif
@@ -991,6 +1070,7 @@ int os_fstat(int fd, gawk_stat_t *buf)
 
 int os_xfstat(int fd, gawk_xstat_t *buf)
 {
+  intptr_t h;
 #ifdef HAVE_SOCKETS
   if (is_socket(fd)) {
     memset(buf, 0, sizeof(*buf));
@@ -999,7 +1079,8 @@ int os_xfstat(int fd, gawk_xstat_t *buf)
     return 0;
   }
 #endif
-  return xfstat(osf_to_handle(_get_osfhandle(fd)), NULL, buf);
+  h = _get_osfhandle(fd);
+  return xfstat((HANDLE)h, NULL, buf);
 }
 
 #ifdef HAVE_SOCKETS
@@ -1279,6 +1360,31 @@ putwc(wchar_t wc, FILE *stream)
 
 #endif /* __DJGPP__ */
 
+#ifdef WINDOWS_NATIVE
+__time64_t awk_timegm(struct tm *tm)
+{
+	if (tm->tm_isdst != -1)
+		return (__time64_t)-1; /* not expecting Daylight Saving Time setting for UTC */
+
+	/* tm values should be in the default ranges, so don't need to normalize them.  */
+	unsigned yday;
+	xtime_t x = xtimegm(
+		(unsigned) tm->tm_year,
+		(unsigned) tm->tm_mon,
+		(unsigned) tm->tm_mday,
+		(unsigned) tm->tm_hour,
+		(unsigned) tm->tm_min,
+		(unsigned) tm->tm_sec,
+		&yday);
+
+	if (x != (xtime_t)-1) {
+		tm->tm_yday = (int) yday;
+		tm->tm_wday = (int) xweekday(x);
+	}
+
+	return x;
+}
+#endif /* WINDOWS_NATIVE */
 
 #ifdef WINDOWS_NATIVE
 
@@ -1299,7 +1405,7 @@ convert_wargv(int argc, struct wide_arg *wargs)
 		else
 			fatal(_("failed to convert command-line arguments from wide-character strings: %s"), strerror(errno));
 	}
-	arg_free_wide_args(wargs);
+	gawk_wargs = wargs;
 	return (gawk_argv = argv);
 }
 
@@ -1308,6 +1414,7 @@ convert_wargv(int argc, struct wide_arg *wargs)
 void
 gawk_cleanup(void)
 {
+	arg_free_wide_args(gawk_wargs);
 	if (gawk_argv)
 		arg_free_argv(gawk_argv);
 #ifdef HAVE_SOCKETS
