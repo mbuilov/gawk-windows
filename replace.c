@@ -99,11 +99,11 @@
 #include "missing_d/snprintf.c"
 #endif
 
-#if defined(HAVE_SOCKETS) && ! defined(HAVE_GETADDRINFO)
+#if defined(HAVE_SOCKETS) && !defined(HAVE_GETADDRINFO)
 #include "missing_d/getaddrinfo.c"
 #endif
 
-#ifndef HAVE_USLEEP
+#if !defined(HAVE_USLEEP) && !defined(WINDOWS_NATIVE) && !defined(__DJGPP___)
 #include "missing_d/usleep.c"
 #endif
 
