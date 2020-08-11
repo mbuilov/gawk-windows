@@ -26,12 +26,6 @@
 
 #include "awk.h"
 
-extern FILE *output_fp;
-extern void indent(unsigned indent_level);
-extern NODE **fmt_list;          /* declared in eval.c */
-extern enum defrule currule;     /* declared in eval.c */
-extern NODE **args_array;        /* declared in eval.c */
-
 NODE *success_node;
 
 static size_t SUBSEPlen;
@@ -114,7 +108,7 @@ null_array(NODE *symbol)
 	symbol->type = Node_var_array;
 	symbol->array_funcs = & null_array_func;
 	symbol->buckets = NULL;
-	symbol->table_size = symbol->array_size = 0u;
+	symbol->table_size = symbol->array_size = 0;
 	symbol->array_capacity = 0;
 	symbol->flags = 0;
 
@@ -391,7 +385,7 @@ concat_exp(nargs_t nargs, bool do_subsep)
 	char *s;
 	size_t len;
 	size_t subseplen = 0;
-	ulong_t i;
+	awk_ulong_t i;
 
 	assert(nargs);
 	if (nargs == 1u)
@@ -443,11 +437,11 @@ concat_exp(nargs_t nargs, bool do_subsep)
  */
 
 static void
-adjust_fcall_stack(NODE *symbol, ulong_t nsubs)
+adjust_fcall_stack(NODE *symbol, awk_ulong_t nsubs)
 {
 	NODE *func, *r, *n;
 	NODE **sp;
-	ulong_t pcount;
+	awk_ulong_t pcount;
 
 	/*
 	 * Solve the nasty problem of disappearing subarray arguments:
@@ -533,10 +527,10 @@ adjust_fcall_stack(NODE *symbol, ulong_t nsubs)
  */
 
 void
-do_delete(NODE *symbol, ulong_t nsubs)
+do_delete(NODE *symbol, awk_ulong_t nsubs)
 {
 	NODE *val, *subs;
-	ulong_t i;
+	awk_ulong_t i;
 
 	assert(symbol->type == Node_var_array);
 	subs = val = NULL;	/* silence the compiler */
@@ -744,7 +738,7 @@ assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 	indent(indent_level);
 	fprintf(output_fp, "I: [%s:", aname);
 	if ((subs->flags & (MPFN|MPZN|INTIND)) == INTIND)
-		fprintf(output_fp, "<%ld>", (long) subs->numbr);
+		fprintf(output_fp, "<%" AWKLONGFMT ">", TO_AWK_LONG((awk_long_t) subs->numbr));
 	else
 		value_info(subs);
 	fprintf(output_fp, "]\n");
@@ -773,7 +767,7 @@ do_adump(nargs_t nargs)
 {
 	NODE *symbol, *tmp;
 	static NODE ndump;
-	long depth = 0;
+	awk_long_t depth = 0;
 
 	/*
 	 * depth < 0, no index and value info.
@@ -806,7 +800,7 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
 	NODE **list = NULL, **ptr;
-	ulong_t num_elems, i;
+	size_t num_elems, i;
 	const char *sort_str;
 	char save;
 
@@ -869,13 +863,13 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 
 	num_elems = assoc_length(array);
 	if (!num_elems || list == NULL) {
- 		/* source array is empty */
- 		if (dest != NULL && dest != array)
- 			assoc_clear(dest);
+		/* source array is empty */
+		if (dest != NULL && dest != array)
+			assoc_clear(dest);
 		if (list != NULL)
 			efree(list);
- 		return make_number((AWKNUM) 0);
- 	}
+		return make_number((AWKNUM) 0);
+	}
 
 	/*
 	 * Must not assoc_clear() the source array before constructing
@@ -896,15 +890,15 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 	if (ctxt == ASORTI) {
 		/* We want the indices of the source array. */
 
-		for (i = 1u, ptr = list; i <= num_elems; i++, ptr += 2) {
-			subs = make_number((AWKNUM) TO_ULONG(i));
+		for (i = 1, ptr = list; i <= num_elems; i++, ptr += 2) {
+			subs = make_number((AWKNUM) i);
 			assoc_set(result, subs, *ptr);
 		}
 	} else {
 		/* We want the values of the source array. */
 
-		for (i = 1u, ptr = list; i <= num_elems; i++) {
-			subs = make_number((AWKNUM) TO_ULONG(i));
+		for (i = 1, ptr = list; i <= num_elems; i++) {
+			subs = make_number((AWKNUM) i);
 
 			/* free index node */
 			r = *ptr++;
@@ -952,7 +946,7 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 		result == dest
 		dest != NULL and dest != array */
 
-	return make_number((AWKNUM) TO_ULONG(num_elems));
+	return make_number((AWKNUM) num_elems);
 }
 
 /* do_asort --- sort array by value */
@@ -1312,17 +1306,17 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		qsort_compfunc comp_func;
 		assoc_kind_t kind;
 	} sort_funcs[] = {
-{ "@ind_str_asc",	sort_up_index_string,	(assoc_kind_t) (AINDEX|AISTR|AASC) },
-{ "@ind_num_asc",	sort_up_index_number,	(assoc_kind_t) (AINDEX|AINUM|AASC) },
-{ "@val_str_asc",	sort_up_value_string,	(assoc_kind_t) (AVALUE|AVSTR|AASC) },
-{ "@val_num_asc",	sort_up_value_number,	(assoc_kind_t) (AVALUE|AVNUM|AASC) },
-{ "@ind_str_desc",	sort_down_index_string,	(assoc_kind_t) (AINDEX|AISTR|ADESC) },
-{ "@ind_num_desc",	sort_down_index_number,	(assoc_kind_t) (AINDEX|AINUM|ADESC) },
-{ "@val_str_desc",	sort_down_value_string,	(assoc_kind_t) (AVALUE|AVSTR|ADESC) },
-{ "@val_num_desc",	sort_down_value_number,	(assoc_kind_t) (AVALUE|AVNUM|ADESC) },
-{ "@val_type_asc",	sort_up_value_type,	(assoc_kind_t) (AVALUE|AASC) },
-{ "@val_type_desc",	sort_down_value_type,	(assoc_kind_t) (AVALUE|ADESC) },
-{ "@unsorted",		0,			(assoc_kind_t) (AINDEX) },
+{ "@ind_str_asc",	sort_up_index_string,	(AINDEX|AISTR|AASC) },
+{ "@ind_num_asc",	sort_up_index_number,	(AINDEX|AINUM|AASC) },
+{ "@val_str_asc",	sort_up_value_string,	(AVALUE|AVSTR|AASC) },
+{ "@val_num_asc",	sort_up_value_number,	(AVALUE|AVNUM|AASC) },
+{ "@ind_str_desc",	sort_down_index_string,	(AINDEX|AISTR|ADESC) },
+{ "@ind_num_desc",	sort_down_index_number,	(AINDEX|AINUM|ADESC) },
+{ "@val_str_desc",	sort_down_value_string,	(AVALUE|AVSTR|ADESC) },
+{ "@val_num_desc",	sort_down_value_number,	(AVALUE|AVNUM|ADESC) },
+{ "@val_type_asc",	sort_up_value_type,	(AVALUE|AASC) },
+{ "@val_type_desc",	sort_down_value_type,	(AVALUE|ADESC) },
+{ "@unsorted",		0,			(AINDEX) },
 };
 
 	/*
@@ -1333,7 +1327,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	NODE **list;
 	NODE akind;
 	unsigned elem_size, qi, fsz;
-	qsort_compfunc cmp_func = 0;
+	qsort_compfunc cmp_func = NULL;
 	INSTRUCTION *code = NULL;
 	enum defrule save_rule = UNKRULE; /* To silence the compiler.  */
 	assoc_kind_t assoc_kind = ANONE;
@@ -1350,12 +1344,12 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		assoc_kind = sort_funcs[qi].kind;
 
 		if (symbol->array_funcs != & cint_array_func)
-			assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
+			assoc_kind &= ~(AASC|ADESC);
 
 		if (sort_ctxt != SORTED_IN || (assoc_kind & AVALUE) != 0) {
 			/* need index and value pair in the list */
 
-			assoc_kind = (assoc_kind_t) (assoc_kind | (AINDEX|AVALUE));
+			assoc_kind |= (AINDEX|AVALUE);
 			elem_size = 2;
 		}
 
@@ -1377,7 +1371,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		cmp_func = sort_user_func;
 
 		/* need index and value pair in the list */
-		assoc_kind = (assoc_kind_t) (assoc_kind | (AVALUE|AINDEX));
+		assoc_kind |= (AVALUE|AINDEX);
 		elem_size = 2;
 
 		/* make function call instructions */
@@ -1399,22 +1393,22 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		PUSH_CODE(code);
 	}
 
-	akind.flags = (int) assoc_kind;	/* kludge */
+	akind.flags = (node_flags_t) assoc_kind;	/* kludge */
 	list = symbol->alist(symbol, & akind);
 	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
 	/* check for empty list or unsorted, or list already sorted */
 	if (list != NULL && cmp_func != NULL && (assoc_kind & (AASC|ADESC)) == 0) {
-		ulong_t num_elems, j;
+		size_t num_elems, j;
 
 		num_elems = assoc_length(symbol);
 
-		qsort(list, TO_ULONG(num_elems), elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
+		qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
 
 		if (sort_ctxt == SORTED_IN && (assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
 			/* relocate all index nodes to the first half of the list. */
-			for (j = 1u; j < num_elems; j++)
-				list[j] = list[2u * j];
+			for (j = 1; j < num_elems; j++)
+				list[j] = list[2 * j];
 
 			/* give back extra memory */
 
