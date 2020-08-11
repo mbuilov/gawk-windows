@@ -21,23 +21,25 @@
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
 
-#include "nonposix.h"
-
+unsigned int getuid (void);
 unsigned int getuid (void)
 {
   return (0);                   /* root! */
 }
 
+unsigned int geteuid (void);
 unsigned int geteuid (void)
 {
   return (0);
 }
 
+unsigned int getgid (void);
 unsigned int getgid (void)
 {
   return (0);
 }
 
+unsigned int getegid (void);
 unsigned int getegid (void)
 {
   return (0);
@@ -45,12 +47,14 @@ unsigned int getegid (void)
 
 #endif	/* __MINGW32__ || _MSC_VER */
 
+int getpgrp(void);
 int getpgrp(void)
 {
   return (0);
 }
 
 #if defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
+int getppid(void);
 int getppid(void)
 {
   return (0);
