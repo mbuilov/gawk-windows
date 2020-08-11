@@ -28,17 +28,13 @@
 
 #define INT32_BIT 32
 
-extern FILE *output_fp;
-extern void indent(unsigned indent_level);
-extern NODE **is_integer(NODE *symbol, NODE *subs);
-
 /*
  * NHAT         ---  maximum size of a leaf array (2^NHAT).
  * THRESHOLD    ---  Maximum capacity waste; THRESHOLD >= 2^(NHAT + 1).
  */
 
 static unsigned NHAT = 10;
-static ulong_t THRESHOLD;
+static unsigned long THRESHOLD;
 
 /*
  * What is the optimium NHAT ? timing results suggest that 10 is a good choice,
@@ -91,33 +87,33 @@ static const array_funcs_t argv_array_func = {
 	argv_store,
 };
 
-static inline unsigned cint_hash(ulong_t k);
-static inline NODE **cint_find(NODE *symbol, ulong_t k, unsigned h1);
+static inline unsigned cint_hash(awk_ulong_t k);
+static inline NODE **cint_find(NODE *symbol, awk_ulong_t k, unsigned h1);
 
 static inline NODE *make_node(NODETYPE type);
 
-static NODE **tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base);
-static NODE **tree_exists(NODE *tree, ulong_t k);
+static NODE **tree_lookup(NODE *symbol, NODE *tree, awk_ulong_t k, unsigned m, awk_ulong_t base);
+static NODE **tree_exists(NODE *tree, awk_ulong_t k);
 static void tree_clear(NODE *tree);
-static int tree_remove(NODE *symbol, NODE *tree, ulong_t k);
+static bool tree_remove(NODE *symbol, NODE *tree, awk_ulong_t k);
 static void tree_copy(NODE *newsymb, NODE *tree, NODE *newtree);
-static ulong_t tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind);
-static inline NODE **tree_find(NODE *tree, ulong_t k, unsigned i);
+static size_t tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind);
+static inline NODE **tree_find(NODE *tree, awk_ulong_t k, unsigned i);
 static void tree_info(NODE *tree, NODE *ndump, const char *aname);
 static size_t tree_kilobytes(NODE *tree);
 #ifdef ARRAYDEBUG
-static void tree_print(NODE *tree, ulong_t bi, unsigned indent_level);
+static void tree_print(NODE *tree, size_t bi, unsigned indent_level);
 #endif
 
-static inline NODE **leaf_lookup(NODE *symbol, NODE *array, ulong_t k, ulong_t size, ulong_t base);
-static inline NODE **leaf_exists(NODE *array, ulong_t k);
+static inline NODE **leaf_lookup(NODE *symbol, NODE *array, awk_ulong_t k, size_t size, awk_ulong_t base);
+static inline NODE **leaf_exists(NODE *array, awk_ulong_t k);
 static void leaf_clear(NODE *array);
-static int leaf_remove(NODE *symbol, NODE *array, ulong_t k);
+static bool leaf_remove(NODE *symbol, NODE *array, awk_ulong_t k);
 static void leaf_copy(NODE *newsymb, NODE *array, NODE *newarray);
-static ulong_t leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind);
+static size_t leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind);
 static void leaf_info(NODE *array, NODE *ndump, const char *aname);
 #ifdef ARRAYDEBUG
-static void leaf_print(NODE *array, ulong_t bi, unsigned indent_level);
+static void leaf_print(NODE *array, size_t bi, unsigned indent_level);
 #endif
 
 /* powers of 2 table upto 2^30 */
@@ -189,7 +185,7 @@ cint_array_init(NODE *symbol, NODE *subs)
 
 /* is_uinteger --- test if the subscript is an integer >= 0 */
 
-NODE **
+static NODE **
 is_uinteger(NODE *symbol, NODE *subs)
 {
 	if (is_integer(symbol, subs) != NULL && subs->numbr >= 0)
@@ -204,15 +200,15 @@ static NODE **
 cint_lookup(NODE *symbol, NODE *subs)
 {
 	NODE **lhs;
-	ulong_t k = 0u;
+	awk_ulong_t k = 0u;
 	unsigned h1, m, li;
 	NODE *tn, *xn;
-	ulong_t cint_size;
+	size_t cint_size;
 	size_t capacity;
 
 	h1 = 0;
 	if (ISUINT(symbol, subs)) {
-		k = (unsigned long) subs->numbr;	/* k >= 0 */
+		k = (awk_ulong_t) subs->numbr;	/* k >= 0 */
 		h1 = cint_hash(k);	/* h1 >= NHAT */
 		if ((lhs = cint_find(symbol, k, h1)) != NULL)
 			return lhs;
@@ -295,7 +291,7 @@ cint_exists(NODE *symbol, NODE *subs)
 	NODE *xn;
 
 	if (ISUINT(symbol, subs)) {
-		ulong_t k = (unsigned long) subs->numbr;
+		awk_ulong_t k = (awk_ulong_t) subs->numbr;
 		NODE **lhs;
 		if ((lhs = cint_find(symbol, k, cint_hash(k))) != NULL)
 			return lhs;
@@ -343,7 +339,7 @@ cint_clear(NODE *symbol, NODE *subs)
 static NODE **
 cint_remove(NODE *symbol, NODE *subs)
 {
-	ulong_t k;
+	awk_ulong_t k;
 	unsigned h1;
 	NODE *tn, *xn = symbol->xarray;
 
@@ -355,7 +351,7 @@ cint_remove(NODE *symbol, NODE *subs)
 
 	assert(symbol->nodes != NULL);
 
-	k = (unsigned long) subs->numbr;
+	k = (awk_ulong_t) subs->numbr;
 	h1 = cint_hash(k);
 	tn = symbol->nodes[h1];
 	if (tn == NULL || ! tree_remove(symbol, tn, k))
@@ -445,7 +441,7 @@ cint_list(NODE *symbol, NODE *t)
 {
 	NODE **list = NULL;
 	NODE *tn, *xn;
-	ulong_t k = 0u, num_elems, list_size;
+	size_t k = 0, num_elems, list_size;
 	unsigned j, ja, jd;
 	unsigned elem_size = 1;
 	assoc_kind_t assoc_kind;
@@ -455,7 +451,7 @@ cint_list(NODE *symbol, NODE *t)
 		return NULL;
 	assoc_kind = (assoc_kind_t) t->flags;
 	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
-		num_elems = 1u;
+		num_elems = 1;
 
 	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
@@ -465,9 +461,9 @@ cint_list(NODE *symbol, NODE *t)
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
 		assert(list != NULL);
-		assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
-		t->flags = (int) assoc_kind;
-		if (num_elems == 1u || num_elems == xn->table_size)
+		assoc_kind &= ~(AASC|ADESC);
+		t->flags = (node_flags_t) assoc_kind;
+		if (num_elems == 1 || num_elems == xn->table_size)
 			return list;
 		erealloc(list, NODE **, list_size * sizeof(NODE *), "cint_list");
 		k = elem_size * xn->table_size;
@@ -476,8 +472,8 @@ cint_list(NODE *symbol, NODE *t)
 
 	if ((assoc_kind & AINUM) == 0) {
 		/* not sorting by "index num" */
-		assoc_kind = (assoc_kind_t) ((int) assoc_kind & ~(AASC|ADESC));
-		t->flags = (int) assoc_kind;
+		assoc_kind &= ~(AASC|ADESC);
+		t->flags = (node_flags_t) assoc_kind;
 	}
 
 	/* populate it with index in ascending or descending order */
@@ -503,7 +499,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 	NODE *tn, *xn = NULL;
 	unsigned indent_level;
 	unsigned i;
-	ulong_t cint_size, xsize = 0u;
+	size_t cint_size, xsize = 0;
 	AWKNUM kb = 0;
 
 	indent_level = ndump->alevel;
@@ -528,10 +524,10 @@ cint_dump(NODE *symbol, NODE *ndump)
 	indent(indent_level);
 	fprintf(output_fp, "NHAT: %u\n", NHAT);
 	indent(indent_level);
-	fprintf(output_fp, "THRESHOLD: %lu\n", TO_ULONG(THRESHOLD));
+	fprintf(output_fp, "THRESHOLD: %lu\n", THRESHOLD);
 	indent(indent_level);
-	fprintf(output_fp, "table_size: %lu (total), %lu (cint), %lu (int + str)\n",
-				TO_ULONG(symbol->table_size), TO_ULONG(cint_size), TO_ULONG(xsize));
+	fprintf(output_fp, "table_size: %" ZUFMT " (total), %" ZUFMT " (cint), %" ZUFMT " (int + str)\n",
+				symbol->table_size, cint_size, xsize);
 	indent(indent_level);
 	fprintf(output_fp, "array_capacity: %" ZUFMT "\n", symbol->array_capacity);
 	indent(indent_level);
@@ -587,7 +583,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 /* cint_hash --- locate the HAT for a given number 'k' */
 
 static inline unsigned
-cint_hash(ulong_t k)
+cint_hash(awk_ulong_t k)
 {
 	uint32_t num, r, shift;
 
@@ -644,7 +640,7 @@ cint_hash(ulong_t k)
 /* cint_find --- locate the integer subscript */
 
 static inline NODE **
-cint_find(NODE *symbol, ulong_t k, unsigned h1)
+cint_find(NODE *symbol, awk_ulong_t k, unsigned h1)
 {
 	NODE *tn;
 
@@ -664,7 +660,7 @@ cint_print(NODE *symbol)
 	NODE *tn;
 	unsigned i;
 
-	fprintf(output_fp, "I[%4d:%-4lu]\n", INT32_BIT, TO_ULONG(symbol->table_size));
+	fprintf(output_fp, "I[%4d:%-4" ZUFMT "]\n", INT32_BIT, symbol->table_size);
 	for (i = NHAT; i < INT32_BIT; i++) {
 		tn = symbol->nodes[i];
 		if (tn == NULL)
@@ -739,13 +735,12 @@ make_node(NODETYPE type)
 /* tree_lookup --- Find an integer subscript in a HAT; Install it if it isn't there */
 
 static NODE **
-tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base)
+tree_lookup(NODE *symbol, NODE *tree, awk_ulong_t k, unsigned m, awk_ulong_t base)
 {
 	NODE **lhs;
 	NODE *tn;
 	unsigned i, n;
-	ulong_t size;
-	ulong_t num = k;
+	size_t size;
 
 	/*
 	 * HAT size (size of Top & Leaf array) = 2^n
@@ -756,7 +751,7 @@ tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base)
 	n = (m + 1) / 2;
 
 	if (!tree->table_size) {
-		ulong_t actual_size;
+		size_t actual_size;
 		NODE **table;
 
 		assert(tree->nodes == NULL);
@@ -765,7 +760,7 @@ tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base)
 		size = actual_size = power_two_table[n];
 		tree->array_base = base;
 		tree->array_size = size;
-		tree->table_size = 0u;	/* # of elements in the array */
+		tree->table_size = 0;	/* # of elements in the array */
 		if (n > m/2) {
 			/* only first half of the array used */
 			actual_size /= 2;
@@ -776,9 +771,8 @@ tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base)
 	} else
 		size = tree->array_size;
 
-	assert(num >= tree->array_base);
-	num -= tree->array_base;
-	i = (unsigned) (num / size);	/* top-level array index */
+	assert(k >= tree->array_base);
+	i = (unsigned) ((k - tree->array_base) / size);	/* top-level array index */
 
 	if ((lhs = tree_find(tree, k, i)) != NULL)
 		return lhs;
@@ -803,7 +797,7 @@ tree_lookup(NODE *symbol, NODE *tree, ulong_t k, unsigned m, ulong_t base)
 /* tree_exists --- test whether integer subscript `k' exists or not */
 
 static NODE **
-tree_exists(NODE *tree, ulong_t k)
+tree_exists(NODE *tree, awk_ulong_t k)
 {
 	unsigned i;
 	NODE *tn;
@@ -824,13 +818,13 @@ static void
 tree_clear(NODE *tree)
 {
 	NODE *tn;
-	ulong_t j, hsize;
+	size_t j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
 
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		tn = tree->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -849,8 +843,8 @@ tree_clear(NODE *tree)
 
 /* tree_remove --- If the integer subscript is in the HAT, remove it */
 
-static int
-tree_remove(NODE *symbol, NODE *tree, ulong_t k)
+static bool
+tree_remove(NODE *symbol, NODE *tree, awk_ulong_t k)
 {
 	unsigned i;
 	NODE *tn;
@@ -886,7 +880,7 @@ tree_remove(NODE *symbol, NODE *tree, ulong_t k)
 /* tree_find --- locate an interger subscript in the HAT */
 
 static inline NODE **
-tree_find(NODE *tree, ulong_t k, unsigned i)
+tree_find(NODE *tree, awk_ulong_t k, unsigned i)
 {
 	NODE *tn;
 
@@ -903,12 +897,12 @@ tree_find(NODE *tree, ulong_t k, unsigned i)
 
 /* tree_list --- return a list of items in the HAT */
 
-static ulong_t
+static size_t
 tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 {
 	NODE *tn;
-	ulong_t j, cj, hsize;
-	ulong_t k = 0u;
+	size_t j, cj, hsize;
+	size_t k = 0;
 
 	assert(list != NULL);
 
@@ -916,7 +910,7 @@ tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
 
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		cj = (assoc_kind & ADESC) != 0 ? (hsize - 1 - j) : j;
 		tn = tree->nodes[cj];
 		if (tn == NULL)
@@ -925,7 +919,7 @@ tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 			k += tree_list(tn, list + k, assoc_kind);
 		else
 			k += leaf_list(tn, list + k, assoc_kind);
-		if ((assoc_kind & ADELETE) != 0 && k >= 1u)
+		if ((assoc_kind & ADELETE) != 0 && k >= 1)
 			return k;
 	}
 	return k;
@@ -938,7 +932,7 @@ static void
 tree_copy(NODE *newsymb, NODE *tree, NODE *newtree)
 {
 	NODE **old_n, **new_n;
-	ulong_t j, hsize;
+	size_t j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
@@ -952,7 +946,7 @@ tree_copy(NODE *newsymb, NODE *tree, NODE *newtree)
 	newtree->flags = tree->flags;
 
 	old_n = tree->nodes;
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		if (old_n[j] == NULL)
 			continue;
 		if (old_n[j]->type == Node_array_tree) {
@@ -972,13 +966,13 @@ static void
 tree_info(NODE *tree, NODE *ndump, const char *aname)
 {
 	NODE *tn;
-	ulong_t j, hsize;
+	size_t j, hsize;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
 
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		tn = tree->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -996,13 +990,13 @@ static size_t
 tree_kilobytes(NODE *tree)
 {
 	NODE *tn;
-	ulong_t j, hsize;
+	size_t j, hsize;
 	size_t sz = 0;
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		tn = tree->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -1019,22 +1013,22 @@ tree_kilobytes(NODE *tree)
 /* tree_print --- print the HAT structures */
 
 static void
-tree_print(NODE *tree, ulong_t bi, unsigned indent_level)
+tree_print(NODE *tree, size_t bi, unsigned indent_level)
 {
 	NODE *tn;
-	ulong_t j, hsize;
+	size_t j, hsize;
 
 	indent(indent_level);
 
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
-	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n",
-			TO_ULONG(bi),
+	fprintf(output_fp, "%4" ZUFMT ":%s[%4" ZUFMT ":%-4" ZUFMT "]\n",
+			bi,
 			(tree->flags & HALFHAT) != 0 ? "HH" : "H",
-			TO_ULONG(hsize), TO_ULONG(tree->table_size));
+			hsize, tree->table_size);
 
-	for (j = 0u; j < hsize; j++) {
+	for (j = 0; j < hsize; j++) {
 		tn = tree->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -1054,12 +1048,12 @@ tree_print(NODE *tree, ulong_t bi, unsigned indent_level)
  */
 
 static inline NODE **
-leaf_lookup(NODE *symbol, NODE *array, ulong_t k, ulong_t size, ulong_t base)
+leaf_lookup(NODE *symbol, NODE *array, awk_ulong_t k, size_t size, awk_ulong_t base)
 {
 	NODE **lhs;
 
 	if (array->nodes == NULL) {
-		array->table_size = 0u;	/* sanity */
+		array->table_size = 0;	/* sanity */
 		array->array_size = size;
 		array->array_base = base;
 		ezalloc(array->nodes, NODE **, size * sizeof(NODE *), "leaf_lookup");
@@ -1079,7 +1073,7 @@ leaf_lookup(NODE *symbol, NODE *array, ulong_t k, ulong_t size, ulong_t base)
 /* leaf_exists --- check if the array contains an integer subscript */
 
 static inline NODE **
-leaf_exists(NODE *array, ulong_t k)
+leaf_exists(NODE *array, awk_ulong_t k)
 {
 	NODE **lhs;
 	assert(k >= array->array_base);
@@ -1093,10 +1087,10 @@ leaf_exists(NODE *array, ulong_t k)
 static void
 leaf_clear(NODE *array)
 {
-	ulong_t i, size = array->array_size;
+	size_t i, size = array->array_size;
 	NODE *r;
 
-	for (i = 0u; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		r = array->nodes[i];
 		if (r == NULL)
 			continue;
@@ -1109,14 +1103,14 @@ leaf_clear(NODE *array)
 	}
 	efree(array->nodes);
 	array->nodes = NULL;
-	array->array_size = array->table_size = 0u;
+	array->array_size = array->table_size = 0;
 }
 
 
 /* leaf_remove --- remove an integer subscript from the array */
 
-static int
-leaf_remove(NODE *symbol, NODE *array, ulong_t k)
+static bool
+leaf_remove(NODE *symbol, NODE *array, awk_ulong_t k)
 {
 	NODE **lhs;
 
@@ -1129,7 +1123,7 @@ leaf_remove(NODE *symbol, NODE *array, ulong_t k)
 		efree(array->nodes);
 		array->nodes = NULL;
 		symbol->array_capacity -= array->array_size;
-		array->array_size = 0u;	/* sanity */
+		array->array_size = 0;	/* sanity */
 	}
 	return true;
 }
@@ -1141,7 +1135,7 @@ static void
 leaf_copy(NODE *newsymb, NODE *array, NODE *newarray)
 {
 	NODE **old_n, **new_n;
-	ulong_t size, i;
+	size_t size, i;
 
 	size = array->array_size;
 	ezalloc(new_n, NODE **, size * sizeof(NODE *), "leaf_copy");
@@ -1152,7 +1146,7 @@ leaf_copy(NODE *newsymb, NODE *array, NODE *newarray)
 	newarray->table_size = array->table_size;
 
 	old_n = array->nodes;
-	for (i = 0u; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		if (old_n[i] == NULL)
 			continue;
 		if (old_n[i]->type == Node_val)
@@ -1170,15 +1164,15 @@ leaf_copy(NODE *newsymb, NODE *array, NODE *newarray)
 
 /* leaf_list --- return a list of items */
 
-static ulong_t
+static size_t
 leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 {
 	NODE *r, *subs;
-	ulong_t num, i, ci, k = 0u;
-	ulong_t size = array->array_size;
+	size_t num, i, ci, k = 0;
+	size_t size = array->array_size;
 	static char buf[100];
 
-	for (i = 0u; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		ci = (assoc_kind & ADESC) != 0 ? (size - 1 - i) : i;
 		r = array->nodes[ci];
 		if (r == NULL)
@@ -1187,7 +1181,7 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 		/* index */
 		num = array->array_base + ci;
 		if ((assoc_kind & AISTR) != 0) {
-			sprintf(buf, "%lu", TO_ULONG(num));
+			sprintf(buf, "%" ZUFMT "", num);
 			subs = make_string(buf, strlen(buf));
 			subs->numbr = (double) num;
 			subs->flags |= (NUMCUR|NUMINT);
@@ -1207,7 +1201,7 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 			}
 			list[k++] = r;
 		}
-		if ((assoc_kind & ADELETE) != 0 && k >= 1u)
+		if ((assoc_kind & ADELETE) != 0 && k >= 1)
 			return k;
 	}
 
@@ -1221,13 +1215,13 @@ static void
 leaf_info(NODE *array, NODE *ndump, const char *aname)
 {
 	NODE *subs, *val;
-	ulong_t i, size;
+	size_t i, size;
 
 	size = array->array_size;
 
 	subs = make_number((AWKNUM) 0.0);
 	subs->flags |= (INTIND|NUMINT);
-	for (i = 0u; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		val = array->nodes[i];
 		if (val == NULL)
 			continue;
@@ -1243,13 +1237,11 @@ leaf_info(NODE *array, NODE *ndump, const char *aname)
 
 
 static void
-leaf_print(NODE *array, ulong_t bi, unsigned indent_level)
+leaf_print(NODE *array, size_t bi, unsigned indent_level)
 {
 	indent(indent_level);
-	fprintf(output_fp, "%4lu:L[%4lu:%-4lu]\n",
-			TO_ULONG(bi),
-			TO_ULONG(array->array_size),
-			TO_ULONG(array->table_size));
+	fprintf(output_fp, "%4" ZUFMT ":L[%4" ZUFMT ":%-4" ZUFMT "]\n",
+			bi, array->array_size, array->table_size);
 }
 #endif
 
@@ -1270,7 +1262,7 @@ argv_store(NODE *symbol, NODE *subs)
 	if ((cp = strchr(newval->stptr, '=')) == NULL) {
 		if (! in_array(argv_shadow_array, newval))
 			fatal(_("cannot add a new file (%.*s) to ARGV in sandbox mode"),
-				(int) newval->stlen, newval->stptr);
+				TO_PRINTF_WIDTH(newval->stlen), newval->stptr);
 	} else {
 		// check if it's a valid variable assignment
 		bool badvar = false;
@@ -1298,7 +1290,7 @@ argv_store(NODE *symbol, NODE *subs)
 
 		if (badvar && ! in_array(argv_shadow_array, newval))
 			fatal(_("cannot add a new file (%.*s) to ARGV in sandbox mode"),
-				(int) newval->stlen, newval->stptr);
+				TO_PRINTF_WIDTH(newval->stlen), newval->stptr);
 
 		// otherwise, badvar is false, let it through as variable assignment
 	}
