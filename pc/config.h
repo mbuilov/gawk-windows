@@ -253,7 +253,7 @@
 #endif
 
 /* Define to 1 if you have the <stddef.h> header file. */
-#if defined __GNUC__ || defined _MSC_VER
+#ifdef WINDOWS_NATIVE
 #define HAVE_STDDEF_H 1
 #endif
 
@@ -269,7 +269,7 @@
 
 /* Define to 1 if you have the `strcasecmp' function. */
 #define HAVE_STRCASECMP 1
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 #define strcasecmp _stricmp
 #elif defined __EMX__
 #define strcasecmp stricmp
@@ -309,7 +309,7 @@
 
 /* Define to 1 if you have the `strncasecmp' function. */
 #define HAVE_STRNCASECMP 1
-#ifdef _MSC_VER
+#ifdef WINDOWS_NATIVE
 #define strncasecmp _strnicmp
 #elif defined __EMX__
 #define strncasecmp strnicmp
@@ -383,7 +383,6 @@
 /* Define to 1 if you have the `timegm' function. */
 #ifdef WINDOWS_NATIVE
 #define HAVE_TIMEGM 1
-#define timegm _mkgmtime
 #else
 #undef HAVE_TIMEGM
 #endif
@@ -430,9 +429,7 @@
 #endif
 
 /* Define to 1 if you have the `usleep' function. */
-#if defined(__DJGPP__) || defined(WINDOWS_NATIVE)
-#define HAVE_USLEEP 1
-#endif
+#undef HAVE_USLEEP
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
@@ -514,21 +511,17 @@
 #define PRINTF_HAS_A_FORMAT 1
 
 /* Define to 1 if *printf supports %F format */
-#if defined(__DJGPP__) || defined(_MSC_VER)
+#if defined(__DJGPP__) || defined(WINDOWS_NATIVE)
 #define PRINTF_HAS_F_FORMAT 1
 #endif
 
 /* The size of `unsigned int', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_INT 4
-#if defined(__GNUC__) || defined(_MSC_VER)
 typedef int check_sizeof_unsigned_int[1-2*(sizeof(unsigned int) != SIZEOF_UNSIGNED_INT)];
-#endif
 
 /* The size of `unsigned long', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_LONG 4
-#if defined(__GNUC__) || defined(_MSC_VER)
 typedef int check_sizeof_unsigned_long[1-2*(sizeof(unsigned long) != SIZEOF_UNSIGNED_LONG)];
-#endif
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
@@ -644,6 +637,23 @@ typedef int check_sizeof_unsigned_long[1-2*(sizeof(unsigned long) != SIZEOF_UNSI
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
+#ifdef _MSC_VER
+#define pid_t intptr_t
+#elif defined __MINGW32__
+#define pid_t _pid_t
+#endif
+
+/* Bad pid value.  */
+#define BAD_PID -1
+
+/* 32-bit type.  Currently, only debug.c calls lseek() and uses off_t, but the
+  code do not handles very big source files.  */
+#ifdef _MSC_VER
+#define off_t int
+#elif defined __MINGW32__
+#define off_t _off_t
+#endif
+
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
@@ -713,7 +723,7 @@ typedef int check_sizeof_unsigned_long[1-2*(sizeof(unsigned long) != SIZEOF_UNSI
 extern bool is_valid_identifier(const char *name);
 #endif
 
-#ifndef __DJGPP__
+#if !defined(__DJGPP__) && !defined(WINDOWS_NATIVE)
 #define HAVE_POPEN_H 1
 #endif
 
