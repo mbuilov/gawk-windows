@@ -91,9 +91,18 @@ extern void dfacopysyntax (struct dfa *, struct dfa const *);
 /* Parse the given string of given length into the given struct dfa.  */
 extern void dfaparse (char const *, ptrdiff_t, struct dfa *);
 
+#if defined __cplusplus && defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 /* Allocate and return a struct dfamust from a struct dfa that was
    initialized by dfaparse and not yet given to dfacomp.  */
 extern struct dfamust *dfamust (struct dfa const *);
+
+#if defined __cplusplus && defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic pop
+#endif
 
 /* Free the storage held by the components of a struct dfamust. */
 extern void dfamustfree (struct dfamust *);
