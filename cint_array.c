@@ -164,7 +164,7 @@ static NODE **
 cint_array_init(NODE *symbol, NODE *subs)
 {
 	if (symbol == NULL) {
-		long newval;
+		awk_long_t newval;
 		const unsigned nelems = (sizeof(power_two_table) / sizeof(power_two_table[0]));
 
 		/* check relevant environment variables */
