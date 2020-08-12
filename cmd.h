@@ -40,7 +40,7 @@ extern NODE *get_function(void);
 ATTRIBUTE_PRINTF(format, 2, 3)
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
-extern int pager_quit_tag_valid;
+extern unsigned pager_quit_tag_valid;
 
 extern bool output_is_tty;
 extern int input_fd;
@@ -135,7 +135,7 @@ typedef struct cmd_argument {
 	enum argtype type;
 	union {
 		enum nametypeval aval;
-		long_t lval;
+		awk_long_t lval;
 		char *sval;
 		NODE *nodeval;
 	} value;
