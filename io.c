@@ -112,20 +112,20 @@
 
 #if defined(__EMX__) || defined(_MSC_VER)
 #include <process.h>
-
-#if !defined(_S_IFDIR) && defined(S_IFDIR)
-#define _S_IFDIR	S_IFDIR
 #endif
 
-#if !defined(_S_IRWXU) && defined(S_IRWXU)
-#define _S_IRWXU	S_IRWXU
+#if defined(__EMX__) || defined(WINDOWS_NATIVE)
+/* looks like only MinGW.org defines _S_IRWXU */
+# ifndef _S_IRWXU
+#  define _S_IRWXU	(_S_IREAD | _S_IWRITE | _S_IEXEC)
+# endif
+# ifndef S_IRWXU
+#  define S_IRWXU	_S_IRWXU
+# endif
+# ifndef S_IFDIR
+#  define S_IFDIR	_S_IFDIR
+# endif
 #endif
-
-#if !defined(_S_IRWXU) && defined(_S_IREAD) && defined(_S_IWRITE) && defined(_S_IEXEC)
-#define _S_IRWXU	(_S_IREAD | _S_IWRITE | _S_IEXEC)
-#endif
-
-#endif /* __EMX__ || _MSC_VER */
 
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
@@ -150,11 +150,7 @@
 #endif
 
 #ifdef WINDOWS_NATIVE
-#define close(fd)		_close(fd)
-#define dup(fd)			_dup(fd)
-#define dup2(newfd, oldfd)	_dup2(newfd, oldfd)
-#define fdopen(fd, omode)	_fdopen(fd, omode)
-#define fileno(fd)		_fileno(fd)
+#include "oldnames.h"
 #endif
 
 #ifdef HAVE_SOCKETS
@@ -319,7 +315,7 @@ struct inet_socket_info {
 static bool inetfile(const char *str, size_t len, struct inet_socket_info *isn);
 
 static NODE *in_PROCINFO(const char *pidx1, size_t len1, const char *pidx2, size_t len2, NODE **full_idx);
-static ulong_t get_read_timeout(IOBUF *iop);
+static awk_ulong_t get_read_timeout(IOBUF *iop);
 static ssize_t read_with_timeout(fd_t fd, void *buf, size_t size);
 
 static bool read_can_timeout = false;
@@ -453,17 +449,17 @@ after_beginfile(IOBUF **cur)
  * *cur = NULL  ----> hit EOF, run ENDFILE block
  */
 
-long_t
+awk_long_t
 nextfile(IOBUF **cur, bool skipping)
 {
-	static long i = 1;
+	static awk_long_t i = 1;
 	static bool files = false;
 	NODE *arg, *tmp;
 	const char *fname;
 	fd_t fd = INVALID_HANDLE;
 	int errcode;
 	IOBUF *iop = *cur;
-	long argc;
+	awk_long_t argc;
 
 	if (skipping) {			/* for 'nextfile' call */
 		errcode = 0;
@@ -694,8 +690,10 @@ iop_close(IOBUF *iop)
 			ret = 0;
 #endif
 		else if (S_ISREG(iop->pubc.sbuf.st_mode)
+#if !defined(__EMX__) && !defined(WINDOWS_NATIVE)
 #ifdef S_ISBLK
 		    || S_ISBLK(iop->pubc.sbuf.st_mode)
+#endif
 #endif
 #ifdef S_ISLNK
 		    || S_ISLNK(iop->pubc.sbuf.st_mode)
@@ -745,7 +743,7 @@ iop_close(IOBUF *iop)
 /* redflags2str --- turn redirection flags into a string, for debugging */
 
 const char *
-redflags2str(int flags)
+redflags2str(redirect_flags_t flags)
 {
 	static const struct flagtab redtab[] = {
 		{ RED_FILE,	"RED_FILE" },
@@ -772,8 +770,8 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		enum redirval redirtype, int *errflg, fd_t extfd, bool failure_fatal)
 {
 	struct redirect *rp;
-	unsigned int tflag = 0;
-	unsigned int outflag = 0;
+	redirect_flags_t tflag = 0;
+	redirect_flags_t outflag = 0;
 	const char *direction = "to";
 	const char *mode;
 	fd_t fd;
@@ -866,7 +864,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		}
 #endif /* PIPES_SIMULATED */
 
-#define RED_STATE_MASK ((unsigned) (RED_NOBUF|RED_EOF|RED_PTY))
+#define RED_STATE_MASK (RED_NOBUF|RED_EOF|RED_PTY)
 
 		/* now check for a match */
 		if (strlen(rp->value) == explen
@@ -875,8 +873,8 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			|| (outflag != 0
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
 
-			unsigned int rpflag = rp->flag & ~RED_STATE_MASK;
-			unsigned int newflag = tflag & ~RED_STATE_MASK;
+			redirect_flags_t rpflag = rp->flag & ~RED_STATE_MASK;
+			redirect_flags_t newflag = tflag & ~RED_STATE_MASK;
 
 			if (do_lint && rpflag != newflag)
 				lintwarn(
@@ -1899,8 +1897,9 @@ devopen(const char *name, const char *mode)
 #define DEFAULT_RETRIES 20
 		static unsigned long def_retries = DEFAULT_RETRIES;
 		static bool first_time = true;
-		unsigned long retries = 0;
-		static unsigned long msleep = 1000;
+		/* Default is 1 millisecond.  */
+		static unsigned long msleep = 1;
+		unsigned long retries;
 		bool hard_error = false;
 		bool non_fatal = is_non_fatal_redirect(name, strlen(name));
 		char save;
@@ -1914,27 +1913,20 @@ devopen(const char *name, const char *mode)
 
 		if (first_time) {
 			char *end;
-			unsigned long count = 0;
 			const char *cp2, *ms2;
 
 			first_time = false;
 			if ((cp2 = getenv("GAWK_SOCK_RETRIES")) != NULL) {
-				count = strtoul(cp2, & end, 10);
+				const long count = strtol(cp2, & end, 10);
 				if (end != cp2 && count > 0)
-					def_retries = count;
+					def_retries = (unsigned long) count;
 			}
 
-			/*
-			 * Env var is in milliseconds, paramter to usleep()
-			 * is microseconds, make the conversion. Default is
-			 * 1 millisecond.
-			 */
+			/* Env var is in milliseconds.  */
 			if ((ms2 = getenv("GAWK_MSEC_SLEEP")) != NULL) {
-				long m = strtol(ms2, & end, 10);
-				if (end == ms2 || m < 0)
-					msleep = 1000;
-				else
-					msleep = (unsigned long) m * 1000;
+				const long m = strtol(ms2, & end, 10);
+				if (end != ms2 && m >= 0)
+					msleep = (unsigned long) m;
 			}
 		}
 		/*
@@ -1950,7 +1942,7 @@ devopen(const char *name, const char *mode)
 					name+isi.remoteport.offset, name+isi.remotehost.offset,
 					& hard_error);
 			retries--;
-		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
+		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && os_sleep(msleep) == 0);
 		save_errno = errno;
 
 		/* restore original name string */
@@ -2189,6 +2181,28 @@ fork_and_open_slave_pty(const char *slavenam, fd_t master, const char *command, 
 
 #endif /* defined(HAVE_TERMIOS_H) */
 
+/* spawn_in_parallel --- spawn a command in sub-shell in parallel */
+
+static pid_t
+spawn_in_parallel(const char *cmd)
+{
+	pid_t pid;
+
+#ifdef __EMX__
+	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", cmd, NULL);
+#else  /* WINDOWS_NATIVE */
+	wchar_t buf[512];
+	wchar_t *qcmd = wquote_cmd(cmd, buf, sizeof(buf)/sizeof(buf[0]));
+	if (qcmd == NULL)
+		return BAD_PID;
+	pid = _wspawnl(_P_NOWAIT, _wgetenv(L"ComSpec"), L"cmd.exe", L"/D /S /C", qcmd, NULL);
+	if (qcmd != buf)
+		free(qcmd);
+#endif
+
+	return pid;
+}
+
 /* two_way_open --- open a two way communications channel */
 
 static int
@@ -2400,9 +2414,6 @@ use_pipes:
 #if defined(__EMX__) || defined(WINDOWS_NATIVE)
 	fd_t save_stdout, save_stdin;
 #endif
-#ifdef WINDOWS_NATIVE
-	char *qcmd = NULL;
-#endif
 
 	if (pipe(ptoc) < 0)
 		return false;	/* errno set, diagnostic from caller */
@@ -2458,13 +2469,7 @@ use_pipes:
 	os_close_on_exec(save_stdout, str, "pipe", "from"); /* saved stdout of the parent process */
 
 	/* stderr does NOT get dup'ed onto child's stdout */
-#ifdef __EMX__
-	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", str, NULL);
-#else  /* WINDOWS_NATIVE */
-	pid = _spawnl(_P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/D /S /C",
-		     qcmd = quote_cmd(str), NULL);
-	efree(qcmd);
-#endif
+	pid = spawn_in_parallel(str);
 
 	/* restore stdin and stdout */
 	close(1);
@@ -2692,9 +2697,6 @@ gawk_popen(const char *cmd, struct redirect *rp)
 #if defined(__EMX__) || defined(WINDOWS_NATIVE)
 	fd_t save_stdout;
 #endif
-#ifdef WINDOWS_NATIVE
-	char *qcmd = NULL;
-#endif
 
 	/*
 	 * We used to wait for any children to synchronize input and output,
@@ -2730,13 +2732,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	os_close_on_exec(p[0], cmd, "pipe", "from"); /* pipe output: input of the parent process */
 	os_close_on_exec(save_stdout, cmd, "pipe", "from"); /* saved stdout of the parent process */
 
-#ifdef __EMX__
-	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", cmd, NULL);
-#else  /* WINDOWS_NATIVE */
-	pid = _spawnl(_P_NOWAIT, getenv("ComSpec"), "cmd.exe", "/D /S /C",
-		     qcmd = quote_cmd(cmd), NULL);
-	efree(qcmd);
-#endif
+	pid = spawn_in_parallel(cmd);
 
 	/* restore stdout */
 	close(1);
@@ -3485,7 +3481,7 @@ iop_alloc(fd_t fd, const char *name, int errno_val)
 		os_xfstat(fd, & iop->pubc.sbuf);
 #if defined(__EMX__) || defined(WINDOWS_NATIVE)
 	else if (errno_val == EISDIR) {
-		iop->pubc.sbuf.st_mode = (_S_IFDIR | _S_IRWXU);
+		iop->pubc.sbuf.st_mode = (S_IFDIR | S_IRWXU);
 		iop->publ.fd = FAKE_FD_VALUE;
 	}
 #endif
@@ -4434,10 +4430,10 @@ in_PROCINFO(const char *pidx1, size_t len1, const char *pidx2, size_t len2, NODE
 
 /* get_read_timeout --- get timeout in milliseconds for reading */
 
-static ulong_t
+static awk_ulong_t
 get_read_timeout(IOBUF *iop)
 {
-	ulong_t tmout = 0u;
+	awk_ulong_t tmout = 0u;
 
 	if (PROCINFO_node != NULL) {
 		const char *name = iop->publ.name;
@@ -4458,11 +4454,11 @@ get_read_timeout(IOBUF *iop)
 			val = in_array(PROCINFO_node, full_idx);
 
 		if (val != NULL) {
-			long t;
+			awk_long_t t;
 			(void) force_number(val);
 			t = get_number_si(val);
 			if (t > 0)
-				tmout = (unsigned long) t;
+				tmout = (awk_ulong_t) t;
 		}
 	} else
 		tmout = read_default_timeout;	/* initialized from env. variable in init_io() */
