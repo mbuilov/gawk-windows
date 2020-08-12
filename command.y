@@ -25,6 +25,8 @@
  * USA 
  */
 
+%define api.prefix {zz}
+
 %{
 #include "awk.h"
 #include "cmd.h"
@@ -90,7 +92,8 @@ extern const struct cmdtoken cmdtab[];
 static CMDARG *mk_cmdarg(enum argtype type);
 static void append_cmdarg(CMDARG *arg);
 static int find_argument(CMDARG *arg);
-#define YYSTYPE CMDARG *
+#define ZZSTYPE CMDARG *
+#define yysymbol_kind_t zzsymbol_kind_t
 %}
 
 %token D_BACKTRACE D_BREAK D_CLEAR D_CONTINUE D_DELETE D_DISABLE D_DOWN
@@ -289,7 +292,7 @@ command
 	  {
 		if (cmdtab[cmd_idx].cls == D_FRAME
 				&& $2 != NULL && $2->a_int < 0)
-			yyerror(_("invalid frame number: %ld"), TO_LONG($2->a_int));
+			yyerror(_("invalid frame number: %" AWKLONGFMT ""), TO_AWK_LONG($2->a_int));
 	  }
 	| D_INFO D_STRING
 	  {
@@ -597,8 +600,8 @@ integer_range
 	: plus_integer '-' plus_integer
 	  {
 		if ($1->a_int > $3->a_int)
-			yyerror(_("invalid range specification: %ld - %ld"),
-				TO_LONG($1->a_int), TO_LONG($3->a_int));
+			yyerror(_("invalid range specification: %" AWKLONGFMT " - %" AWKLONGFMT ""),
+				TO_AWK_LONG($1->a_int), TO_AWK_LONG($3->a_int));
 		else
 			$1->type = D_range;
 		$$ = $1;
@@ -1224,7 +1227,7 @@ err:
 			;
 
 		/* Is it an integer? */
-		if (isdigit((unsigned char) tokstart[0]) && cmdtab[cmd_idx].type != D_option) {
+		if (char_is_digit((unsigned char) tokstart[0]) && cmdtab[cmd_idx].type != D_option) {
 			char *end;
 			long l;
 
@@ -1253,7 +1256,7 @@ err:
 
 	/* look for awk number */
 
-	if (isdigit((unsigned char) tokstart[0])) {
+	if (char_is_digit((unsigned char) tokstart[0])) {
 		NODE *r = NULL;
 
 		errno = 0;
