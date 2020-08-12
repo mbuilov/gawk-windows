@@ -1,0 +1,56 @@
+#include <winver.h>
+#include "../gawkapi.h"
+#define TO_STRING1(s) #s
+#define TO_STRING(s) TO_STRING1(s)
+#ifdef RC_INVOKED
+#define GAWK_RUNTIME "MSVC"
+#elif defined __MINGW64_VERSION_MAJOR
+#define GAWK_RUNTIME "Mingw-w64"
+#elif defined __MINGW32__
+#define GAWK_RUNTIME "MinGW.org"
+#else
+#define GAWK_RUNTIME "unknown"
+#endif
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     GAWK_VER_MAJOR,GAWK_VER_MINOR,GAWK_VER_PATCH,GAWK_BUILD_NUM
+PRODUCTVERSION  GAWK_VER_MAJOR,GAWK_VER_MINOR,GAWK_VER_PATCH
+FILEFLAGSMASK VS_FF_DEBUG | VS_FF_PRERELEASE | VS_FF_PATCHED | VS_FF_PRIVATEBUILD | VS_FF_INFOINFERRED | VS_FF_SPECIALBUILD
+#ifdef NDEBUG
+FILEFLAGS 0L
+#else
+FILEFLAGS VS_FF_DEBUG | VS_FF_PRERELEASE
+#endif
+FILEOS      VOS_NT_WINDOWS32
+#ifdef GAWK_EXTENSION_DLL
+FILETYPE    VFT_DLL
+#else
+FILETYPE    VFT_APP
+#endif
+FILESUBTYPE 0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName",     "Free Software Foundation, Inc" "\0"
+#ifdef GAWK_EXTENSION_DLL
+            VALUE "FileDescription", "GNU Awk dynamic extension module" "\0"
+#elif defined GAWK_TEST_HELPER
+            VALUE "FileDescription", "GNU Awk test helper executable" "\0"
+#else
+            VALUE "FileDescription", "GNU Awk language interpreter executable" "\0"
+#endif
+            VALUE "FileVersion",     TO_STRING(GAWK_VER_MAJOR.GAWK_VER_MINOR.GAWK_VER_PATCH.GAWK_BUILD_NUM) "\0"
+            VALUE "InternalName",    TO_STRING(GAWK_MODULE_NAME) "\0"
+            VALUE "LegalCopyright",  "Copyright (C) 1989, 1991-" TO_STRING(GAWK_YEAR) " Free Software Foundation. Enhancements by Michael M. Builov (mbuilov@gmail.com)" "\0"
+            VALUE "OriginalFilename",TO_STRING(GAWK_MODULE_FILE_NAME) "\0"
+            VALUE "ProductName",     "Fork of GNU Awk language interpreter (https://github.com/mbuilov/gawk-windows)" "\0"
+            VALUE "ProductVersion",  "GNU Awk " TO_STRING(GAWK_VER_MAJOR.GAWK_VER_MINOR.GAWK_VER_PATCH) ", API: " TO_STRING(gawk_api_major_version) "." TO_STRING(gawk_api_minor_version) " (" GAWK_RUNTIME ")" "\0"
+            VALUE "Comments",        "Built on " TO_STRING(GAWK_BUILD_DATE) "/" TO_STRING(GAWK_BUILD_TIME) " (UTC)" "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0000, 0x04b0
+    END
+END
