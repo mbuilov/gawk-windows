@@ -30,19 +30,25 @@
 #endif
 
 #ifdef WINDOWS_NATIVE
-#define close(fd)		_close(fd)
-#define fileno(fd)		_fileno(fd)
-#define fdopen(fd, omode)	_fdopen(fd, omode)
-#define strdup(str)		_strdup(str)
+#include "oldnames.h"
 #endif
 
-static void pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags);
+enum pprint_flag_vals {
+	NO_PPRINT_FLAGS	= 0,
+	IN_FOR_HEADER	= 1,
+	IN_ELSE_IF	= 2,
+};
+
+/* a combination of enum pprint_flag_vals */
+typedef int print_flags_t;
+
+static void pprint(INSTRUCTION *startp, const INSTRUCTION *endp, print_flags_t flags);
 static INSTRUCTION *end_line(INSTRUCTION *ip);
 static void pp_parenthesize(NODE *n);
 static void parenthesize(OPCODE type, NODE *left, NODE *right);
-static char *pp_list(ulong_t nargs, const char *paren, const char *delim);
+static char *pp_list(awk_ulong_t nargs, const char *paren, const char *delim);
 static char *pp_group3(const char *s1, const char *s2, const char *s3);
-static char *pp_concat(ulong_t nargs);
+static char *pp_concat(awk_ulong_t nargs);
 static char *pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_regex);
 static char *pp_typed_regex(const char *in_str, size_t len, int delim);
 static bool is_binary(OPCODE type);
@@ -92,10 +98,6 @@ static const unsigned tabs_len = sizeof(tabs) - 1;
 
 
 #define SPACEOVER	0u
-
-#define NO_PPRINT_FLAGS	0
-#define IN_FOR_HEADER	1
-#define IN_ELSE_IF	2
 
 /* set_prof_file --- set the output file for profiling or pretty-printing */
 
@@ -194,7 +196,7 @@ pp_push(OPCODE type, char *s, enum pp_push_flag flag, INSTRUCTION *comment)
 	getnode(n);
 	n->pp_str = s;
 	n->pp_len = strlen(s);
-	n->flags = flag;
+	n->flags = (node_flags_t) flag;
 	n->type = (NODETYPE) type;
 	n->pp_next = pp_stack;
 	n->pp_comment = comment;
@@ -229,7 +231,7 @@ pp_free(NODE *n)
 /* pprint --- pretty print a program segment */
 
 static void
-pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags)
+pprint(INSTRUCTION *startp, const INSTRUCTION *endp, print_flags_t pflags)
 {
 	INSTRUCTION *pc;
 	NODE *t1;
@@ -337,7 +339,7 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags)
 			break;
 
 		case Op_stop:
-			memset(rule_count, 0, MAXRULE * sizeof(unsigned));
+			memset(rule_count, 0, sizeof(rule_count));
 			break;
 
 		case Op_push_i:
@@ -417,7 +419,7 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, int flags)
 cleanup:
 				pp_free(t2);
 				pp_free(t1);
-				if ((flags & IN_FOR_HEADER) == 0)
+				if ((pflags & IN_FOR_HEADER) == 0)
 					pc = end_line(pc);
 				break;
 
@@ -439,7 +441,7 @@ cleanup:
 
 		case Op_and:
 		case Op_or:
-			pprint(pc->nexti, pc->target_jmp, flags);
+			pprint(pc->nexti, pc->target_jmp, pflags);
 			t2 = pp_pop();
 			t1 = pp_pop();
 			parenthesize(pc->opcode, t1, t2);
@@ -567,7 +569,7 @@ cleanup:
 			fprintf(prof_fp, "$%s%s%s", t1->pp_str, op2str(pc->opcode), t2->pp_str);
 			pp_free(t2);
 			pp_free(t1);
-			if ((flags & IN_FOR_HEADER) == 0)
+			if ((pflags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
 			break;
 
@@ -588,7 +590,7 @@ cleanup:
 				efree(sub);
 			} else
 				fprintf(prof_fp, "%s %s", op2str(Op_K_delete), array);
-			if ((flags & IN_FOR_HEADER) == 0)
+			if ((pflags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
 			pp_free(t1);
 		}
@@ -713,7 +715,7 @@ cleanup:
 			} else
 				fprintf(prof_fp, "%s%s", op2str(pc->opcode), tmp);
 			efree(tmp);
-			if ((flags & IN_FOR_HEADER) == 0)
+			if ((pflags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
 			break;
 
@@ -797,7 +799,7 @@ cleanup:
 		case Op_func_call:
 		{
 			const char *pre;
-			ulong_t pcount;
+			awk_ulong_t pcount;
 			bool malloced = false;
 			char *fname = adjust_namespace(pc->func_name, & malloced);
 
@@ -850,7 +852,7 @@ cleanup:
 		case Op_pop:
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s", t1->pp_str);
-			if ((flags & IN_FOR_HEADER) == 0)
+			if ((pflags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
 			pp_free(t1);
 			break;
@@ -1079,7 +1081,7 @@ cleanup:
 			 * See next case; turn off the flag so that the
 			 * following else is correctly indented.
 			 */
-			flags &= ~IN_ELSE_IF;
+			pflags &= ~IN_ELSE_IF;
 			break;
 
 		case Op_K_else:
@@ -1221,7 +1223,7 @@ cleanup:
 			break;
 
 		case Op_exec_count:
-			if (flags == NO_PPRINT_FLAGS)
+			if (pflags == NO_PPRINT_FLAGS)
 				indent(pc->exec_count);
 			break;
 
@@ -1429,7 +1431,7 @@ print_comment(const INSTRUCTION *pc, unsigned in)
 void
 dump_prog(INSTRUCTION *code)
 {
-	time_t now;
+	gawk_time_t now;
 
 	(void) time(& now);
 	/* \n on purpose, with \n in ctime() output */
@@ -1782,16 +1784,16 @@ pp_node(NODE *n)
 /* pp_list --- pretty print a list, with surrounding characters and separator */
 
 static NODE **pp_args = NULL;
-static ulong_t npp_args;
+static awk_ulong_t npp_args;
 
 static char *
-pp_list(ulong_t nargs, const char *paren, const char *delim)
+pp_list(awk_ulong_t nargs, const char *paren, const char *delim)
 {
 	NODE *r;
 	char *str, *s;
 	size_t len;
 	size_t delimlen;
-	ulong_t i;
+	awk_ulong_t i;
 	INSTRUCTION *comment = NULL;
 
 	if (pp_args == NULL) {
@@ -1868,13 +1870,13 @@ is_unary_minus(const char *str)
 /* pp_concat --- handle concatenation and correct parenthesizing of expressions */
 
 static char *
-pp_concat(ulong_t nargs)
+pp_concat(awk_ulong_t nargs)
 {
 	NODE *r;
 	char *str, *s;
 	size_t len;
 	static const size_t delimlen = 1;	/* " " */
-	ulong_t i;
+	awk_ulong_t i;
 	unsigned pl_l, pl_r;
 
 	if (pp_args == NULL) {
@@ -1993,10 +1995,10 @@ pp_group3(const char *s1, const char *s2, const char *s3)
 int
 pp_func(INSTRUCTION *pc, void *data)
 {
-	ulong_t j;
+	awk_ulong_t j;
 	static bool first = true;
 	NODE *func;
-	ulong_t pcount;
+	awk_ulong_t pcount;
 	INSTRUCTION *fp;
 	(void) data;
 
