@@ -43,7 +43,7 @@ extern double fmod(double x, double y);
 
 /* for debug.c */
 NODE **fcall_list = NULL;
-ulong_t fcall_count = 0u;
+awk_ulong_t fcall_count = 0u;
 IOBUF *curfile = NULL;		/* current data file */
 bool exiting = false;
 
@@ -455,7 +455,7 @@ op2str(OPCODE op)
 /* flags2str --- make a flags value readable */
 
 const char *
-flags2str(int flagval)
+flags2str(node_flags_t flagval)
 {
 	static const struct flagtab values[] = {
 		{ MALLOC, "MALLOC" },
@@ -638,10 +638,10 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 	if (IGNORECASE) {
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
 		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
-		char save1 = t1->stptr[t1->stlen];
-		char save2 = t2->stptr[t2->stlen];
 
 		if (gawk_mb_cur_max > 1) {
+			char save1 = t1->stptr[t1->stlen];
+			char save2 = t2->stptr[t2->stlen];
 			t1->stptr[t1->stlen] = t2->stptr[t2->stlen] = '\0';
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, l);
@@ -666,7 +666,7 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 static void
 push_frame(NODE *f)
 {
-	static ulong_t max_fcall;
+	static awk_ulong_t max_fcall;
 
 	/* NB: frame numbering scheme as in GDB. frame_ptr => frame #0. */
 
@@ -705,7 +705,7 @@ void
 dump_fcall_stack(FILE *fp)
 {
 	NODE *f, *func;
-	ulong_t i, k = 0u;
+	awk_ulong_t i, k = 0u;
 
 	if (!fcall_count)
 		return;
@@ -713,16 +713,16 @@ dump_fcall_stack(FILE *fp)
 
 	/* current frame */
 	func = frame_ptr->func_node;
-	fprintf(fp, "\t# %3lu. %s\n", TO_ULONG(k++), func->vname);
+	fprintf(fp, "\t# %3" AWKULONGFMT ". %s\n", TO_AWK_ULONG(k++), func->vname);
 
 	/* outer frames except main */
 	for (i = 1u; i < fcall_count; i++) {
 		f = fcall_list[i];
 		func = f->func_node;
-		fprintf(fp, "\t# %3lu. %s\n", TO_ULONG(k++), func->vname);
+		fprintf(fp, "\t# %3" AWKULONGFMT ". %s\n", TO_AWK_ULONG(k++), func->vname);
 	}
 
-	fprintf(fp, "\t# %3lu. -- main --\n", TO_ULONG(k));
+	fprintf(fp, "\t# %3" AWKULONGFMT ". -- main --\n", TO_AWK_ULONG(k));
 }
 
 
@@ -900,13 +900,13 @@ fmt_ok(NODE *n)
 		return 0;
 	while (*p && strchr(flags, *p) != NULL)	/* flags */
 		p++;
-	while (*p && isdigit((unsigned char) *p))	/* width - %*.*g is NOT allowed */
+	while (*p && char_is_digit((unsigned char) *p))	/* width - %*.*g is NOT allowed */
 		p++;
-	if (*p == '\0' || (*p != '.' && ! isdigit((unsigned char) *p)))
+	if (*p == '\0' || (*p != '.' && ! char_is_digit((unsigned char) *p)))
 		return 0;
 	if (*p == '.')
 		p++;
-	while (*p && isdigit((unsigned char) *p))	/* precision */
+	while (*p && char_is_digit((unsigned char) *p))	/* precision */
 		p++;
 	if (*p == '\0' || strchr(float_formats, *p) == NULL)
 		return 0;
@@ -1136,7 +1136,7 @@ STACK_ITEM *stack_ptr = NULL;
 STACK_ITEM *stack_bottom;
 STACK_ITEM *stack_top;
 static size_t STACK_SIZE = 256;    /* initial size of stack */
-ulong_t max_args = 0u;       /* maximum # of arguments to printf, print, sprintf,
+awk_ulong_t max_args = 0u;       /* maximum # of arguments to printf, print, sprintf,
                          * or # of array subscripts, or adjacent strings
                          * to be concatenated.
                          */
@@ -1251,15 +1251,15 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
  */
 
 static AWKNUM
-calc_exp_posint(AWKNUM x, unsigned long n)
+calc_exp_posint(AWKNUM x, awk_ulong_t n)
 {
 	AWKNUM mult = 1;
 
-	while (n > 1) {
-		if ((n % 2) == 1)
+	while (n > 1u) {
+		if ((n % 2u) == 1)
 			mult *= x;
 		x *= x;
-		n /= 2;
+		n /= 2u;
 	}
 	return mult * x;
 }
@@ -1269,15 +1269,15 @@ calc_exp_posint(AWKNUM x, unsigned long n)
 AWKNUM
 calc_exp(AWKNUM x1, AWKNUM x2)
 {
-	long lx;
+	awk_long_t lx;
 
-	if ((lx = (long) x2) == x2) {		/* integer exponent */
+	if ((AWKNUM) (lx = (awk_long_t) x2) == x2) {		/* integer exponent */
 		if (lx == 0)
 			return 1;
-		return (lx > 0) ? calc_exp_posint(x1, (unsigned long) lx)
-				: 1.0 / calc_exp_posint(x1, (unsigned long) -lx);
+		return (lx > 0) ? calc_exp_posint(x1, (awk_ulong_t) lx)
+				: 1.0 / calc_exp_posint(x1, (awk_ulong_t) -lx);
 	}
-	return (AWKNUM) pow((double) x1, (double) x2);
+	return pow(x1, x2);
 }
 
 
@@ -1289,7 +1289,7 @@ setup_frame(INSTRUCTION *pc)
 	NODE *r = NULL;
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
-	ulong_t pcount, arg_count, i, j;
+	awk_ulong_t pcount, arg_count, i, j;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
@@ -1303,7 +1303,7 @@ setup_frame(INSTRUCTION *pc)
 	if (arg_count > pcount) {
 		awkwarn(
 			_("function `%s' called with more arguments than declared"),
-       			f->vname);
+			f->vname);
 		do {
 			r = POP();
 			if (r->type == Node_val)
@@ -1402,7 +1402,7 @@ restore_frame(NODE *fp)
 {
 	NODE *r;
 	NODE **sp;
-	ulong_t n;
+	awk_ulong_t n;
 	NODE *func;
 	INSTRUCTION *ri;
 
@@ -1445,7 +1445,7 @@ free_arrayfor(NODE *r)
 {
 	if (r->for_list != NULL) {
 		NODE *n;
-		ulong_t num_elems = r->for_list_size;
+		size_t num_elems = r->for_list_size;
 		NODE **list = r->for_list;
 		while (num_elems) {
 			n = list[--num_elems];
@@ -1609,7 +1609,7 @@ op_assign(OPCODE op)
 #endif  /* ! HAVE_FMOD */
 		break;
 	case Op_assign_exp:
-		x = calc_exp((double) x1, (double) x2);
+		x = calc_exp(x1, x2);
 		break;
 	default:
 		break;
