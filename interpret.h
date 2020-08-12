@@ -938,7 +938,7 @@ mod:
 		{
 			NODE **list = NULL;
 			NODE *array, *sort_str;
-			ulong_t num_elems;
+			size_t num_elems;
 			static NODE *sorted_in = NULL;
 			const char *how_to_sort = "@unsorted";
 			char save = '\0'; /* Silence compilers.  It's used only when saved_end == true.  */
@@ -981,7 +981,7 @@ arrayfor:
 			r->type = Node_arrayfor;
 			r->for_list = list;
 			r->for_list_size = num_elems;		/* # of elements in list */
-			r->cur_list_idx = (unsigned long)-1;			/* current index */
+			r->cur_list_idx = (size_t)-1;			/* current index */
 			r->for_array = array;		/* array */
 			PUSH(r);
 
@@ -996,8 +996,8 @@ arrayfor:
 				NODE *array;
 				array = r->for_array;	/* actual array */
 				if (do_lint && array->table_size != r->for_list_size)
-					lintwarn(_("for loop: array `%s' changed size from %lu to %lu during loop execution"),
-						array_vname(array), TO_ULONG(r->for_list_size), TO_ULONG(array->table_size));
+					lintwarn(_("for loop: array `%s' changed size from %" ZUFMT " to %" ZUFMT " during loop execution"),
+						array_vname(array), r->for_list_size, array->table_size);
 				JUMPTO(pc->target_jmp);	/* Op_arrayfor_final */
 			}
 
@@ -1020,19 +1020,19 @@ arrayfor:
 
 		case Op_ext_builtin:
 		{
-			ulong_t arg_count = pc->expr_count;
+			awk_ulong_t arg_count = pc->expr_count;
 			awk_ext_func_t *f = pc[1].c_function;
 			size_t min_req = f->min_required_args;
 			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
 
 			if (arg_count < min_req)
-				fatal(_("%s: called with %lu arguments, expecting at least %" ZUFMT ""),
-						pc[1].func_name, TO_ULONG(arg_count), min_req);
+				fatal(_("%s: called with %" AWKULONGFMT " arguments, expecting at least %" ZUFMT ""),
+						pc[1].func_name, TO_AWK_ULONG(arg_count), min_req);
 
 			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %lu arguments, expecting no more than %" ZUFMT ""),
-						pc[1].func_name, TO_ULONG(arg_count), max_expect);
+				lintwarn(_("%s: called with %" AWKULONGFMT " arguments, expecting no more than %" ZUFMT ""),
+						pc[1].func_name, TO_AWK_ULONG(arg_count), max_expect);
 
 			PUSH_CODE(pc);
 			awk_value_t *ef_ret = pc->extfunc((int) arg_count, & result, f);
@@ -1118,7 +1118,7 @@ match_re:
 			char save;
 
 			{
-				ulong_t arg_count = (pc + 1)->expr_count;
+				awk_ulong_t arg_count = (pc + 1)->expr_count;
 				t1 = PEEK(arg_count);	/* indirect var */
 			}
 
@@ -1144,7 +1144,7 @@ match_re:
 				fatal(_("`%s' is not a function, so it cannot be called indirectly"),
 						t1->stptr);
 			} else if (f->type == Node_builtin_func) {
-				ulong_t arg_count = (pc + 1)->expr_count;
+				awk_ulong_t arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
 
 				assert(!builtin_func_is_null(the_func));
@@ -1171,7 +1171,7 @@ match_re:
 					/* code copied from below, keep in sync */
 					INSTRUCTION *bc;
 					char *fname = pc->func_name;
-					ulong_t arg_count = (pc + 1)->expr_count;
+					awk_ulong_t arg_count = (pc + 1)->expr_count;
 					static INSTRUCTION npc[2];
 
 					npc[0] = *pc;
@@ -1214,7 +1214,7 @@ match_re:
 				/* keep in sync with indirect call code */
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
-				ulong_t arg_count = (pc + 1)->expr_count;
+				awk_ulong_t arg_count = (pc + 1)->expr_count;
 
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
@@ -1256,8 +1256,7 @@ match_re:
 						ruletab[currule]);
 
 			do {
-				long_t ret;
-				ret = nextfile(& curfile, false);
+				awk_long_t ret = nextfile(& curfile, false);
 				if (ret <= 0)
 					r = do_getline(pc->into_var, curfile);
 				else {
@@ -1301,9 +1300,7 @@ match_re:
 
 		case Op_newfile:
 		{
-			long_t ret;
-
-			ret = nextfile(& curfile, false);
+			awk_long_t ret = nextfile(& curfile, false);
 
 			if (ret < 0)	/* end of input */
 				JUMPTO(pc->target_jmp);	/* end block or Op_atexit */
@@ -1355,7 +1352,7 @@ match_re:
 
 		case Op_K_nextfile:
 		{
-			long_t ret;
+			awk_long_t ret;
 
 			if (currule != Rule && currule != BEGINFILE)
 				fatal(_("`nextfile' cannot be called from a `%s' rule"),
