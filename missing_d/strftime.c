@@ -55,7 +55,7 @@
 # endif
 #endif
 #ifdef HAVE_TZNAME
-#ifndef __MINGW32__
+#ifndef WINDOWS_NATIVE
 extern char *tzname[];
 #endif
 #endif
@@ -178,6 +178,14 @@ extern char *tzname[];
    except every 100th isn't, and every 400th is).  */
 # define __isleap(year)	\
   ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
+#endif
+
+
+/* time_t is 32-bit under MinGW.org for WindowsXP, but we want 64-bit time_t */
+#ifdef WINDOWS_NATIVE
+#define time_t 	__time64_t
+#define tzname	_tzname
+#define tzset	_tzset
 #endif
 
 
