@@ -27,18 +27,9 @@
 #include "awk.h"
 
 #ifdef WINDOWS_NATIVE
-#include <direct.h>	/* mkdir/rmdir */
 #include "mscrtx/socket_file.h"	/* socket_file_clearerr */
-#include "mscrtx/wreaddir.h"	/* opendirfd/closedirfd/fchdir/opendir/closedir/readdir */
-#include "mscrtx/wreadlink.h"	/* readlinkfd/readlink */
 #include "mscrtx/localerpl.h"
-#endif
-
-#ifdef WINDOWS_NATIVE
-#define close	_close
-#define fileno	_fileno
-#define dup	_dup
-#define dup2	_dup2
+#include "mscrtx/sprintf_helpers.h"
 #endif
 
 #ifdef HAVE_MPFR
@@ -1153,7 +1144,7 @@ api_flatten_array_typed(awk_array_t a_cookie,
 		awk_valtype_t index_type, awk_valtype_t value_type)
 {
 	NODE **list;
-	ulong_t i, j;
+	size_t i, j;
 	NODE *array = (NODE *) a_cookie;
 	size_t alloc_size;
 
@@ -1175,7 +1166,7 @@ api_flatten_array_typed(awk_array_t a_cookie,
 	(*data)->opaque2 = list;
 	(*data)->count = array->table_size;
 
-	for (i = j = 0u; i < 2u * array->table_size; i += 2, j++) {
+	for (i = j = 0; i < 2 * array->table_size; i += 2, j++) {
 		NODE *index, *value;
 
 		index = list[i];
@@ -1184,13 +1175,13 @@ api_flatten_array_typed(awk_array_t a_cookie,
 		/* Convert index and value to API types. */
 		if (! node_to_awk_value(index,
 				& (*data)->elements[j].index, index_type)) {
-			fatal(_("api_flatten_array_typed: could not convert index %lu to %s"),
-						TO_ULONG(i), valtype2str(index_type));
+			fatal(_("api_flatten_array_typed: could not convert index %" ZUFMT " to %s"),
+						i, valtype2str(index_type));
 		}
 		if (! node_to_awk_value(value,
 				& (*data)->elements[j].value, value_type)) {
-			fatal(_("api_flatten_array_typed: could not convert value %lu to %s"),
-						TO_ULONG(i), valtype2str(value_type));
+			fatal(_("api_flatten_array_typed: could not convert value %" ZUFMT " to %s"),
+						i, valtype2str(value_type));
 		}
 	}
 	return awk_true;
@@ -1207,7 +1198,7 @@ api_release_flattened_array(awk_array_t a_cookie, awk_flat_array_t *data)
 {
 	NODE *array = (NODE*) a_cookie;
 	NODE **list;
-	ulong_t i, j, k;
+	size_t i, j, k;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -1220,7 +1211,7 @@ api_release_flattened_array(awk_array_t a_cookie, awk_flat_array_t *data)
 	list = (NODE **) data->opaque2;
 
 	/* free index nodes */
-	for (i = j = 0u, k = 2u * array->table_size; i < k; i += 2, j++) {
+	for (i = j = 0, k = 2 * array->table_size; i < k; i += 2, j++) {
 		/* Delete items flagged for delete. */
 		if (   (data->elements[j].flags & AWK_ELEMENT_DELETE) != 0
 		    && (array->flags & NO_EXT_SET) == 0) {
@@ -1427,11 +1418,6 @@ api_register_ext_version(const char *version)
 	vi_head = info;
 }
 
-/* defined in io.c */
-extern size_t gawk_fwrite(const void *buf, size_t size, size_t nmemb, awk_output_buf_t *outbuf);
-extern int gawk_fflush(awk_output_buf_t *outbuf);
-extern int gawk_ferror(awk_output_buf_t *outbuf);
-
 static void
 api_ob_clearerr(awk_output_buf_t *outbuf)
 {
@@ -1481,7 +1467,7 @@ api_ob_vfprintf(awk_output_buf_t *outbuf, const char *format, va_list ap)
 #ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
 		char stack_buf[1024], *buf = stack_buf;
-		int n = vsnprintf_helper(&buf, sizeof(stack_buf), format, ap);
+		int n = vsprintf_helper(&buf, sizeof(stack_buf), format, ap);
 		if (n != -1) {
 			size_t k = gawk_fwrite(buf, (size_t) n, 1, outbuf);
 			if (buf != stack_buf)
@@ -1506,383 +1492,6 @@ api_ob_fprintf(awk_output_buf_t *outbuf, const char *format, ...)
 	return r;
 }
 
-#ifdef GAWK_CRT_API
-
-ATTRIBUTE_PRINTF_PTR(format, 1, 2)
-static int
-crt_printf(const char *format, ...)
-{
-	va_list args;
-	int r;
-	va_start(args, format);
-	r = vprintf(format, args);
-	va_end(args);
-	return r;
-}
-
-static int
-crt_open(const char *name, int flags, ...)
-{
-	va_list args;
-	int r;
-	va_start(args, flags);
-	r = open(name, flags, args);
-	va_end(args);
-	return r;
-}
-
-static int
-crt_putchar(int c)
-{
-	return putchar(c);
-}
-
-static int
-crt_stat(const char *path, gawk_stat_t *buf)
-{
-	return stat(path, buf);
-}
-
-ATTRIBUTE_PRINTF_PTR(format, 2, 3)
-static int
-crt_fprintf(FILE *stream, const char *format, ...)
-{
-	int ret;
-	va_list ap;
-	va_start(ap, format);
-	ret = vfprintf(stream, format, ap);
-	va_end(ap);
-	return ret;
-}
-
-ATTRIBUTE_PRINTF_PTR(format, 1, 0)
-static int
-crt_vprintf(const char *format, va_list ap)
-{
-	return vprintf(format, ap);
-}
-
-
-ATTRIBUTE_PRINTF_PTR(format, 2, 0)
-static int
-crt_vfprintf(FILE *stream, const char *format, va_list ap)
-{
-	return vfprintf(stream, format, ap);
-}
-
-static char **
-crt_environ(void)
-{
-	return environ;
-}
-
-/* crt_assert_failed --- print error message and abort the program */
-
-ATTRIBUTE_NORETURN
-static void
-crt_assert_failed(const char *sexpr, const char *file, unsigned line)
-{
-	set_loc(file, line);
-	r_fatal("Assert failed: \"%s\" at %s:%u\n", sexpr, file, line);
-}
-
-#ifdef WINDOWS_NATIVE
-static ssize_t crt_read(int fd, void *buf, size_t count)
-{
-	ssize_t ret = 0;
-	/* Don't overflow ssize_t.  */
-	if (count > (size_t)-1/2) {
-		errno = EINVAL;
-		return -1;
-	}
-	while (count > 0) {
-		/* Cannot read more than INT_MAX at once.  */
-		unsigned n = count <= INT_MAX ? (unsigned) count : INT_MAX;
-		int x = read(fd, buf, n);
-		if (x < 0)
-			return -1;
-		ret += x;
-		if ((unsigned) x < n)
-			break;
-		buf = (char*) buf + n;
-		count -= n;
-	}
-	return ret;
-}
-
-static ssize_t crt_write(int fd, const void *buf, size_t count)
-{
-	ssize_t ret;
-	/* Don't overflow ssize_t.  */
-	if (count > (size_t)-1/2) {
-		errno = EINVAL;
-		return -1;
-	}
-	ret = (ssize_t) count;
-	while (count > 0) {
-		/* Cannot write more than INT_MAX at once.  */
-		unsigned n = count <= INT_MAX ? (unsigned) count : INT_MAX;
-		int x = write(fd, buf, n);
-		if (x != (int) n)
-			return -1;
-		buf = (const char*) buf + n;
-		count -= n;
-	}
-	return ret;
-}
-#endif /* WINDOWS_NATIVE */
-
-#ifndef WINDOWS_NATIVE
-static long long crt_lseek(int fd, long long offset, int whence)
-{
-	/* Note:
-	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
-	  to support 64-bit offsets.  */
-	off_t ret = lseek(fd, (off_t) offset, whence);
-	return (long long) ret;
-}
-
-static long long crt_tell(int fd)
-{
-	/* Note:
-	  _FILE_OFFSET_BITS=64 should be defined when compiling for a 32-bit OS
-	  to support 64-bit offsets.  */
-	off_t ret = tell(fd);
-	return (long long) ret;
-}
-#endif /* !WINDOWS_NATIVE */
-
-static int crt_mb_cur_max(void)
-{
-	return MB_CUR_MAX;
-}
-
-#ifndef WINDOWS_NATIVE
-static int *crt_errno_p(void)
-{
-	return &errno;
-}
-#endif
-
-static gawk_crt_api_t crt_api_impl = {
-	GAWK_CRT_MAJOR_VERSION,	/* major and minor versions */
-	GAWK_CRT_MINOR_VERSION,
-
-	malloc,
-	calloc,
-	realloc,
-	free,
-
-	/* print a message to stdout */
-	crt_printf,
-
-	/* process failed assertion */
-	crt_assert_failed,
-
-	/* Standard streams */
-	NULL/*stdin*/,
-	NULL/*stdout*/,
-	NULL/*stderr*/,
-
-	/* File IO */
-	crt_open,
-	close,
-	dup,
-	dup2,
-
-#ifdef WINDOWS_NATIVE
-	crt_read,
-	crt_write,
-	_lseeki64,
-	_telli64,
-	_commit,
-#else
-	read,
-	write,
-	crt_lseek,
-	crt_tell,
-	fsync,
-#endif
-
-	fflush,
-	fgetpos,
-	fsetpos,
-	rewind,
-	fseek,
-	ftell,
-
-	fopen,
-	fclose,
-	fread,
-	fwrite,
-
-	clearerr,
-	feof,
-	ferror,
-	fileno,
-
-	crt_putchar,
-	fputc,
-	getchar,
-	fgetc,
-	puts,
-	fputs,
-
-	fgets,
-	ungetc,
-
-	mkdir,
-	rmdir,
-	remove,
-	unlink,
-	rename,
-	chdir,
-
-#ifdef WINDOWS_NATIVE
-	xpathwc,
-	xfstat,
-	xwstat,
-	xstat,
-	xlstat,
-	xstat_root,
-#endif
-
-	crt_stat,
-#ifdef WINDOWS_NATIVE
-	_fstat64,
-#else
-	fstat,
-#endif
-	chmod,
-
-#ifdef WINDOWS_NATIVE
-	opendirfd,
-	closedirfd,
-	fchdir,
-	opendir,
-	closedir,
-	readdir,
-	wreadlinkfd,
-	wreadlink,
-	readlinkfd,
-	readlink,
-#endif
-
-	crt_fprintf,
-	sprintf,
-	snprintf,
-
-	crt_vprintf,
-	crt_vfprintf,
-	vsprintf,
-	vsnprintf,
-
-#ifdef WINDOWS_NATIVE
-	_errno,
-#else
-	crt_errno_p,
-#endif
-	strerror,
-
-	mkstemp,
-
-	crt_environ,
-	getenv,
-	setenv,
-	unsetenv,
-	clearenv,
-
-	setlocale,
-	localeconv,
-
-	crt_mb_cur_max,
-
-	btowc,
-
-	mblen,
-	mbrlen,
-
-	mbstowcs,
-	wcstombs,
-
-	strcoll,
-	tolower,
-	toupper,
-	isascii,
-	isalnum,
-	isalpha,
-	isblank,
-	iscntrl,
-	isdigit,
-	isgraph,
-	islower,
-	isprint,
-	ispunct,
-	isspace,
-	isupper,
-	isxdigit,
-
-#ifndef WINDOWS_NATIVE
-	wcscoll,
-	towlower,
-	towupper,
-	iswascii,
-	iswalnum,
-	iswalpha,
-	iswblank,
-	iswcntrl,
-	iswdigit,
-	iswgraph,
-	iswlower,
-	iswprint,
-	iswpunct,
-	iswspace,
-	iswupper,
-	iswxdigit,
-	wctype,
-	iswctype,
-	mbtowc,
-	mbrtowc,
-	wctomb,
-	wcrtomb,
-#else /* WINDOWS_NATIVE */
-	c32scoll,
-	c32tolower,
-	c32toupper,
-	c32isascii,
-	c32isalnum,
-	c32isalpha,
-	c32isblank,
-	c32iscntrl,
-	c32isdigit,
-	c32isgraph,
-	c32islower,
-	c32isprint,
-	c32ispunct,
-	c32isspace,
-	c32isupper,
-	c32isxdigit,
-	c32ctype,
-	c32isctype,
-	mbrtoc16,
-	mbrtoc32,
-	c16rtomb,
-	c32rtomb,
-	mbstoc32s,
-	c32stombs,
-	wcstoc32s,
-	c32stowcs,
-	c32slen,
-	c32schr,
-	c32srchr,
-	c32schrnul,
-#endif /* WINDOWS_NATIVE */
-
-	/* Add more CRT replacements here.  */
-};
-
-#endif /* GAWK_CRT_API */
-
 /* the struct api */
 gawk_api_t api_impl = {
 	/* data */
@@ -1898,7 +1507,7 @@ gawk_api_t api_impl = {
 	0, 0, 0, 0,
 #endif
 
-#ifdef GAWK_CRT_API
+#ifdef GAWK_USE_CRT_API
 	&crt_api_impl,
 #else
 	NULL,
@@ -1982,10 +1591,8 @@ init_ext_api(void)
 	api_impl.do_flags[4] = (do_debug ? 1 : 0);
 	api_impl.do_flags[5] = (do_mpfr ? 1 : 0);
 
-#ifdef GAWK_CRT_API
-	crt_api_impl.crt_stdin  = stdin;
-	crt_api_impl.crt_stdout = stdout;
-	crt_api_impl.crt_stderr = stderr;
+#ifdef GAWK_USE_CRT_API
+	init_crt_api();
 #endif
 }
 
