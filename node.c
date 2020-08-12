@@ -31,7 +31,6 @@
 static int is_ieee_magic_val(const char *val);
 static NODE *r_make_number(double x);
 static AWKNUM get_ieee_magic_val(char *val);
-extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *(*make_number)(double) = r_make_number;
 NODE *(*str2number)(NODE *) = r_force_number;
@@ -140,7 +139,7 @@ r_force_number(NODE *n)
 	} else {
 		save = *cpend;
 		*cpend = '\0';
-		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
+		n->numbr = strtod((const char *) cp, &ptr);
 		*cpend = save;
 	}
 
@@ -484,7 +483,7 @@ make_typed_regex(const char *re, size_t len)
 
 	n2 = make_string(re, len);
 	n2->typed_re = n;
-#if HAVE_MPFR
+#ifdef HAVE_MPFR
 	if (do_mpfr)
 		mpg_zero(n2);
 	else
