@@ -137,7 +137,7 @@ extern time_t timegm(struct tm *);
 extern int snprintf(char *restrict buf, size_t len, const char *restrict fmt, ...);
 #endif
 
-#if !defined(HAVE_USLEEP) || defined(_MSC_VER)
+#if !defined(HAVE_USLEEP) && ! defined(WINDOWS_NATIVE) && ! defined(__DJGPP___)
 extern int usleep(unsigned int);
 #endif
 
@@ -146,7 +146,7 @@ extern int setenv(const char *, const char *, int);
 extern int unsetenv(const char *);
 #endif
 
-#if !defined(HAVE_STRCOLL)
+#ifndef HAVE_STRCOLL
 extern int strcoll(const char *, const char *);
 #endif
 
