@@ -106,7 +106,7 @@ cleanup_mpfr(void)
 /* mpg_node --- allocate a node to store MPFR float or GMP integer */
 
 NODE *
-mpg_node(unsigned int flags)
+mpg_node(enum flagvals flags)
 {
 	NODE *r = make_number_node(flags);
 
