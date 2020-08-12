@@ -38,22 +38,21 @@ static struct localeinfo localeinfo;
 Regexp *
 make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 {
-	static char metas[] = ".*+(){}[]|?^$\\";
+	static const char metas[] = ".*+(){}[]|?^$\\";
 	Regexp *rp;
 	const char *rerr;
 	const char *src = s;
 	static char *buf = NULL;
 	static size_t buflen;
-	const char *end = s + len;
+	const char *const end = s + len;
 	char *dest;
-	int c, c2;
 	static bool first = true;
 	static bool no_dfa = false;
 	size_t i;
 	static struct dfa* dfaregs[2] = { NULL, NULL };
 	static bool nul_warned = false;
 
-	if (do_lint && ! nul_warned && memchr(s, '\0', len) != NULL) {
+	if (do_lint && ! nul_warned && strlen(s) != len) {
 		nul_warned = true;
 		lintwarn(_("behavior of matching a regexp containing NUL characters is not defined by POSIX"));
 	}
@@ -92,36 +91,37 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	}
 	dest = buf;
 
+	const char *const ok_to_escape =
+		do_posix ?       "{}()|*+?.^$\\[]/-" :
+		do_traditional ? "()|*+?.^$\\[]/-" :
+		/* else */       "<>`'BywWsS{}()|*+?.^$\\[]/-";
+
 	while (src < end) {
-		if (gawk_mb_cur_max > 1 && ! is_multibyte) {
+		if (! is_multibyte && gawk_mb_cur_max > 1) {
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
 			is_multibyte = mbrlen(src, (size_t) (end - src), &mbs);
-			if (   is_multibyte == 1
-			    || is_multibyte == (size_t) -1
-			    || is_multibyte == (size_t) -2
-			    || is_multibyte == 0) {
-				/* We treat it as a single-byte character.  */
-				is_multibyte = 0;
+			switch (is_multibyte) {
+				case (size_t) -1:
+				case (size_t) -2:
+					memset(&mbs, 0, sizeof(mbstate_t));	/* reset */
+					/* fall through */
+				case 1:
+					/* We treat it as a single-byte character.  */
+					is_multibyte = 0;
+					break;
+				default:
+					break;
 			}
 		}
 
-		const char *ok_to_escape;
-		if (do_posix)
-			ok_to_escape = "{}()|*+?.^$\\[]/-";
-		else if (do_traditional)
-			ok_to_escape = "()|*+?.^$\\[]/-";
-		else
-			ok_to_escape = "<>`'BywWsS{}()|*+?.^$\\[]/-";
-
 		/* We skip multibyte character, since it must not be a special
 		   character.  */
-		if ((gawk_mb_cur_max == 1 || ! is_multibyte) &&
-		    (*src == '\\')) {
-			c = *++src;
+		if (! is_multibyte && *src == '\\') {
+			int const c = *++src;
 			switch (c) {
 			case '\0':	/* \\ before \0, either dynamic data or real end of string */
-				if (src >= s + len)
+				if (src == end)
 					*dest++ = '\\';	// at end of string, will fatal below
 				else
 					fatal(_("invalid NUL byte in dynamic regexp"));
@@ -141,8 +141,8 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			case '4':
 			case '5':
 			case '6':
-			case '7':
-				c2 = parse_escape(&src);
+			case '7': {
+				int const c2 = parse_escape(&src);
 				if (c2 < 0)
 					cant_happen();
 				/*
@@ -152,7 +152,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				 */
 				if (do_traditional
 				    && ! do_posix
-				    && (isdigit(c) || c == 'x')
+				    && (char_is_digit((unsigned char) c) || c == 'x')
 				    && strchr("()|*+?.^$\\[]", c2) != NULL)
 					*dest++ = '\\';
 				*dest++ = (char) c2;
@@ -163,6 +163,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 					lintwarn(_("behavior of matching a regexp containing NUL characters is not defined by POSIX"));
 				}
 				break;
+			}
 			case '8':
 			case '9':	/* a\9b not valid */
 				*dest++ = (char) c;
@@ -170,9 +171,9 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			{
 				static bool warned[2];
 
-				if (! warned[c - '8']) {
-					awkwarn(_("regexp escape sequence `\\%c' treated as plain `%c'"), c, c);
-					warned[c - '8'] = true;
+				if (! warned[c != '8']) {
+					awkwarn(_("regexp escape sequence `\\%c' treated as plain `%c'"), (char) c, (char) c);
+					warned[c != '8'] = true;
 				}
 			}
 				break;
@@ -189,9 +190,9 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				if (strchr(ok_to_escape, c) == NULL) {
 					static bool warned[256];
 
-					if (! warned[c & 0xFF]) {
-						awkwarn(_("regexp escape sequence `\\%c' is not a known regexp operator"), c);
-						warned[c & 0xFF] = true;
+					if (! warned[(unsigned char) c & 0xFF]) {
+						awkwarn(_("regexp escape sequence `\\%c' is not a known regexp operator"), (char) c);
+						warned[(unsigned char) c & 0xFF] = true;
 					}
 				}
 				*dest++ = '\\';
@@ -199,12 +200,12 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				src++;
 				break;
 			} /* switch */
-		} else {
-			c = *src;
-			*dest++ = *src++;	/* not '\\' */
+			continue;
 		}
-		if (gawk_mb_cur_max > 1 && is_multibyte)
+
+		if (is_multibyte)
 			is_multibyte--;
+		*dest++ = *src++;	/* not '\\' */
 	} /* while */
 
 	*dest = '\0';
