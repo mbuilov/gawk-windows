@@ -50,8 +50,7 @@
 #endif
 
 #ifdef WINDOWS_NATIVE
-#define fileno(fd)	_fileno(fd)
-#define getpid()	_getpid()
+#include "oldnames.h"
 #endif
 
 #ifdef HAVE_LIBSIGSEGV
@@ -160,7 +159,7 @@ struct pre_assign {
 };
 
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
-static ulong_t assigns_count = 0u;			/* how many of them */
+static awk_ulong_t assigns_count = 0u;		/* how many of them */
 
 static bool disallow_var_assigns = false;	/* true for --exec */
 
@@ -170,7 +169,7 @@ static void parse_args(int argc, char **argv);
 static void set_locale_stuff(void);
 static bool stopped_early = false;
 
-enum do_flag_values do_flags = 0;
+do_flags_t do_flags = 0;
 bool do_itrace = false;			/* provide simple instruction trace */
 bool do_optimize = true;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
@@ -295,17 +294,20 @@ get_specified_locale(const struct wide_arg *wl, char opt_name_array[])
 
 #endif /* WINDOWS_NATIVE */
 
-/* GCC complains about missing protope of wmain().  Provide one.  */
-int wmain(int argc, wchar_t **wargv);
-
-int
-#ifdef WINDOWS_NATIVE
-wmain(int argc, wchar_t **wargv)
+#if defined(WINDOWS_NATIVE) && (defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR))
+# if defined(__GNUC__) || defined(__clang__)
+/* gcc/clang complains about missing protope of wmain().  Provide one.  */
+int wmain(int argc, wchar_t *main_argv[]);
+# endif
+int wmain(int argc, wchar_t *main_argv[])
 #else
-main(int argc, char **argv)
+/* mingw32 from MinGW.org (not 32-bit variant of Mingw-64) do not supports wmain(),
+  so the CRT startup code will convert wide-character program arguments to multibyte ones,
+  but this is just a waste of time, since we ignore the arguments completely. */
+int main(int argc, char *main_argv[])
 #endif
 {
-	ulong_t i;
+	awk_ulong_t i;
 	char *extra_stack;
 	unsigned have_srcfile = 0;
 	const SRCFILE *s;
@@ -313,15 +315,18 @@ main(int argc, char **argv)
 #ifdef LOCALEDEBUG
 	const char *initial_locale;
 #endif
-#ifdef WINDOWS_NATIVE
 	char **argv;
+
+#ifndef WINDOWS_NATIVE
+	argv = main_argv;
+#else
 	struct wide_arg *const wargs = arg_parse_command_line(&argc);
 	if (wargs == NULL)
 		fatal("Failed to parse command-line arguments list");
 
 	/* Not used, since MinGW version do not handles escaping of
 	   double quote via two double-quotes, like: "1""2".  */
-	(void)wargv;
+	(void) main_argv;
 #endif
 
 #if defined(_MSC_VER) && (defined(MEMDEBUG) || defined(MEMDEBUGLEAKS))
@@ -397,6 +402,12 @@ main(int argc, char **argv)
 
 	if ((cp = getenv("GAWK_LOCALE_DIR")) != NULL)
 		locale_dir = cp;
+
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+	/* For MinGW.org:
+	  force two-digit exponents for "%e" printf format to be compatible with c99 and POSIX.  */
+	_set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 
 #if defined(F_GETFL) && defined(O_APPEND)
 	// 1/2018: This is needed on modern BSD systems so that the
@@ -707,7 +718,7 @@ main(int argc, char **argv)
 static void
 add_preassign(enum assign_type type, const char *val)
 {
-	static ulong_t alloc_assigns = 0u;		/* for how many are allocated */
+	static awk_ulong_t alloc_assigns = 0u;		/* for how many are allocated */
 
 #define INIT_SRC 4u
 
@@ -849,7 +860,7 @@ GNU General Public License for more details.\n\
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n");
 	static const char patched_by[] =
-	  N_("\nHeavily patched for Windows by: Michael M. Builov <mbuilov@gmail.com>.\n");
+	  N_("\nPatched by: Michael M. Builov (https://github.com/mbuilov/gawk-windows).\n");
 
 	/* multiple blurbs are needed for some brain dead compilers. */
 PRAGMA_WARNING_PUSH
@@ -1512,8 +1523,10 @@ version(void)
 #endif
 #ifdef _MSC_VER
 	printf(" (MSVC)\n");
+#elif defined __MINGW64_VERSION_MAJOR
+	printf(" (Mingw-w64)\n");
 #elif defined __MINGW32__
-	printf(" (MINGW)\n");
+	printf(" (MinGW.org)\n");
 #else
 	printf("\n");
 #endif
@@ -1667,14 +1680,21 @@ update_global_values(void)
 
 /* getenv_long --- read a long value (>= 0) from an environment var. */
 
-long_t
+awk_long_t
 getenv_long(const char *name)
 {
 	const char *val;
-	long newval;
-	if ((val = getenv(name)) != NULL && isdigit((unsigned char) *val)) {
-		for (newval = 0; *val && isdigit((unsigned char) *val); val++)
-			newval = (newval * 10) + *val - '0';
+	awk_long_t newval;
+	if ((val = getenv(name)) != NULL && (newval = char_digit_value((unsigned char) *val)) != -1) {
+		int d;
+		while ((d = char_digit_value((unsigned char) *++val)) != -1) {
+			if (newval > AWKLONGMAX/10)
+				return -1;	/* Integer overflow! */
+			newval *= 10;
+			if (d > AWKLONGMAX - newval)
+				return -1;	/* Integer overflow! */
+			newval += d;
+		}
 		return newval;
 	}
 	return -1;
