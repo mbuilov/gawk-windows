@@ -33,21 +33,7 @@
 #ifdef WINDOWS_NATIVE
 #include <math.h> /* for fmod */
 #include <io.h>   /* for close */
-#endif
-
-#ifdef WINDOWS_NATIVE
-#define close			_close
-#define fileno(fd)		_fileno(fd)
-#define fdopen(fd, omode)	_fdopen(fd, omode)
-#endif
-
-#ifndef INT32_MAX
-# define INT32_MAX ((int32_t)((uint32_t)-1/2))
-#endif
-#ifndef INT32_MIN
-# if (INT_MIN + 2) == -(INT_MAX - 1)
-#  define INT32_MIN (-INT32_MAX - 1)
-# endif
+#include "oldnames.h"
 #endif
 
 #if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
@@ -67,7 +53,7 @@ static char *get_src_buf(void);
 static token_t yylex(void);
 int	yyparse(void);
 static INSTRUCTION *snode(INSTRUCTION *subn, INSTRUCTION *op);
-static char **check_params(char *fname, ulong_t pcount, INSTRUCTION *list);
+static char **check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list);
 static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
 static NODE *mk_rexp(INSTRUCTION *exp);
 static void param_sanity(INSTRUCTION *arglist);
@@ -120,7 +106,7 @@ static INSTRUCTION *mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 static INSTRUCTION *mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op);
 static INSTRUCTION *mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op);
 static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, enum redirval redirtype);
-static ulong_t count_expressions(INSTRUCTION **list, bool isarg);
+static awk_ulong_t count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
@@ -156,7 +142,7 @@ const char *const ruletab[] = {
 
 static bool in_print = false;	/* lexical scanning kludge for print */
 static int in_parens = 0;	/* lexical scanning kludge for print */
-static ulong_t sub_counter = 0u;	/* array dimension counter for use in delete */
+static awk_ulong_t sub_counter = 0u;	/* array dimension counter for use in delete */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexend;		/* end of buffer */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
@@ -185,7 +171,7 @@ extern const char *source;
 extern unsigned sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
-extern ulong_t max_args;
+extern awk_ulong_t max_args;
 extern NODE **args_array;
 
 const char awk_namespace[] = "awk";
@@ -1752,7 +1738,7 @@ common_exp
 	  { $$ = $1; }
 	| common_exp simp_exp %prec CONCAT_OP
 	  {
-		ulong_t count = 2u;
+		awk_ulong_t count = 2u;
 		bool is_simple_var = false;
 
 		if ($1->lasti->opcode == Op_concat) {
@@ -2126,7 +2112,7 @@ delete_exp_list
 	: bracketed_exp_list
 	  {
 		INSTRUCTION *ip = $1->lasti;
-		const ulong_t count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
+		const awk_ulong_t count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
 		if (count > 1u) {
 			/* change Op_subscript or Op_sub_array to Op_concat */
 			ip->opcode = Op_concat;
@@ -4138,7 +4124,7 @@ retry:
 	case '.':
 		c = nextc(true);
 		pushback();
-		if (! isdigit(c))
+		if (! char_is_digit(c))
 			return lasttok = '.';
 		else
 			c = '.';
@@ -4166,7 +4152,7 @@ retry:
 				if (tok == tokstart + 2) {
 					int peek = nextc(true);
 
-					if (isxdigit(peek)) {
+					if (char_is_xdigit(peek)) {
 						inhex = true;
 						pushback();	/* following digit */
 					} else {
@@ -4195,7 +4181,7 @@ retry:
 				if ((c = nextc(true)) == '-' || c == '+') {
 					int c2 = nextc(true);
 
-					if (isdigit(c2)) {
+					if (char_is_digit(c2)) {
 						tokadd((char)c);
 						tokadd((char)c2);
 					} else {
@@ -4203,7 +4189,7 @@ retry:
 						pushback();	/* + or - */
 						pushback();	/* e or E */
 					}
-				} else if (! isdigit(c)) {
+				} else if (! char_is_digit(c)) {
 					pushback();	/* character after e or E */
 					pushback();	/* e or E */
 				} else {
@@ -4284,7 +4270,7 @@ retry:
 		else
 			d = atof(tokstart);
 		yylval->memory = set_profile_text(make_number(d), tokstart, strlen(tokstart) - 1);
-		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d)
+		if (AWKLONGMIN <= d && d <= AWKLONGMAX && d == (AWKNUM) (awk_long_t) d)
 			yylval->memory->flags |= NUMINT;
 		return lasttok = YNUMBER;
 
@@ -4877,7 +4863,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 static int
 parms_shadow(INSTRUCTION *pc, bool *shadow)
 {
-	ulong_t pcount, i;
+	awk_ulong_t pcount, i;
 	bool ret = false;
 	NODE *func, *fp;
 	const char *fname;
@@ -5075,7 +5061,7 @@ static int
 install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 {
 	NODE *r, *f;
-	ulong_t pcount = 0u;
+	awk_ulong_t pcount = 0u;
 
 	r = lookup(fname);
 	if (r != NULL) {
@@ -5111,10 +5097,10 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
  */
 
 static char **
-check_params(char *fname, ulong_t pcount, INSTRUCTION *list)
+check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list)
 {
 	INSTRUCTION *p, *np;
-	ulong_t i, j;
+	awk_ulong_t i, j;
 	char *name;
 	char **pnames;
 
@@ -5144,8 +5130,8 @@ check_params(char *fname, ulong_t pcount, INSTRUCTION *list)
 		for (j = 0u; j < i; j++) {
 			if (strcmp(name, pnames[j]) == 0) {
 				error_ln(p->source_line,
-					_("function `%s': parameter #%lu, `%s', duplicates parameter #%lu"),
-					fname, TO_ULONG(i + 1), name, TO_ULONG(j + 1));
+					_("function `%s': parameter #%" AWKULONGFMT ", `%s', duplicates parameter #%" AWKULONGFMT ""),
+					fname, TO_AWK_ULONG(i + 1), name, TO_AWK_ULONG(j + 1));
 			}
 		}
 
@@ -5159,7 +5145,7 @@ check_params(char *fname, ulong_t pcount, INSTRUCTION *list)
 
 
 #ifdef HASHSIZE
-undef HASHSIZE
+#undef HASHSIZE
 #endif
 #define HASHSIZE 1021u
 
@@ -5261,7 +5247,7 @@ static void
 param_sanity(INSTRUCTION *arglist)
 {
 	INSTRUCTION *argl, *arg;
-	ulong_t i = 1u;
+	awk_ulong_t i = 1u;
 
 	if (arglist == NULL)
 		return;
@@ -5269,7 +5255,7 @@ param_sanity(INSTRUCTION *arglist)
 		arg = argl->lasti;
 		if (arg->opcode == Op_match_rec)
 			warning_ln(arg->source_line,
-				_("regexp constant for parameter #%lu yields boolean value"), TO_ULONG(i));
+				_("regexp constant for parameter #%" AWKULONGFMT " yields boolean value"), TO_AWK_ULONG(i));
 		argl = arg->nexti;
 		i++;
 	}
@@ -6286,12 +6272,12 @@ mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1)
  *                       for function arguments.
  */
 
-static ulong_t
+static awk_ulong_t
 count_expressions(INSTRUCTION **list, bool isarg)
 {
 	INSTRUCTION *expr;
 	INSTRUCTION *r = NULL;
-	ulong_t count = 0u;
+	awk_ulong_t count = 0u;
 
 	if (*list == NULL)	/* error earlier */
 		return 0u;
