@@ -64,7 +64,6 @@ static void pp_push(OPCODE type, char *s, enum pp_push_flag flag, INSTRUCTION *c
 static NODE *pp_pop(void);
 #define DONT_INDENT ((unsigned)-1)
 static void print_comment(const INSTRUCTION *pc, unsigned in);
-const char *redir2str(enum redirval redirtype);
 static void pp_namespace(const char *name, INSTRUCTION *comment);
 static void pp_namespace_list(const INSTRUCTION *list);
 static char *adjust_namespace(char *name, bool *malloced);
