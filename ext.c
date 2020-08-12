@@ -35,9 +35,10 @@ extern SRCFILE *srcfiles;
 
 #include <dlfcn.h>
 
-#define INIT_FUNC	"dl_load"
-
 /* load_ext --- load an external library */
+
+#define TO_STRING_(s)	#s
+#define TO_STRING(s)	TO_STRING_(s)
 
 void
 load_ext(const char *lib_name)
@@ -73,25 +74,25 @@ load_ext(const char *lib_name)
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
 		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible': %s"),
-				lib_name, dlerror_());
+		      lib_name, dlerror_());
 
 	install_func = (int (*)(const gawk_api_t *const, gawk_extension_api_ver_t *))
-				dlsym(dl, INIT_FUNC);
+				dlsym(dl, TO_STRING(GAWK_DYN_EXT_INIT_FUNC));
 	if (install_func == NULL)
 		fatal(_("load_ext: library `%s': cannot call function `%s': %s"),
-				lib_name, INIT_FUNC, dlerror_());
+		      lib_name, TO_STRING(GAWK_DYN_EXT_INIT_FUNC), dlerror_());
 
 	ret = install_func(& api_impl, & ver);
 	if (ret < 0) {
 		fatal("%s version mismatch with gawk!\n"
-			"\tmy version (API %d.%d), gawk version (API %d.%d)",
-			ver.api_name,
-			ver.need.major_version, ver.need.minor_version,
-			ver.have.major_version, ver.have.minor_version);
+		      "\tmy version (API %d.%d), gawk version (API %d.%d)",
+		      ver.api_name,
+		      ver.need.major_version, ver.need.minor_version,
+		      ver.have.major_version, ver.have.minor_version);
 	}
 	if (ret == 0)
 		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
-				lib_name, INIT_FUNC);
+			lib_name, TO_STRING(GAWK_DYN_EXT_INIT_FUNC));
 }
 
 /* make_builtin --- register name to be called as func with a builtin body */
@@ -168,7 +169,7 @@ NODE *
 get_argument(size_t i)
 {
 	NODE *t;
-	ulong_t arg_count;
+	awk_ulong_t arg_count;
 	INSTRUCTION *pc;
 
 	pc = TOP()->code_ptr;		/* Op_ext_builtin instruction */
@@ -258,7 +259,7 @@ close_extensions(void)
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next)
 		if (s->stype == SRC_EXTLIB && s->fini_func)
-               	        (*s->fini_func)();
+			(*s->fini_func)();
 }
 
 /* is_valid_identifier --- return true if name is a valid simple identifier */
