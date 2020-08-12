@@ -22,7 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#if !defined (__DJGPP__)
+#if !defined (__DJGPP__) && !defined (__MINGW32__) && !defined (_MSC_VER)
 # if defined (popen)
 #  undef popen
 #  undef pclose
@@ -31,11 +31,4 @@
 # define pclose(f)	os_pclose(f)
   extern FILE *os_popen( const char *, const char * );
   extern int  os_pclose( FILE * );
-# if defined __MINGW32__ || defined _MSC_VER
-#  define system(c)	os_system(c)
-   extern int os_system( const char * );
-#  define SIGKILL	9
-   extern int kill( intptr_t, int );
-   extern char *quote_cmd( const char * );
-# endif	 /* __MINGW32__ || _MSC_VER */
-#endif	/* !__DJGPP__ */
+#endif	/* !__DJGPP__ && !__MINGW32__ && !_MSC_VER */
