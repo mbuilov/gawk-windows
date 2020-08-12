@@ -32,6 +32,7 @@
 #define FAKE_FD_VALUE 42
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
+
 /* Replacements for sys/wait.h macros.  */
 # define WEXITSTATUS(stv) (((unsigned)(stv)) & ~0xC0000000)
 /* MS-Windows programs that crash due to a fatal exception exit with
@@ -54,32 +55,39 @@ unsigned int getgid (void);
 unsigned int getegid (void);
 
 /* gawkmisc.pc */
-int unsetenv (const char *);
-int setenv (const char *, const char *, int);
 void w32_maybe_set_errno (void);
 
 /* libintl.h from GNU gettext defines setlocale to redirect that to
    its own function.  Note: this will have to be revisited if MinGW
    Gawk will support ENABLE_NLS at some point.  */
-#ifdef setlocale
-# undef setlocale
-#endif
+# ifdef setlocale
+#  undef setlocale
+# endif
 
 /* set locale defaults from environment variables */
 void pc_set_locale(const char *def);
 
+int w32_execvp(const char *file, char **argv);
+int w32_system(const char *cmd);
+int w32_kill(intptr_t pid, int sig);
+
+# define SIGKILL	9
+# define kill(pid, sig)	w32_kill(pid, sig)
+
+wchar_t *wquote_cmd(const char *cmd, wchar_t buf[], size_t bufsz);
+
 #endif	/* __MINGW32__ || _MSC_VER */
 
 #ifdef _MSC_VER
-#ifndef S_ISDIR
-#define S_ISDIR(m) (((m)&_S_IFMT) == _S_IFDIR)
-#endif
-#ifndef S_ISCHR
-#define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
-#endif
-#ifndef S_ISFIFO
-#define S_ISFIFO(m) (((m)&_S_IFMT) == _S_IFIFO)
-#endif
+# ifndef S_ISDIR
+#  define S_ISDIR(m) (((m)&_S_IFMT) == _S_IFDIR)
+# endif
+# ifndef S_ISCHR
+#  define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
+# endif
+# ifndef S_ISFIFO
+#  define S_ISFIFO(m) (((m)&_S_IFMT) == _S_IFIFO)
+# endif
 #endif
 
 #if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__) || defined(_MSC_VER)
@@ -93,6 +101,7 @@ int getppid(void);
 #ifdef __DJGPP__
 /* Prototypes of for Posix functions for which we define replacements
    in pc/ files.  */
+int unsetenv (const char *);
 wint_t btowc (int c);
 wint_t putwc (wchar_t wc, FILE *stream);
 #endif
