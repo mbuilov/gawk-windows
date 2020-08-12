@@ -3,6 +3,16 @@
 	* awkgram.c, command.c: Regenerated with Bison 3.7.1.
 	* NEWS: Updated.
 
+	Unrelated:
+
+	* profile.c (pp_namespace): Always print a newline before the
+	@namespace, in case it comes after a comment. Thanks to J Naman
+	for the report.
+	* symbol.c (comp_symbol): Adjust comparison so that names in the
+	awk namespace come out first. Makes the order of functions in
+	pretty-printed output more sane. Thanks also to J Naman for
+	getting me to explore this issue.
+
 2020-07-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* custom.h (FLEXIBLE_ARRAY_MEMBER): Define to 1 for dfa.h.

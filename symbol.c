@@ -366,7 +366,18 @@ comp_symbol(const void *v1, const void *v2)
 	n1 = *npp1;
 	n2 = *npp2;
 
-	return strcmp(n1->vname, n2->vname);
+	// names in awk namespace come out first
+	bool n1_is_in_ns = (strchr(n1->vname, ':') != NULL);
+	bool n2_is_in_ns = (strchr(n2->vname, ':') != NULL);
+
+	if (n1_is_in_ns && n2_is_in_ns)
+		return strcmp(n1->vname, n2->vname);
+	else if (n1_is_in_ns && ! n2_is_in_ns)
+		return 1;
+	else if (! n1_is_in_ns && n2_is_in_ns)
+		return -1;
+	else
+		return strcmp(n1->vname, n2->vname);
 }
 
 
