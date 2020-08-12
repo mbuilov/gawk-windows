@@ -399,7 +399,7 @@ set_NF(void)
 {
 	field_num_t i;
 	field_num_t nf;
-	long si;
+	awk_long_t si;
 	NODE *n;
 
 	assert(NF != BAD_NF);
