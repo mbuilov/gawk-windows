@@ -309,3 +309,9 @@ cygwin_premain2(int argc, char **argv, struct per_process *myself)
 	setmode(fileno (stdin), O_TEXT);
 }
 #endif
+
+int
+os_sleep(unsigned mills)
+{
+	return usleep(mills*1000);
+}
