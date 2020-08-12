@@ -41,11 +41,18 @@
 #include <wchar.h>
 #include <io.h>
 #include <fcntl.h>
+#include <errno.h>
 
+#include "libutf16/utf16_to_utf8.h"
 #include "mscrtx/arg_parser.h"
 #include "mscrtx/utf8env.h"
 #include "mscrtx/locale_helpers.h"
+#include "mscrtx/localerpl.h"
 #include "mscrtx/console_setup.h"
+
+#ifndef _O_U8TEXT
+#include "mscrtx/sprintf_helpers.h"
+#endif
 
 /* printf-format specifier for unsigned long long.
    A c99-compatible standard runtime library must support "%llu".  */
@@ -53,6 +60,10 @@
 # define LLUFMT "llu"
 #endif
 
+#define STDERR_BIT 1
+#define STDOUT_BIT 2
+
+/* exact copy of the same function in extension/readdir.c */
 static unsigned long long
 file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 {
@@ -62,6 +73,7 @@ file_info_get_inode(const BY_HANDLE_FILE_INFORMATION *info)
 	return inode;
 }
 
+/* exact copy of the same function in extension/readdir.c */
 static int
 ftype_and_ino(
 	const WIN32_FIND_DATAW *ffd,
@@ -180,7 +192,50 @@ static HANDLE open_dir(
 	return h;
 }
 
-static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int afi)
+static void vprintf_to_stdout(const int std_streams_to_utf8, const wchar_t format[], va_list ap)
+{
+#ifndef _O_U8TEXT
+	/* old MSVCRT.DLL do not supports _O_U8TEXT file mode, print in utf16 and convert to utf8 manually */
+	if (STDOUT_BIT & std_streams_to_utf8) {
+		wchar_t wbuf[256], *wb = wbuf;
+		const int n = vswprintf_helper(&wb, sizeof(wbuf)/sizeof(wbuf[0]), format, ap);
+		if (-1 == n)
+			return;
+		if (n) {
+			const utf16_char_t *w = (const utf16_char_t*)wb;
+			const utf16_char_t *const e = w + n;
+			do {
+				char buf[512];
+				utf8_char_t *b = (utf8_char_t*)buf;
+				const size_t x = utf16_to_utf8(&w, &b, sizeof(buf) - 1, (size_t)(e - w));
+				if (!x) {
+					errno = (w == e) ? E2BIG : EILSEQ;
+					goto out;
+				}
+				/* assume buffer size is big enough so at least one utf8-character has been decoded */
+				*b = '\0';
+				fputs(buf, stdout);
+			} while (w != e);
+		}
+out:
+		if (wb != wbuf)
+			free(wb);
+		return;
+	}
+#endif
+	vfwprintf(stdout, format, ap);
+	(void)std_streams_to_utf8;
+}
+
+static void printf_to_stdout(const int std_streams_to_utf8, const wchar_t format[], ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	vprintf_to_stdout(std_streams_to_utf8, format, ap);
+	va_end(ap);
+}
+
+static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int afi, const int std_streams_to_utf8)
 {
 	WIN32_FIND_DATAW ffd;
 
@@ -190,8 +245,12 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 		return 2;
 
 	/* print fake total */
-	if (!afi)
-		fwprintf(stdout, L"total 555\n");
+	if (!afi) {
+		if (std_streams_to_utf8 & STDOUT_BIT)
+			fprintf(stdout, "total 555\n");
+		else
+			fwprintf(stdout, L"total 555\n");
+	}
 
 	do {
 		unsigned long long ino;
@@ -200,12 +259,12 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 
 		if (afi) {
 			/* ls -afi */
-			fwprintf(stdout, L"%" LLUFMT " %ls\n", ino, ffd.cFileName);
+			printf_to_stdout(std_streams_to_utf8, L"%" LLUFMT " %ls\n", ino, ffd.cFileName);
 		}
 		else {
 			/* ls -lna */
 			unsigned name_len = (unsigned) wcslen(ffd.cFileName);
-			fwprintf(stdout, L"%c%ls %2.u 1000 1000 %8.u Mar 27 2016 %ls%ls\n",
+			printf_to_stdout(std_streams_to_utf8, L"%c%ls %2.u 1000 1000 %8.u Mar 27 2016 %ls%ls\n",
 				'd' == ftype ? L'd' :
 				'l' == ftype ? L'l' :
 				L'-',
@@ -225,8 +284,12 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 		FindClose(h);
 
 		if (ERROR_NO_MORE_FILES != err) {
-			fwprintf(stderr, L"%ls: FindNextFileW() failed with error: %lx\n",
-				prog, (unsigned long) err);
+			if (std_streams_to_utf8 & STDERR_BIT)
+				fprintf(stderr, "%ls: FindNextFileW() failed with error: %lx\n",
+					prog, (unsigned long) err);
+			else
+				fwprintf(stderr, L"%ls: FindNextFileW() failed with error: %lx\n",
+					prog, (unsigned long) err);
 			return 2;
 		}
 	}
@@ -242,18 +305,25 @@ static int usage(const wchar_t prog[])
 	return 2;
 }
 
-/* GCC complains about missing protope of wmain().  Provide one.  */
-int wmain(int argc, wchar_t *wargv[]);
-
-int wmain(int argc, wchar_t *wargv[])
+#if defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR)
+# if defined(__GNUC__) || defined(__clang__)
+/* gcc/clang complains about missing protope of wmain().  Provide one.  */
+int wmain(int argc, wchar_t *argv[]);
+# endif
+int wmain(int argc, wchar_t *argv[])
+#else
+/* mingw32 from MinGW.org (not 32-bit variant of Mingw-64) do not supports wmain(),
+  so the CRT startup code will convert wide-character program arguments to multibyte ones,
+  but this is just a waste of time, since we ignore the arguments completely. */
+int main(int argc, char *argv[])
+#endif
 {
 	struct wide_arg *const wargs = arg_parse_command_line(&argc);
 
-	if (-1 == console_set_wide(_fileno(stderr)))
-		(void) _setmode(_fileno(stderr), _O_U8TEXT);
-
-	if (-1 == console_set_wide(_fileno(stdout)))
-		(void) _setmode(_fileno(stdout), _O_U8TEXT);
+	/* We will write only wide-character strings to stderr/stdout if they are print to console.  */
+	const int std_streams_is_file =
+		((-1 == console_set_wide(_fileno(stderr))) ? STDERR_BIT : 0) |
+		((-1 == console_set_wide(_fileno(stdout))) ? STDOUT_BIT : 0);
 
 	if (wargs == NULL) {
 		fwprintf(stderr, L"Failed to parse command-line arguments list");
@@ -262,7 +332,7 @@ int wmain(int argc, wchar_t *wargv[])
 
 	/* Not used, since MinGW version do not handles escaping of
 	   double quote via two double-quotes, like: "1""2".  */
-	(void)wargv;
+	(void)argv;
 
 	{
 		int afi;
@@ -312,8 +382,21 @@ int wmain(int argc, wchar_t *wargv[])
 			}
 		}
 
-		if (process_dir(prog, w->value, afi))
-			return 2;
+		{
+			/* for UTF8-locale, fwprintf() should print text in UTF8 if stderr/stdout is redirected to a file */
+			int std_streams_to_utf8 = localerpl_is_utf8() ? std_streams_is_file : 0;
+
+#ifdef _O_U8TEXT
+			if (std_streams_to_utf8 & STDERR_BIT)
+				(void) _setmode(_fileno(stderr), _O_U8TEXT);
+			if (std_streams_to_utf8 & STDOUT_BIT)
+				(void) _setmode(_fileno(stdout), _O_U8TEXT);
+			std_streams_to_utf8 = 0;
+#endif
+
+			if (process_dir(prog, w->value, afi, std_streams_to_utf8))
+				return 2;
+		}
 	}
 
 	arg_free_wide_args(wargs);
