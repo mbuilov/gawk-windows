@@ -51,6 +51,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -65,7 +66,7 @@
 #include <locale.h>
 #endif
 
-#if defined _MSC_VER || defined __MINGW32__
+#ifdef WINDOWS_NATIVE
 #include "mscrtx/xstat.h"
 #endif
 
@@ -76,7 +77,29 @@
 #define N_(msgid) msgid
 
 #ifndef O_BINARY
-#define O_BINARY 0
+# ifdef _O_BINARY
+#  define O_BINARY _O_BINARY
+# else
+#  define O_BINARY 0
+# endif
+#endif
+
+#ifndef O_RDONLY
+# ifdef _O_RDONLY
+#  define O_RDONLY _O_RDONLY
+# endif
+#endif
+
+#ifndef S_ISREG
+# ifdef S_IFREG
+#  define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+# elif defined _S_IFREG
+#  define S_ISREG(m)	(((m) & _S_IFMT) == _S_IFREG)
+# endif
+#endif
+
+#ifndef INT_MAX
+# define INT_MAX ((unsigned)-1/2)
 #endif
 
 GAWK_PLUGIN_GPL_COMPATIBLE
@@ -90,7 +113,7 @@ read_file_to_buffer(fd_t fd, const gawk_xstat_t *sbuf, size_t limit)
 	char *text;
 	size_t size;
 
-	if ((sbuf->st_mode & S_IFMT) != S_IFREG) {
+	if (! S_ISREG(sbuf->st_mode)) {
 		errno = EINVAL;
 		update_ERRNO_int(errno);
 		return NULL;
