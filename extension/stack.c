@@ -32,6 +32,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
