@@ -42,6 +42,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -62,15 +63,19 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
-#if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#ifndef S_ISREG
+# ifdef S_IFREG
+#  define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+# elif defined _S_IFREG
+#  define S_ISREG(m)	(((m) & _S_IFMT) == _S_IFREG)
+# endif
 #endif
 
 #ifdef _MSC_VER
-#define STDOUT_FILENO fileno(stdout)
+# define STDOUT_FILENO fileno(stdout)
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 # define chown(x,y,z)  (0)
 # define link(f1,f2)   rename(f1,f2)
 #endif
@@ -83,7 +88,13 @@ static struct {
 	int default_stdout;
 	int posrc;	/* return code from fgetpos */
 	fpos_t pos;
-} state = { NULL, -1, 0, 0 };
+} state = { NULL, -1, 0,
+#ifdef __MINGW32__
+	{ 0 }
+#else
+	0
+#endif
+};
 
 /*
  * XXX Known problems:
@@ -256,7 +267,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		free(bakname);
 	}
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 	unlink(filename.str_value.str);
 #endif
 
