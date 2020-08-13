@@ -71,13 +71,12 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#elif defined(_MSC_VER) || defined(__MINGW32__)
+#elif defined WINDOWS_NATIVE
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "mscrtx/xstat.h"
 #include "mscrtx/wreaddir.h"
 #include "mscrtx/win_find.h"
-#define WINDOWS_NATIVE
 #else
 #error Cannot compile the gawkfts extension on this system!
 #endif
@@ -89,12 +88,26 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 #include "gawkapi.h"
 #include "gawkfts.h"
 
-#if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#ifndef S_ISREG
+# ifdef S_IFREG
+#  define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+# elif defined _S_IFREG
+#  define S_ISREG(m)	(((m) & _S_IFMT) == _S_IFREG)
+# endif
 #endif
 
-#if ! defined(S_ISDIR) && defined(S_IFDIR)
-#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#ifndef S_ISDIR
+# ifdef S_IFDIR
+#  define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+# elif defined _S_IFDIR
+#  define S_ISDIR(m)	(((m) & _S_IFMT) == _S_IFDIR)
+# endif
+#endif
+
+#ifndef O_RDONLY
+# ifdef _O_RDONLY
+#  define O_RDONLY _O_RDONLY
+# endif
 #endif
 
 /*
