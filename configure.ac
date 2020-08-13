@@ -303,7 +303,8 @@ AC_CHECK_FUNCS(__etoa_l atexit btowc fmod gai_strerror \
 	fwrite_unlocked \
 	isascii isblank iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
-	memset_ulong mkstemp posix_openpt setenv setlocale setsid sigprocmask \
+	memset_ulong mkstemp mtrace \
+	posix_openpt setenv setlocale setsid sigprocmask \
 	snprintf strchr \
 	strerror strftime strcasecmp strncasecmp strcoll strtod strtoul \
 	system timegm tmpfile towlower towupper tzset usleep waitpid wcrtomb \

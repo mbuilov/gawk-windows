@@ -1,3 +1,11 @@
+2020-08-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix TIDYMEM / use of mtrace.
+
+	* configure.ac: Add mtrace to list of functions searched for.
+	* symbol.c (make_symbol): Set valref to 1. Allows the
+	release_all_vars function to work.
+
 2020-08-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.c, command.c: Regenerated with Bison 3.7.1.

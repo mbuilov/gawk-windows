@@ -292,6 +292,7 @@ make_symbol(const char *name, NODETYPE type)
 		r->var_value = dupnode(Nnull_string);
 	r->vname = (char *) name;
 	r->type = type;
+	r->valref = 1;
 
 	return r;
 }
