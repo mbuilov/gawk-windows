@@ -65,18 +65,12 @@
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#elif defined(_MSC_VER) || defined(__MINGW32__)
-# ifndef WINDOWS_NATIVE
-#  define WINDOWS_NATIVE
-# endif
-#else
-#error Cannot compile the readdir extension on this system!
-#endif
-
-#ifdef WINDOWS_NATIVE
+#elif defined WINDOWS_NATIVE
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "mscrtx/xstat.h"
+#else
+#error Cannot compile the readdir extension on this system!
 #endif
 
 /* Include <locale.h> before "gawkapi.h" redefines setlocale().
@@ -85,7 +79,7 @@
 #include <locale.h>
 #endif
 
-#if !defined(_MSC_VER) && !defined(__MINGW32__)
+#ifndef WINDOWS_NATIVE
 #include "gawkdirfd.h"
 #endif
 
@@ -95,8 +89,12 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
-#if ! defined(S_ISDIR) && defined(S_IFDIR)
-#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#ifndef S_ISDIR
+# ifdef S_IFDIR
+#  define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+# elif defined _S_IFDIR
+#  define S_ISDIR(m)	(((m) & _S_IFMT) == _S_IFDIR)
+# endif
 #endif
 
 #ifndef PATH_MAX
