@@ -33,6 +33,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
