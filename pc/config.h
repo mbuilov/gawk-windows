@@ -643,9 +643,6 @@ typedef int check_sizeof_unsigned_long[1-2*(sizeof(unsigned long) != SIZEOF_UNSI
 #define pid_t _pid_t
 #endif
 
-/* Bad pid value.  */
-#define BAD_PID -1
-
 /* 32-bit type.  Currently, only debug.c calls lseek() and uses off_t, but the
   code do not handles very big source files.  */
 #ifdef _MSC_VER
