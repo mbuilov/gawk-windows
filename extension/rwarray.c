@@ -46,12 +46,13 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
-#if !defined _MSC_VER && !defined __MINGW32__
+#ifndef WINDOWS_NATIVE
 #include <arpa/inet.h>
 #endif
 #include <sys/types.h>
@@ -84,14 +85,22 @@ static awk_bool_t read_array(FILE *fp, awk_array_t array);
 static awk_bool_t read_elem(FILE *fp, awk_element_t *element);
 static awk_bool_t read_value(FILE *fp, awk_value_t *value);
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#ifdef WINDOWS_NATIVE
 typedef int check_sizeof_ulong[1-2*(sizeof(unsigned long) != 4)];
 typedef int check_sizeof_uint[1-2*(sizeof(unsigned int) != 4)];
 typedef unsigned int uint32_t;
 static inline uint32_t ntohl(uint32_t n)
 {
 	const unsigned i = 1;
+# ifdef _MSC_VER
 	return (*(const char*)&i) ? _byteswap_ulong(n) : n;
+# else
+	return (*(const char*)&i) ? (uint32_t)(
+		((n & 0xFF000000u) >> 24) |
+		((n & 0x00FF0000u) >>  8) |
+		((n & 0x0000FF00u) <<  8) |
+		((n & 0x000000FFu) << 24)) : n;
+# endif
 }
 static inline uint32_t htonl(uint32_t n)
 {
