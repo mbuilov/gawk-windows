@@ -618,7 +618,7 @@ set_ROUNDMODE()
 			ROUND_MODE = rndm;
 			MPFR_round_mode = n->stptr[0];
 		} else
-			warning(_("RNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
+			warning(_("ROUNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
 	}
 }
 

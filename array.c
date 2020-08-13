@@ -709,7 +709,7 @@ value_info(NODE *n)
 					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 #ifdef HAVE_MPFR
-		fprintf(output_fp, ", RNDMODE=\"%c\"", n->strndmode);
+		fprintf(output_fp, ", ROUNDMODE=\"%c\"", n->strndmode);
 #endif
 	}
 
