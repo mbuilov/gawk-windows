@@ -224,6 +224,9 @@
 #define buffer_has_all_data(iop) \
 	((size_t) ((iop)->dataend - (iop)->off) == (size_t) (iop)->pubc.sbuf.st_size)
 
+/* Bad pid value.  */
+#define BAD_PID -1
+
 /*
  * The key point to the design is to split out the code that searches through
  * a buffer looking for the record and the terminator into separate routines,
