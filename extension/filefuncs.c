@@ -100,12 +100,11 @@
 #include <sys/statvfs.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifdef WINDOWS_NATIVE
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "mscrtx/xstat.h"
 #include "mscrtx/wreadlink.h"
-#define WINDOWS_NATIVE
 #endif
 
 /* Include <locale.h> before "gawkapi.h" redefines setlocale().
@@ -157,9 +156,6 @@
 # ifndef S_ISCHR
 #  define S_ISCHR(m) (((m)&_S_IFMT) == _S_IFCHR)
 # endif
-# ifndef S_ISBLK
-#  define S_ISBLK(m) 0
-# endif
 # define st_rdev st_dev
 #endif
 
@@ -191,8 +187,23 @@
 # ifndef S_ISVTX
 #  define S_ISVTX 0
 # endif
-#define major(s) (s)
-#define minor(s) (0)
+# define major(s) (s)
+# define minor(s) (0)
+#endif
+
+#ifdef WINDOWS_NATIVE
+# ifndef S_IFREG
+#  define S_IFREG _S_IFREG
+# endif
+# ifndef S_IFCHR
+#  define S_IFCHR _S_IFCHR
+# endif
+# ifndef S_IFDIR
+#  define S_IFDIR _S_IFDIR
+# endif
+# ifndef S_IFMT
+#  define S_IFMT _S_IFMT
+# endif
 #endif
 
 GAWK_PLUGIN_GPL_COMPATIBLE
@@ -485,7 +496,12 @@ fill_stat_array(void *h, const char *name, awk_array_t array, const fts_stat_t *
 	array_set_numeric(array, "ctime", (double)sbuf->st_ctime);
 
 	/* for block and character devices, add rdev, major and minor numbers */
-	if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) {
+	if (
+#ifndef WINDOWS_NATIVE
+		S_ISBLK(sbuf->st_mode) ||
+#endif
+		S_ISCHR(sbuf->st_mode))
+	{
 		array_set_numeric(array, "rdev", sbuf->st_rdev);
 		array_set_numeric(array, "major", major(sbuf->st_rdev));
 		array_set_numeric(array, "minor", minor(sbuf->st_rdev));
@@ -546,6 +562,9 @@ stat_and_fill_array(const char *name, awk_array_t array, int do_lstat)
 		h = xstat_open(wp, do_lstat);
 		if (h == INVALID_HANDLE_VALUE) {
 			const DWORD open_err = GetLastError();
+			/* name could be a root drive directory path, like "C:\",
+			   if the drive is not ready - the open fails, but we can
+			   still get some stat info (a drive number) */
 			ret = xstat_root(wp, & sbuf);
 			if (ret && errno == ENOENT) {
 				if (ERROR_ACCESS_DENIED == open_err)
