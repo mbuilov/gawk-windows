@@ -35,6 +35,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -51,14 +52,20 @@ GAWK_PLUGIN("testext extension: version 1.0");
 
 static void fill_in_array(awk_value_t *value);
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#ifndef O_RDONLY
+# ifdef _O_RDONLY
+#  define O_RDONLY _O_RDONLY
+# endif
+#endif
+
+#ifdef WINDOWS_NATIVE
 static unsigned int
 getuid (void)
 {
   /* See pc/getid.c.  */
   return 0;
 }
-#endif
+#endif /* WINDOWS_NATIVE */
 
 /* valrep2str --- turn a value into a string */
 
@@ -66,7 +73,7 @@ static const char *
 valrep2str(const awk_value_t *value)
 {
 	static char buf[BUFSIZ];
-	int size = BUFSIZ - 3;
+	unsigned size = BUFSIZ - 3;
 
 	switch (value->val_type) {
 	case AWK_UNDEFINED:
@@ -84,10 +91,10 @@ valrep2str(const awk_value_t *value)
 	case AWK_REGEX:
 	case AWK_STRNUM:
 	case AWK_STRING:
-		if (value->str_value.len < (unsigned)size)
-			size = (int)value->str_value.len;
+		if (value->str_value.len < size)
+			size = (unsigned) value->str_value.len;
 		sprintf(buf, "\"%.*s\"",
-				size,
+				(int) size,
 				value->str_value.str);
 		break;
 	case AWK_NUMBER:
