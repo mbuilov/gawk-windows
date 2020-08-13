@@ -41,6 +41,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -70,7 +71,7 @@
 
 #include "gawkapi.h"
 
-#if defined _MSC_VER || defined __MINGW32__
+#ifdef WINDOWS_NATIVE
 /* wchar_t and wint_t are both 16 bits, which is not enough for full unicode support.
    Redefine all unicode-related functions used in ../missing_d/fnmatch.c */
 # ifdef wchar_t
@@ -108,7 +109,7 @@
 #  undef wcschrnul
 # endif
 # define wcschrnul c32schrnul
-#endif /* _MSC_VER || __MINGW32__ */
+#endif /* WINDOWS_NATIVE */
 
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #ifdef HAVE_FNMATCH_H
