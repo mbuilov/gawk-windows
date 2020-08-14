@@ -151,10 +151,10 @@ init_profiling_signals(void)
 #endif /* !__DJGPP__ */
 }
 
-/* indent --- print out enough tabs */
+/* prof_indent --- print out enough tabs */
 
 static void
-indent(unsigned long long count)
+prof_indent(unsigned long long count)
 {
 	unsigned i;
 
@@ -290,7 +290,7 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, print_flags_t pflags)
 				if (do_profile) {
 					if (! rule_count[rule]++)
 						fprintf(prof_fp, _("\t# %s rule(s)\n\n"), ruletab[rule]);
-					indent(0u);
+					prof_indent(0);
 				}
 				fprintf(prof_fp, "%s {", ruletab[rule]);
 				end_line(pc);
@@ -299,7 +299,7 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, print_flags_t pflags)
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip1 = pc->nexti;
-				indent(ip1->exec_count);
+				prof_indent(ip1->exec_count);
 				if (ip1 != (pc + 1)->firsti) {		/* non-empty pattern */
 					pprint(ip1->nexti, (pc + 1)->firsti, NO_PPRINT_FLAGS);
 					/* Allow for case where the "pattern" is just a comment  */
@@ -329,7 +329,7 @@ pprint(INSTRUCTION *startp, const INSTRUCTION *endp, print_flags_t pflags)
 			pprint(ip1, ip2, NO_PPRINT_FLAGS);
 			indent_out();
 			if (do_profile)
-				indent(0u);
+				prof_indent(0);
 			fprintf(prof_fp, "}\n\n");
 			pc = (pc + 1)->lasti;
 			break;
@@ -871,7 +871,7 @@ cleanup:
 
 		case Op_K_while:
 			ip1 = pc + 1;
-			indent(ip1->while_body->exec_count);
+			prof_indent(ip1->while_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
 			pprint(pc->nexti, ip1->while_body, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
@@ -881,14 +881,14 @@ cleanup:
 			indent_in();
 			pprint(ip1->while_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
-			indent(SPACEOVER);
+			prof_indent(SPACEOVER);
 			fprintf(prof_fp, "}");
 			pc = end_line(pc->target_break);
 			break;
 
 		case Op_K_do:
 			ip1 = pc + 1;
-			indent(pc->nexti->exec_count);
+			prof_indent(pc->nexti->exec_count);
 			fprintf(prof_fp, "%s {", op2str(pc->opcode));
 			end_line(pc->nexti);
 			skip_comment = true;
@@ -896,7 +896,7 @@ cleanup:
 			pprint(pc->nexti->nexti, ip1->doloop_cond, NO_PPRINT_FLAGS);
 			indent_out();
 			pprint(ip1->doloop_cond, pc->target_break, NO_PPRINT_FLAGS);
-			indent(SPACEOVER);
+			prof_indent(SPACEOVER);
 			t1 = pp_pop();
 			fprintf(prof_fp, "} %s (%s)", op2str(Op_K_while), t1->pp_str);
 			if (pc->comment)
@@ -928,7 +928,7 @@ cleanup:
 			}
 
 			ip1 = pc + 1;
-			indent(ip1->forloop_body->exec_count);
+			prof_indent(ip1->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
 
 			/* If empty for looop header, print it a little more nicely. */
@@ -943,8 +943,8 @@ cleanup:
 
 				if (comment1 != NULL) {
 					print_comment(comment1, 0);
-					indent(ip1->forloop_body->exec_count);
-					indent(1u);
+					prof_indent(ip1->forloop_body->exec_count);
+					prof_indent(1);
 				}
 
 				if (ip1->forloop_cond->opcode == Op_no_op &&
@@ -959,8 +959,8 @@ cleanup:
 
 				if (comment2 != NULL) {
 					print_comment(comment2, 0);
-					indent(ip1->forloop_body->exec_count);
-					indent(1u);
+					prof_indent(ip1->forloop_body->exec_count);
+					prof_indent(1);
 				}
 
 				pprint(pc->target_continue, pc->target_break, IN_FOR_HEADER);
@@ -971,7 +971,7 @@ cleanup:
 			indent_in();
 			pprint(ip1->forloop_body->nexti, pc->target_continue, NO_PPRINT_FLAGS);
 			indent_out();
-			indent(SPACEOVER);
+			prof_indent(SPACEOVER);
 			fprintf(prof_fp, "}");
 			end_line(pc->target_break);
 			skip_comment = true;
@@ -992,7 +992,7 @@ cleanup:
 				item = func_params[m->param_cnt].vname;
 			else
 				item = m->vname;
-			indent(ip1->forloop_body->exec_count);
+			prof_indent(ip1->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (%s%s%s) {", op2str(Op_K_arrayfor),
 						item, op2str(Op_in_array), array);
 			end_line(ip1->forloop_body);
@@ -1001,7 +1001,7 @@ cleanup:
 			pp_free(t1);
 			pprint(ip1->forloop_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
-			indent(SPACEOVER);
+			prof_indent(SPACEOVER);
 			fprintf(prof_fp, "}");
 			end_line(pc->target_break);
 			skip_comment = true;
@@ -1019,7 +1019,7 @@ cleanup:
 				print_comment(pc->comment, 0);
 			pp_free(t1);
 			pprint(ip1->switch_start, ip1->switch_end, NO_PPRINT_FLAGS);
-			indent(SPACEOVER);
+			prof_indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
 			if (ip1->switch_end->comment)
 				print_comment(ip1->switch_end->comment, 0);
@@ -1028,7 +1028,7 @@ cleanup:
 
 		case Op_K_case:
 		case Op_K_default:
-			indent(pc->stmt_start->exec_count);
+			prof_indent(pc->stmt_start->exec_count);
 			if (pc->opcode == Op_K_case) {
 				t1 = pp_pop();
 				fprintf(prof_fp, "%s %s:", op2str(pc->opcode), t1->pp_str);
@@ -1068,7 +1068,7 @@ cleanup:
 			indent_out();
 			pc = pc->branch_else;
 			if (pc->nexti->opcode == Op_no_op) {	/* no following else */
-				indent(SPACEOVER);
+				prof_indent(SPACEOVER);
 				fprintf(prof_fp, "}");
 				if (pc->nexti->nexti->opcode != Op_comment
 				    || pc->nexti->nexti->memory->comment_type == BLOCK_COMMENT)
@@ -1111,7 +1111,7 @@ cleanup:
 					print_comment(pc->comment, indent_level);
 				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 				indent_out();
-				indent(SPACEOVER);
+				prof_indent(SPACEOVER);
 				fprintf(prof_fp, "}");
 				end_line(pc->branch_end);
 				skip_comment = true;
@@ -1223,7 +1223,7 @@ cleanup:
 
 		case Op_exec_count:
 			if (pflags == NO_PPRINT_FLAGS)
-				indent(pc->exec_count);
+				prof_indent(pc->exec_count);
 			break;
 
 		case Op_comment:
@@ -1399,10 +1399,10 @@ print_comment(const INSTRUCTION *pc, unsigned in)
 	text = pc->memory->stptr;
 
 	if (in != DONT_INDENT)
-		indent(in);    /* is this correct? Where should comments go?  */
+		prof_indent(in);    /* is this correct? Where should comments go?  */
 	for (; count > 0; count--, text++) {
 		if (after_newline) {
-			indent(in);
+			prof_indent(in);
 			after_newline = false;
 		}
 		putc(*text, prof_fp);
@@ -2017,7 +2017,7 @@ pp_func(INSTRUCTION *pc, void *data)
 	if (pc->comment != NULL)
 		print_comment(pc->comment, DONT_INDENT);
 
-	indent(pc->nexti->exec_count);
+	prof_indent(pc->nexti->exec_count);
 
 	bool malloced = false;
 	char *name = adjust_namespace(func->vname, & malloced);
@@ -2038,13 +2038,13 @@ pp_func(INSTRUCTION *pc, void *data)
 	} else
 		fprintf(prof_fp, ")\n");
 	if (do_profile)
-		indent(0u);
+		prof_indent(0);
 	fprintf(prof_fp, "{\n");
 	indent_in();
 	pprint(fp, NULL, NO_PPRINT_FLAGS);	/* function body */
 	indent_out();
 	if (do_profile)
-		indent(0u);
+		prof_indent(0);
 	fprintf(prof_fp, "}\n");
 	return 0;
 }
@@ -2087,7 +2087,7 @@ pp_namespace(const char *name, INSTRUCTION *comment)
 	current_namespace = name;
 
 	if (do_profile)
-		indent(SPACEOVER);
+		prof_indent(SPACEOVER);
 
 	fprintf(prof_fp, "@namespace \"%s\"", name);
 
