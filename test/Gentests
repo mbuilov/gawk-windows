@@ -22,6 +22,13 @@ BEGIN {
 
 # process the file Makefile.am:
 
+/^EXTRA_DIST *=/,/[^\\]$/ {
+	gsub(/(^EXTRA_DIST *=|\\$)/,"")
+	for (i = 1; i <= NF; i++)
+		extra_dist[$i]
+	next
+}
+
 /^[[:upper:]_]*_TESTS *=/,/[^\\]$/ {
 	gsub(/(^[[:upper:]_]*_TESTS *=|\\$)/,"")
 	for (i = 1; i <= NF; i++)
@@ -105,15 +112,6 @@ BEGIN {
 	gsub(/(^GENTESTS_UNUSED *=|\\$)/,"")
 	for (i = 1; i <= NF; i++)
 		unused[$i]
-	next
-}
-
-/^CHECK_MPFR *=/,/[^\\]$/ {
-	gsub(/(^CHECK_MPFR *=|\\$)/,"")
-	for (i = 1; i <= NF; i++)
-	{
-		mpfr[$i]
-	}
 	next
 }
 
@@ -255,16 +253,14 @@ function generate(x,	s, i, locale_string)
 		}
 	}
 
-	if (x in mpfr) {
-		delete mpfr[x]
-		printf "%s", locale_string
-		printf "AWKPATH=\"$(srcdir)\" $(AWK) $(AWKFLAGS) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
-		printf "\t@-if test -z \"$$AWKFLAGS\" ; then $(CMP) \"$(srcdir)\"/$@.ok _$@ && rm -f _$@ ; else \\\n"
-		printf "\t$(CMP) \"$(srcdir)\"/$@-mpfr.ok _$@ && rm -f _$@ ; \\\n"
-		printf "\tfi\n\n"
+	printf "%s", locale_string
+	printf "AWKPATH=\"$(srcdir)\" $(AWK) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
+
+	if ((x "-mpfr.ok") in extra_dist) {
+		printf "\t@-if echo \"$$GAWK_TEST_ARGS\" | egrep -q -e '-M|--bignum' > /dev/null ; \\\n"
+		printf "\tthen $(CMP) \"$(srcdir)\"/$@-mpfr.ok _$@ && rm -f _$@ ; \\\n"
+		printf "\telse $(CMP) \"$(srcdir)\"/$@.ok _$@ && rm -f _$@ ; fi\n\n"
 	} else {
-		printf "%s", locale_string
-		printf "AWKPATH=\"$(srcdir)\" $(AWK) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
 		printf "\t@-$(CMP) \"$(srcdir)\"/$@.ok _$@ && rm -f _$@\n\n"
 	}
 }
@@ -297,7 +293,6 @@ END {
 	for (x in nondec)
 		if (!(x in targets))
 			printf "WARNING: --non-decimal-data target `%s' is missing.\n", x > "/dev/stderr"
-
 	for (x in re_interval)
 		if (!(x in targets))
 			printf "WARNING: --re-interval target `%s' is missing.\n", x > "/dev/stderr"

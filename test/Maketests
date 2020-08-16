@@ -680,10 +680,10 @@ numindex:
 
 numrange:
 	@echo $@ $(ZOS_FAIL)
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 numstr1:
 	@echo $@
@@ -858,10 +858,10 @@ prtoeval:
 
 rand:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 randtest:
 	@echo $@
@@ -1315,10 +1315,10 @@ arraysort2:
 
 arraytype:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 backw:
 	@echo $@
@@ -1403,10 +1403,10 @@ fieldwdth:
 
 forcenum:
 	@echo $@ $(ZOS_FAIL)
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 fpat1:
 	@echo $@
@@ -2113,17 +2113,17 @@ fmttest:
 
 fnarydel:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 fnparydl:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum' > /dev/null ; \
+	then $(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	else $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; fi
 
 lc_num1:
 	@echo $@ $(ZOS_FAIL)

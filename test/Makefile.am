@@ -1507,10 +1507,6 @@ FAIL_CODE1 = \
 	incdupe2 lintwarn match2 mixed1 noparms paramasfunc1 paramasfunc2 \
 	paramdup paramres parseme readbuf synerr1 synerr2 unterm
 
-# List of files which have .ok versions for MPFR
-CHECK_MPFR = \
-	arraytype fnarydel fnparydl forcenum numrange rand
-
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
 	clos1way gsubtst6 range2
@@ -2251,9 +2247,9 @@ testext::
 	@echo $@
 	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
-	fi
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum'; \
+	then cmp "."/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
+	else cmp "."/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; fi
 
 getfile:
 	@echo $@
@@ -2391,10 +2387,9 @@ ignrcas3::
 arrdbg:
 	@echo $@
 	@$(AWK) -v "okfile=./$@.ok" -v "mpfr_okfile=./$@-mpfr.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; else \
-	$(CMP) ./$@-mpfr.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; \
-	fi
-
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum'; \
+	then cmp "."/$@-mpfr.ok _$@ && rm -f _$@ $@.ok $@-mpfr.ok ; \
+	else cmp "."/$@.ok _$@ && rm -f _$@ $@.ok $@-mpfr.ok ; fi
 
 sourcesplit:
 	@echo $@
