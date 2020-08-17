@@ -1,0 +1,27 @@
+# in namespace awk
+
+function nnn()
+{
+	return "nnn"
+}
+
+function zzzz()
+{
+	return "zzz"
+}
+
+@namespace "bbb"
+
+
+function zzz()
+{
+	return "bbb::zzz"
+}
+
+@namespace "nnn"
+
+
+function abc()
+{
+	return "nnn::abc"
+}
