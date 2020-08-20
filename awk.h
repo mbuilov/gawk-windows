@@ -382,7 +382,6 @@ typedef struct exp_node {
 #endif
 			char *sp;
 			size_t slen;
-			long sref;
 			int idx;
 			wchar_t *wsp;
 			size_t wslen;
@@ -464,6 +463,7 @@ typedef struct exp_node {
 		NUMCONSTSTR	= 0x20000,	/* have string value for numeric constant */
 		REGEX           = 0x40000,	/* this is a typed regex */
 	} flags;
+	long valref;
 } NODE;
 
 #define vname sub.nodep.name
@@ -500,7 +500,6 @@ typedef struct exp_node {
  */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
-#define valref	sub.val.sref
 #define stfmt	sub.val.idx
 #define strndmode sub.val.rndmode
 #define wstptr	sub.val.wsp
