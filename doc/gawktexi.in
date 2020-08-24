@@ -11644,9 +11644,14 @@ One possibly undesirable effect of this definition of remainder is that
 -17 % 8 = -1
 @end example
 
+@noindent
+This definition is compliant with the POSIX standard, which says that the @code{%}
+operator produces results equivalent to using the standard C
+@code{fmod()} function, and that function in turn works as just
+described.
+
 In other @command{awk} implementations, the signedness of the remainder
 may be machine-dependent.
-@c FIXME !!! what does posix say?
 
 @cindex portability @subentry @code{**} operator and
 @cindex @code{*} (asterisk) @subentry @code{**} operator
