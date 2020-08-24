@@ -4154,7 +4154,7 @@ do_typeof(int nargs)
 			/* fall through */
 		default:
 			if (res == NULL) {
-				warning(_("typeof detected invalid flags combination `%s'; please file a bug report."), flags2str(arg->flags));
+				warning(_("typeof detected invalid flags combination `%s'; please file a bug report"), flags2str(arg->flags));
 				res = "unknown";
 			}
 			break;

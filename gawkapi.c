@@ -511,7 +511,7 @@ assign_number(NODE *node, awk_value_t *val)
 		val->num_ptr = &node->mpg_i;
 		break;
 	default:
-		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
+		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report"), flags2str(node->flags));
 		break;
 	}
 #endif
@@ -598,7 +598,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -632,7 +632,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -659,7 +659,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -692,7 +692,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}

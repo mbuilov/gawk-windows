@@ -777,7 +777,7 @@ str2wstr(NODE *n, size_t **ptr)
 			/* Warn the user something's wrong */
 			if (! warned) {
 				warned = true;
-				warning(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
+				warning(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale"));
 			}
 
 			/*

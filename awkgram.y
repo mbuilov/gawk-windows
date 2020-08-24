@@ -4966,7 +4966,7 @@ shadow_funcs()
 
 	/* End with fatal if the user requested it.  */
 	if (shadow && lintfunc == r_fatal)
-		lintwarn(_("there were shadowed variables."));
+		lintwarn(_("there were shadowed variables"));
 }
 
 
