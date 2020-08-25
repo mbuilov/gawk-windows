@@ -108,7 +108,13 @@ top:
 
 		switch (op) {
 		case Op_rule:
-			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline */
+			currule = pc->in_rule;   /* for use in Op_K_next, Op_K_nextfile, Op_K_getline */
+			// 8/2020: See node BEGINFILE/ENDFILE in the manual.  We clear the record
+			// since conceptually we are before reading a new record from the
+			// upcoming file but haven't read it yet.
+			if (currule == BEGINFILE)
+				set_record("", 0, NULL);
+
 			/* fall through */
 		case Op_func:
 			source = pc->source_file;

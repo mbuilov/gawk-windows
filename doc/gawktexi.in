@@ -13758,6 +13758,7 @@ or with Boolean operators (indeed, they cannot be used with any operators).
 An @command{awk} program may have multiple @code{BEGIN} and/or @code{END}
 rules.  They are executed in the order in which they appear: all the @code{BEGIN}
 rules at startup and all the @code{END} rules at termination.
+
 @code{BEGIN} and @code{END} rules may be intermixed with other rules.
 This feature was added in the 1987 version of @command{awk} and is included
 in the POSIX standard.
@@ -13786,7 +13787,7 @@ run.@footnote{The original version of @command{awk} kept
 reading and ignoring input until the end of the file was seen.}  However, if an
 @code{END} rule exists, then the input is read, even if there are
 no other rules in the program.  This is necessary in case the @code{END}
-rule checks the @code{FNR} and @code{NR} variables.
+rule checks the @code{FNR} and @code{NR} variables, or the fields.
 
 @node I/O And BEGIN/END
 @subsubsection Input/Output from @code{BEGIN} and @code{END} Rules
@@ -13814,6 +13815,7 @@ Traditionally, due largely to implementation issues, @code{$0} and
 @code{NF} were @emph{undefined} inside an @code{END} rule.
 The POSIX standard specifies that @code{NF} is available in an @code{END}
 rule. It contains the number of fields from the last input record.
+@c FIXME: Update this if POSIX is ever fixed.
 Most probably due to an oversight, the standard does not say that @code{$0}
 is also preserved, although logically one would think that it should be.
 In fact, all of BWK @command{awk}, @command{mawk}, and @command{gawk}
@@ -13825,7 +13827,7 @@ The third point follows from the first two.  The meaning of @samp{print}
 inside a @code{BEGIN} or @code{END} rule is the same as always:
 @samp{print $0}.  If @code{$0} is the null string, then this prints an
 empty record.  Many longtime @command{awk} programmers use an unadorned
-@samp{print} in @code{BEGIN} and @code{END} rules, to mean @samp{@w{print ""}},
+@samp{print} in @code{BEGIN} and @code{END} rules to mean @samp{@w{print ""}},
 relying on @code{$0} being null.  Although one might generally get away with
 this in @code{BEGIN} rules, it is a very bad idea in @code{END} rules,
 at least in @command{gawk}.  It is also poor style, because if an empty
@@ -13869,12 +13871,19 @@ As with the @code{BEGIN} and @code{END} rules
 @ifdocbook
 (see the previous @value{SECTION}),
 @end ifdocbook
-all @code{BEGINFILE} rules in a program are merged, in the order they are
-read by @command{gawk}, and all @code{ENDFILE} rules are merged as well.
+@code{BEGINFILE} rules in a program are exectured in the order they are
+read by @command{gawk}, and all @code{ENDFILE} rules are also executed in
+the order they are read, as well.
 
-The body of the @code{BEGINFILE} rules is executed just before
+The bodies of the @code{BEGINFILE} rules execute just before
 @command{gawk} reads the first record from a file.  @code{FILENAME}
 is set to the name of the current file, and @code{FNR} is set to zero.
+
+Prior to @value{PVERSION} 5.1.1 of @command{gawk}, as an accident of the
+implementation, @code{$0} and the fields retained any previous values
+they had in @code{BEGINFILE} rules.  Starting with @value{PVERSION}
+5.1.1, @code{$0} and the fields are cleared, since no record has been
+read yet from the file that is about to be processed.
 
 The @code{BEGINFILE} rule provides you the opportunity to accomplish two tasks
 that would otherwise be difficult or impossible to perform:
@@ -13929,28 +13938,6 @@ forms of @code{getline} are allowed.
 @code{BEGINFILE} and @code{ENDFILE} are @command{gawk} extensions.
 In most other @command{awk} implementations, or if @command{gawk} is in
 compatibility mode (@pxref{Options}), they are not special.
-
-@c FIXME: For 4.2 maybe deal with this?
-@ignore
-Date:     Tue, 17 May 2011 02:06:10 PDT
-From:     rankin@pactechdata.com (Pat Rankin)
-Message-Id: <110517015127.20240f4a@pactechdata.com>
-Subject:  BEGINFILE
-To:       arnold@skeeve.com
-
-     The documentation for BEGINFILE states that FNR is 0, which seems
-pretty obvious.  It doesn't mention what the value of $0 is, and that's
-not obvious.  I think setting it to null before starting the BEGINFILE
-action would be preferable to leaving whatever was there in the last
-record of the previous file.
-
-     ENDFILE can retain the last record in $0.  I guess it has to if
-the END rule's actions see that value too.  But the beginning of a new
-file doesn't just mean that the old one has been closed; the old file
-is being superseded, so leaving the old data around feels wrong to me.
-[If the user wants to keep it on hand, he or she can use an ENDFILE
-rule to grab it before moving on to the next file.]
-@end ignore
 
 @node Empty
 @subsection The Empty Pattern
@@ -30984,7 +30971,6 @@ commands in a program.  This can be very enlightening, as the following
 partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
 
-@c FIXME: This will need updating if num-handler branch is ever merged in.
 @smallexample
 @group
 gawk> @kbd{dump}
