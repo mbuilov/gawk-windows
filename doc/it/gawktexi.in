@@ -12693,9 +12693,14 @@ Un possibile effetto indesiderato di questa definizione di resto @`e che
 -17 % 8 = -1
 @end example
 
+@noindent
+Questa definizione @`e in accordo con lo standard POSIX, il quale prescrive
+che l'operatore @code{%} produca risultati equivalenti a quelli che si
+otterrebbero usando la funzione standard del linguaggio C @code{fmod()},
+la quale funzione, a sua volta, si comporta come appena descritto.
+
 In altre implementazioni di @command{awk} il segno del resto
 pu@`o essere dipendente dalla macchina.
-@c FIXME !!! what does posix say?
 
 @cindex portabilit@`a @subentry operatore @code{**}
 @cindex @code{*} (asterisco) @subentry operatore @code{**}
@@ -14915,6 +14920,7 @@ Un programma @command{awk} pu@`o avere molte regole @code{BEGIN} e/o @code{END}.
 Queste sono eseguite nell'ordine in cui compaiono nel programma: tutte le
 regole @code{BEGIN} a inizio programma e tutte le regole @code{END}
 a fine programma.
+
 Le regole @code{BEGIN} ed @code{END} possono apparire in qualsiasi
 posizione all'interno del programma.
 Questa funzionalit@`a @`e stata aggiunta nella versione 1987 di @command{awk} ed
@@ -14949,7 +14955,8 @@ leggere e ignorare i record in input fino alla fine del file.}  Tuttavia, se
 una regola @code{END} esiste, l'intero input @`e letto, anche se non sono
 presenti altre regole nel programma.  Ci@`o viene fatto necessariamente
 per permettere che
-la regola @code{END} faccia uso  delle variabili @code{FNR} e @code{NR}.
+la regola @code{END} faccia uso delle variabili @code{FNR} e @code{NR},
+o i campi [dell'ultimo record in input].
 
 @node I/O e BEGIN/END
 @subsubsection Input/Output dalle regole @code{BEGIN} ed @code{END}
@@ -14977,6 +14984,7 @@ Tradizionalmente, pi@`u che altro per problemi di implementazione, @code{$0}
 e @code{NF} erano @emph{indefiniti} all'interno di una regola @code{END}.
 Lo standard POSIX prescrive che @code{NF} sia disponibile all'interno di una
 regola @code{END}.  Contiene il numero di campi dell'ultimo record in input.
+@c FIXME: Update this if POSIX is ever fixed.
 Probabilmente per una svista, lo standard non specifica che @`e reso
 disponibile anche @code{$0}, sebbene possa apparire logico che sia cos@`{@dotless{i}}.
 In effetti, BWK @command{awk}, @command{mawk} e @command{gawk} mantengono il
@@ -14992,7 +15000,7 @@ all'interno di una regola @code{BEGIN} o @code{END} @`e quello di sempre:
 Molti programmatori di lungo corso di @command{awk} usano un semplice
 @samp{print} all'interno delle regole @code{BEGIN} ed @code{END},
 intendendo @samp{@w{print ""}}, contando sul fatto che @code{$0} sia una
-stringa nulla.  Sebbene questo funzioni solitamente con le regole
+stringa nulla.  Sebbene questo funzioni solitamente per le regole
 @code{BEGIN}, @`e una pessima idea nelle regole @code{END},
 almeno in @command{gawk}.  @`E anche stilisticamente inelegante, perch@'e se
 serve una riga vuota in output, il programma dovrebbe stamparne
@@ -15046,13 +15054,20 @@ Come con le regole @code{BEGIN} ed @code{END}
 @ifdocbook
 (si veda la @value{SECTION} precedente),
 @end ifdocbook
-tutte le regole @code{BEGINFILE} in un programma sono riunite, mantenendole
+le regole @code{BEGINFILE} in un programma sono eseguite
 nell'ordine in cui sono lette da @command{gawk} e lo stesso viene fatto
 per tutte le regole @code{ENDFILE}.
 
-Il corpo delle regole @code{BEGINFILE} @`e eseguito subito prima che
+I codici delle regole @code{BEGINFILE} sono eseguiti subito prima che
 @command{gawk} legga il primo record da un file.  La variabile @code{FILENAME}
 @`e impostata al nome del file corrente e @code{FNR} @`e impostata a zero.
+
+Prima della @value{PVERSION} 5.1.1 di @command{gawk}, per un difetto di
+implementazione, @code{$0} e i campi del record mantenevano, nelle regole
+@code{BEGINFILE} il valore che avevano in precedenza.
+A partire dalla @value{PVERSION} 5.1.1, sia @code{$0} che i campi del
+record sono impostati alla stringa nulla, poich@'e nessun record @`e
+ancora stato letto dal file in procinto di essere elaborato.
 
 La regola @code{BEGINFILE} d@`a la possibilit@`a di eseguire due compiti
 che sarebbe difficile o impossibile effettuare altrimenti:
@@ -15111,28 +15126,6 @@ di @code{getline} sono permesse.
 @code{BEGINFILE} ed @code{ENDFILE} sono estensioni @command{gawk}.
 In molte altre implementazioni di @command{awk} o se @command{gawk} @`e in
 modalit@`a compatibile (@pxref{Opzioni}), non sono regole speciali.
-
-@c FIXME: For 4.2 maybe deal with this?
-@ignore
-Date:     Tue, 17 May 2011 02:06:10 PDT
-From:     rankin@pactechdata.com (Pat Rankin)
-Message-Id: <110517015127.20240f4a@pactechdata.com>
-Subject:  BEGINFILE
-To:       arnold@skeeve.com
-
-     The documentation for BEGINFILE states that FNR is 0, which seems
-pretty obvious.  It doesn't mention what the value of $0 is, and that's
-not obvious.  I think setting it to null before starting the BEGINFILE
-action would be preferable to leaving whatever was there in the last
-record of the previous file.
-
-     ENDFILE can retain the last record in $0.  I guess it has to if
-the END rule's actions see that value too.  But the beginning of a new
-file doesn't just mean that the old one has been closed; the old file
-is being superseded, so leaving the old data around feels wrong to me.
-[If the user wants to keep it on hand, he or she can use an ENDFILE
-rule to grab it before moving on to the next file.]
-@end ignore
 
 @node Vuoto
 @subsection Il criterio di ricerca vuoto
@@ -19601,7 +19594,8 @@ l'elemento @code{@var{vettore}[@var{i}]}.
 Il separatore iniziale (che potrebbe anche essere la stringa nulla)
 sar@`a in @code{@var{separatori}[0]}.
 Quindi, una @var{stringa} non nulla, con @var{n} campi avr@`a @var{n+1}
-separatori.  Una stringa nulla non avr@`a n@'e campi n@'e separatori.
+separatori.
+Una stringa nulla non avr@`a nessun campo e nessun separatore.
 
 La funzione @code{patsplit()} divide delle stringhe in pezzi in modo
 simile a quello con cui le righe in input vengono divise in campi
@@ -31166,7 +31160,7 @@ alle regole criterio_di_ricerca--azione e alle funzioni.
 Le funzioni sono elencate in ordine alfabetico.  Per prime sono elencate
 in ordine alfabetico le funzioni che appartengono allo spazio-dei-nomi
 @code{awk}.  Poi sono elencate le funzioni contenute negli altri
-spazi-dei-nomi.  Ogni spazio-dei-nomi è elencato in ordine alfabetico
+spazi-dei-nomi.  Ogni spazio-dei-nomi @`e elencato in ordine alfabetico
 e le funzioni in esso contenute sono anch'esse elencate in ordine
 alfabetico.
 
@@ -33607,7 +33601,6 @@ istruzioni interne che @command{gawk} esegue per implementare i comandi
 dimostra il seguente riversamento parziale del codice offuscato di
 Davide Brini (@pxref{Programma signature}):
 
-@c FIXME: This will need updating if num-handler branch is ever merged in.
 @smallexample
 @group
 gawk> @kbd{dump}
