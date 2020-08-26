@@ -13871,9 +13871,9 @@ As with the @code{BEGIN} and @code{END} rules
 @ifdocbook
 (see the previous @value{SECTION}),
 @end ifdocbook
-@code{BEGINFILE} rules in a program are exectured in the order they are
-read by @command{gawk}, and all @code{ENDFILE} rules are also executed in
-the order they are read, as well.
+@code{BEGINFILE} rules in a program execute in the order they are
+read by @command{gawk}. Similarly, all @code{ENDFILE} rules also execute in
+the order they are read.
 
 The bodies of the @code{BEGINFILE} rules execute just before
 @command{gawk} reads the first record from a file.  @code{FILENAME}
@@ -13919,7 +13919,7 @@ it will be called before any @code{END} rules.
 The @code{ENDFILE} rule is executed even for empty input files.
 
 Normally, when an error occurs when reading input in the normal
-input-processing loop, the error is fatal.  However, if an @code{BEGINFILE}
+input-processing loop, the error is fatal.  However, if a @code{BEGINFILE}
 rule is present, the error becomes non-fatal, and instead @code{ERRNO}
 is set.  This makes it possible to catch and process I/O errors at the
 level of the @command{awk} program.
