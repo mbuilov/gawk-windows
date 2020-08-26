@@ -14604,7 +14604,7 @@ it will be called before any @code{END} rules.
 The @code{ENDFILE} rule is executed even for empty input files.
 
 Normally, when an error occurs when reading input in the normal
-input-processing loop, the error is fatal.  However, if an @code{ENDFILE}
+input-processing loop, the error is fatal.  However, if an @code{BEGINFILE}
 rule is present, the error becomes non-fatal, and instead @code{ERRNO}
 is set.  This makes it possible to catch and process I/O errors at the
 level of the @command{awk} program.
@@ -23777,7 +23777,7 @@ option, we take a different branch:
 
 First, we search this option for a possible embedded equal sign, as the
 specification of long options allows an argument to an option
-@samp{--someopt:} to be specified as @samp{--someopt=answer} as well as
+@samp{--someopt} to be specified as @samp{--someopt=answer} as well as
 @samp{@w{--someopt answer}}.
 
 @example
