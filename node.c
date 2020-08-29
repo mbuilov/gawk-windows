@@ -360,7 +360,7 @@ r_dupnode(NODE *n)
 static NODE *
 r_make_number(double x)
 {
-	NODE *r = make_number_node(0);
+	NODE *r = make_number_node(ZEROFLAGS);
 	r->numbr = x;
 	return r;
 }
@@ -411,7 +411,7 @@ make_str_node(const char *s, size_t len, int flags)
 	r->wstlen = 0;
 
 	if ((flags & ALREADY_MALLOCED) != 0)
-		r->stptr = (char *) s;
+		r->stptr = charp_const_cast(s);
 	else {
 		emalloc(r->stptr, char *, len + 1, "make_str_node");
 		memcpy(r->stptr, s, len);
