@@ -385,17 +385,17 @@ concat_exp(nargs_t nargs, bool do_subsep)
 	char *s;
 	size_t len;
 	size_t subseplen = 0;
-	awk_ulong_t i;
+	nargs_t i;
 
 	assert(nargs);
-	if (nargs == 1u)
+	if (nargs == 1)
 		return POP_STRING();
 
 	if (do_subsep)
 		subseplen = SUBSEPlen;
 
 	len = 0;
-	for (i = 1u; i <= nargs; i++) {
+	for (i = 1; i <= nargs; i++) {
 		r = TOP();
 		if (r->type == Node_var_array) {
 			while (--i)
@@ -437,11 +437,11 @@ concat_exp(nargs_t nargs, bool do_subsep)
  */
 
 static void
-adjust_fcall_stack(NODE *symbol, awk_ulong_t nsubs)
+adjust_fcall_stack(NODE *symbol, size_t nsubs)
 {
 	NODE *func, *r, *n;
 	NODE **sp;
-	awk_ulong_t pcount;
+	size_t pcount;
 
 	/*
 	 * Solve the nasty problem of disappearing subarray arguments:
@@ -527,10 +527,10 @@ adjust_fcall_stack(NODE *symbol, awk_ulong_t nsubs)
  */
 
 void
-do_delete(NODE *symbol, awk_ulong_t nsubs)
+do_delete(NODE *symbol, size_t nsubs)
 {
 	NODE *val, *subs;
-	awk_ulong_t i;
+	size_t i;
 
 	assert(symbol->type == Node_var_array);
 	subs = val = NULL;	/* silence the compiler */
@@ -556,7 +556,7 @@ do_delete(NODE *symbol, awk_ulong_t nsubs)
 	if (!nsubs) {
 		/* delete array */
 
-		adjust_fcall_stack(symbol, 0u);	/* fix function call stack; See above. */
+		adjust_fcall_stack(symbol, 0);	/* fix function call stack; See above. */
 		assoc_clear(symbol);
 		return;
 	}
@@ -642,7 +642,7 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 	efree(list);
 
 	/* blast the array in one shot */
-	adjust_fcall_stack(symbol, 0u);
+	adjust_fcall_stack(symbol, 0);
 	assoc_clear(symbol);
 }
 
@@ -775,7 +775,7 @@ do_adump(nargs_t nargs)
 	 *       > 0, descends into 'depth' sub-arrays, and prints index and value info.
 	 */
 
-	if (nargs == 2u) {
+	if (nargs == 2) {
 		tmp = POP_NUMBER();
 		depth = get_number_si(tmp);
 		DEREF(tmp);
@@ -804,7 +804,7 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 	const char *sort_str;
 	char save;
 
-	if (nargs == 3u)  /* 3rd optional arg */
+	if (nargs == 3)  /* 3rd optional arg */
 		s = POP_STRING();
 	else
 		s = dupnode(Nnull_string);	/* "" => default sorting */
@@ -820,7 +820,7 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 			sort_str = "@ind_str_asc";
 	}
 
-	if (nargs >= 2u) {  /* 2nd optional arg */
+	if (nargs >= 2) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
 			fatal(_("%s: second argument is not an array"),
@@ -1068,8 +1068,11 @@ sort_up_index_number(const void *p1, const void *p2)
 		return ret;
 
 	/* break a tie with the index string itself */
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_CAST_QUAL
 	t1 = force_string((NODE *) t1);
 	t2 = force_string((NODE *) t2);
+PRAGMA_WARNING_POP
 	return cmp_strings(t1, t2);
 }
 
