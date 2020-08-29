@@ -151,11 +151,13 @@ typedef int off_t;
 #include <gmp.h>
 #include <mpfr.h>
 #ifndef MPFR_RNDN
+#if !defined(MPFR_VERSION_MAJOR) || MPFR_VERSION_MAJOR < 3
 /* for compatibility with MPFR 2.X */
 #define MPFR_RNDN GMP_RNDN
 #define MPFR_RNDZ GMP_RNDZ
 #define MPFR_RNDU GMP_RNDU
 #define MPFR_RNDD GMP_RNDD
+#endif
 #endif
 #endif
 
@@ -231,13 +233,18 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 #ifdef WINDOWS_NATIVE
 /* time_t is 32-bit under MinGW.org for WindowsXP, but we want 64-bit time_t */
 typedef __time64_t gawk_time_t;
-#define time(t)		_time64(t)
-#define ctime(t)	_ctime64(t)
-#define mktime(tm)	_mktime64(tm)
-#define gmtime(t)	_gmtime64(t)
-#define localtime(t)	_localtime64(t)
+#define gawk_time(t)		_time64(t)
+#define gawk_ctime(t)		_ctime64(t)
+#define gawk_mktime(tm)		_mktime64(tm)
+#define gawk_gmtime(t)		_gmtime64(t)
+#define gawk_localtime(t)	_localtime64(t)
 #else /* !WINDOWS_NATIVE */
 typedef time_t gawk_time_t;
+#define gawk_time(t)		time(t)
+#define gawk_ctime(t)		ctime(t)
+#define gawk_mktime(tm)		mktime(tm)
+#define gawk_gmtime(t)		gmtime(t)
+#define gawk_localtime(t)	localtime(t)
 #endif /* !WINDOWS_NATIVE */
 
 /* use this as lintwarn("...")
@@ -541,7 +548,7 @@ typedef struct exp_node {
 #define dup_ent    sub.nodep.r.rptr
 
 /* Node_param_list, Node_func */
-#define param_cnt  sub.nodep.l.ulx
+#define param_cnt  sub.nodep.l.lsz
 
 /* Node_func */
 #define fparms		sub.nodep.rn
@@ -815,7 +822,7 @@ enum redirval {
 
 struct break_point;
 
-typedef awk_ulong_t nargs_t;
+typedef size_t nargs_t;
 
 typedef struct exp_instruction {
 	struct exp_instruction *nexti;
@@ -828,7 +835,7 @@ typedef struct exp_instruction {
 					struct awk_ext_func *finfo);
 		LINTTYPE dlt;
 		unsigned long long ldl;	// for exec_count
-		awk_ulong_t du;
+		size_t dsz;
 		unsigned dui;
 		OPCODE dc;
 		enum redirval dt;
@@ -842,7 +849,7 @@ typedef struct exp_instruction {
 
 	union exp_instruction_x_ {
 		bool xb;
-		awk_ulong_t xul;
+		size_t xsz;
 		unsigned ln;
 		enum defrule xr;
 		NODE *xn;
@@ -877,7 +884,7 @@ typedef struct exp_instruction {
 #define extfunc         d.efptr
 #define builtin_idx     d.dui
 
-#define expr_count      x.xul
+#define expr_count      x.xsz
 
 #define c_function	x.exf
 
@@ -913,7 +920,7 @@ typedef struct exp_instruction {
 
 /* Op_token */
 #define lextok          d.name
-#define param_count     x.xul
+#define param_count     x.xsz
 
 /* Op_rule */
 #define in_rule         x.xr
@@ -951,7 +958,7 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_subscript */
-#define sub_count       d.du
+#define sub_count       d.dsz
 
 /* Op_push_lhs, Op_subscript_lhs, Op_field_spec_lhs */
 #define do_reference    x.xb
@@ -1192,8 +1199,9 @@ typedef void (*Func_post_exec)(INSTRUCTION *);
 
 typedef size_t field_num_t;
 
-#define BAD_NF     ((field_num_t)-1)
-#define UNLIMITED  ((field_num_t)-2)
+#define BAD_NF		((field_num_t)-1)
+#define F_UNLIMITED	((field_num_t)-2)
+#define SET_NF		(F_UNLIMITED - 1)		/* set NF */
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
@@ -1321,7 +1329,9 @@ extern mpz_t mpzval;
 extern bool do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
 #endif
 
-
+#ifdef WINDOWS_NATIVE
+extern const wchar_t *mywpath;
+#endif
 extern const char *myname;
 extern const char def_strftime_format[];
 
@@ -1345,13 +1355,13 @@ extern FILE *output_fp;
 extern const char *command_file;	/* debugger commands */
 extern bool output_is_tty;
 extern NODE **fcall_list;
-extern awk_ulong_t fcall_count;
+extern size_t fcall_count;
 extern IOBUF *curfile;
 extern bool exiting;
 
 /* for do_print() */
 extern NODE **args_array;
-extern awk_ulong_t max_args;
+extern size_t max_args;
 
 /* for calling interpret() in gawkapi.c */
 extern enum defrule currule;
@@ -1431,31 +1441,45 @@ DEREF(NODE *r)
 #define numtype_choose(t, n, mpfrval, mpzval, dblval)	\
  (!((n)->flags & (MPFN|MPZN)) ? (t) (dblval) : ((n)->flags & MPFN) ? (t) (mpfrval) : (t) (mpzval))
 
+static inline awk_ulong_t awk_double_to_ui(double d)
+{
+	return (awk_ulong_t) d;
+}
+static inline awk_long_t awk_double_to_si(double d)
+{
+	return (awk_long_t) d;
+}
+static inline uintmax_t awk_double_to_uj(double d)
+{
+	return (uintmax_t) d;
+}
+
 /* conversion to C types */
-static inline awk_ulong_t get_number_ui(NODE *n)
+static inline awk_ulong_t get_number_ui(const NODE *n)
 {
-	awk_ulong_t AWKLONG r = numtype_choose(unsigned AWKLONG, n,
-		mpfr_get_ui((n)->mpg_numbr, ROUND_MODE), mpz_get_ui((n)->mpg_i), (n)->numbr);
+	awk_ulong_t r = numtype_choose(awk_ulong_t, n,
+		mpfr_get_ui((n)->mpg_numbr, ROUND_MODE), mpz_get_ui((n)->mpg_i), awk_double_to_ui((n)->numbr));
 	return r;
 }
-static inline awk_long_t get_number_si(NODE *n)
+static inline awk_long_t get_number_si(const NODE *n)
 {
-	awk_long_t r = numtype_choose(AWKLONG, n,
-		mpfr_get_si((n)->mpg_numbr, ROUND_MODE), mpz_get_si((n)->mpg_i), (n)->numbr);
+	awk_long_t r = numtype_choose(awk_long_t, n,
+		mpfr_get_si((n)->mpg_numbr, ROUND_MODE), mpz_get_si((n)->mpg_i), awk_double_to_si((n)->numbr));
 	return r;
 }
-static inline double get_number_d(NODE *n)
+static inline double get_number_d(const NODE *n)
 {
 	double r = numtype_choose(double, n,
 		mpfr_get_d((n)->mpg_numbr, ROUND_MODE), mpz_get_d((n)->mpg_i), (n)->numbr);
 	return r;
 }
-static inline uintmax_t get_number_uj(NODE *n)
+static inline uintmax_t get_number_uj(const NODE *n)
 {
 	uintmax_t r = numtype_choose(uintmax_t, n,
-		mpfr_get_uj((n)->mpg_numbr, ROUND_MODE), mpz_get_d((n)->mpg_i), (n)->numbr);
+		mpfr_get_uj((n)->mpg_numbr, ROUND_MODE), awk_double_to_uj(mpz_get_d((n)->mpg_i)), awk_double_to_uj((n)->numbr));
 	return r;
 }
+
 static bool iszero(NODE *n)
 {
 #if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
@@ -1629,7 +1653,7 @@ extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
 extern NODE **assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt);
 extern void assoc_info(NODE *subs, NODE *val, NODE *p, const char *aname);
-extern void do_delete(NODE *symbol, awk_ulong_t nsubs);
+extern void do_delete(NODE *symbol, size_t nsubs);
 extern void do_delete_loop(NODE *symbol, NODE **lhs);
 extern NODE *do_adump(nargs_t nargs);
 extern NODE *do_aoption(nargs_t nargs);
@@ -1763,7 +1787,7 @@ extern NODE *do_sub(nargs_t nargs, int flags);
 extern NODE *call_sub(const char *name, nargs_t nargs);
 extern NODE *call_match(nargs_t nargs);
 extern NODE *call_split_func(const char *name, nargs_t nargs);
-extern NODE *format_tree(const char *, size_t, NODE **, awk_ulong_t);
+extern NODE *format_tree(const char *, size_t, NODE **, size_t);
 extern NODE *do_lshift(nargs_t nargs);
 extern NODE *do_rshift(nargs_t nargs);
 extern NODE *do_and(nargs_t nargs);
@@ -1905,9 +1929,9 @@ extern void gawk_cleanup(void);
 #endif
 #ifdef WINDOWS_NATIVE
 /* same as timegm, but tm values should be in the default ranges */
-extern __time64_t awk_timegm(struct tm *);
+extern __time64_t gawk_timegm(struct tm *);
 #else
-#define awk_timegm	timegm
+#define gawk_timegm	timegm
 #endif
 
 /* io.c */
@@ -2100,7 +2124,7 @@ extern void destroy_symbol(NODE *r);
 extern void release_symbols(NODE *symlist, int keep_globals);
 extern void append_symbol(NODE *r);
 extern NODE *lookup(const char *name);
-extern NODE *make_params(char **pnames, awk_ulong_t pcount);
+extern NODE *make_params(char **pnames, size_t pcount);
 extern void install_params(NODE *func);
 extern void remove_params(NODE *func);
 extern void release_all_vars(void);
@@ -2328,7 +2352,7 @@ force_number(NODE *n)
 static inline NODE *
 fixtype(NODE *n)
 {
-	assert(n->type == Node_val);
+	assert(n && n->type == Node_val);
 	if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
 		return force_number(n);
 	if ((n->flags & INTIND) != 0)
@@ -2411,14 +2435,14 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 #define make_number_node(flags) make_number_node_real(flags, __FILE__, __LINE__)
 
 static inline NODE *
-make_number_node_real(node_flags_t flags, const char *file, unsigned line)
+make_number_node_real(enum flagvals flags, const char *file, unsigned line)
 {
 	NODE *r;
 	getnode_at(r, file, line);
 	clearnode(r);
 	r->type = Node_val;
 	r->valref = 1u;
-	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
+	r->flags = ((node_flags_t) flags|MALLOC|NUMBER|NUMCUR);
 	return r;
 }
 
@@ -2451,6 +2475,17 @@ str_terminate_f(NODE *n, char *savep)
 
 #define str_terminate(n, save) str_terminate_f((n), &save)
 #define str_restore(n, save) (n)->stptr[(n)->stlen] = save
+
+/* charp_const_cast --- cast (const char *) to (char *) */
+
+static inline char *
+charp_const_cast(const char *str)
+{
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_CAST_QUAL
+	return (char*) str;
+PRAGMA_WARNING_POP
+}
 
 #ifdef SIGPIPE
 #define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
