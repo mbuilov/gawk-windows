@@ -34,8 +34,6 @@ int MPFR_round_mode = 'N';	// default value
 typedef mp_exp_t mpfr_exp_t;
 #endif
 
-extern NODE **fmt_list;          /* declared in eval.c */
-
 mpz_t mpzval;	/* GMP integer type, used as temporary in few places */
 mpz_t MNR;
 mpz_t MFNR;
@@ -48,7 +46,7 @@ static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *mpg_force_number(NODE *n);
 static NODE *mpg_make_number(double);
 static NODE *mpg_format_val(const char *format, unsigned index, NODE *s);
-static int mpg_interpret(INSTRUCTION **cp);
+static bool mpg_interpret(INSTRUCTION **cp);
 
 static mpfr_exp_t min_exp = MPFR_EMIN_DEFAULT;
 static mpfr_exp_t max_exp = MPFR_EMAX_DEFAULT;
@@ -69,6 +67,9 @@ static inline mpfr_ptr mpg_tofloat(mpfr_ptr mf, mpz_ptr mz);
 /* T = {t1, t2} */
 #define MP_FLOAT(T) is_mpg_integer(T) ? mpg_tofloat(_mpf_##T, (T)->mpg_i) : (T)->mpg_numbr
 
+/* result/argument of mpz_..._ui() */
+#define mpz_ui_t	unsigned long
+#define MPZ_UI_MAX	ULONG_MAX
 
 /* init_mpfr --- set up MPFR related variables */
 
@@ -91,7 +92,7 @@ init_mpfr(mpfr_prec_t prec, const char *rmode)
 	mpfr_init2(_mpf_t2, PRECISION_MIN);
 	mpz_init(mpzval);
 
-	register_exec_hook(mpg_interpret, 0);
+	register_exec_hook(mpg_interpret, NULL);
 }
 
 /* cleanup_mpfr --- clean stuff up, mainly for valgrind */
@@ -212,7 +213,7 @@ done:
 
 /* mpg_maybe_float --- test if a string may contain arbitrary-precision float */
 
-static int
+static bool
 mpg_maybe_float(const char *str, int use_locale)
 {
 	int dec_point = '.';
@@ -264,12 +265,13 @@ mpg_zero(NODE *n)
 
 /* force_mpnum --- force a value to be a GMP integer or MPFR float */
 
-static int
+static bool
 force_mpnum(NODE *n, int do_nondec, int use_locale)
 {
 	char *cp, *cpend, *ptr, *cp1;
 	char save;
-	int tval, base = 10;
+	int tval;
+	unsigned base = 10;
 
 	if (n->stlen == 0 || (n->flags & REGEX) != 0) {
 		mpg_zero(n);
@@ -305,12 +307,12 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	}
 
 	if (do_nondec)
-		base = get_numbase(cp1, cpend - cp1, use_locale);
+		base = get_numbase(cp1, (size_t) (cpend - cp1), use_locale);
 
 	if (base != 10 || ! mpg_maybe_float(cp1, use_locale)) {
 		mpg_zero(n);
 		errno = 0;
-		mpg_strtoui(n->mpg_i, cp1, cpend - cp1, & ptr, base);
+		mpg_strtoui(n->mpg_i, cp1, (size_t) (cpend - cp1), & ptr, (int) base);
 		if (*cp == '-')
 			mpz_neg(n->mpg_i, n->mpg_i);
 		goto done;
@@ -327,7 +329,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	}
 
 	errno = 0;
-	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, base, ROUND_MODE);
+	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, (int) base, ROUND_MODE);
 	IEEE_FMT(n->mpg_numbr, tval);
 done:
 	/* trailing space is OK for NUMBER */
@@ -366,7 +368,7 @@ static NODE *
 mpg_format_val(const char *format, unsigned index, NODE *s)
 {
 	NODE *dummy[2], *r;
-	unsigned int oflags;
+	node_flags_t oflags;
 
 	if (out_of_range(s)) {
 		const char *result = format_nan_inf(s, 'g');
@@ -436,7 +438,7 @@ mpg_cmp(const NODE *t1, const NODE *t2)
 
 /*
  * mpg_update_var --- update NR or FNR.
- *	NR_node->var_value(mpz_t) = MNR(mpz_t) * LONG_MAX + NR(long)
+ *	NR_node->var_value(mpz_t) = MNR(mpz_t) * ULONG_MAX + NR(long)
  */
 
 NODE *
@@ -457,16 +459,16 @@ mpg_update_var(NODE *n)
 
 	if (mpz_sgn(nq) == 0) {
 		/* Efficiency hack similar to that for AWKNUM */
-		if (is_mpg_float(val) || mpz_get_si(val->mpg_i) != (long) nr) {
+		if (is_mpg_float(val) || mpz_get_ui(val->mpg_i) != (mpz_ui_t) nr) {
 			unref(n->var_value);
 			val = n->var_value = mpg_integer();
-			mpz_set_si(val->mpg_i, (long) nr);
+			mpz_set_ui(val->mpg_i, (mpz_ui_t) nr);
 		}
 	} else {
 		unref(n->var_value);
 		val = n->var_value = mpg_integer();
-		mpz_set_si(val->mpg_i, (long) nr);
-		mpz_addmul_ui(val->mpg_i, nq, LONG_MAX);	/* val->mpg_i += nq * LONG_MAX */
+		mpz_set_ui(val->mpg_i, (mpz_ui_t) nr);
+		mpz_addmul_ui(val->mpg_i, nq, MPZ_UI_MAX);	/* val->mpg_i += nq * LUONG_MAX */
 	}
 	return val;
 }
@@ -476,7 +478,7 @@ mpg_update_var(NODE *n)
 field_num_t
 mpg_set_var(NODE *n)
 {
-	long nr = 0;
+	mpz_ui_t nr = 0;
 	mpz_ptr nq = 0, r;
 	NODE *val = n->var_value;
 
@@ -494,7 +496,7 @@ mpg_set_var(NODE *n)
 		mpfr_get_z(mpzval, val->mpg_numbr, MPFR_RNDZ);
 		r = mpzval;
 	}
-	nr = mpz_fdiv_q_ui(nq, r, LONG_MAX);	/* nq (MNR or MFNR) is quotient */
+	nr = mpz_fdiv_q_ui(nq, r, MPZ_UI_MAX);	/* nq (MNR or MFNR) is quotient */
 	return (field_num_t) nr;	/* remainder (NR or FNR) */
 }
 
@@ -556,12 +558,12 @@ set_PREC(void)
 	}
 
 	if (!prec) {
-		long p;
+		awk_long_t p;
 		force_number(val);
 		p = get_number_si(val);
 		if (p < MPFR_PREC_MIN || p > MPFR_PREC_MAX) {
 			force_string(val);
-			warning(_("PREC value `%.*s' is invalid"), TO_PRINTF_WIDTH(val->stlen), val->stptr);
+			awkwarn(_("PREC value `%.*s' is invalid"), TO_PRINTF_WIDTH(val->stlen), val->stptr);
 		} else {
 			prec = (mpfr_prec_t) p;
 			do_ieee_fmt = false;
@@ -599,7 +601,7 @@ get_rnd_mode(const char rmode)
 	default:
 		break;
 	}
-	return -1;
+	return (mpfr_rnd_t) -1;
 }
 
 /*
@@ -611,7 +613,7 @@ void
 set_ROUNDMODE(void)
 {
 	if (do_mpfr) {
-		mpfr_rnd_t rndm = -1;
+		mpfr_rnd_t rndm = (mpfr_rnd_t) -1;
 		NODE *n;
 		n = force_string(ROUNDMODE_node->var_value);
 		if (n->stlen == 1)
@@ -621,7 +623,7 @@ set_ROUNDMODE(void)
 			ROUND_MODE = rndm;
 			MPFR_round_mode = n->stptr[0];
 		} else
-			warning(_("RNDMODE value `%.*s' is invalid"), TO_PRINTF_WIDTH(n->stlen), n->stptr);
+			awkwarn(_("RNDMODE value `%.*s' is invalid"), TO_PRINTF_WIDTH(n->stlen), n->stptr);
 	}
 }
 
@@ -679,6 +681,7 @@ do_mpfr_atan2(nargs_t nargs)
 	NODE *t1, *t2, *res;
 	mpfr_ptr p1, p2;
 	int tval;
+	(void) nargs;
 
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
@@ -708,13 +711,14 @@ do_mpfr_atan2(nargs_t nargs)
 
 static inline NODE *
 do_mpfr_func(const char *name,
-		int (*mpfr_func)(),	/* putting argument types just gets the compiler confused */
+		int (*mpfr_func)(mpfr_t, mpfr_srcptr, mpfr_rnd_t),
 		nargs_t nargs)
 {
 	NODE *t1, *res;
 	mpfr_ptr p1;
 	int tval;
 	mpfr_prec_t argprec;
+	(void) nargs;
 
 	t1 = POP_SCALAR();
 	if (do_lint && (fixtype(t1)->flags & NUMBER) == 0)
@@ -782,6 +786,7 @@ NODE *
 do_mpfr_int(nargs_t nargs)
 {
 	NODE *tmp, *r;
+	(void) nargs;
 
 	tmp = POP_SCALAR();
 	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
@@ -812,6 +817,7 @@ do_mpfr_compl(nargs_t nargs)
 {
 	NODE *tmp, *r;
 	mpz_ptr zptr;
+	(void) nargs;
 
 	tmp = POP_SCALAR();
 	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
@@ -856,12 +862,12 @@ do_mpfr_compl(nargs_t nargs)
 /* get_intval --- get the (converted) integral operand of a binary function. */
 
 static mpz_ptr
-get_intval(NODE *t1, ulong_t argnum, const char *op)
+get_intval(NODE *t1, nargs_t argnum, const char *op)
 {
 	mpz_ptr pz;
 
 	if (do_lint && (fixtype(t1)->flags & NUMBER) == 0)
-		lintwarn(_("%s: received non-numeric argument #%lu"), op, TO_ULONG(argnum));
+		lintwarn(_("%s: received non-numeric argument #%" ZUFMT ""), op, argnum);
 
 	(void) force_number(t1);
 
@@ -870,31 +876,28 @@ get_intval(NODE *t1, ulong_t argnum, const char *op)
 		if (! mpfr_number_p(left)) {
 			/* inf or NaN */
 			if (do_lint)
-                       		lintwarn("%s",
-		mpg_fmt(_("%s: argument #%lu has invalid value %Rg, using 0"),
-                                	op, TO_ULONG(argnum), left)
-				);
+				lintwarn("%s",
+					 mpg_fmt(_("%s: argument #%" ZUFMT " has invalid value %Rg, using 0"),
+						 op, argnum, left));
 
-			emalloc(pz, mpz_ptr, sizeof (mpz_t), "get_intval");
+			emalloc(pz, mpz_ptr, sizeof(mpz_t), "get_intval");
 			mpz_init(pz);
 			return pz;	/* should be freed */
 		}
 
 		if (mpfr_sgn(left) < 0)
 			fatal("%s",
-		mpg_fmt(_("%s: argument #%lu negative value %Rg is not allowed"),
-					op, TO_ULONG(argnum), left)
-				);
+			      mpg_fmt(_("%s: argument #%" ZUFMT " negative value %Rg is not allowed"),
+				      op, argnum, left));
 
 		if (do_lint) {
 			if (! mpfr_integer_p(left))
 				lintwarn("%s",
-		mpg_fmt(_("%s: argument #%lu fractional value %Rg will be truncated"),
-					op, TO_ULONG(argnum), left)
-				);
+					 mpg_fmt(_("%s: argument #%" ZUFMT " fractional value %Rg will be truncated"),
+						 op, argnum, left));
 		}
 
-		emalloc(pz, mpz_ptr, sizeof (mpz_t), "get_intval");
+		emalloc(pz, mpz_ptr, sizeof(mpz_t), "get_intval");
 		mpz_init(pz);
 		mpfr_get_z(pz, left, MPFR_RNDZ);	/* float to integer conversion */
 		return pz;	/* should be freed */
@@ -903,9 +906,8 @@ get_intval(NODE *t1, ulong_t argnum, const char *op)
 	pz = t1->mpg_i;
 	if (mpz_sgn(pz) < 0)
 		fatal("%s",
-	mpg_fmt(_("%s: argument #%lu negative value %Zd is not allowed"),
-					op, TO_ULONG(argnum), pz)
-				);
+		      mpg_fmt(_("%s: argument #%" ZUFMT " negative value %Zd is not allowed"),
+			      op, argnum, pz));
 
 	return pz;	/* must not be freed */
 }
@@ -929,14 +931,15 @@ NODE *
 do_mpfr_lshift(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
-	unsigned long shift;
+	mpz_ui_t shift;
 	mpz_ptr pz1, pz2;
+	(void) nargs;
 
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
-	pz1 = get_intval(t1, 1u, "lshift");
-	pz2 = get_intval(t2, 2u, "lshift");
+	pz1 = get_intval(t1, 1, "lshift");
+	pz2 = get_intval(t2, 2, "lshift");
 
 	/*
 	 * mpz_get_ui: If op is too big to fit an unsigned long then just
@@ -961,13 +964,14 @@ NODE *
 do_mpfr_rshift(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
-	unsigned long shift;
+	mpz_ui_t shift;
 	mpz_ptr pz1, pz2;
+	(void) nargs;
 
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
-	pz1 = get_intval(t1, 1u, "rshift");
+	pz1 = get_intval(t1, 1, "rshift");
 	pz2 = get_intval(t2, 2, "rshift");
 
 	/* N.B: See do_mpfp_lshift. */
@@ -990,16 +994,16 @@ do_mpfr_and(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	ulong_t i;
+	nargs_t i;
 
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("and: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "and");
 
 	res = mpg_integer();
-	for (i = 1u; i < nargs; i++) {
+	for (i = 1; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "and");
 		mpz_and(res->mpg_i, pz1, pz2);
@@ -1022,16 +1026,16 @@ do_mpfr_or(nargs_t nargs)
 {
 	NODE *t1, *t2, *res;
 	mpz_ptr pz1, pz2;
-	ulong_t i;
+	nargs_t i;
 
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("or: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "or");
 
 	res = mpg_integer();
-	for (i = 1u; i < nargs; i++) {
+	for (i = 1; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "or");
 		mpz_ior(res->mpg_i, pz1, pz2);
@@ -1055,14 +1059,14 @@ do_mpfr_xor(nargs_t nargs)
 	mpz_ptr pz1, pz2;
 	nargs_t i;
 
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("xor: called with less than two arguments"));
 
 	t2 = POP_SCALAR();
 	pz2 = get_intval(t2, nargs, "xor");
 
 	res = mpg_integer();
-	for (i = 1u; i < nargs; i++) {
+	for (i = 1; i < nargs; i++) {
 		t1 = POP_SCALAR();
 		pz1 = get_intval(t1, nargs - i, "xor");
 		mpz_xor(res->mpg_i, pz1, pz2);
@@ -1083,6 +1087,7 @@ NODE *
 do_mpfr_strtonum(nargs_t nargs)
 {
 	NODE *tmp, *r;
+	(void) nargs;
 
 	tmp = fixtype(POP_SCALAR());
 	if ((tmp->flags & NUMBER) == 0) {
@@ -1175,8 +1180,10 @@ do_mpfr_srand(nargs_t nargs)
 	res = mpg_integer();
 	mpz_set(res->mpg_i, seed);	/* previous seed */
 
-	if (!nargs)
-		mpz_set_ui(seed, (unsigned long) time((time_t *) 0));
+	if (!nargs) {
+		gawk_time_t t = gawk_time((gawk_time_t *) 0);
+		mpz_set_ui(seed, (mpz_ui_t) t);
+	}
 	else {
 		NODE *tmp;
 		tmp = POP_SCALAR();
@@ -1301,17 +1308,17 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 	 * When implicitely converting a GMP integer operand to a MPFR float, use
 	 * a precision sufficiently large to hold the converted value exactly.
 	 *
- 	 *	$ ./gawk -M 'BEGIN { print 13 % 2 }'
- 	 *	1
- 	 * If the user-specified precision is used to convert the integer 13 to a
+	 *	$ ./gawk -M 'BEGIN { print 13 % 2 }'
+	 *	1
+	 * If the user-specified precision is used to convert the integer 13 to a
 	 * float, one will get:
- 	 *	$ ./gawk -M 'BEGIN { PREC=2; print 13 % 2.0 }'
- 	 *	0
- 	 */
+	 *	$ ./gawk -M 'BEGIN { PREC=2; print 13 % 2.0 }'
+	 *	0
+	 */
 
 	prec = mpz_sizeinbase(mz, 2);	/* most significant 1 bit position starting at 1 */
 	if (prec > PRECISION_MIN) {
-		prec -= (size_t) mpz_scan1(mz, 0);	/* least significant 1 bit index starting at 0 */
+		prec -= mpz_scan1(mz, 0);	/* least significant 1 bit index starting at 0 */
 		if (prec > MPFR_PREC_MAX)
 			prec = MPFR_PREC_MAX;
 		else if (prec < PRECISION_MIN)
@@ -1323,8 +1330,8 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 	 * Always set the precision to avoid hysteresis, since do_mpfr_func
 	 * may copy our precision.
 	 */
-	if (prec != mpfr_get_prec(mf))
-		mpfr_set_prec(mf, prec);
+	if ((mpfr_prec_t) prec != mpfr_get_prec(mf))
+		mpfr_set_prec(mf, (mpfr_prec_t) prec);
 
 	mpfr_set_z(mf, mz, ROUND_MODE);
 	return mf;
@@ -1519,7 +1526,7 @@ mpg_mod(NODE *t1, NODE *t2)
  *	arithmetic operations with MPFR/GMP numbers.
  */
 
-static int
+static bool
 mpg_interpret(INSTRUCTION **cp)
 {
 	INSTRUCTION *pc = *cp;	/* current instruction */
@@ -1671,8 +1678,8 @@ mod:
 			 * An optimization like the one above is not going to work
 			 * for a floating-point number. With it,
 			 *   gawk -M 'BEGIN { PREC=53; i=2^53+0.0; PREC=113; ++i; print i}'
-		 	 * will output 2^53 instead of 2^53+1.
-		 	 */
+			 * will output 2^53 instead of 2^53+1.
+			 */
 
 			r = *lhs = mpg_float();
 			tval = mpfr_add_si(r->mpg_numbr, t1->mpg_numbr,
