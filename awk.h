@@ -433,6 +433,7 @@ enum flagvals {
 	 *
 	 * We hope that the rest of the flags are self-explanatory. :-)
 	 */
+	ZEROFLAGS	= 0,
 	MALLOC	= 0x0001,       /* stptr can be free'd, i.e. not a field node pointing into a shared buffer */
 	STRING	= 0x0002,       /* assigned as string */
 	STRCUR	= 0x0004,       /* string value is current */
