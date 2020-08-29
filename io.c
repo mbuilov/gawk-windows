@@ -322,8 +322,8 @@ static awk_ulong_t get_read_timeout(IOBUF *iop);
 static ssize_t read_with_timeout(fd_t fd, void *buf, size_t size);
 
 static bool read_can_timeout = false;
-static unsigned long read_timeout;
-static unsigned long read_default_timeout;
+static awk_ulong_t read_timeout;
+static awk_ulong_t read_default_timeout;
 
 static struct redirect *red_head = NULL;
 static NODE *RS = NULL;
@@ -350,7 +350,7 @@ in_PROCINFO_z(const char *pidx1, const char *pidx2, NODE **full_idx)
 void
 init_io(void)
 {
-	long tmout;
+	awk_long_t tmout;
 
 	/* Only MinGW has a non-trivial implementation of this.  */
 	init_sockets();
@@ -363,7 +363,7 @@ init_io(void)
 	/* Parse the env. variable only once */
 	tmout = getenv_long("GAWK_READ_TIMEOUT");
 	if (tmout > 0) {
-		read_default_timeout = (unsigned long) tmout;
+		read_default_timeout = (awk_ulong_t) tmout;
 		read_can_timeout = true;
 	}
 
@@ -1240,6 +1240,7 @@ NODE *
 do_close(nargs_t nargs)
 {
 	NODE *tmp, *tmp2;
+	int res;
 	struct redirect *rp;
 	two_way_close_type how = CLOSE_ALL;	/* default */
 
@@ -1289,8 +1290,7 @@ do_close(nargs_t nargs)
 	}
 	DEREF(tmp);
 	fflush(stdout);	/* synchronize regular output */
-	tmp = make_number((AWKNUM) close_redir(rp, false, how));
-	rp = NULL;
+	res = close_redir(rp, false, how);
 	/*
 	 * POSIX says close() returns 0 on success, non-zero otherwise.
 	 * For POSIX, at this point we just return 0.  Otherwise we
@@ -1298,11 +1298,9 @@ do_close(nargs_t nargs)
 	 * Down in the call tree of close_redir(), we rationalize the
 	 * value like we do for system().
 	 */
-	if (do_posix) {
-		unref(tmp);
-		tmp = make_number((AWKNUM) 0);
-	}
-	return tmp;
+	if (do_posix)
+		res = 0;
+	return make_number((AWKNUM) res);
 }
 
 /* close_rp --- separate function to just do closing */
@@ -1906,7 +1904,7 @@ devopen(const char *name, const char *mode)
 		bool hard_error = false;
 		bool non_fatal = is_non_fatal_redirect(name, strlen(name));
 		char save;
-		char *cp = (char *) name;
+		char *cp = charp_const_cast(name);
 
 		/* socketopen requires NUL-terminated strings */
 		cp[isi.localport.offset+isi.localport.len] = '\0';
@@ -3029,19 +3027,19 @@ init_awkpath(path_info *pi)
 	i = 0;
 
 	if (*path == envsep) {	/* null entry at front of path */
-		pi->awkpath[i++] = (char*) ".";
+		pi->awkpath[i++] = charp_const_cast(".");
 		pi->max_pathlen = 1;
 	}
 
 	while (*start) {
 		if (*start == envsep) {
 			if (start[1] == envsep) {
-				pi->awkpath[i++] = (char*) ".";
+				pi->awkpath[i++] = charp_const_cast(".");
 				if (pi->max_pathlen == 0)
 					pi->max_pathlen = 1;
 				start++;
 			} else if (start[1] == '\0') {
-				pi->awkpath[i++] = (char*) ".";
+				pi->awkpath[i++] = charp_const_cast(".");
 				if (pi->max_pathlen == 0)
 					pi->max_pathlen = 1;
 				break;
@@ -4500,11 +4498,11 @@ read_with_timeout(fd_t fd, void *buf, size_t size)
 #ifdef WINDOWS_NATIVE
 	(void) sizeof(int[1-2*!(sizeof(tv.tv_sec) == sizeof(long))]);
 	(void) sizeof(int[1-2*!(sizeof(tv.tv_usec) == sizeof(long))]);
-	tv.tv_sec = (long) (read_timeout / 1000);
-	tv.tv_usec = (long) (1000 * (read_timeout - 1000 * (unsigned long) tv.tv_sec));
+	tv.tv_sec = (long) (read_timeout / 1000u);
+	tv.tv_usec = (long) (1000u * (read_timeout - 1000u * (unsigned long) tv.tv_sec));
 #else
-	tv.tv_sec = (time_t) (read_timeout / 1000);
-	tv.tv_usec = (suseconds_t) (1000 * (read_timeout - 1000 * tv.tv_sec));
+	tv.tv_sec = (time_t) (read_timeout / 1000u);
+	tv.tv_usec = (suseconds_t) (1000u * (read_timeout - 1000u * tv.tv_sec));
 #endif
 
 	FD_ZERO(& readfds);
