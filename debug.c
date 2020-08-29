@@ -55,7 +55,7 @@ bool input_from_tty = false;
 int input_fd;
 
 static SRCFILE *cur_srcfile;
-static awk_ulong_t cur_frame = 0u;
+static size_t cur_frame = 0;
 static INSTRUCTION *cur_pc;
 static enum defrule cur_rule = UNKRULE;
 
@@ -130,7 +130,7 @@ struct list_item {
 	NODE *symbol;		/* variable or function param */
 	const char *sname;	/* symbol or param name */
 
-	awk_ulong_t fcall_count;
+	size_t fcall_count;
 
 	struct commands_item commands;
 	struct condition cndn;
@@ -177,7 +177,7 @@ static struct {
 	                             used by 'next', 'until' and 'step' commands */
 
 	unsigned repeat_count;    /* 'step', 'next', 'stepi', 'nexti' commands */
-	awk_ulong_t fcall_count;  /* 'finish', 'until', 'next', 'step', 'nexti' commands */
+	size_t fcall_count;       /* 'finish', 'until', 'next', 'step', 'nexti' commands */
 	bool print_frame;         /* print frame info,  'finish' and 'until' */
 	bool print_ret;           /* print returned value, 'finish' */
 	unsigned break_point;     /* non-zero (breakpoint number) if stopped at break point */
@@ -258,7 +258,11 @@ static const char *history_file = DEFAULT_HISTFILE;
 
 /* debugger option related variables */
 
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_CAST_QUAL
 static char *output_file = (char*) "/dev/stdout";  /* gawk output redirection */
+PRAGMA_WARNING_POP
+
 char *dgawk_prompt = NULL;                 /* initialized in interpret */
 static unsigned list_size = DEFAULT_LISTSIZE;   /* # of lines that 'list' prints */
 static bool do_trace = false;
@@ -301,14 +305,14 @@ static int find_lines(SRCFILE *s);
 static SRCFILE *source_find(const char *src);
 static unsigned print_lines(const char *src, unsigned start_line, unsigned nlines);
 static void print_symbol(NODE *r, bool isparam);
-static NODE *find_frame(awk_ulong_t num);
-static NODE *find_param(const char *name, awk_ulong_t num, const char **pname);
+static NODE *find_frame(size_t num);
+static NODE *find_param(const char *name, size_t num, const char **pname);
 static NODE *find_symbol(const char *name, const char **pname);
 static NODE *find_array(const char *name);
 static void print_field(field_num_t field_num);
 static int print_function(INSTRUCTION *pc, void *);
 static void print_frame(NODE *func, const char *src, unsigned srcline);
-static void print_numbered_frame(awk_ulong_t num);
+static void print_numbered_frame(size_t num);
 static void print_cur_frame_and_sourceline(void);
 static INSTRUCTION *find_rule(const char *src, unsigned lineno);
 static INSTRUCTION *mk_breakpoint(const char *src, unsigned srcline);
@@ -361,14 +365,10 @@ static struct command_source *cmd_src = NULL;
 static void *
 volatile_cast(volatile void *p)
 {
-#if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_CAST_QUAL
 	return (void*) p;
-#if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic pop
-#endif
+PRAGMA_WARNING_POP
 }
 
 static inline void
@@ -810,7 +810,6 @@ list:
 bool
 do_info(CMDARG *arg, enum argtype cmd)
 {
-	NODE **table;
 	(void) cmd;
 
 	if (arg == NULL || arg->type != D_argument)
@@ -828,7 +827,7 @@ do_info(CMDARG *arg, enum argtype cmd)
 		for (s = srcfiles->next; s != srcfiles; s = s->next) {
 			fprintf(out_fp, _("Source file (lines): %s (%u)\n"),
 					(s->stype == SRC_FILE || s->stype == SRC_INC) ? s->src
-			 		                                      : "cmd. line",
+					                                      : "cmd. line",
 					s->srclines);
 		}
 	}
@@ -896,8 +895,8 @@ do_info(CMDARG *arg, enum argtype cmd)
 	{
 		NODE *f, *func;
 		INSTRUCTION *pc;
-		awk_ulong_t arg_count, pcount;
-		awk_ulong_t i, from, lim;
+		size_t arg_count, pcount;
+		size_t i, from, lim;
 
 		CHECK_PROG_RUNNING();
 		f = find_frame(cur_frame);
@@ -916,7 +915,7 @@ do_info(CMDARG *arg, enum argtype cmd)
 		if (arg_count > pcount)                /* extra args */
 			arg_count = pcount;
 		if (arg->a_argument == A_ARGS) {
-			from = 0u;
+			from = 0;
 			lim = arg_count;
 		} else {
 			from = arg_count;
@@ -940,17 +939,20 @@ do_info(CMDARG *arg, enum argtype cmd)
 		break;
 
 	case A_VARIABLES:
-		table = variable_list();
+	{
+		NODE **table = variable_list();
 		initialize_pager(out_fp);
 		if (setjmp(pager_quit_tag) == 0) {
 			gprintf(out_fp, _("All defined variables:\n\n"));
 			print_vars(table, gprintf, out_fp);
 		}
 		efree(table);
+	}
 		break;
 
 	case A_FUNCTIONS:
-		table = function_list(true);
+	{
+		NODE **table = function_list(true);
 		initialize_pager(out_fp);
 		if (setjmp(pager_quit_tag) == 0) {
 			gprintf(out_fp, _("All defined functions:\n\n"));
@@ -960,6 +962,7 @@ do_info(CMDARG *arg, enum argtype cmd)
 			(void) foreach_func(table, print_function, &pf_data);
 		}
 		efree(table);
+	}
 		break;
 
 	case A_DISPLAY:
@@ -1051,7 +1054,7 @@ print_symbol(NODE *r, bool isparam)
 /* find_frame --- find frame given a frame number */
 
 static NODE *
-find_frame(awk_ulong_t num)
+find_frame(size_t num)
 {
 	if (!num)
 		return frame_ptr;
@@ -1065,7 +1068,7 @@ find_frame(awk_ulong_t num)
 /* find_param --- find a function parameter in a given frame number */
 
 static NODE *
-find_param(const char *name, awk_ulong_t num, const char **pname)
+find_param(const char *name, size_t num, const char **pname)
 {
 	NODE *r = NULL;
 	NODE *f;
@@ -1079,11 +1082,11 @@ find_param(const char *name, awk_ulong_t num, const char **pname)
 	f = find_frame(num);
 	if (f->func_node != NULL) {		/* in function */
 		NODE *func;
-		awk_ulong_t i, pcount;
+		size_t i, pcount;
 
 		func = f->func_node;
 		pcount = func->param_cnt;
-		for (i = 0u; i < pcount; i++) {
+		for (i = 0; i < pcount; i++) {
 			fparam = func->fparms[i].vname;
 			if (strcmp(name, fparam) == 0) {
 				r = f->stack[i];
@@ -1152,7 +1155,7 @@ print_array(volatile NODE *arr, const char *arr_name)
 {
 	NODE *subs;
 	NODE **list;
-	awk_ulong_t i, num_elems;
+	size_t i, num_elems;
 	volatile NODE *r;
 	volatile int ret = 0;
 	volatile jmp_buf pager_quit_tag_stack;
@@ -1169,7 +1172,7 @@ print_array(volatile NODE *arr, const char *arr_name)
 
 	push_binding(&pager_quit_tag_stack, &pager_quit_tag, &pager_quit_tag_valid);
 	if (setjmp(pager_quit_tag) == 0) {
-		for (i = 0u; ret == 0 && i < num_elems; i++) {
+		for (i = 0; ret == 0 && i < num_elems; i++) {
 			subs = list[i];
 			r = *assoc_lookup((NODE *) volatile_cast(arr), subs);
 			if (r->type == Node_var_array)
@@ -1184,7 +1187,7 @@ print_array(volatile NODE *arr, const char *arr_name)
 
 	pop_binding(&pager_quit_tag_stack, &pager_quit_tag, &pager_quit_tag_valid);
 
-	for (i = 0u; i < num_elems; i++)
+	for (i = 0; i < num_elems; i++)
 		unref(list[i]);
 	efree(list);
 
@@ -1977,7 +1980,7 @@ static int
 print_function(INSTRUCTION *pc, void *x)
 {
 	NODE *func;
-	awk_ulong_t i, pcount;
+	size_t i, pcount;
 	struct pf_data *data = (struct pf_data *) x;
 	int defn = data->defn;
 	Func_print print_func = data->print_func;
@@ -1991,7 +1994,7 @@ print_function(INSTRUCTION *pc, void *x)
 	pcount = func->param_cnt;
 
 	print_func(fp, "%s(", func->vname);
-	for (i = 0u; i < pcount; i++) {
+	for (i = 0; i < pcount; i++) {
 		print_func(fp, "%s", func->fparms[i].vname);
 		if (i < pcount - 1)
 			print_func(fp, ", ");
@@ -2030,17 +2033,17 @@ print_frame(NODE *func, const char *src, unsigned srcline)
 /* print_numbered_frame --- print a frame given its number */
 
 static void
-print_numbered_frame(awk_ulong_t num)
+print_numbered_frame(size_t num)
 {
 	NODE *f;
 
 	assert(prog_running == true);
 	f = find_frame(num);
 	if (!num) {
-		fprintf(out_fp, "#%" AWKULONGFMT "\t ", TO_AWK_ULONG(num));
+		fprintf(out_fp, "#%" ZUFMT "\t ", num);
 		print_frame(f->func_node, source, sourceline);
 	} else {
-		fprintf(out_fp, _("#%" AWKULONGFMT "\tin "), TO_AWK_ULONG(num));
+		fprintf(out_fp, _("#%" ZUFMT "\tin "), num);
 		print_frame(f->func_node, f->vname,
 			((INSTRUCTION *) find_frame(num - 1)->reti)->source_line);
 	}
@@ -2052,8 +2055,8 @@ print_numbered_frame(awk_ulong_t num)
 bool
 do_backtrace(CMDARG *arg, enum argtype cmd)
 {
-	awk_ulong_t cur = 0u;
-	awk_ulong_t lim = fcall_count + 1;
+	size_t cur = 0;
+	size_t lim = fcall_count + 1;
 	(void) cmd;
 
 	CHECK_PROG_RUNNING();
@@ -2064,11 +2067,11 @@ do_backtrace(CMDARG *arg, enum argtype cmd)
 		if (count >= 0) {
 			/* toward outermost frame #fcall_count */
 			if ((awk_ulong_t) count <= fcall_count)
-				lim = (awk_ulong_t) count;
+				lim = (size_t) (awk_ulong_t) count;
 		} else if (count >= -AWKLONGMAX) {
 			/* toward innermost frame #0 */
 			if (lim > (awk_ulong_t) -count)
-				cur = lim - (awk_ulong_t) -count;
+				cur = lim - (size_t) (awk_ulong_t) -count;
 		}
 	}
 
@@ -2101,9 +2104,9 @@ print_cur_frame_and_sourceline(void)
 	}
 
 	if (cur_frame)
-		fprintf(out_fp, _("#%" AWKULONGFMT "\tin "), TO_AWK_ULONG(cur_frame));
+		fprintf(out_fp, _("#%" ZUFMT "\tin "), cur_frame);
 	else
-		fprintf(out_fp, "#%" AWKULONGFMT "\t ", TO_AWK_ULONG(cur_frame));
+		fprintf(out_fp, "#%" ZUFMT "\t ", cur_frame);
 	print_frame(f->func_node, src, srcline);
 	fprintf(out_fp, "\n");
 	(void) print_lines(src, srcline, 1);
@@ -2125,7 +2128,7 @@ do_frame(CMDARG *arg, enum argtype cmd)
 			d_error(_("invalid frame number"));
 			return false;
 		}
-		cur_frame = (awk_ulong_t) arg->a_int;
+		cur_frame = (size_t) (awk_ulong_t) arg->a_int;
 	}
 	print_cur_frame_and_sourceline();
 	return false;
@@ -2136,15 +2139,15 @@ up_down(awk_long_t x)
 {
 	if (x >= 0) {
 		if ((awk_ulong_t) x < fcall_count - cur_frame)
-			cur_frame += (awk_ulong_t) x;
+			cur_frame += (size_t) (awk_ulong_t) x;
 		else
 			cur_frame = fcall_count;
 	}
 	/* Note: x >= -AWKLONGMAX */
 	else if ((awk_ulong_t) -x < cur_frame)
-		cur_frame -= (awk_ulong_t) -x;
+		cur_frame -= (size_t) (awk_ulong_t) -x;
 	else
-		cur_frame = 0u;
+		cur_frame = 0;
 }
 
 /* do_up --- up command */
@@ -2158,7 +2161,7 @@ do_up(CMDARG *arg, enum argtype cmd)
 		if (arg->a_int >= -AWKLONGMAX)
 			up_down(arg->a_int);
 		else
-			cur_frame = 0u;
+			cur_frame = 0;
 	}
 	else if (cur_frame < fcall_count)
 		cur_frame++;
@@ -3591,14 +3594,14 @@ print_watch_item(struct list_item *w)
 		fprintf(out_fp, "%s\n", w->sname);
 
 
-#define print_value(X, S, V) do {                                       \
-	if (X)                                                              \
-		fprintf(out_fp, "array, %" AWKULONGFMT " elements\n", TO_AWK_ULONG(w->S));       \
-	else if (! w->V)                                                    \
+#define print_value(X, S, V) do {                                               \
+	if (X)                                                                  \
+		fprintf(out_fp, "array, %" ZUFMT " elements\n", w->S);          \
+	else if (! w->V)                                                        \
 		fputs(IS_SUBSCRIPT(w) ?                                         \
-			_("element not in array\n") : _("untyped variable\n"),      \
-			out_fp);                                                    \
-	else                                                                \
+			_("element not in array\n") : _("untyped variable\n"),  \
+			out_fp);                                                \
+	else                                                                    \
 		valinfo(w->V, fprintf, out_fp);                                 \
 } while ((void) 0, 0)
 
@@ -3771,7 +3774,7 @@ debug_pre_execute(INSTRUCTION **pi)
 	cur_pc = *pi;
 	stop.break_point = 0;
 	stop.watch_point = 0;
-	cur_frame = 0u;
+	cur_frame = 0;
 
 	if (do_trace
 		&& cur_pc->opcode != Op_breakpoint
@@ -3920,7 +3923,7 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 static void
 print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump)
 {
-	awk_ulong_t pcount = 0u;
+	size_t pcount = 0;
 	static NODE *func = NULL;
 	static int noffset = 0;
 
@@ -3939,9 +3942,9 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		func = pc->func_body;
 		pcount = func->param_cnt;
 		if (in_dump) {
-			awk_ulong_t j;
+			size_t j;
 			print_func(fp, "\n\t# Function: %s (", func->vname);
-			for (j = 0u; j < pcount; j++) {
+			for (j = 0; j < pcount; j++) {
 				print_func(fp, "%s", func->fparms[j].vname);
 				if (j < pcount - 1)
 					print_func(fp, ", ");
@@ -3964,7 +3967,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	if (prog_running && ! in_dump) {
 		/* find Node_func if in function */
-		func = find_frame(0u)->func_node;
+		func = find_frame(0)->func_node;
 	}
 
 
@@ -4058,7 +4061,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 		break;
 
 	case Op_func:
-		print_func(fp, "[param_cnt = %" AWKULONGFMT "] [source_file = %s]", TO_AWK_ULONG(pcount),
+		print_func(fp, "[param_cnt = %" ZUFMT "] [source_file = %s]", pcount,
 				pc->source_file ? pc->source_file : "cmd. line");
 		if (pc[3].nexti != NULL) {
 			print_func(fp, "[ns_list = %p]\n", (void*) pc[3].nexti);
@@ -4086,14 +4089,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 
 	case Op_K_print:
 	case Op_K_printf:
-		print_func(fp, "[expr_count = %" AWKULONGFMT "] [redir_type = \"%s\"]\n",
-		                TO_AWK_ULONG(pc->expr_count), redir2str(pc->redir_type));
+		print_func(fp, "[expr_count = %" ZUFMT "] [redir_type = \"%s\"]\n",
+		                pc->expr_count, redir2str(pc->redir_type));
 		break;
 
 	case Op_indirect_func_call:
 	case Op_func_call:
-		print_func(fp, "[func_name = %s] [arg_count = %" AWKULONGFMT "]\n",
-		                pc->func_name, TO_AWK_ULONG((pc + 1)->expr_count));
+		print_func(fp, "[func_name = %s] [arg_count = %" ZUFMT "]\n",
+		                pc->func_name, (pc + 1)->expr_count);
 		break;
 
 	case Op_K_nextfile:
@@ -4179,47 +4182,47 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, bool in_dump
 			fname = "gsub";
 		else if ((pc->sub_flags & GENSUB) != 0)
 			fname = "gensub";
-		print_func(fp, "%s [arg_count = %" AWKULONGFMT "] [sub_flags = %s]\n",
-				fname, TO_AWK_ULONG(pc->expr_count),
+		print_func(fp, "%s [arg_count = %" ZUFMT "] [sub_flags = %s]\n",
+				fname, pc->expr_count,
 				genflags2str(pc->sub_flags, values));
 	}
 		break;
 
 	case Op_builtin:
-		print_func(fp, "%s [arg_count = %" AWKULONGFMT "]\n", getfname(pc->builtin, false),
-						TO_AWK_ULONG(pc->expr_count));
+		print_func(fp, "%s [arg_count = %" ZUFMT "]\n", getfname(pc->builtin, false),
+						pc->expr_count);
 		break;
 
 	case Op_ext_builtin:
-		print_func(fp, "%s [arg_count = %" AWKULONGFMT "]\n", (pc + 1)->func_name,
-						TO_AWK_ULONG(pc->expr_count));
+		print_func(fp, "%s [arg_count = %" ZUFMT "]\n", (pc + 1)->func_name,
+						pc->expr_count);
 		break;
 
 	case Op_subscript:
 	case Op_sub_array:
-		print_func(fp, "[sub_count = %" AWKULONGFMT "]\n", TO_AWK_ULONG(pc->sub_count));
+		print_func(fp, "[sub_count = %" ZUFMT "]\n", pc->sub_count);
 		break;
 
 	case Op_store_sub:
 		print_memory(pc->memory, func, print_func, fp);
-		print_func(fp, " [sub_count = %" AWKULONGFMT "]\n", TO_AWK_ULONG(pc->expr_count));
+		print_func(fp, " [sub_count = %" ZUFMT "]\n", pc->expr_count);
 		break;
 
 	case Op_subscript_lhs:
-		print_func(fp, "[sub_count = %" AWKULONGFMT "] [do_reference = %s]\n",
-		                TO_AWK_ULONG(pc->sub_count),
+		print_func(fp, "[sub_count = %" ZUFMT "] [do_reference = %s]\n",
+		                pc->sub_count,
 		                pc->do_reference ? "true" : "false");
 		break;
 
 	case Op_K_delete:
 	case Op_in_array:
-		print_func(fp, "[expr_count = %" AWKULONGFMT "]\n", TO_AWK_ULONG(pc->expr_count));
+		print_func(fp, "[expr_count = %" ZUFMT "]\n", pc->expr_count);
 		break;
 
 	case Op_concat:
 		/* NB: concat_flag CSVAR only used in grammar, don't display it */
-		print_func(fp, "[expr_count = %" AWKULONGFMT "] [concat_flag = %s]\n",
-						TO_AWK_ULONG(pc->expr_count),
+		print_func(fp, "[expr_count = %" ZUFMT "] [concat_flag = %s]\n",
+						pc->expr_count,
 						(pc->concat_flag & CSUBSEP) != 0 ? "CSUBSEP" : "0");
 		break;
 
@@ -4930,7 +4933,8 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 
 	if (type == D_field) {
 		awk_ulong_t field_num;
-		if (!unserialize_awkulong(pstr[2], pstr_len[2], &field_num, (field_num_t)-1))
+		if (!unserialize_awkulong(pstr[2], pstr_len[2], &field_num,
+					  (awk_ulong_t) ((unsigned AWKLONG)-1 & (field_num_t)-1)))
 			return NULL;
 		symbol = make_number((AWKNUM) field_num);
 		cnt = 3;
@@ -4950,13 +4954,15 @@ unserialize_list_item(struct list_item *list, const char *const pstr[], const si
 			cnt++;
 			for (i = 0; i < sub_cnt; i++) {
 				awk_ulong_t sub_len;
-				if (!unserialize_awkulong(pstr[cnt], pstr_len[cnt], &sub_len, (awk_ulong_t)-1)) {
+				if (!unserialize_awkulong(pstr[cnt], pstr_len[cnt], &sub_len,
+							  (awk_ulong_t) ((unsigned AWKLONG)-1 & (size_t)-1)))
+				{
 					while (i)
 						unref(subs[--i]);
 					efree(subs);
 					return NULL;
 				}
-				subs[i] = make_string(pstr[cnt + 1], sub_len);
+				subs[i] = make_string(pstr[cnt + 1], (size_t) sub_len);
 				cnt += 2;
 			}
 		}
@@ -5318,7 +5324,7 @@ bool
 do_print_f(CMDARG *arg, enum argtype cmd)
 {
 	unsigned count = 0;
-	awk_ulong_t i;
+	size_t i;
 	CMDARG *a;
 	NODE **tmp;
 	char *name;
@@ -5331,7 +5337,7 @@ do_print_f(CMDARG *arg, enum argtype cmd)
 		count++;
 	emalloc(tmp, NODE **, count * sizeof(NODE *), "do_print_f");
 
-	for (i = 0u, a = arg; a != NULL; i++, a = a->next) {
+	for (i = 0, a = arg; a != NULL; i++, a = a->next) {
 		switch (a->type) {
 		case D_variable:
 			name = a->a_string;
@@ -5527,7 +5533,7 @@ set_gawk_output(const char *file)
 		}
 		output_fp = stdout;
 		output_is_tty = os_isatty(fileno(stdout));
-		output_file = (char*) "/dev/stdout";
+		output_file = charp_const_cast("/dev/stdout");
 	}
 
 	if (file == NULL || file[0] == '\0')
@@ -5546,7 +5552,7 @@ set_gawk_output(const char *file)
 			return;
 		if (strcmp(cp, "stderr") == 0) {
 			output_fp = stderr;
-			output_file = (char*) "/dev/stderr";
+			output_file = charp_const_cast("/dev/stderr");
 			output_is_tty = os_isatty(fileno(stderr));
 			return;
 		}
@@ -5623,7 +5629,7 @@ set_option_num(unsigned *pnum, const char *value)
 	unsigned long n;
 	errno = 0;
 	n = strtoul(value, NULL, 0);
-	if (errno == 0 && n && n <= (unsigned)-1)
+	if (errno == 0 && n && n == (unsigned) n)
 		*pnum = (unsigned) n;
 	else
 		d_error(_("invalid number"));
@@ -5829,14 +5835,14 @@ do_eval(CMDARG *arg, enum argtype cmd)
 	NODE **sp;
 	INSTRUCTION *eval, *code = NULL;
 	AWK_CONTEXT *ctxt;
-	awk_ulong_t ecount = 0u, pcount = 0u;
+	size_t ecount = 0, pcount = 0;
 	bool err;
 	do_flags_t save_flags = do_flags;
 	SRCFILE *the_source;
 	(void) cmd;
 
 	if (prog_running) {
-		this_frame = find_frame(0u);
+		this_frame = find_frame(0);
 		this_func = this_frame->func_node;
 	}
 
@@ -5869,12 +5875,12 @@ do_eval(CMDARG *arg, enum argtype cmd)
 		eval->source_file = cur_srcfile->src;
 		eval->func_body = f;
 		eval->func_name = NULL;	/* not needed, func_body already assigned */
-		(eval + 1)->expr_count = 0u;
+		(eval + 1)->expr_count = 0;
 		eval->nexti = bcalloc(Op_stop, 1, 0);
 
 	} else {
 		/* execute as a part of the current function */
-		awk_ulong_t i;
+		size_t i;
 		INSTRUCTION *t;
 
 		eval = f->code_ptr;	/* Op_func */
@@ -5894,7 +5900,7 @@ do_eval(CMDARG *arg, enum argtype cmd)
 				erealloc(this_frame->stack, NODE **, (pcount + ecount) * sizeof(NODE *), "do_eval");
 
 			sp = this_frame->stack + pcount;
-			for (i = 0u; i < ecount; i++) {
+			for (i = 0; i < ecount; i++) {
 				NODE *np;
 
 				np = f->fparms + i;
@@ -5927,7 +5933,7 @@ do_eval(CMDARG *arg, enum argtype cmd)
 		fatal error */
 
 	if (this_func != NULL && ecount) {
-		awk_ulong_t i;
+		size_t i;
 
 		/* undo frame manipulation from above */
 
