@@ -53,7 +53,7 @@ static char *get_src_buf(void);
 static token_t yylex(void);
 int	yyparse(void);
 static INSTRUCTION *snode(INSTRUCTION *subn, INSTRUCTION *op);
-static char **check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list);
+static char **check_params(char *fname, size_t pcount, INSTRUCTION *list);
 static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
 static NODE *mk_rexp(INSTRUCTION *exp);
 static void param_sanity(INSTRUCTION *arglist);
@@ -106,7 +106,7 @@ static INSTRUCTION *mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 static INSTRUCTION *mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op);
 static INSTRUCTION *mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op);
 static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, enum redirval redirtype);
-static awk_ulong_t count_expressions(INSTRUCTION **list, bool isarg);
+static size_t count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
@@ -142,7 +142,7 @@ const char *const ruletab[] = {
 
 static bool in_print = false;	/* lexical scanning kludge for print */
 static int in_parens = 0;	/* lexical scanning kludge for print */
-static awk_ulong_t sub_counter = 0u;	/* array dimension counter for use in delete */
+static size_t sub_counter = 0;	/* array dimension counter for use in delete */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexend;		/* end of buffer */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
@@ -171,7 +171,7 @@ extern const char *source;
 extern unsigned sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
-extern awk_ulong_t max_args;
+extern size_t max_args;
 extern NODE **args_array;
 
 const char awk_namespace[] = "awk";
@@ -872,7 +872,7 @@ statement
 
 		if ($8 != NULL
 				&& $8->lasti->opcode == Op_K_delete
-				&& $8->lasti->expr_count == 1u
+				&& $8->lasti->expr_count == 1
 				&& $8->nexti->opcode == Op_push
 				&& ($8->nexti->memory->type != Node_var || !($8->nexti->memory->var_update))
 				&& strcmp($8->nexti->memory->vname, var_name) == 0
@@ -904,7 +904,7 @@ statement
 			) {
 				(void) make_assignable($8->nexti);
 				$8->lasti->opcode = Op_K_delete_loop;
-				$8->lasti->expr_count = 0u;
+				$8->lasti->expr_count = 0;
 				if ($1 != NULL)
 					bcfree($1);
 				efree(var_name);
@@ -1185,7 +1185,7 @@ simple_stmt
 				}
 			}
 
-			$1->expr_count = 0u;
+			$1->expr_count = 0;
 			$1->opcode = Op_K_print_rec;
 			if ($4 == NULL) {    /* no redircetion */
 				$1->redir_type = redirect_none;
@@ -1211,7 +1211,7 @@ simple_stmt
 regular_print:
 			if ($4 == NULL) {		/* no redirection */
 				if ($3 == NULL)	{	/* print/printf without arg */
-					$1->expr_count = 0u;
+					$1->expr_count = 0;
 					if ($1->opcode == Op_K_print)
 						$1->opcode = Op_K_print_rec;
 					$1->redir_type = redirect_none;
@@ -1229,7 +1229,7 @@ regular_print:
 				$4->nexti = ip->nexti;
 				bcfree(ip);
 				if ($3 == NULL) {
-					$1->expr_count = 0u;
+					$1->expr_count = 0;
 					if ($1->opcode == Op_K_print)
 						$1->opcode = Op_K_print_rec;
 					$$ = list_append($4, $1);
@@ -1242,7 +1242,7 @@ regular_print:
 		}
 	  }
 
-	| LEX_DELETE NAME { sub_counter = 0u; } delete_subscript_list
+	| LEX_DELETE NAME { sub_counter = 0; } delete_subscript_list
 	  {
 		char *arr = $2->lextok;
 
@@ -1268,7 +1268,7 @@ regular_print:
 			 * Also, since BWK awk supports it, we don't have to
 			 * check do_traditional either.
 			 */
-			$1->expr_count = 0u;
+			$1->expr_count = 0;
 			$$ = list_append(list_create($2), $1);
 		} else {
 			$1->expr_count = sub_counter;
@@ -1295,7 +1295,7 @@ regular_print:
 		}
 		$3->memory = variable($3->source_line, arr, Node_var_new);
 		$3->opcode = Op_push_array;
-		$1->expr_count = 0u;
+		$1->expr_count = 0;
 		$$ = list_append(list_create($3), $1);
 
 		if (! do_posix && ! do_traditional) {
@@ -1506,7 +1506,7 @@ opt_param_list
 param_list
 	: NAME
 	  {
-		$1->param_count = 0u;
+		$1->param_count = 0;
 		$$ = list_create($1);
 	  }
 	| param_list comma NAME
@@ -1689,7 +1689,7 @@ exp
 				_("old awk does not support the keyword `in' except after `for'"));
 		$3->nexti->opcode = Op_push_array;
 		$2->opcode = Op_in_array;
-		$2->expr_count = 1u;
+		$2->expr_count = 1;
 		$$ = list_append(list_merge($1, $3), $2);
 	  }
 	| exp a_relop exp %prec RELOP
@@ -1738,7 +1738,7 @@ common_exp
 	  { $$ = $1; }
 	| common_exp simp_exp %prec CONCAT_OP
 	  {
-		awk_ulong_t count = 2u;
+		size_t count = 2;
 		bool is_simple_var = false;
 
 		if ($1->lasti->opcode == Op_concat) {
@@ -2075,7 +2075,7 @@ direct_func_call
 		$1->opcode = Op_func_call;
 		$1->func_body = NULL;
 		if ($3 == NULL) {	/* no argument or error */
-			($1 + 1)->expr_count = 0u;
+			($1 + 1)->expr_count = 0;
 			$$ = list_create($1);
 		} else {
 			INSTRUCTION *t = $3;
@@ -2112,8 +2112,8 @@ delete_exp_list
 	: bracketed_exp_list
 	  {
 		INSTRUCTION *ip = $1->lasti;
-		const awk_ulong_t count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
-		if (count > 1u) {
+		const size_t count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
+		if (count > 1) {
 			/* change Op_subscript or Op_sub_array to Op_concat */
 			ip->opcode = Op_concat;
 			ip->concat_flag = CSUBSEP;
@@ -2135,7 +2135,7 @@ bracketed_exp_list
 			/* install Null string as subscript. */
 			t = list_create(instruction(Op_push_i));
 			t->nexti->memory = dupnode(Nnull_string);
-			$3->sub_count = 1u;
+			$3->sub_count = 1;
 		} else
 			$3->sub_count = count_expressions(&t, false);
 		$$ = list_append(t, $3);
@@ -2279,7 +2279,7 @@ tokcompare(const void *l, const void *r)
  */
 
 #ifdef HAVE_MPFR
-#define MPF(F) do_mpfr_##F
+#define MPF(F) F
 #else
 #define MPF(F) 0
 #endif
@@ -2292,17 +2292,17 @@ static const struct token tokentab[] = {
 #ifdef ARRAYDEBUG
 {"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2)|DEBUG_USE,	do_adump,	0},
 #endif
-{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_and,	MPF(and)},
+{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_and,	MPF(do_mpfr_and)},
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
 {"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti,	0},
-{"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(atan2)},
+{"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(do_mpfr_atan2)},
 {"bindtextdomain",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain,	0},
 {"break",	Op_K_break,	 LEX_BREAK,	0,		0,	0},
 {"case",	Op_K_case,	 LEX_CASE,	GAWKX,		0,	0},
 {"close",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1)|A(2),	do_close,	0},
-{"compl",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl,	MPF(compl)},
+{"compl",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl,	MPF(do_mpfr_compl)},
 {"continue",	Op_K_continue, LEX_CONTINUE,	0,		0,	0},
-{"cos",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos,	MPF(cos)},
+{"cos",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos,	MPF(do_mpfr_cos)},
 {"dcgettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext,	0},
 {"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext,	0},
 {"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0,	0},
@@ -2311,7 +2311,7 @@ static const struct token tokentab[] = {
 {"else",	Op_K_else,	 LEX_ELSE,	0,		0,	0},
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
 {"exit",	Op_K_exit,	 LEX_EXIT,	0,		0,	0},
-{"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp,	MPF(exp)},
+{"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp,	MPF(do_mpfr_exp)},
 {"fflush",	Op_builtin,	 LEX_BUILTIN,	A(0)|A(1), do_fflush,	0},
 {"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0,	0},
 {"func",	Op_func, 	LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0,	0},
@@ -2323,37 +2323,37 @@ static const struct token tokentab[] = {
 {"in",		Op_symbol,	 LEX_IN,	0,		0,	0},
 {"include",	Op_symbol,	 LEX_INCLUDE,	GAWKX,	0,	0},
 {"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index,	0},
-{"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(int)},
+{"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(do_mpfr_int)},
 #ifdef SUPPLY_INTDIV
-{"intdiv0",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_intdiv,	MPF(intdiv)},
+{"intdiv0",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_intdiv,	MPF(do_mpfr_intdiv)},
 #endif
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray,	0},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length,	0},
 {"load",  	Op_symbol,	 LEX_LOAD,	GAWKX,		0,	0},
-{"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log,	MPF(log)},
-{"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift,	MPF(lshift)},
+{"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log,	MPF(do_mpfr_log)},
+{"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift,	MPF(do_mpfr_lshift)},
 {"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match,	0},
 {"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2), do_mktime, 0},
 {"namespace",  	Op_symbol,	 LEX_NAMESPACE,	GAWKX,		0,	0},
 {"next",	Op_K_next,	 LEX_NEXT,	0,		0,	0},
 {"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	0,		0,	0},
-{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_or,	MPF(or)},
+{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_or,	MPF(do_mpfr_or)},
 {"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit,	0},
 {"print",	Op_K_print,	 LEX_PRINT,	0,		0,	0},
 {"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0,	0},
-{"rand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand,	MPF(rand)},
+{"rand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand,	MPF(do_mpfr_rand)},
 {"return",	Op_K_return,	 LEX_RETURN,	NOT_OLD,	0,	0},
-{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift,	MPF(rshift)},
-{"sin",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin,	MPF(sin)},
+{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift,	MPF(do_mpfr_rshift)},
+{"sin",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin,	MPF(do_mpfr_sin)},
 {"split",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3)|A(4),	do_split,	0},
 {"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf,	0},
-{"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(sqrt)},
-{"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(srand)},
+{"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(do_mpfr_sqrt)},
+{"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(do_mpfr_srand)},
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
 {"stopme",	Op_builtin,	LEX_BUILTIN,	GAWKX|A(0)|DEBUG_USE,	stopme,		0},
 #endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime,	0},
-{"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(strtonum)},
+{"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(do_mpfr_strtonum)},
 {"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0,	0},
 {"substr",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr,	0},
 {"switch",	Op_K_switch,	 LEX_SWITCH,	GAWKX|BREAK,	0,	0},
@@ -2363,7 +2363,7 @@ static const struct token tokentab[] = {
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
 {"typeof",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2), do_typeof,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
-{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
+{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(do_mpfr_xor)},
 };
 
 /* Variable containing the current shift state.  */
@@ -2626,7 +2626,10 @@ yyerror(const char *m, ...)
 		*bp++ = ' ';
 	}
 	strcpy(bp, mesg);
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
 	err(false, "", buf, args);
+PRAGMA_WARNING_POP
 	va_end(args);
 	efree(buf);
 }
@@ -4252,12 +4255,12 @@ retry:
 
 			if (! seen_point && ! seen_e) {
 				r = mpg_integer();
-				mpg_strtoui(r->mpg_i, tokstart, strlen(tokstart), NULL, base);
+				mpg_strtoui(r->mpg_i, tokstart, strlen(tokstart), NULL, (int) base);
 				errno = 0;
 			} else {
 				int tval;
 				r = mpg_float();
-				tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, ROUND_MODE);
+				tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, (int) base, ROUND_MODE);
 				errno = 0;
 				IEEE_FMT(r->mpg_numbr, tval);
 			}
@@ -4270,7 +4273,7 @@ retry:
 		else
 			d = atof(tokstart);
 		yylval->memory = set_profile_text(make_number(d), tokstart, strlen(tokstart) - 1);
-		if (AWKLONGMIN <= d && d <= AWKLONGMAX && d == (AWKNUM) (awk_long_t) d)
+		if ((AWKNUM) AWKLONGMIN <= d && d <= (AWKNUM) AWKLONGMAX && d == (AWKNUM) (awk_long_t) d)
 			yylval->memory->flags |= NUMINT;
 		return lasttok = YNUMBER;
 
@@ -4687,7 +4690,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		    /* no args. Use $0 */
 
 			INSTRUCTION *list;
-			r->expr_count = 1u;
+			r->expr_count = 1;
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
@@ -4715,7 +4718,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 #ifdef SUPPLY_INTDIV
 	} else if (r->builtin == do_intdiv
 #ifdef HAVE_MPFR
-		   || r->builtin == MPF(intdiv)
+		   || r->builtin == do_mpfr_intdiv
 #endif
 			) {
 		arg = subn->nexti->lasti->nexti->lasti->nexti;	/* 3rd arg list */
@@ -4853,7 +4856,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		return list_append(subn, r);
 	}
 
-	r->expr_count = 0u;
+	r->expr_count = 0;
 	return list_create(r);
 }
 
@@ -4863,7 +4866,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 static int
 parms_shadow(INSTRUCTION *pc, bool *shadow)
 {
-	awk_ulong_t pcount, i;
+	size_t pcount, i;
 	bool ret = false;
 	NODE *func, *fp;
 	const char *fname;
@@ -4888,7 +4891,7 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	 * Use awkwarn() and not lintwarn() so that can warn
 	 * about all shadowed parameters.
 	 */
-	for (i = 0u; i < pcount; i++) {
+	for (i = 0; i < pcount; i++) {
 		if (lookup(fp[i].vname) != NULL) {
 			awkwarn(
 	_("function `%s': parameter `%s' shadows global variable"),
@@ -5061,7 +5064,7 @@ static int
 install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 {
 	NODE *r, *f;
-	awk_ulong_t pcount = 0u;
+	size_t pcount = 0;
 
 	r = lookup(fname);
 	if (r != NULL) {
@@ -5097,10 +5100,10 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
  */
 
 static char **
-check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list)
+check_params(char *fname, size_t pcount, INSTRUCTION *list)
 {
 	INSTRUCTION *p, *np;
-	awk_ulong_t i, j;
+	size_t i, j;
 	char *name;
 	char **pnames;
 
@@ -5108,7 +5111,7 @@ check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list)
 
 	emalloc(pnames, char **, pcount * sizeof(char *), "check_params");
 
-	for (i = 0u, p = list->nexti; p != NULL; i++, p = np) {
+	for (i = 0, p = list->nexti; p != NULL; i++, p = np) {
 		np = p->nexti;
 		name = p->lextok;
 		p->lextok = NULL;
@@ -5127,11 +5130,11 @@ check_params(char *fname, awk_ulong_t pcount, INSTRUCTION *list)
 					fname, name);
 
 		/* check for duplicate parameters */
-		for (j = 0u; j < i; j++) {
+		for (j = 0; j < i; j++) {
 			if (strcmp(name, pnames[j]) == 0) {
 				error_ln(p->source_line,
-					_("function `%s': parameter #%" AWKULONGFMT ", `%s', duplicates parameter #%" AWKULONGFMT ""),
-					fname, TO_AWK_ULONG(i + 1), name, TO_AWK_ULONG(j + 1));
+					_("function `%s': parameter #%" ZUFMT ", `%s', duplicates parameter #%" ZUFMT ""),
+					fname, i + 1, name, j + 1);
 			}
 		}
 
@@ -5247,7 +5250,7 @@ static void
 param_sanity(INSTRUCTION *arglist)
 {
 	INSTRUCTION *argl, *arg;
-	awk_ulong_t i = 1u;
+	size_t i = 1;
 
 	if (arglist == NULL)
 		return;
@@ -5255,7 +5258,7 @@ param_sanity(INSTRUCTION *arglist)
 		arg = argl->lasti;
 		if (arg->opcode == Op_match_rec)
 			warning_ln(arg->source_line,
-				_("regexp constant for parameter #%" AWKULONGFMT " yields boolean value"), TO_AWK_ULONG(i));
+				_("regexp constant for parameter #%" ZUFMT " yields boolean value"), i);
 		argl = arg->nexti;
 		i++;
 	}
@@ -5943,7 +5946,7 @@ optimize_assignment(INSTRUCTION *exp)
 				exp->nexti = i3->nexti;
 				bcfree(i3);
 
-				if (--i2->expr_count == 1u)	/* one less expression in Op_concat */
+				if (--i2->expr_count == 1)	/* one less expression in Op_concat */
 					i2->opcode = Op_no_op;
 
 				i3 = i2->nexti;
@@ -5974,14 +5977,14 @@ optimize_assignment(INSTRUCTION *exp)
 		case Op_push_array:
 			if (i2->nexti->nexti->opcode == Op_subscript_lhs) {
 				i3 = i2->nexti->nexti;
-				if (i3->sub_count == 1u
+				if (i3->sub_count == 1
 						&& i3->nexti == i1
 						&& i1->opcode == Op_assign
 				) {
 					/* array[sub] = .. */
 					i3->opcode = Op_store_sub;
 					i3->memory = i2->memory;
-					i3->expr_count = 1u;  /* sub_count shadows memory,
+					i3->expr_count = 1;  /* sub_count shadows memory,
                                           * so use expr_count instead.
 				                          */
 					i3->nexti = NULL;
@@ -6272,15 +6275,15 @@ mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1)
  *                       for function arguments.
  */
 
-static awk_ulong_t
+static size_t
 count_expressions(INSTRUCTION **list, bool isarg)
 {
 	INSTRUCTION *expr;
 	INSTRUCTION *r = NULL;
-	awk_ulong_t count = 0u;
+	size_t count = 0;
 
 	if (*list == NULL)	/* error earlier */
-		return 0u;
+		return 0;
 
 	for (expr = (*list)->nexti; expr; ) {
 		INSTRUCTION *t1, *t2;
@@ -6288,7 +6291,7 @@ count_expressions(INSTRUCTION **list, bool isarg)
 		t2 = expr->lasti;
 		if (isarg && t1 == t2 && t1->opcode == Op_push)
 			t1->opcode = Op_push_param;
-		if (++count == 1u)
+		if (++count == 1)
 			r = expr;
 		else
 			(void) list_merge(r, expr);
