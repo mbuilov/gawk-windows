@@ -377,7 +377,7 @@ do_index(nargs_t nargs)
 	size_t ret;
 	bool do_single_byte = false;
 	mbstate_t mbs1, mbs2;
-	(void)nargs;
+	(void) nargs;
 
 	if (gawk_mb_cur_max > 1) {
 		memset(& mbs1, 0, sizeof(mbstate_t));
@@ -501,7 +501,7 @@ do_int(nargs_t nargs)
 	NODE *tmp;
 	AWKNUM arg;
 	double d;
-	(void)nargs;
+	(void) nargs;
 
 	tmp = POP_SCALAR();
 	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
@@ -519,7 +519,7 @@ do_isarray(nargs_t nargs)
 {
 	NODE *tmp;
 	int ret = 1;
-	(void)nargs;
+	(void) nargs;
 
 	tmp = POP();
 	if (tmp->type != Node_var_array) {
@@ -538,7 +538,7 @@ do_length(nargs_t nargs)
 {
 	NODE *tmp;
 	size_t len;
-	(void)nargs;
+	(void) nargs;
 
 	tmp = POP();
 	if (tmp->type == Node_var_array) {
@@ -595,7 +595,7 @@ do_log(nargs_t nargs)
 	NODE *tmp;
 	AWKNUM arg;
 	double d;
-	(void)nargs;
+	(void) nargs;
 
 	tmp = POP_SCALAR();
 	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
@@ -635,15 +635,16 @@ mpz2mpfr(mpz_ptr zi)
 		prec = MPFR_PREC_MAX;
 
 	if (! inited) {
-		mpfr_init2(mpfrval, prec);
+		mpfr_init2(mpfrval, (mpfr_prec_t) prec);
 		inited = true;
 	} else
-		mpfr_set_prec(mpfrval, prec);
+		mpfr_set_prec(mpfrval, (mpfr_prec_t) prec);
 	tval = mpfr_set_z(mpfrval, zi, ROUND_MODE);
 	IEEE_FMT(mpfrval, tval);
 	return mpfrval;
 }
-#endif
+
+#endif /* HAVE_MPFR */
 
 /*
  * format_tree() formats arguments of sprintf,
@@ -709,10 +710,9 @@ format_tree(
 	} \
 } while ((void) 0, 0)
 
-	awk_ulong_t cur_arg = 0u;
+	size_t cur_arg = 0;
 	NODE *r = NULL;
 	int i, nc;
-	bool toofew = false;
 	char *obuf, *obufout;
 	size_t osiz, ofre, olen_final;
 	const char *chbuf;
@@ -720,7 +720,7 @@ format_tree(
 	int cs1;
 	NODE *arg;
 	awk_long_t fw, prec, *cur = NULL;
-	awk_ulong_t argnum;
+	size_t argnum;
 	bool used_dollar;
 	bool lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
 	uintmax_t uval;
@@ -770,7 +770,7 @@ format_tree(
 	osiz = INITIAL_OUT_SIZE;
 	ofre = osiz - 1;
 
-	cur_arg = 1u;
+	cur_arg = 1;
 
 	{
 		size_t k;
@@ -810,19 +810,16 @@ format_tree(
 	 */
 #define parse_next_arg() do { \
 	if (argnum) { \
-		if (cur_arg > 1u) { \
+		if (cur_arg > 1) { \
 			msg(_("fatal: must use `count$' on all formats or none")); \
 			goto out; \
 		} \
 		arg = the_args[argnum]; \
 	} else if (used_dollar) { \
 		msg(_("fatal: must use `count$' on all formats or none")); \
-		arg = 0; /* shutup the compiler */ \
 		goto out; \
 	} else if (cur_arg >= num_args) { \
-		arg = 0; /* shutup the compiler */ \
-		toofew = true; \
-		break; \
+		goto toofew; \
 	} else { \
 		arg = the_args[cur_arg]; \
 		cur_arg++; \
@@ -844,7 +841,7 @@ format_tree(
 		cur = &fw;
 		fw = 0;
 		prec = 0;
-		argnum = 0u;
+		argnum = 0;
 		base = 0;
 		have_prec = false;
 		signchar = '\0';
@@ -949,12 +946,12 @@ check_pos:
 					msg(_("fatal: argument index with `$' must be > 0"));
 					goto out;
 				}
-				argnum = (awk_ulong_t) fw;
+				argnum = (size_t) (awk_ulong_t) fw;
 				fw = 0;
 				used_dollar = true;
 				if (argnum >= num_args) {
-					msg(_("fatal: argument index %" AWKULONGFMT " greater than total number of supplied arguments"),
-						TO_AWK_ULONG(argnum));
+					msg(_("fatal: argument index %" ZUFMT " greater than total number of supplied arguments"),
+						argnum);
 					goto out;
 				}
 			} else {
@@ -980,14 +977,11 @@ check_pos:
 					s1++;
 					n0--;
 				}
-				if (val >= num_args) {
-					toofew = true;
-					break;
-				}
+				if (val >= num_args)
+					goto toofew;
 				arg = the_args[val];
-			} else {
+			} else
 				parse_next_arg();
-			}
 			(void) force_number(arg);
 			*cur = get_number_si(arg);
 			if (*cur < 0 && cur == &fw) {
@@ -1377,7 +1371,8 @@ mpf1:
 							goto fmt1;
 						}
 
-						tmpval = uval = (uintmax_t) mpfr_get_sj(mf, ROUND_MODE);
+						uval = (uintmax_t) mpfr_get_sj(mf, ROUND_MODE);
+						tmpval = (double) uval;
 						if (! alt && have_prec && prec == 0 && tmpval == 0)
 							goto pr_tail;	/* printf("%.0x", 0) is no characters */
 						goto int0;
@@ -1415,11 +1410,11 @@ mpf1:
 
 			if (tmpval < 0) {
 				uval = (uintmax_t) (intmax_t) tmpval;
-				if ((double)(intmax_t)uval != double_to_int(tmpval))
+				if ((double) (intmax_t) uval != double_to_int(tmpval))
 					goto out_of_range;
 			} else {
 				uval = (uintmax_t) tmpval;
-				if ((double)uval != double_to_int(tmpval))
+				if ((double) uval != double_to_int(tmpval))
 					goto out_of_range;
 			}
 #ifdef HAVE_MPFR
@@ -1617,19 +1612,19 @@ mpf1:
 				sprintf(cp, "*.*Z%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     TO_PRINTF_WIDTH(fw), TO_PRINTF_WIDTH(prec), zi)) >= (int)ofre)
-					chksize((unsigned)nc)
+					chksize((unsigned)nc);
 				break;
 			case MP_INT_WITHOUT_PREC:
 				sprintf(cp, "*Z%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     TO_PRINTF_WIDTH(fw), zi)) >= (int)ofre)
-					chksize((unsigned)nc)
+					chksize((unsigned)nc);
 				break;
 			case MP_FLOAT:
 				sprintf(cp, "*.*R*%c", (char) cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     TO_PRINTF_WIDTH(fw), TO_PRINTF_WIDTH(prec), ROUND_MODE, mf)) >= (int)ofre)
-					chksize((unsigned)nc)
+					chksize((unsigned)nc);
 				break;
 			default:
 #else
@@ -1686,13 +1681,6 @@ PRAGMA_WARNING_POP
 					(char) cs1);
 			break;
 		}
-		if (toofew) {
-			msg("%s\n\t`%s'\n\t%*s%s",
-			      _("fatal: not enough arguments to satisfy format string"),
-			      fmt_string, TO_PRINTF_WIDTH((size_t) (s1 - fmt_string - 1)), "",
-			      _("^ ran out for this one"));
-			goto out;
-		}
 	}
 	if (do_lint) {
 		if (need_format)
@@ -1724,6 +1712,13 @@ out:
 	if (r == NULL)
 		gawk_exit(EXIT_FATAL);
 	return r;
+
+toofew:
+	msg("%s\n\t`%s'\n\t%*s%s",
+	      _("fatal: not enough arguments to satisfy format string"),
+	      fmt_string, TO_PRINTF_WIDTH((size_t) (s1 - fmt_string - 1)), "",
+	      _("^ ran out for this one"));
+	goto out;
 }
 
 
@@ -1732,11 +1727,11 @@ out:
 static NODE *
 printf_common(nargs_t nargs)
 {
-	awk_ulong_t i;
+	size_t i;
 	NODE *r, *tmp;
 
 	assert(nargs && nargs <= max_args);
-	for (i = 1u; i <= nargs; i++) {
+	for (i = 1; i <= nargs; i++) {
 		tmp = args_array[nargs - i] = POP();
 		if (tmp->type == Node_var_array) {
 			while (--i)
@@ -1747,7 +1742,7 @@ printf_common(nargs_t nargs)
 
 	args_array[0] = force_string(args_array[0]);
 	r = format_tree(args_array[0]->stptr, args_array[0]->stlen, args_array, nargs);
-	for (i = 0u; i < nargs; i++)
+	for (i = 0; i < nargs; i++)
 		DEREF(args_array[i]);
 	return r;
 }
@@ -1847,7 +1842,7 @@ do_sqrt(nargs_t nargs)
 	NODE *tmp;
 	AWKNUM arg;
 	double d;
-	(void)nargs;
+	(void) nargs;
 
 	tmp = POP_SCALAR();
 	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
@@ -1872,7 +1867,7 @@ do_substr(nargs_t nargs)
 	double d_index = 0, d_length = 0;
 	size_t src_len;
 
-	if (nargs == 3u) {
+	if (nargs == 3) {
 		t1 = POP_NUMBER();
 		d_length = get_number_d(t1);
 		DEREF(t1);
@@ -1884,7 +1879,7 @@ do_substr(nargs_t nargs)
 
 	t1 = POP_STRING();
 
-	if (nargs == 3u) {
+	if (nargs == 3) {
 		if (! (d_length >= 1)) {
 			if (do_lint == DO_LINT_ALL)
 				lintwarn(_("substr: length %g is not >= 1"), d_length);
@@ -1934,7 +1929,7 @@ do_substr(nargs_t nargs)
 	else
 		indx = SIZE_MAX;
 
-	if (nargs == 2u) {	/* third arg. missing */
+	if (nargs == 2) {	/* third arg. missing */
 		/* use remainder of string */
 		length = t1->stlen - indx;	/* default to bytes */
 		if (gawk_mb_cur_max > 1) {
@@ -2032,7 +2027,7 @@ do_strftime(nargs_t nargs)
 	/* set defaults first */
 	format = def_strftime_format;	/* traditional date format */
 	formatlen = strlen(format);
-	(void) time(& fclock);	/* current time of day */
+	(void) gawk_time(& fclock);	/* current time of day */
 	do_gmt = false;
 
 	if (PROCINFO_node != NULL) {
@@ -2053,13 +2048,13 @@ do_strftime(nargs_t nargs)
 	if (nargs) {	/* have args */
 		NODE *tmp;
 
-		if (nargs == 3u) {
+		if (nargs == 3) {
 			t3 = POP_SCALAR();
 			do_gmt = boolval(t3);
 			DEREF(t3);
 		}
 
-		if (nargs >= 2u) {
+		if (nargs >= 2) {
 			t2 = POP_SCALAR();
 			if (do_lint && (fixtype(t2)->flags & NUMBER) == 0)
 				lintwarn(_("%s: received non-numeric second argument"), "strftime");
@@ -2103,9 +2098,9 @@ do_strftime(nargs_t nargs)
 	}
 
 	if (do_gmt)
-		tm = gmtime(& fclock);
+		tm = gawk_gmtime(& fclock);
 	else
-		tm = localtime(& fclock);
+		tm = gawk_localtime(& fclock);
 
 	if (tm == NULL) {
 		ret = make_string("", 0);
@@ -2116,7 +2111,10 @@ do_strftime(nargs_t nargs)
 	bufsize = sizeof(buf);
 	for (;;) {
 		*bufp = '\0';
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
 		buflen = strftime(bufp, bufsize, format, tm);
+PRAGMA_WARNING_POP
 		/*
 		 * buflen can be zero EITHER because there's not enough
 		 * room in the string, or because the control command
@@ -2152,7 +2150,7 @@ do_systime(nargs_t nargs)
 	gawk_time_t lclock;
 	(void) nargs;
 
-	(void) time(& lclock);
+	(void) gawk_time(& lclock);
 	return make_number((AWKNUM) lclock);
 }
 
@@ -2170,7 +2168,7 @@ do_mktime(nargs_t nargs)
 	char save;
 	bool do_gmt;
 
-	if (nargs == 2u) {
+	if (nargs == 2) {
 		t2 = POP_SCALAR();
 		do_gmt = boolval(t2);
 		DEREF(t2);
@@ -2216,7 +2214,7 @@ do_mktime(nargs_t nargs)
 	then.tm_year = year - 1900;
 	then.tm_isdst = dst;
 
-	then_stamp = (do_gmt ? awk_timegm(& then) : mktime(& then));
+	then_stamp = (do_gmt ? gawk_timegm(& then) : gawk_mktime(& then));
 	return make_number((AWKNUM) then_stamp);
 }
 
@@ -2289,7 +2287,7 @@ do_print(nargs_t nargs, enum redirval redirtype)
 	struct redirect *rp = NULL;
 	int errflg = 0;
 	FILE *fp = NULL;
-	awk_ulong_t i;
+	size_t i;
 	NODE *redir_exp = NULL;
 	NODE *tmp = NULL;
 
@@ -2319,7 +2317,7 @@ do_print(nargs_t nargs, enum redirval redirtype)
 	else
 		fp = stdout;
 
-	for (i = 1u; i <= nargs; i++) {
+	for (i = 1; i <= nargs; i++) {
 		tmp = args_array[i] = POP();
 		if (tmp->type == Node_var_array) {
 			while (--i)
@@ -2347,7 +2345,7 @@ do_print(nargs_t nargs, enum redirval redirtype)
 	for (i = nargs; i; i--) {
 		efwrite(args_array[i]->stptr, sizeof(char), args_array[i]->stlen, fp, "print", rp, false);
 		DEREF(args_array[i]);
-		if (i != 1u && OFSlen > 0)
+		if (i != 1 && OFSlen > 0)
 			efwrite(OFS, sizeof(char), OFSlen,
 				fp, "print", rp, false);
 	}
@@ -2655,8 +2653,8 @@ NODE *
 do_srand(nargs_t nargs)
 {
 	NODE *tmp;
-	static long save_seed = 1;
-	long ret = save_seed;	/* SVR4 awk srand returns previous seed */
+	static unsigned long save_seed = 1;
+	unsigned long ret = save_seed;	/* SVR4 awk srand returns previous seed */
 
 	if (firstrand) {
 		(void) initstate(1, istate, SIZEOF_STATE);
@@ -2665,13 +2663,15 @@ do_srand(nargs_t nargs)
 		(void) setstate(istate);
 	}
 
-	if (!nargs)
-		srandom((unsigned long) (save_seed = (long) time((gawk_time_t *) 0)));
+	if (!nargs) {
+		gawk_time_t t = gawk_time((gawk_time_t *) 0);
+		srandom(save_seed = (unsigned long) t);
+	}
 	else {
 		tmp = POP_SCALAR();
 		if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 			lintwarn(_("%s: received non-numeric argument"), "srand");
-		srandom((unsigned long) (save_seed = (long) force_number(tmp)->numbr));
+		srandom((save_seed = (unsigned long) (long) force_number(tmp)->numbr));
 		DEREF(tmp);
 	}
 	return make_number((AWKNUM) ret);
@@ -2695,7 +2695,7 @@ do_match(nargs_t nargs)
 	regoff_t result_len;
 
 	dest = NULL;
-	if (nargs == 3u) {	/* 3rd optional arg for the subpatterns */
+	if (nargs == 3) {	/* 3rd optional arg for the subpatterns */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array)
 			fatal(_("match: third argument is not an array"));
@@ -3269,7 +3269,7 @@ call_sub(const char *name, nargs_t nargs)
 	bool need_free = false;
 	if (flags == 0 || flags == GSUB) {
 		/* sub or gsub */
-		if (nargs != 2u)
+		if (nargs != 2)
 			fatal(_("%s: can be called indirectly only with two arguments"), name);
 
 		replace = POP_STRING();
@@ -3292,7 +3292,7 @@ call_sub(const char *name, nargs_t nargs)
 		PUSH_ADDRESS(lhs);
 	} else {
 		/* gensub */
-		if (nargs == 4u)
+		if (nargs == 4)
 			rhs = POP();
 		else
 			rhs = NULL;
@@ -3352,7 +3352,7 @@ call_match(nargs_t nargs)
 	NODE *result;
 
 	regex = text = array = NULL;
-	if (nargs == 3u)
+	if (nargs == 3)
 		array = POP();
 	regex = POP();
 
@@ -3392,15 +3392,15 @@ call_split_func(const char *name, nargs_t nargs)
 	NODE *result;
 
 	regex = seps = NULL;
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("indirect call to %s requires at least two arguments"),
 				name);
 
-	if (nargs == 4u)
+	if (nargs == 4)
 		seps = POP();
 
 	bool need_free = false;
-	if (nargs >= 3u) {
+	if (nargs >= 3) {
 		regex = POP_STRING();
 		if ((regex->flags & REGEX) != 0)
 			regex = regex->typed_re;
@@ -3538,17 +3538,17 @@ do_and(nargs_t nargs)
 	AWKNUM val;
 
 	res = ~(uintmax_t) 0;	/* start off with all ones */
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("%s: called with less than two arguments"), "" "and");
 
 	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("%s: argument %" AWKULONGFMT " is non-numeric"), "" "and", TO_AWK_ULONG(nargs));
+			lintwarn(_("%s: argument %" ZUFMT " is non-numeric"), "" "and", nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("%s: argument %" AWKULONGFMT " negative value %g is not allowed"), "" "and", TO_AWK_ULONG(nargs), val);
+			fatal(_("%s: argument %" ZUFMT " negative value %g is not allowed"), "" "and", nargs, val);
 
 		uval = (uintmax_t) val;
 		res &= uval;
@@ -3569,17 +3569,17 @@ do_or(nargs_t nargs)
 	AWKNUM val;
 
 	res = 0;
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("%s: called with less than two arguments"), "" "or");
 
 	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("%s: argument %" AWKULONGFMT " is non-numeric"), "" "or", TO_AWK_ULONG(nargs));
+			lintwarn(_("%s: argument %" ZUFMT " is non-numeric"), "" "or", nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("%s: argument %" AWKULONGFMT " negative value %g is not allowed"), "" "or", TO_AWK_ULONG(nargs), val);
+			fatal(_("%s: argument %" ZUFMT " negative value %g is not allowed"), "" "or", nargs, val);
 
 		uval = (uintmax_t) val;
 		res |= uval;
@@ -3599,18 +3599,18 @@ do_xor(nargs_t nargs)
 	uintmax_t res, uval;
 	AWKNUM val;
 
-	if (nargs < 2u)
+	if (nargs < 2)
 		fatal(_("%s: called with less than two arguments"), "" "xor");
 
 	res = 0;	/* start with all zeroes */
 	for (; nargs; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("%s: argument %" AWKULONGFMT " is non-numeric"), "" "xor", TO_AWK_ULONG(nargs));
+			lintwarn(_("%s: argument %" ZUFMT " is non-numeric"), "" "xor", nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("%s: argument %" AWKULONGFMT " negative value %g is not allowed"), "" "xor", TO_AWK_ULONG(nargs), val);
+			fatal(_("%s: argument %" ZUFMT " negative value %g is not allowed"), "" "xor", nargs, val);
 
 		uval = (uintmax_t) val;
 		res ^= uval;
@@ -3828,25 +3828,25 @@ do_dcgettext(nargs_t nargs)
 	char *domain;
 	char save1 = '\0', save2 = '\0';
 
-	if (nargs == 3u) {	/* third argument */
+	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
 		lc_cat = localecategory_from_argument(tmp);
 		DEREF(tmp);
 	} else
 		lc_cat = LC_MESSAGES;
 
-	if (nargs >= 2u) {  /* second argument */
+	if (nargs >= 2) {  /* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
 		str_terminate(t2, save2);
 	} else
 		domain = TEXTDOMAIN;
 #else
-	if (nargs == 3u) {
+	if (nargs == 3) {
 		tmp = POP_STRING();
 		DEREF(tmp);
 	}
-	if (nargs >= 2u) {
+	if (nargs >= 2) {
 		t2 = POP_STRING();
 		DEREF(t2);
 	}
@@ -3890,7 +3890,7 @@ do_dcngettext(nargs_t nargs)
 	char save = '\0', save1 = '\0', save2 = '\0';
 	bool saved_end = false;
 
-	if (nargs == 5u) {	/* fifth argument */
+	if (nargs == 5) {	/* fifth argument */
 		tmp = POP_STRING();
 		lc_cat = localecategory_from_argument(tmp);
 		DEREF(tmp);
@@ -3898,7 +3898,7 @@ do_dcngettext(nargs_t nargs)
 		lc_cat = LC_MESSAGES;
 
 	t3 = NULL;
-	if (nargs >= 4u) {	/* fourth argument */
+	if (nargs >= 4) {	/* fourth argument */
 		t3 = POP_STRING();
 		domain = t3->stptr;
 		save = domain[t3->stlen];
@@ -3907,11 +3907,11 @@ do_dcngettext(nargs_t nargs)
 	} else
 		domain = TEXTDOMAIN;
 #else
-	if (nargs == 5u) {
+	if (nargs == 5) {
 		tmp = POP_STRING();
 		DEREF(tmp);
 	}
-	if (nargs >= 4u) {
+	if (nargs >= 4) {
 		t3 = POP_STRING();
 		DEREF(t3);
 	}
@@ -3978,7 +3978,7 @@ do_bindtextdomain(nargs_t nargs)
 	domain = TEXTDOMAIN;
 	char save = '\0', save1 = '\0';
 
-	if (nargs == 2u) {	/* second argument */
+	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
 		save = t2->stptr[t2->stlen];
@@ -4082,7 +4082,7 @@ do_typeof(nargs_t nargs)
 	bool deref = true;
 	NODE *dbg;
 
-	if (nargs == 2u) {	/* 2nd optional arg for debugging */
+	if (nargs == 2) {	/* 2nd optional arg for debugging */
 		dbg = POP_PARAM();
 		if (dbg->type != Node_var_array)
 			fatal(_("typeof: second argument is not an array"));
@@ -4178,10 +4178,8 @@ do_typeof(nargs_t nargs)
 		 * in interpret.h pushes Node_var->var_value.
 		 */
 		fatal(_("typeof: invalid argument type `%s'"), nodetype2str(arg->type));
-		break;
 	default:
 		fatal(_("typeof: unknown argument type `%s'"), nodetype2str(arg->type));
-		break;
 	}
 
 	if (deref)
@@ -4293,42 +4291,50 @@ format_nan_inf(NODE *n, char format)
 #ifdef HAVE_MPFR
 	if (is_mpg_integer(n))
 		return NULL;
-	else if (is_mpg_float(n)) {
-		if (mpfr_nan_p(n->mpg_numbr)) {
+	if (is_mpg_float(n)) {
+		if (mpfr_nan_p(n->mpg_numbr))
 			strcpy(buf, mpfr_sgn(n->mpg_numbr) < 0 ? "-nan" : "+nan");
-
-			goto fmt;
-		} else if (mpfr_inf_p(n->mpg_numbr)) {
+		else if (mpfr_inf_p(n->mpg_numbr))
 			strcpy(buf, mpfr_sgn(n->mpg_numbr) < 0 ? "-inf" : "+inf");
-
-			goto fmt;
-		} else
+		else
 			return NULL;
 	}
-	/* else
-		fallthrough */
+	else
 #endif
-	double val = n->numbr;
+	{
+		AWKNUM val = n->numbr;
+		if (isnan(val))
+			strcpy(buf, signbit(val) != 0 ? "-nan" : "+nan");
+		else if (isinf(val))
+			strcpy(buf, val < 0 ? "-inf" : "+inf");
+		else
+			return NULL;
+	}
 
-	if (isnan(val)) {
-		strcpy(buf, signbit(val) != 0 ? "-nan" : "+nan");
-
-		// fall through to end
-	} else if (isinf(val)) {
-		strcpy(buf, val < 0 ? "-inf" : "+inf");
-
-		// fall through to end
-	} else
-		return NULL;
-
-#ifdef HAVE_MPFR
-fmt:
-#endif
 	if (isupper((unsigned char) format)) {
-		unsigned i;
-
-		for (i = 0; buf[i] != '\0'; i++)
-			buf[i] = (char) toupper((unsigned char) buf[i]);
+		unsigned i = 0;
+		for (;; i++) {
+			switch (buf[i]) {
+			case '-':
+			case '+':
+				continue;
+			case 'n':
+				buf[i] = 'N';
+				continue;
+			case 'a':
+				buf[i] = 'A';
+				continue;
+			case 'i':
+				buf[i] = 'I';
+				continue;
+			case 'f':
+				buf[i] = 'F';
+				continue;
+			default:
+				break;
+			}
+			break;
+		}
 	}
 	return buf;
 }
