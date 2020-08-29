@@ -669,7 +669,7 @@ mod:
 			 */
 			t1 = force_array(pc->memory, true);	/* array */
 			t2 = mk_sub(pc->expr_count);	/* subscript */
- 			lhs = assoc_lookup(t1, t2);
+			lhs = assoc_lookup(t1, t2);
 			if ((*lhs)->type == Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
@@ -1020,19 +1020,19 @@ arrayfor:
 
 		case Op_ext_builtin:
 		{
-			awk_ulong_t arg_count = pc->expr_count;
+			size_t arg_count = pc->expr_count;
 			awk_ext_func_t *f = pc[1].c_function;
 			size_t min_req = f->min_required_args;
 			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
 
 			if (arg_count < min_req)
-				fatal(_("%s: called with %" AWKULONGFMT " arguments, expecting at least %" ZUFMT ""),
-						pc[1].func_name, TO_AWK_ULONG(arg_count), min_req);
+				fatal(_("%s: called with %" ZUFMT " arguments, expecting at least %" ZUFMT ""),
+						pc[1].func_name, arg_count, min_req);
 
 			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %" AWKULONGFMT " arguments, expecting no more than %" ZUFMT ""),
-						pc[1].func_name, TO_AWK_ULONG(arg_count), max_expect);
+				lintwarn(_("%s: called with %" ZUFMT " arguments, expecting no more than %" ZUFMT ""),
+						pc[1].func_name, arg_count, max_expect);
 
 			PUSH_CODE(pc);
 			awk_value_t *ef_ret = pc->extfunc((int) arg_count, & result, f);
@@ -1118,7 +1118,7 @@ match_re:
 			char save;
 
 			{
-				awk_ulong_t arg_count = (pc + 1)->expr_count;
+				size_t arg_count = (pc + 1)->expr_count;
 				t1 = PEEK(arg_count);	/* indirect var */
 			}
 
@@ -1144,7 +1144,7 @@ match_re:
 				fatal(_("`%s' is not a function, so it cannot be called indirectly"),
 						t1->stptr);
 			} else if (f->type == Node_builtin_func) {
-				awk_ulong_t arg_count = (pc + 1)->expr_count;
+				size_t arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
 
 				assert(!builtin_func_is_null(the_func));
@@ -1171,7 +1171,7 @@ match_re:
 					/* code copied from below, keep in sync */
 					INSTRUCTION *bc;
 					char *fname = pc->func_name;
-					awk_ulong_t arg_count = (pc + 1)->expr_count;
+					size_t arg_count = (pc + 1)->expr_count;
 					static INSTRUCTION npc[2];
 
 					npc[0] = *pc;
@@ -1214,7 +1214,7 @@ match_re:
 				/* keep in sync with indirect call code */
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
-				awk_ulong_t arg_count = (pc + 1)->expr_count;
+				size_t arg_count = (pc + 1)->expr_count;
 
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
@@ -1513,7 +1513,7 @@ match_re:
 
 /*	} forever */
 
-#ifdef COMPILE_UNREACHABLE_CODE
+#ifndef DONT_COMPILE_UNREACHABLE_CODE
 	/* not reached */
 	return 0;
 #endif
