@@ -29,7 +29,6 @@
 #ifdef WINDOWS_NATIVE
 #include "mscrtx/socket_file.h"	/* socket_file_clearerr */
 #include "mscrtx/localerpl.h"
-#include "mscrtx/sprintf_helpers.h"
 #endif
 
 #ifdef HAVE_MPFR
@@ -171,6 +170,7 @@ awk_value_to_node(const awk_value_t *retval)
 			ext_ret_val = make_number(retval->num_value);
 			break;
 		case AWK_NUMBER_TYPE_MPFR:
+		{
 #ifdef HAVE_MPFR
 			if (! do_mpfr)
 				fatal(_("awk_value_to_node: not in MPFR mode"));
@@ -181,6 +181,7 @@ awk_value_to_node(const awk_value_t *retval)
 #else
 			fatal(_("awk_value_to_node: MPFR not supported"));
 #endif
+		}
 		case AWK_NUMBER_TYPE_MPZ:
 #ifdef HAVE_MPFR
 			if (! do_mpfr)
@@ -490,7 +491,6 @@ assign_number(NODE *node, awk_value_t *val)
 		break;
 	default:
 		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
-		break;
 	}
 #endif
 }
@@ -1274,9 +1274,9 @@ api_get_mpfr(void)
 	return p;
 #else
 	fatal(_("api_get_mpfr: MPFR not supported"));
-#ifdef COMPILE_UNREACHABLE_CODE
+# ifndef DONT_COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
-#endif
+# endif
 #endif
 }
 
@@ -1292,9 +1292,9 @@ api_get_mpz(void)
 	return p;
 #else
 	fatal(_("api_get_mpfr: MPFR not supported"));
-#ifdef COMPILE_UNREACHABLE_CODE
+# ifndef DONT_COMPILE_UNREACHABLE_CODE
 	return NULL;	// silence compiler warning
-#endif
+# endif
 #endif
 }
 
@@ -1467,12 +1467,23 @@ api_ob_vfprintf(awk_output_buf_t *outbuf, const char *format, va_list ap)
 #ifdef WINDOWS_NATIVE
 	if (outbuf->socket_fd != INVALID_HANDLE) {
 		char stack_buf[1024], *buf = stack_buf;
-		int n = vsprintf_helper(&buf, sizeof(stack_buf), format, ap);
-		if (n != -1) {
+		int n = vsnprintf(buf, sizeof(stack_buf), format, ap);
+		if (n == 0)
+			return 0;
+		if (n < 0)
+			return -1;
+		if ((unsigned) n > sizeof(stack_buf)) {
+			buf = (char*) malloc((unsigned) n);
+			if (!buf)
+				return -1;
+			(void) vsnprintf(buf, (unsigned) n, format, ap);
+		}
+		{
 			size_t k = gawk_fwrite(buf, (size_t) n, 1, outbuf);
 			if (buf != stack_buf)
 				free(buf);
-			return k == 1 ? n : -1;
+			if (k == 1)
+				return n;
 		}
 		return -1;
 	}
