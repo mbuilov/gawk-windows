@@ -91,9 +91,9 @@
 #include "missing_d/mktime.c"
 #endif /* HAVE_MKTIME */
 
-#ifndef HAVE_TIMEGM
+#if !defined(HAVE_TIMEGM) && !defined(WINDOWS_NATIVE)
 #include "missing_d/timegm.c"
-#endif /* HAVE_TIMEGM */
+#endif
 
 #ifndef HAVE_SNPRINTF
 #include "missing_d/snprintf.c"
