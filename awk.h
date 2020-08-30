@@ -2506,6 +2506,7 @@ PRAGMA_WARNING_POP
 
 /* char_digit_value --- return [0..9] if char looks like a decimal digit,
    otherwise return -1.  */
+/* note: c - must be unsigned char converted to int */
 
 static inline int
 char_digit_value(int c)
@@ -2528,6 +2529,7 @@ char_digit_value(int c)
 
 /* char_xdigit_value --- return [0..15] if char looks like a hexadecimal digit,
    otherwise return -1.  */
+/* note: c - must be unsigned char converted to int */
 
 static inline int
 char_xdigit_value(int c)
@@ -2562,7 +2564,9 @@ char_xdigit_value(int c)
 }
 
 /* locale-independent replacement of isdigit() */
+/* note: c - must be unsigned char converted to int */
 #define char_is_digit(c)	(char_digit_value(c) != -1)
 
 /* locale-independent replacement of isxdigit() */
+/* note: c - must be unsigned char converted to int */
 #define char_is_xdigit(c)	(char_xdigit_value(c) != -1)
