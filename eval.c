@@ -43,7 +43,7 @@ extern double fmod(double x, double y);
 
 /* for debug.c */
 NODE **fcall_list = NULL;
-awk_ulong_t fcall_count = 0u;
+size_t fcall_count = 0;
 IOBUF *curfile = NULL;		/* current data file */
 bool exiting = false;
 
@@ -425,12 +425,9 @@ nodetype2str(NODETYPE type)
 const char *
 opcode2str(OPCODE op)
 {
-	if (op >= Op_illegal && op < Op_final)
-		return optypes[op].desc;
-	fatal(_("unknown opcode %d"), (int) op);
-#ifdef COMPILE_UNREACHABLE_CODE
-	return NULL;
-#endif
+	if (op < Op_illegal || op >= Op_final)
+		fatal(_("unknown opcode %d"), (int) op);
+	return optypes[op].desc;
 }
 
 /* op2str --- convert an opcode type to corresponding operator or keyword */
@@ -438,17 +435,12 @@ opcode2str(OPCODE op)
 const char *
 op2str(OPCODE op)
 {
-	if (op >= Op_illegal && op < Op_final) {
-		if (optypes[op].oper != NULL)
-			return optypes[op].oper;
-		else
-			fatal(_("opcode %s not an operator or keyword"),
-					optypes[op].desc);
-	} else
+	if (op < Op_illegal || op >= Op_final)
 		fatal(_("unknown opcode %d"), (int) op);
-#ifdef COMPILE_UNREACHABLE_CODE
-	return NULL;
-#endif
+	if (optypes[op].oper == NULL)
+		fatal(_("opcode %s not an operator or keyword"),
+				optypes[op].desc);
+	return optypes[op].oper;
 }
 
 
@@ -666,20 +658,20 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 static void
 push_frame(NODE *f)
 {
-	static awk_ulong_t max_fcall;
+	static size_t max_fcall;
 
 	/* NB: frame numbering scheme as in GDB. frame_ptr => frame #0. */
 
 	fcall_count++;
 	if (fcall_list == NULL) {
-		max_fcall = 10u;
+		max_fcall = 10;
 		emalloc(fcall_list, NODE **, (max_fcall + 1) * sizeof(NODE *), "push_frame");
 	} else if (fcall_count == max_fcall) {
 		max_fcall *= 2;
 		erealloc(fcall_list, NODE **, (max_fcall + 1) * sizeof(NODE *), "push_frame");
 	}
 
-	if (fcall_count > 1u)
+	if (fcall_count > 1)
 		memmove(fcall_list + 2, fcall_list + 1, (fcall_count - 1) * sizeof(NODE *));
 	fcall_list[1] = f;
 }
@@ -690,7 +682,7 @@ push_frame(NODE *f)
 static void
 pop_frame(void)
 {
-	if (fcall_count > 1u)
+	if (fcall_count > 1)
 		memmove(fcall_list + 1, fcall_list + 2, (fcall_count - 1) * sizeof(NODE *));
 	assert(fcall_count);
 	fcall_count--;
@@ -705,7 +697,7 @@ void
 dump_fcall_stack(FILE *fp)
 {
 	NODE *f, *func;
-	awk_ulong_t i, k = 0u;
+	size_t i, k = 0;
 
 	if (!fcall_count)
 		return;
@@ -713,16 +705,16 @@ dump_fcall_stack(FILE *fp)
 
 	/* current frame */
 	func = frame_ptr->func_node;
-	fprintf(fp, "\t# %3" AWKULONGFMT ". %s\n", TO_AWK_ULONG(k++), func->vname);
+	fprintf(fp, "\t# %3" ZUFMT ". %s\n", k++, func->vname);
 
 	/* outer frames except main */
-	for (i = 1u; i < fcall_count; i++) {
+	for (i = 1; i < fcall_count; i++) {
 		f = fcall_list[i];
 		func = f->func_node;
-		fprintf(fp, "\t# %3" AWKULONGFMT ". %s\n", TO_AWK_ULONG(k++), func->vname);
+		fprintf(fp, "\t# %3" ZUFMT ". %s\n", k++, func->vname);
 	}
 
-	fprintf(fp, "\t# %3" AWKULONGFMT ". -- main --\n", TO_AWK_ULONG(k));
+	fprintf(fp, "\t# %3" ZUFMT ". -- main --\n", k);
 }
 
 
@@ -761,7 +753,7 @@ set_BINMODE(void)
 	if (do_traditional)
 		BINMODE = TEXT_TRANSLATE;
 	else if ((v->flags & NUMBER) != 0) {
-		BINMODE = get_number_si(v);
+		BINMODE = (int) get_number_si(v);
 		/* Make sure the value is rational. */
 		if (BINMODE < TEXT_TRANSLATE)
 			BINMODE = TEXT_TRANSLATE;
@@ -783,7 +775,7 @@ set_BINMODE(void)
 			case '1':
 			case '2':
 			case '3':
-				BINMODE = p[0] - '0';
+				BINMODE = char_digit_value((unsigned char) p[0]);
 				break;
 			case 'r':
 				BINMODE = BINMODE_INPUT;
@@ -832,7 +824,7 @@ set_OFS(void)
 	else {
 		/* rebuild $0 using OFS that was current when $0 changed */
 		if (! field0_valid) {
-			(void) get_field(UNLIMITED - 1, NULL);
+			(void) get_field(SET_NF, NULL);
 			rebuild_record();
 		}
 	}
@@ -1108,7 +1100,7 @@ update_NF(void)
 {
 	if (NF == BAD_NF || NF_node->var_value->numbr != field_num_as_awknum(NF)) {
 		if (NF == BAD_NF)
-			(void) get_field(UNLIMITED - 1, NULL); /* parse record */
+			(void) get_field(SET_NF, NULL); /* parse record */
 		unref(NF_node->var_value);
 		NF_node->var_value = make_number(field_num_as_awknum(NF));
 	}
@@ -1136,7 +1128,7 @@ STACK_ITEM *stack_ptr = NULL;
 STACK_ITEM *stack_bottom;
 STACK_ITEM *stack_top;
 static size_t STACK_SIZE = 256;    /* initial size of stack */
-awk_ulong_t max_args = 0u;       /* maximum # of arguments to printf, print, sprintf,
+size_t max_args = 0;    /* maximum # of arguments to printf, print, sprintf,
                          * or # of array subscripts, or adjacent strings
                          * to be concatenated.
                          */
@@ -1213,7 +1205,7 @@ r_get_lhs(NODE *n, bool reference)
 NODE **
 r_get_field(NODE *n, Func_ptr *assign, bool reference)
 {
-	long field_num;
+	awk_long_t field_num;
 	NODE **lhs;
 
 	if (assign)
@@ -1230,7 +1222,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 	field_num = get_number_si(n);
 
 	if (field_num < 0)
-		fatal(_("attempt to access field %ld"), field_num);
+		fatal(_("attempt to access field %" AWKLONGFMT ""), TO_AWK_LONG(field_num));
 
 	if (field_num == 0 && field0_valid) {		/* short circuit */
 		lhs = &fields_arr[0];
@@ -1239,8 +1231,8 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 	} else
 		lhs = get_field((field_num_t) field_num, assign);
 	if (do_lint && reference && ((*lhs)->flags & NULL_FIELD) != 0)
-		lintwarn(_("reference to uninitialized field `$%ld'"),
-			      field_num);
+		lintwarn(_("reference to uninitialized field `$%" AWKLONGFMT "'"),
+			      TO_AWK_LONG(field_num));
 	return lhs;
 }
 
@@ -1289,7 +1281,7 @@ setup_frame(INSTRUCTION *pc)
 	NODE *r = NULL;
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
-	awk_ulong_t pcount, arg_count, i, j;
+	size_t pcount, arg_count, i, j;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
@@ -1311,7 +1303,7 @@ setup_frame(INSTRUCTION *pc)
 		} while (--arg_count > pcount);
 	}
 
-	for (i = 0u, j = arg_count - 1; i < pcount; i++, j--) {
+	for (i = 0, j = arg_count - 1; i < pcount; i++, j--) {
 		getnode(r);
 		clearnode(r);
 		sp[i] = r;
@@ -1374,7 +1366,7 @@ setup_frame(INSTRUCTION *pc)
 		DEREF(r);
 	}
 
-	frame_ptr->vname = (char*) source;	/* save current source */
+	frame_ptr->vname = charp_const_cast(source);	/* save current source */
 
 	if (do_profile || do_debug)
 		push_frame(frame_ptr);
@@ -1402,7 +1394,7 @@ restore_frame(NODE *fp)
 {
 	NODE *r;
 	NODE **sp;
-	awk_ulong_t n;
+	size_t n;
 	NODE *func;
 	INSTRUCTION *ri;
 
@@ -1590,14 +1582,14 @@ op_assign(OPCODE op)
 		x = x1 * x2;
 		break;
 	case Op_assign_quotient:
-		if (x2 == (AWKNUM) 0) {
+		if (x2 == 0) {
 			decr_sp();
 			fatal(_("division by zero attempted in `/='"));
 		}
 		x = x1 / x2;
 		break;
 	case Op_assign_mod:
-		if (x2 == (AWKNUM) 0) {
+		if (x2 == 0) {
 			decr_sp();
 			fatal(_("division by zero attempted in `%%='"));
 		}
@@ -1775,10 +1767,13 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 void
 init_interpret(void)
 {
-	long newval;
+	awk_long_t newval;
 
-	if ((newval = getenv_long("GAWK_STACKSIZE")) > 0)
-		STACK_SIZE = (unsigned long) newval;
+	if ((newval = getenv_long("GAWK_STACKSIZE")) > 0) {
+		size_t sz = (size_t) (awk_ulong_t) newval;
+		if (sz > 0)
+			STACK_SIZE = sz;
+	}
 
 	emalloc(stack_bottom, STACK_ITEM *, STACK_SIZE * sizeof(STACK_ITEM), "grow_stack");
 	stack_ptr = stack_bottom - 1;
