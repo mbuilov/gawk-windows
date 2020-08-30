@@ -556,6 +556,10 @@ weak_alias (__regerror, regerror)
 
 
 #ifdef RE_ENABLE_I18N
+# if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wpedantic"
+# endif
 /* This static array is used for the map to single-byte characters when
    UTF-8 is used.  Otherwise we would allocate memory just to initialize
    it the same all the time.  UTF-8 is the preferred encoding so this is
@@ -581,6 +585,9 @@ static const bitset_t utf8_sb_map =
        : BITSET_WORD_BITS - SBC_MAX % BITSET_WORD_BITS))
 # endif
 };
+# if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 
@@ -899,7 +906,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
   if (dfa->mb_cur_max > 1)
     {
       if (dfa->is_utf8)
-	dfa->sb_char = (re_bitset_ptr_t) utf8_sb_map;
+	dfa->sb_char = (re_bitset_ptr_t) voidp_const_cast (utf8_sb_map);
       else
 	{
 	  int ch;
@@ -1161,7 +1168,7 @@ optimize_utf8 (re_dfa_t *dfa)
   /* The search can be in single byte locale.  */
   dfa->mb_cur_max = 1;
   dfa->is_utf8 = 0;
-  dfa->has_mb_node = (unsigned int) (dfa->nbackref > 0 || has_period);
+  dfa->has_mb_node = 1u & (unsigned int) (dfa->nbackref > 0 || has_period);
 }
 #endif
 
@@ -1403,7 +1410,9 @@ calc_first (void *extra, bin_tree_t *node)
       if (__glibc_unlikely (node->node_idx == -1))
 	return REG_ESPACE;
       if (node->token.type == ANCHOR)
-	dfa->nodes[node->node_idx].constraint = (unsigned int) node->token.opr.ctx_type;
+	dfa->nodes[node->node_idx].constraint =
+		((1u << CONSTRAINT_NUM_BITS) - 1)
+		& (unsigned int) node->token.opr.ctx_type;
     }
   return REG_NOERROR;
 }
@@ -1625,7 +1634,8 @@ duplicate_node (re_dfa_t *dfa, Idx org_idx, unsigned int constraint)
   Idx dup_idx = re_dfa_add_node (dfa, dfa->nodes[org_idx]);
   if (__glibc_likely (dup_idx != -1))
     {
-      dfa->nodes[dup_idx].constraint = constraint;
+      dfa->nodes[dup_idx].constraint = ((1u << CONSTRAINT_NUM_BITS) - 1)
+				       & constraint;
       dfa->nodes[dup_idx].constraint |= dfa->nodes[org_idx].constraint;
       dfa->nodes[dup_idx].duplicated = 1;
 
@@ -1834,11 +1844,11 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 	{
 	  uni_int_t wc = re_string_wchar_at (input,
 					     re_string_cur_idx (input) + 1);
-	  token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
+	  token->word_char = 1u & (unsigned int) IS_WIDE_WORD_CHAR (wc);
 	}
       else
 #endif
-	token->word_char = (unsigned int) (IS_WORD_CHAR (c2) != 0);
+	token->word_char = 1u & (unsigned int) IS_WORD_CHAR (c2);
 
       switch (c2)
 	{
@@ -1947,11 +1957,11 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
   if (input->mb_cur_max > 1)
     {
       uni_int_t wc = re_string_wchar_at (input, re_string_cur_idx (input));
-      token->word_char = (unsigned int) (IS_WIDE_WORD_CHAR (wc) != 0);
+      token->word_char = 1u & (unsigned int) IS_WIDE_WORD_CHAR (wc);
     }
   else
 #endif
-    token->word_char = (unsigned int) (IS_WORD_CHAR (token->opr.c));
+    token->word_char = 1u & (unsigned int) IS_WORD_CHAR (token->opr.c);
 
   switch (c)
     {
@@ -2453,7 +2463,6 @@ parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
     default:
       /* Must not happen?  */
       DEBUG_ASSERT (false);
-      return NULL;
     }
   fetch_token (token, regexp, syntax);
 
