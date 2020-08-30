@@ -126,13 +126,13 @@
 # elif defined(__Wformat_mingw_printf)
 /* MinGW.org */
 #  define ATTRIBUTE_PRINTF(fmt, m, n) __Wformat_mingw_printf(m, n) ATTRIBUTE_NONNULL(m)
-# elif defined(__MINGW_PRINTF_FORMAT)
-/* Mingw64 */
-#  define ATTRIBUTE_PRINTF(fmt, m, n) \
+# elif defined(__MINGW_PRINTF_FORMAT) && !defined(__clang__)
+/* mingw-w64 */
+# define ATTRIBUTE_PRINTF(fmt, m, n) \
 	__attribute__ ((__format__ (__MINGW_PRINTF_FORMAT, m, n))) ATTRIBUTE_NONNULL(m)
 # else
-#  define ATTRIBUTE_PRINTF(fmt, m, n) \
 /* generic gcc-compatible comiler (e.g., clang) */
+#  define ATTRIBUTE_PRINTF(fmt, m, n) \
 	__attribute__ ((__format__ (__printf__, m, n))) ATTRIBUTE_NONNULL(m)
 # endif
 #endif
@@ -163,46 +163,57 @@
 
 /* Pragmas.  */
 #if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
-# define PRAGMA_WARNING_PUSH_ _Pragma ("GCC diagnostic push")
-# define PRAGMA_WARNING_POP_  _Pragma ("GCC diagnostic pop")
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_ _Pragma ("GCC diagnostic ignored \"-Wformat-nonliteral\"")
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_  _Pragma ("GCC diagnostic ignored \"-Wtype-limits\"")
+# define PRAGMA_WARNING_PUSH_                             _Pragma("GCC diagnostic push")
+# define PRAGMA_WARNING_POP_                              _Pragma("GCC diagnostic pop")
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_           _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
+# define PRAGMA_WARNING_DISABLE_TYPE_LIMITS_              _Pragma("GCC diagnostic ignored \"-Wtype-limits\"")
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_            /**/
+# define PRAGMA_WARNING_DISABLE_CAST_QUAL_                _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")
 #elif defined(__clang__)
-# define PRAGMA_WARNING_PUSH_ _Pragma ("clang diagnostic push")
-# define PRAGMA_WARNING_POP_  _Pragma ("clang diagnostic pop")
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_ _Pragma ("clang diagnostic ignored \"-Wformat-nonliteral\"")
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_  _Pragma ("clang diagnostic ignored \"-Wtype-limits\"")
+# define PRAGMA_WARNING_PUSH_                             _Pragma("clang diagnostic push")
+# define PRAGMA_WARNING_POP_                              _Pragma("clang diagnostic pop")
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_           _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+# define PRAGMA_WARNING_DISABLE_TYPE_LIMITS_              _Pragma("clang diagnostic ignored \"-Wtype-limits\"")
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_            /**/
+# define PRAGMA_WARNING_DISABLE_CAST_QUAL_                _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
 #elif defined(_MSC_VER)
-# define PRAGMA_WARNING_PUSH_ __pragma(warning(push))
-# define PRAGMA_WARNING_POP_  __pragma(warning(pop))
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_ __pragma(warning(disable:4774))
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_  __pragma(warning(disable:4127))
+# define PRAGMA_WARNING_PUSH_                             __pragma(warning(push))
+# define PRAGMA_WARNING_POP_                              __pragma(warning(pop))
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_           __pragma(warning(disable:4774))
+# define PRAGMA_WARNING_DISABLE_TYPE_LIMITS_              /**/
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST_            __pragma(warning(disable:4127))
+# define PRAGMA_WARNING_DISABLE_CAST_QUAL_                /**/
 #else
 # define PRAGMA_WARNING_PUSH_
 # define PRAGMA_WARNING_POP_
 # define PRAGMA_WARNING_DISABLE_FORMAT_WARNING_
+# define PRAGMA_WARNING_DISABLE_TYPE_LIMITS_
 # define PRAGMA_WARNING_DISABLE_COND_IS_CONST_
+# define PRAGMA_WARNING_DISABLE_CAST_QUAL_
 #endif
 
 #ifndef PRAGMA_WARNING_PUSH
-# define PRAGMA_WARNING_PUSH PRAGMA_WARNING_PUSH_
+# define PRAGMA_WARNING_PUSH                              PRAGMA_WARNING_PUSH_
 #endif
-
 #ifndef PRAGMA_WARNING_POP
-# define PRAGMA_WARNING_POP PRAGMA_WARNING_POP_
+# define PRAGMA_WARNING_POP                               PRAGMA_WARNING_POP_
 #endif
-
 #ifndef PRAGMA_WARNING_DISABLE_FORMAT_WARNING
-# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING PRAGMA_WARNING_DISABLE_FORMAT_WARNING_
+# define PRAGMA_WARNING_DISABLE_FORMAT_WARNING            PRAGMA_WARNING_DISABLE_FORMAT_WARNING_
 #endif
-
+#ifndef PRAGMA_WARNING_DISABLE_TYPE_LIMITS
+# define PRAGMA_WARNING_DISABLE_TYPE_LIMITS               PRAGMA_WARNING_DISABLE_TYPE_LIMITS_
+#endif
 #ifndef PRAGMA_WARNING_DISABLE_COND_IS_CONST
-# define PRAGMA_WARNING_DISABLE_COND_IS_CONST PRAGMA_WARNING_DISABLE_COND_IS_CONST_
+# define PRAGMA_WARNING_DISABLE_COND_IS_CONST             PRAGMA_WARNING_DISABLE_COND_IS_CONST_
+#endif
+#ifndef PRAGMA_WARNING_DISABLE_CAST_QUAL
+# define PRAGMA_WARNING_DISABLE_CAST_QUAL                 PRAGMA_WARNING_DISABLE_CAST_QUAL_
 #endif
 
-/* Do compile unreachable code only if COMPILE_UNREACHABLE_CODE is defined.  */
-#ifndef _MSC_VER
-# define COMPILE_UNREACHABLE_CODE
+/* Do compile unreachable code only if DONT_COMPILE_UNREACHABLE_CODE is not defined.  */
+#if defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER)
+# define DONT_COMPILE_UNREACHABLE_CODE
 #endif
 
 /* Assume expression X is always TRUE.  */
@@ -1097,7 +1108,7 @@ extern const gawk_api_t *gawk_api(void);
 #define set_argument(count, new_array) \
 	(gawk_api()->api_set_argument(count, new_array))
 
-#if !defined(_MSC_VER) || !defined(_PREFAST_)
+#ifndef _PREFAST_
 #define fatal		gawk_api()->api_fatal
 #define nonfatal	gawk_api()->api_nonfatal
 #define warning		gawk_api()->api_warning
@@ -1197,8 +1208,8 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define get_file(name, namelen, filetype, fd, ibuf, obuf) \
 	(gawk_api()->api_get_file(name, namelen, filetype, fd, ibuf, obuf))
 
-#define get_mpfr_ptr()	(gawk_api()->api_get_mpfr())
-#define get_mpz_ptr()	(gawk_api()->api_get_mpz())
+#define get_mpfr_ptr()	((mpfr_ptr) gawk_api()->api_get_mpfr())
+#define get_mpz_ptr()	((mpz_ptr) gawk_api()->api_get_mpz())
 
 #define register_ext_version(version) \
 	(gawk_api()->api_register_ext_version(version))
@@ -1246,7 +1257,7 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define outbuf_fputs(s, outbuf)			(gawk_api()->api_ob_fputs(s, outbuf))
 #define outbuf_vfprintf(outbuf, format, ap)	(gawk_api()->api_ob_vfprintf(outbuf, format, ap))
 
-#if !defined(_MSC_VER) || !defined(_PREFAST_)
+#ifndef _PREFAST_
 #define outbuf_fprintf				gawk_api()->api_ob_fprintf
 #else
 /* Annotate printf-like format string so compiler will check passed args.  */
@@ -1359,31 +1370,31 @@ make_number(double num, awk_value_t *result)
 
 /*
  * make_number_mpz --- make an mpz number value in result.
- * The mpz_ptr must be from a call to get_mpz_ptr. Gawk will now
+ * The mpz_ptr_val must be from a call to get_mpz_ptr. Gawk will now
  * take ownership of this memory.
  */
 
 static inline awk_value_t *
-make_number_mpz(void *mpz_ptr, awk_value_t *result)
+make_number_mpz(void *mpz_ptr_val, awk_value_t *result)
 {
 	result->val_type = AWK_NUMBER;
 	result->num_type = AWK_NUMBER_TYPE_MPZ;
-	result->num_ptr = mpz_ptr;
+	result->num_ptr = mpz_ptr_val;
 	return result;
 }
 
 /*
  * make_number_mpfr --- make an mpfr number value in result.
- * The mpfr_ptr must be from a call to get_mpfr_ptr. Gawk will now
+ * The mpfr_ptr_val must be from a call to get_mpfr_ptr. Gawk will now
  * take ownership of this memory.
  */
 
 static inline awk_value_t *
-make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
+make_number_mpfr(void *mpfr_ptr_val, awk_value_t *result)
 {
 	result->val_type = AWK_NUMBER;
 	result->num_type = AWK_NUMBER_TYPE_MPFR;
-	result->num_ptr = mpfr_ptr;
+	result->num_ptr = mpfr_ptr_val;
 	return result;
 }
 
