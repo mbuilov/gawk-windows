@@ -75,6 +75,25 @@
 #include "mscrtx/localerpl.h"
 #endif
 
+/* Cast (const void *) to (void *).  */
+static void *
+voidp_const_cast (const void *p)
+{
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-qual"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+	return (void *) p;
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
+#endif
+}
+
 #include "regex_internal.c"
 #include "regcomp.c"
 #include "regexec.c"
