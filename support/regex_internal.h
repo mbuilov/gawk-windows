@@ -219,6 +219,7 @@ typedef const bitset_word_t *re_const_bitset_ptr_t;
 #define NEXT_ENDBUF_CONSTRAINT 0x0080
 #define WORD_DELIM_CONSTRAINT 0x0100
 #define NOT_WORD_DELIM_CONSTRAINT 0x0200
+#define CONSTRAINT_NUM_BITS 10u
 
 typedef enum
 {
@@ -357,7 +358,7 @@ typedef struct
 #else
   re_token_type_t type;
 #endif
-  unsigned int constraint : 10;	/* context constraint */
+  unsigned int constraint : CONSTRAINT_NUM_BITS;	/* context constraint */
   unsigned int duplicated : 1;
   unsigned int opt_subexp : 1;
 #ifdef RE_ENABLE_I18N
@@ -545,6 +546,7 @@ typedef struct bin_tree_storage_t bin_tree_storage_t;
 #define CONTEXT_NEWLINE (CONTEXT_WORD << 1)
 #define CONTEXT_BEGBUF (CONTEXT_NEWLINE << 1)
 #define CONTEXT_ENDBUF (CONTEXT_BEGBUF << 1)
+#define CONTEXT_NUM_BITS 4u
 
 #define IS_WORD_CONTEXT(c) ((c) & CONTEXT_WORD)
 #define IS_NEWLINE_CONTEXT(c) ((c) & CONTEXT_NEWLINE)
@@ -592,7 +594,7 @@ struct re_dfastate_t
   re_node_set inveclosure;
   re_node_set *entrance_nodes;
   struct re_dfastate_t **trtable, **word_trtable;
-  unsigned int context : 4;
+  unsigned int context : CONTEXT_NUM_BITS;
   unsigned int halt : 1;
   /* If this state can accept "multi byte".
      Note that we refer to multibyte characters, and multi character
