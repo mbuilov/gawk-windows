@@ -473,7 +473,7 @@ re_parse_field(field_num_t up_to,	/* parse only up to this field number */
 	if (in_middle)
 		regex_flags |= RE_NO_BOL;
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -517,8 +517,8 @@ re_parse_field(field_num_t up_to,	/* parse only up to this field number */
 		(*set)(++nf, field,
 		       (size_t) (scan + RESTART(rp, scan) - field), n);
 		if (sep_arr != NULL)
-	    		set_element(nf, scan + RESTART(rp, scan),
-           			(size_t) (REEND(rp, scan) - RESTART(rp, scan)), sep_arr);
+			set_element(nf, scan + RESTART(rp, scan),
+				    (size_t) (REEND(rp, scan) - RESTART(rp, scan)), sep_arr);
 		scan += REEND(rp, scan);
 		field = scan;
 		if (scan == end && ! default_field_splitting)	/* FS at end of record */
@@ -559,7 +559,7 @@ def_parse_field(field_num_t up_to,	/* parse only up to this field number */
 	char *sep;
 	(void) rp, (void) in_middle;
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -635,7 +635,7 @@ null_parse_field(field_num_t up_to,	/* parse only up to this field number */
 	char *end = scan + len;
 	(void) fs, (void) rp, (void) in_middle;
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -697,7 +697,7 @@ sc_parse_field(field_num_t up_to,	/* parse only up to this field number */
 
 	memset(&mbs, 0, sizeof(mbstate_t));
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -800,7 +800,7 @@ fw_parse_field(field_num_t up_to,	/* parse only up to this field number */
 
 	fw = (api_parser_override ? api_fw : FIELDWIDTHS);
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -886,7 +886,7 @@ get_field(field_num_t requested, Func_ptr *assign)
 					saved_fs = save_FS;
 					fs_regexp = FS_regexp;
 				}
-				NF = (*parse_field)(UNLIMITED - 1, &parse_extent,
+				NF = (*parse_field)(SET_NF, &parse_extent,
 					fields_arr[0]->stlen - (size_t) (parse_extent - fields_arr[0]->stptr),
 					saved_fs, fs_regexp, set_field, (NODE *) NULL, (NODE *) NULL, in_middle);
 				parse_high_water = NF;
@@ -942,7 +942,7 @@ get_field(field_num_t requested, Func_ptr *assign)
 		 */
 		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
-		if (requested == UNLIMITED - 1)	/* UNLIMITED-1 means set NF */
+		if (requested == SET_NF)	/* set NF */
 			requested = parse_high_water;
 	}
 	if (parse_high_water < requested) { /* requested beyond end of record */
@@ -979,12 +979,11 @@ NODE *
 do_split(nargs_t nargs)
 {
 	NODE *src, *arr, *sep, *fs, *tmp, *sep_arr = NULL;
-	char *s;
 	field_num_t (*parseit)(field_num_t, char **, size_t, NODE *,
 			 Regexp *, Setfunc, NODE *, NODE *, bool);
 	Regexp *rp = NULL;
 
-	if (nargs == 4u) {
+	if (nargs == 4) {
 		static bool warned = false;
 
 		if (do_traditional || do_posix) {
@@ -1065,9 +1064,12 @@ do_split(nargs_t nargs)
 		}
 	}
 
-	s = src->stptr;
-	tmp = make_number((AWKNUM) (*parseit)(UNLIMITED, &s, src->stlen,
-					     fs, rp, set_element, arr, sep_arr, false));
+	{
+		char *s = src->stptr;
+		field_num_t n = (*parseit)(F_UNLIMITED, &s, src->stlen, fs, rp,
+					   set_element, arr, sep_arr, false);
+		tmp = make_number((AWKNUM) n);
+	}
 
 	src = POP_SCALAR();	/* really pop off stack */
 	DEREF(src);
@@ -1083,10 +1085,8 @@ NODE *
 do_patsplit(nargs_t nargs)
 {
 	NODE *src, *arr, *sep, *fpat, *tmp, *sep_arr = NULL;
-	char *s;
-	Regexp *rp = NULL;
 
-	if (nargs == 4u) {
+	if (nargs == 4) {
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("patsplit: fourth argument is not an array"));
@@ -1130,11 +1130,11 @@ do_patsplit(nargs_t nargs)
 		 */
 		tmp =  make_number((AWKNUM) 0);
 	} else {
-		rp = re_update(sep);
-		s = src->stptr;
-		tmp = make_number((AWKNUM) fpat_parse_field(UNLIMITED, &s,
-				src->stlen, fpat, rp,
-				set_element, arr, sep_arr, false));
+		Regexp *rp = re_update(sep);
+		char *s = src->stptr;
+		field_num_t n = fpat_parse_field(F_UNLIMITED, &s, src->stlen, fpat, rp,
+						 set_element, arr, sep_arr, false);
+		tmp = make_number((AWKNUM) n);
 	}
 
 	src = POP_SCALAR();	/* really pop off stack */
@@ -1158,8 +1158,12 @@ static unsigned max_field_len(void)
 {
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_DISABLE_COND_IS_CONST
-	return (unsigned) (((size_t)-1) < UINT_MAX ? (size_t)-1 : UINT_MAX);
+PRAGMA_WARNING_DISABLE_TYPE_LIMITS
+	int size_t_is_big = (size_t)-1 > (size_t) UINT_MAX;
 PRAGMA_WARNING_POP
+	if (size_t_is_big)
+		return UINT_MAX;
+	return (unsigned) ((unsigned)-1 & (size_t)-1);
 }
 
 /* set_FIELDWIDTHS --- handle an assignment to FIELDWIDTHS */
@@ -1187,7 +1191,7 @@ set_FIELDWIDTHS(void)
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
-		(void) get_field(UNLIMITED - 1, 0);
+		(void) get_field(SET_NF, 0);
 
 	set_parser(fw_parse_field);
 	tmp = force_string(FIELDWIDTHS_node->var_value);
@@ -1287,7 +1291,7 @@ set_FS(void)
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
-		(void) get_field(UNLIMITED - 1, 0);
+		(void) get_field(SET_NF, 0);
 
 	/* It's possible that only IGNORECASE changed, or FS = FS */
 	/*
@@ -1480,7 +1484,7 @@ set_FPAT(void)
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
-		(void) get_field(UNLIMITED - 1, 0);
+		(void) get_field(SET_NF, 0);
 
 	/* It's possible that only IGNORECASE changed, or FPAT = FPAT */
 	/*
@@ -1642,9 +1646,8 @@ fpat_parse_field(field_num_t up_to,	/* parse only up to this field number */
 
 	memset(&mbs, 0, sizeof(mbstate_t));
 
-	if (up_to == UNLIMITED)
+	if (up_to == F_UNLIMITED)
 		nf = 0;
-
 	if (len == 0)
 		return nf;
 
