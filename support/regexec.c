@@ -434,8 +434,10 @@ re_search_stub (struct re_pattern_buffer *bufp, const char *string, Idx length,
   else if (regs != NULL)
     {
       /* If caller wants register contents data back, copy them.  */
-      bufp->regs_allocated = re_copy_regs (regs, pmatch, nregs,
-					   bufp->regs_allocated);
+      unsigned regs_allocated = re_copy_regs (regs, pmatch, nregs,
+					      bufp->regs_allocated);
+      DEBUG_ASSERT(regs_allocated <= 2);
+      bufp->regs_allocated = 3u & regs_allocated;
       if (__glibc_unlikely (bufp->regs_allocated == REGS_UNALLOCATED))
 	rval = -2;
     }
