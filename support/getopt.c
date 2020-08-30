@@ -187,6 +187,25 @@ extern char *__getopt_nonoption_flags;
 # define SWAP_FLAGS(ch1, ch2)
 #endif	/* _LIBC */
 
+/* Cast (const void *) to (void *).  */
+static void *
+voidp_const_cast (const void *p)
+{
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-qual"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+	return (void *) p;
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
+#endif
+}
+
 /* Exchange two adjacent subsequences of ARGV.
    One subsequence is elements [first_nonopt,last_nonopt)
    which contains all the non-options that have been skipped so far.
@@ -197,12 +216,13 @@ extern char *__getopt_nonoption_flags;
    the new indices of the non-options in ARGV after they are moved.  */
 
 static void
-exchange (char **argv, struct _getopt_data *d)
+exchange (char *const *argv_, struct _getopt_data *d)
 {
   int bottom = d->__first_nonopt;
   int middle = d->__last_nonopt;
   int top = d->optind;
   char *tem;
+  char **argv = (char **) voidp_const_cast (argv_);
 
   /* Exchange the shorter segment with the far end of the longer segment.
      That puts the shorter segment into the right place.
@@ -453,7 +473,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
 	  if (d->__first_nonopt != d->__last_nonopt
 	      && d->__last_nonopt != d->optind)
-	    exchange ((char **) argv, d);
+	    exchange (argv, d);
 	  else if (d->__last_nonopt != d->optind)
 	    d->__first_nonopt = d->optind;
 
@@ -476,7 +496,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
 	  if (d->__first_nonopt != d->__last_nonopt
 	      && d->__last_nonopt != d->optind)
-	    exchange ((char **) argv, d);
+	    exchange (argv, d);
 	  else if (d->__first_nonopt == d->__last_nonopt)
 	    d->__first_nonopt = d->optind;
 	  d->__last_nonopt = argc;
@@ -832,7 +852,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		}
 #endif
 	    }
-	  d->__nextchar = (char *) "";
+	  d->__nextchar = (char *) voidp_const_cast ("");
 	  d->optind++;
 	  d->optopt = 0;
 	  return '?';
