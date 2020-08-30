@@ -180,14 +180,13 @@ extern char *tzname[];
   ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 #endif
 
-
 /* time_t is 32-bit under MinGW.org for WindowsXP, but we want 64-bit time_t */
 #ifdef WINDOWS_NATIVE
-#define time_t 	__time64_t
-#define tzname	_tzname
-#define tzset	_tzset
+#define time_t 		__time64_t
+#define tzset		_tzset
+#define gmtime		_gmtime64
+#define localtime	_localtime64
 #endif
-
 
 #ifdef _LIBC
 # define my_strftime_gmtime_r __gmtime_r
@@ -1357,15 +1356,18 @@ my_strftime (
 	      to_lowcase = 1;
 	    }
 
-#ifdef HAVE_TZNAME
+#ifdef WINDOWS_NATIVE
+	  goto underlying_strftime;
+#else
+# ifdef HAVE_TZNAME
 	  /* The tzset() call might have changed the value.  */
 	  if (!(zone && *zone) && tp->tm_isdst >= 0)
 	    zone = tzname[tp->tm_isdst];
-#endif
+# endif
 	  if (! zone)
 	    zone = "";
 
-#ifdef COMPILE_WIDE
+# ifdef COMPILE_WIDE
 	  {
 	    /* The zone string is always given in multibyte form.  We have
 	       to transform it first.  */
@@ -1374,10 +1376,11 @@ my_strftime (
 	    widen (zone, wczone, len);
 	    cpy (len, wczone);
 	  }
-#else
+# else
 	  cpy ((int) strlen (zone), zone);
-#endif
+# endif
 	  break;
+#endif
 
 	case L_('z'):
 	  if (tp->tm_isdst < 0)
@@ -1475,9 +1478,16 @@ extern size_t strftime (char *, size_t, const char *, const struct tm *);
 }
 #  endif
 # endif
+#ifdef ATTRIBUTE_PRINTF
+ATTRIBUTE_PRINTF(fmt, 3, 0)
+#endif
 static size_t underlying_strftime (char *s, size_t maxsize, const char *format, const struct tm *tp)
 {
+# ifdef LOCALERPL_H_INCLUDED
+  return localerpl_rpl_strftime (s, maxsize, format, tp);
+# else
   return strftime (s, maxsize, format, tp);
+# endif
 }
 #endif /* HAVE_STRFTIME && ... */
 
