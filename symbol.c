@@ -127,17 +127,17 @@ lookup(const char *name)
 /* make_params --- allocate function parameters for the symbol table */
 
 NODE *
-make_params(char **pnames, awk_ulong_t pcount)
+make_params(char **pnames, size_t pcount)
 {
 	NODE *p, *parms;
-	awk_ulong_t i;
+	size_t i;
 
 	if (!pcount || pnames == NULL)
 		return NULL;
 
 	ezalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
 
-	for (i = 0u, p = parms; i < pcount; i++, p++) {
+	for (i = 0, p = parms; i < pcount; i++, p++) {
 		p->type = Node_param_list;
 		p->vname = pnames[i];	/* shadows pname and vname */
 		p->param_cnt = i;
@@ -151,7 +151,7 @@ make_params(char **pnames, awk_ulong_t pcount)
 void
 install_params(NODE *func)
 {
-	awk_ulong_t i, pcount;
+	size_t i, pcount;
 	NODE *parms;
 
 	if (func == NULL)
@@ -163,7 +163,7 @@ install_params(NODE *func)
 	if (!pcount || (parms = func->fparms) == NULL)
 		return;
 
-	for (i = 0u; i < pcount; i++)
+	for (i = 0; i < pcount; i++)
 		(void) install(parms[i].vname, parms + i, Node_param_list);
 }
 
@@ -176,7 +176,7 @@ void
 remove_params(NODE *func)
 {
 	NODE *parms, *p;
-	awk_ulong_t i, pcount;
+	size_t i, pcount;
 
 	if (func == NULL)
 		return;
@@ -241,11 +241,11 @@ destroy_symbol(NODE *r)
 	case Node_func:
 		if (r->param_cnt) {
 			NODE *n;
-			awk_ulong_t i, pcount;
+			size_t i, pcount;
 			pcount = r->param_cnt;
 
 			/* function parameters of type Node_param_list */
-			for (i = 0u; i < pcount; i++) {
+			for (i = 0; i < pcount; i++) {
 				n = r->fparms + i;
 				efree(n->vname);
 			}
@@ -288,7 +288,7 @@ make_symbol(const char *name, NODETYPE type)
 		null_array(r);
 	else if (type == Node_var)
 		r->var_value = dupnode(Nnull_string);
-	r->vname = (char *) name;
+	r->vname = charp_const_cast(name);
 	r->type = type;
 
 	return r;
@@ -589,7 +589,7 @@ load_symbols(void)
 
 	for (i = 0; tables[i] != NULL; i++) {
 		list = assoc_list(tables[i], "@unsorted", ASORTI);
-		max = tables[i]->table_size * 2u;
+		max = tables[i]->table_size * 2;
 		if (!max)
 			continue;
 		for (j = 0; j < max; j += 2) {
@@ -646,14 +646,14 @@ check_param_names(void)
 	NODE **list;
 	NODE *f;
 	size_t i, max;
-	awk_ulong_t j;
+	size_t j;
 	bool result = true;
 	NODE n;
 
 	if (assoc_empty(func_table))
 		return result;
 
-	max = func_table->table_size * 2u;
+	max = func_table->table_size * 2;
 
 	clearnode(&n);
 	n.type = Node_val;
@@ -681,7 +681,7 @@ check_param_names(void)
 			continue;
 
 		/* loop over each param in function i */
-		for (j = 0u; j < f->param_cnt; j++) {
+		for (j = 0; j < f->param_cnt; j++) {
 			/* compare to function names */
 
 			/* use a fake node to avoid malloc/free of make_string */
