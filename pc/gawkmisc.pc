@@ -713,9 +713,9 @@ pc_set_locale(const char *def)
 	struct set_locale_err err;
 	if (set_locale_from_env(def, &err)) {
 		if (err.lc)
-			fwprintf(stderr, L"Bad locale: %ls=%ls\n", err.cat, err.lc);
+			fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", mywpath, err.cat, err.lc);
 		else
-			fwprintf(stderr, L"Failed to set default locale\n");
+			fwprintf(stderr, L"%ls: failed to set default locale\n", mywpath);
 		(void) fflush(stderr);
 		gawk_exit(EXIT_FATAL);
 	}
@@ -1050,7 +1050,18 @@ dlsym (void *handle, const char *name)
   if (!addr)
     dllast_err = GetLastError ();
 
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#ifdef __cplusplus
+#pragma GCC diagnostic ignored "-Wconditionally-supported"
+#endif
+#endif
+  /* cast pointer-to-function to pointer-to-object */
   return (void *)addr;
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic pop
+#endif
 }
 
 #endif	/* DYNAMIC */
@@ -1361,7 +1372,7 @@ putwc(wchar_t wc, FILE *stream)
 #endif /* __DJGPP__ */
 
 #ifdef WINDOWS_NATIVE
-__time64_t awk_timegm(struct tm *tm)
+__time64_t gawk_timegm(struct tm *tm)
 {
 	if (tm->tm_isdst != -1)
 		return (__time64_t)-1; /* not expecting Daylight Saving Time setting for UTC */
@@ -1399,11 +1410,16 @@ convert_wargv(int argc, struct wide_arg *wargs)
 	struct arg_convert_err err;
 	char **argv = arg_convert_wide_args((unsigned) argc, wargs, &err);
 	if (!argv) {
-		if (err.arg)
-			fatal(_("failed to convert command-line argument %u (Unicode -> LC_CTYPE=%s)"),
-				err.number, setlocale(LC_CTYPE, NULL));
-		else
-			fatal(_("failed to convert command-line arguments from wide-character strings: %s"), strerror(errno));
+		if (err.arg) {
+			fwprintf(stderr, L"%ls: failed to convert from UNICODE to %ls command-line argument number %u: %ls\n",
+				mywpath, _wsetlocale(LC_CTYPE, NULL), err.number, err.arg);
+		}
+		else {
+			fwprintf(stderr, L"%ls: failed to convert command-line arguments from UNICODE to %ls: %ls\n",
+				mywpath, _wsetlocale(LC_CTYPE, NULL), _wcserror(errno));
+		}
+		(void) fflush(stderr);
+		gawk_exit(EXIT_FATAL);
 	}
 	gawk_wargs = wargs;
 	return (gawk_argv = argv);
