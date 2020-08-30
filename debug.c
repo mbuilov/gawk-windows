@@ -4890,12 +4890,18 @@ unserialize_awkulong(const char *p, const size_t len, awk_ulong_t *aul, awk_ulon
 		int d = char_digit_value((unsigned char) *p);
 		if (d == -1)
 			return false;
-		if (r > (awk_ulong_t)-1/10u)
-			return false;
-		r *= 10;
-		if ((unsigned) d > (awk_ulong_t)-1 - r)
-			return false;
-		r += (unsigned) d;
+		if (r <= ((awk_ulong_t)-1 - 9u)/10u)
+			r = r*10 + (unsigned) d;
+		else {
+			if (r != (awk_ulong_t)-1/10u)
+				return false;
+			if ((unsigned) d > (awk_ulong_t)-1%10u)
+				return false;
+			r = (awk_ulong_t)-1 - (awk_ulong_t)-1%10u + (unsigned) d;
+			if (p + 1 != e)
+				return false;
+			break;
+		}
 	} while (++p != e);
 
 	if (r > lim)
