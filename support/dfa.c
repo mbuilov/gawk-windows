@@ -157,6 +157,25 @@ to_uchar (char ch)
   return (unsigned char) ch;
 }
 
+/* Cast (const char *) to (char *).  */
+static char *
+charp_const_cast (const char *p)
+{
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-qual"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+	return (char *) p;
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
+#endif
+}
+
 /* Contexts tell us whether a character is a newline or a word constituent.
    Word-constituent characters are those that satisfy iswalnum, plus '_'.
    Each character has a single CTX_* value; bitmasks of CTX_* values denote
@@ -1612,7 +1631,7 @@ lex (struct dfa *dfa)
   /* The above loop should consume at most a backslash
      and some other character.  */
   abort ();
-#ifdef COMPILE_UNREACHABLE_CODE
+#if ! defined(__GNUC__) && ! defined(__clang__) && ! defined(_MSC_VER)
   return END;                   /* keeps pedantic compilers happy.  */
 #endif
 }
@@ -3607,7 +3626,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
   if (count)
     *count += nlcount;
   *end = saved_end;
-  return (char *) p;
+  return charp_const_cast ((const char *) p);
 }
 
 /* Specialized versions of dfaexec for multibyte and single-byte cases.
@@ -3637,7 +3656,7 @@ dfaexec_noop (struct dfa *d, char const *begin, char *end,
 {
   (void)d, (void)end, (void)allow_nl, (void)count;
   *backref = true;
-  return (char *) begin;
+  return charp_const_cast (begin);
 }
 
 /* Like dfaexec_main (D, BEGIN, END, ALLOW_NL, COUNT, D->localeinfo.multibyte),
