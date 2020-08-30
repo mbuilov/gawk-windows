@@ -64,7 +64,8 @@ re_string_allocate (re_string_t *pstr, const char *str, Idx len, Idx init_len,
 
   pstr->word_char = dfa->word_char;
   pstr->word_ops_used = (unsigned char) !!dfa->word_ops_used;
-  pstr->mbs = pstr->mbs_allocated ? pstr->mbs : (unsigned char *) str;
+  pstr->mbs = pstr->mbs_allocated ? pstr->mbs :
+				    (unsigned char *) voidp_const_cast (str);
   pstr->valid_len = (pstr->mbs_allocated || dfa->mb_cur_max > 1) ? 0 : len;
   pstr->valid_raw_len = pstr->valid_len;
   return REG_NOERROR;
@@ -87,7 +88,8 @@ re_string_construct (re_string_t *pstr, const char *str, Idx len,
       if (__glibc_unlikely (ret != REG_NOERROR))
 	return ret;
     }
-  pstr->mbs = pstr->mbs_allocated ? pstr->mbs : (unsigned char *) str;
+  pstr->mbs = pstr->mbs_allocated ? pstr->mbs :
+				    (unsigned char *) voidp_const_cast (str);
 
   if (icase)
     {
@@ -599,7 +601,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
       pstr->tip_context = ((eflags & REG_NOTBOL) ? CONTEXT_BEGBUF
 			   : CONTEXT_NEWLINE | CONTEXT_BEGBUF);
       if (!pstr->mbs_allocated)
-	pstr->mbs = (unsigned char *) pstr->raw_mbs;
+	pstr->mbs = (unsigned char *) voidp_const_cast (pstr->raw_mbs);
       offset = idx;
     }
 
@@ -1450,7 +1452,7 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
   dfa->nodes[dfa->nodes_len].constraint = 0;
 #ifdef RE_ENABLE_I18N
   dfa->nodes[dfa->nodes_len].accept_mb =
-    (unsigned int) ((token.type == OP_PERIOD && dfa->mb_cur_max > 1)
+    1u & (unsigned int) ((token.type == OP_PERIOD && dfa->mb_cur_max > 1)
      || token.type == COMPLEX_BRACKET);
   dfa->nodes[dfa->nodes_len].mb_partial = 0;
 #endif
@@ -1692,7 +1694,7 @@ create_cd_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
       return NULL;
     }
 
-  newstate->context = context;
+  newstate->context = ((1u << CONTEXT_NUM_BITS) - 1) & context;
   newstate->entrance_nodes = &newstate->nodes;
 
   for (i = 0 ; i < nodes->nelem ; i++)
