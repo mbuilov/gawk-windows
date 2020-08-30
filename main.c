@@ -124,6 +124,11 @@ struct lconv loc;		/* current locale */
 static void init_locale(struct lconv *l);
 #endif
 
+#ifdef WINDOWS_NATIVE
+/* The path the program was invoked under, for early error messages */
+const wchar_t *mywpath;
+#endif
+
 /* The name the program was invoked under, for error messages */
 const char *myname;
 
@@ -159,7 +164,7 @@ struct pre_assign {
 };
 
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
-static awk_ulong_t assigns_count = 0u;		/* how many of them */
+static size_t assigns_count = 0;		/* how many of them */
 
 static bool disallow_var_assigns = false;	/* true for --exec */
 
@@ -246,13 +251,13 @@ static const struct option optab[] = {
 /* Note: doesn't support parsing of 'Z' short option if it's groupped with other
    short options, like "-MOZ locale-name".  */
 static const wchar_t *
-get_specified_locale(const struct wide_arg *wl, char opt_name_array[])
+get_specified_locale(const struct wide_arg *wl, wchar_t opt_name_array[])
 {
 	const wchar_t *w = NULL;
 	for (; wl; wl = wl->next) {
 		w = wl->value;
 		if (L'-' == w[0] && L'Z' == w[1]) {
-			opt_name_array[1] = 'Z';
+			opt_name_array[1] = L'Z';
 			w += 2;
 			break;
 		}
@@ -281,13 +286,16 @@ get_specified_locale(const struct wide_arg *wl, char opt_name_array[])
 	if (!wl)
 		return NULL; /* -Z or --loc[ale] option wasn't found.  */
 
-	opt_name_array[(unsigned)(w - wl->value)] = '\0';
+	opt_name_array[(unsigned)(w - wl->value)] = L'\0';
 	if (*w)
 		return w + (L'=' == *w); /* -Zlocale-name or --loc[ale]=locale-name, return locale-name.  */
 
 	/* -Z locale-name or --loc[ale] locale-name.  */
-	if (!wl->next)
-		fatal("option '%s' requires an argument", opt_name_array);
+	if (!wl->next) {
+		fwprintf(stderr, L"%ls: option '%ls' requires an argument\n", mywpath, opt_name_array);
+		(void) fflush(stderr);
+		gawk_exit(EXIT_FATAL);
+	}
 
 	return wl->next->value;
 }
@@ -301,13 +309,13 @@ int wmain(int argc, wchar_t *main_argv[]);
 # endif
 int wmain(int argc, wchar_t *main_argv[])
 #else
-/* mingw32 from MinGW.org (not 32-bit variant of Mingw-64) do not supports wmain(),
+/* mingw32 from MinGW.org (not 32-bit variant of mingw-w64) do not supports wmain(),
   so the CRT startup code will convert wide-character program arguments to multibyte ones,
   but this is just a waste of time, since we ignore the arguments completely. */
 int main(int argc, char *main_argv[])
 #endif
 {
-	awk_ulong_t i;
+	size_t i;
 	char *extra_stack;
 	unsigned have_srcfile = 0;
 	const SRCFILE *s;
@@ -321,8 +329,11 @@ int main(int argc, char *main_argv[])
 	argv = main_argv;
 #else
 	struct wide_arg *const wargs = arg_parse_command_line(&argc);
-	if (wargs == NULL)
-		fatal("Failed to parse command-line arguments list");
+	if (wargs == NULL) {
+		fwprintf(stderr, L"Failed to parse command-line arguments list\n");
+		(void) fflush(stderr);
+		gawk_exit(EXIT_FATAL);
+	}
 
 	/* Not used, since MinGW version do not handles escaping of
 	   double quote via two double-quotes, like: "1""2".  */
@@ -364,21 +375,25 @@ int main(int argc, char *main_argv[])
 #endif /* HAVE_MCHECK_H */
 
 #ifdef WINDOWS_NATIVE
-	/* Temporary set program name.
-	   This is needed for error messages - in case of bad locale.  */
-	myname = "gawk";
+	/* Set wide-character program path.
+	   This is needed for early error messages - in case of bad locale.  */
+	mywpath = wargs->value;
 
 	/* Set locale according to user's wishes.
 	   (Current locale is "C").  */
 	{
-		char opt_name_array[] = "--locale";
+		wchar_t opt_name_array[] = L"--locale";
 
 		/* Command-line option takes precedence over environment vars.  */
-		const wchar_t *const spec_locale = get_specified_locale(wargs, opt_name_array);
+		const wchar_t *const spec_locale = get_specified_locale(wargs->next, opt_name_array);
 		if (!spec_locale)
 			pc_set_locale("");
-		else if (wset_locale_helper(LC_ALL, spec_locale))
-			fatal("Bad locale name specified by the option '%s'", opt_name_array);
+		else if (wset_locale_helper(LC_ALL, spec_locale)) {
+			fwprintf(stderr, L"%ls: bad locale name specified by the option '%ls': %ls\n",
+				mywpath, opt_name_array, spec_locale);
+			(void) fflush(stderr);
+			gawk_exit(EXIT_FATAL);
+		}
 	}
 
 	/* Convert program arguments to multibyte strings.  */
@@ -568,8 +583,8 @@ int main(int argc, char *main_argv[])
 	init_fields();
 
 	/* Now process the pre-assignments */
-	unsigned dash_v_errs = 0;	// bad stuff for -v
-	for (i = 0u; i < assigns_count; i++) {
+	size_t dash_v_errs = 0;	// bad stuff for -v
+	for (i = 0; i < assigns_count; i++) {
 		if (preassigns[i].type == PRE_ASSIGN)
 			dash_v_errs += (arg_assign(preassigns[i].val, true) == false);
 		else	/* PRE_ASSIGN_FS */
@@ -708,7 +723,7 @@ int main(int argc, char *main_argv[])
 		efree(extra_stack);
 
 	final_exit(exit_val);
-#ifdef COMPILE_UNREACHABLE_CODE
+#ifndef DONT_COMPILE_UNREACHABLE_CODE
 	return exit_val;	/* to suppress warnings */
 #endif
 }
@@ -718,9 +733,9 @@ int main(int argc, char *main_argv[])
 static void
 add_preassign(enum assign_type type, const char *val)
 {
-	static awk_ulong_t alloc_assigns = 0u;		/* for how many are allocated */
+	static size_t alloc_assigns = 0;		/* for how many are allocated */
 
-#define INIT_SRC 4u
+#define INIT_SRC 4
 
 	if (preassigns == NULL) {
 		emalloc(preassigns, struct pre_assign *,
@@ -1524,7 +1539,7 @@ version(void)
 #ifdef _MSC_VER
 	printf(" (MSVC)\n");
 #elif defined __MINGW64_VERSION_MAJOR
-	printf(" (Mingw-w64)\n");
+	printf(" (mingw-w64)\n");
 #elif defined __MINGW32__
 	printf(" (MinGW.org)\n");
 #else
@@ -1537,9 +1552,6 @@ version(void)
 	 * then exit successfully, do nothing else.
 	 */
 	copyleft();
-#ifdef COMPILE_UNREACHABLE_CODE
-	exit(EXIT_SUCCESS);
-#endif
 }
 
 /* init_fds --- check for 0, 1, 2, open on /dev/null if possible */
@@ -2031,7 +2043,7 @@ void
 set_current_namespace(const char *new_namespace)
 {
 	if (current_namespace != awk_namespace)
-		efree((void *) current_namespace);
+		efree(charp_const_cast(current_namespace));
 
 	current_namespace = new_namespace;
 }
