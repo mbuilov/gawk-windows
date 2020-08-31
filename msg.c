@@ -38,7 +38,6 @@ unsigned fatal_tag_valid = 0;
 /* err --- print an error message with source line and file and record */
 
 /* VARARGS2 */
-ATTRIBUTE_PRINTF(emsg, 3, 0)
 void
 err(bool isfatal, const char *s, const char *emsg, va_list argp)
 {
@@ -47,7 +46,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 	static bool first = true;
 	static bool add_src_info = false;
-	static unsigned long lineno_val = 0;	// Easter Egg
+	static awk_ulong_t lineno_val = 0u;	// Easter Egg
 
 	if (first) {
 		first = false;
@@ -56,7 +55,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 			NODE *n = lookup("LINENO");
 
 			if (n != NULL && n->type == Node_var)
-				lineno_val = (unsigned long) get_number_d(n->var_value);
+				lineno_val = get_number_ui(n->var_value);
 		}
 	}
 
@@ -75,7 +74,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		else
 			(void) fprintf(stderr, _("cmd. line:"));
 
-		(void) fprintf(stderr, "%lu: ", sourceline + lineno_val);
+		(void) fprintf(stderr, "%" AWKULONGFMT ": ", TO_AWK_ULONG(lineno_val + sourceline));
 	}
 
 #ifdef HAVE_MPFR
@@ -114,7 +113,6 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 /* msg --- take a varargs error message and print it */
 
-ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 msg(const char *mesg, ...)
 {
@@ -126,7 +124,6 @@ msg(const char *mesg, ...)
 
 /* r_warning --- print a warning message */
 
-ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 r_warning(const char *mesg, ...)
 {
@@ -136,7 +133,6 @@ r_warning(const char *mesg, ...)
 	va_end(args);
 }
 
-ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 error(const char *mesg, ...)
 {
@@ -160,8 +156,6 @@ set_loc(const char *file, unsigned line)
 
 /* r_fatal --- print a fatal error message and abort the program */
 
-ATTRIBUTE_NORETURN
-ATTRIBUTE_PRINTF(mesg, 1, 2)
 void
 r_fatal(const char *mesg, ...)
 {
@@ -176,7 +170,6 @@ r_fatal(const char *mesg, ...)
 
 /* gawk_exit --- longjmp out if necessary */
 
-ATTRIBUTE_NORETURN
 void
 gawk_exit(int status)
 {
@@ -190,7 +183,6 @@ gawk_exit(int status)
 
 /* final_exit --- run extension exit handlers and exit */
 
-ATTRIBUTE_NORETURN
 void
 final_exit(int status)
 {
