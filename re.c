@@ -389,7 +389,7 @@ void
 dfaerror(const char *s)
 {
 	fatal("%s", s);
-#ifdef COMPILE_UNREACHABLE_CODE
+#ifdef __DJGPP__
 	exit(EXIT_FATAL);	/* for DJGPP */
 #endif
 }
