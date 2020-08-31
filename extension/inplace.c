@@ -89,7 +89,8 @@ static struct {
 	int posrc;	/* return code from fgetpos */
 	fpos_t pos;
 } state = { NULL, -1, 0,
-#ifdef __MINGW32__
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+	/* MinGW.org */
 	{ 0 }
 #else
 	0
