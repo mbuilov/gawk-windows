@@ -1,5 +1,7 @@
 @echo off
 setlocal
+:: strange enough, but the 'more' command will not work if environment variable MORE is defined
+set MORE=
 for /F "tokens=*" %%a in ('more') do (
   call :echo_var "%%a"
 )
