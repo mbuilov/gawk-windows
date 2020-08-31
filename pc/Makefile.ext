@@ -55,7 +55,7 @@ filefuncs.$(SOEXT): filefuncs.c stack.c stack.h gawkfts.h
 	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ filefuncs.c stack.c
 
 time.$(SOEXT): time.c
-	gcc -DHAVE_GETSYSTEMTIMEASFILETIME -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ time.c
+	gcc -DHAVE_GETSYSTEMTIME -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ time.c
 
 $(SIMPLE_EXTENSIONS):
 	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ $(@:.$(SOEXT)=.c)

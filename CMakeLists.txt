@@ -62,7 +62,7 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   # pc/config.h. With these settings and DYNAMIC=1
   # it looks like functions in dynamic libs (extensions) can
   # be invoked on Windows.
-  DefineConfigHValue(HAVE_GETSYSTEMTIMEASFILETIME 1)
+  DefineConfigHValue(HAVE_GETSYSTEMTIME 1)
   set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc pc/popen.c)
   include_directories(${CMAKE_SOURCE_DIR}/pc)
 endif()

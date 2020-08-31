@@ -114,7 +114,7 @@ esac
 AC_SEARCH_LIBS(fmod, m)
 AC_CHECK_FUNCS(fdopendir fmod fnmatch getdtablesize \
 		gettimeofday nanosleep select statvfs \
-		GetSystemTimeAsFileTime)
+		GetSystemTime)
 
 GAWK_FUNC_DIRFD
 GAWK_PREREQ_DIRFD

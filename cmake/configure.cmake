@@ -305,5 +305,5 @@ DefineFunctionIfAvailable(gettimeofday HAVE_GETTIMEOFDAY)
 DefineHFileIfAvailable(sys/select.h HAVE_SYS_SELECT_H)
 DefineFunctionIfAvailable(nanosleep HAVE_NANOSLEEP)
 DefineHFileIfAvailable(time.h HAVE_TIME_H)
-DefineFunctionIfAvailable(GetSystemTimeAsFileTime HAVE_GETSYSTEMTIMEASFILETIME)
+DefineFunctionIfAvailable(GetSystemTime HAVE_GETSYSTEMTIME)
 
