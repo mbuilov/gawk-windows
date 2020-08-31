@@ -562,7 +562,7 @@ call :execq """%GAWK%"" ""/[:space:]/"" < NUL 2>&1 | ""%FIND%"" ""[[:space:]]"" 
 )
 
 call :execq """%GAWK%"" -f arrdbg.awk -v ""okfile=arrdbg.ok"" -v ""mpfr_okfile=arrdbg-mpfr.ok"" | ""%FIND%"" ""array_f"" > _arrdbg" && ^
-call :cmpdel arrdbg && call :exec del /q arrdbg-mpfr.ok       || exit /b
+call :cmpdel arrdbg && call :exec del /q arrdbg.ok arrdbg-mpfr.ok || exit /b
 
 "%GAWK%" --version | "%FIND%" "MPFR" > NUL 2>&1 || (
   set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: gawk was built without MPFR support
@@ -570,7 +570,7 @@ call :cmpdel arrdbg && call :exec del /q arrdbg-mpfr.ok       || exit /b
 )
 
 call :execq """%GAWK%"" -M -f arrdbg.awk -v ""okfile=arrdbg.ok"" -v ""mpfr_okfile=arrdbg-mpfr.ok"" | ""%FIND%"" ""array_f"" > _arrdbg-mpfr" && ^
-call :cmpdel arrdbg-mpfr && call :exec del /q arrdbg.ok       || exit /b
+call :cmpdel arrdbg-mpfr && call :exec del /q arrdbg.ok arrdbg-mpfr.ok || exit /b
 
 :skip_arr_debug_test
 exit /b 0
