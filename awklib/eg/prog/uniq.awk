@@ -4,23 +4,38 @@
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
+# Updated August 2020 to current POSIX
 
 function usage()
 {
-    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
+    print("Usage: uniq [-udc [-f fields] [-s chars]] [ in [ out ]]") > "/dev/stderr"
     exit 1
 }
 
 # -c    count lines. overrides -d and -u
 # -d    only repeated lines
 # -u    only nonrepeated lines
-# -n    skip n fields
-# +n    skip n characters, skip fields first
+# -f n  skip n fields
+# -s n  skip n characters, skip fields first
+# As of 2020, '+' can be used as option character in addition to '-'
+# Previously allowed use of -N to skip fields and +N to skip
+# characters is no longer allowed, and not supported by this version.
 
+BEGIN {
+    # Convert + to - so getopt can handle things
+    for (i = 1; i < ARGC; i++) {
+        first = substr(ARGV[i], 1, 1)
+        if (ARGV[i] == "--" || (first != "-" && first != "+"))
+            break
+        else if (first == "+")
+            # Replace "+" with "-"
+            ARGV[i] = "-" substr(ARGV[i], 2)
+    }
+}
 BEGIN {
     count = 1
     outputfile = "/dev/stdout"
-    opts = "udc0:1:2:3:4:5:6:7:8:9:"
+    opts = "udcf:s:"
     while ((c = getopt(ARGC, ARGV, opts)) != -1) {
         if (c == "u")
             non_repeated_only++
@@ -28,22 +43,12 @@ BEGIN {
             repeated_only++
         else if (c == "c")
             do_count++
-        else if (index("0123456789", c) != 0) {
-            # getopt() requires args to options
-            # this messes us up for things like -5
-            if (Optarg ~ /^[[:digit:]]+$/)
-                fcount = (c Optarg) + 0
-            else {
-                fcount = c + 0
-                Optind--
-            }
-        } else
+        else if (c == "f")
+            fcount = Optarg + 0
+        else if (c == "s")
+            charcount = Optarg + 0
+        else
             usage()
-    }
-
-    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) {
-        charcount = substr(ARGV[Optind], 2) + 0
-        Optind++
     }
 
     for (i = 1; i < Optind; i++)

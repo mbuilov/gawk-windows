@@ -25008,8 +25008,6 @@ END @{
 @node Uniq Program
 @subsection Printing Nonduplicated Lines of Text
 
-@c FIXME: One day, update to current POSIX version of uniq
-
 @cindex printing @subentry unduplicated lines of text
 @cindex text, printing @subentry unduplicated lines of
 @cindex @command{uniq} utility
@@ -25019,7 +25017,7 @@ prints unique lines---hence the name.  @command{uniq} has a number of
 options. The usage is as follows:
 
 @display
-@command{uniq} [@option{-udc} [@code{-@var{n}}]] [@code{+@var{n}}] [@var{inputfile} [@var{outputfile}]]
+@command{uniq} [@option{-udc} [@code{-f @var{n}}] [@code{-s @var{n}}]] [@var{inputfile} [@var{outputfile}]]
 @end display
 
 The options for @command{uniq} are:
@@ -25035,14 +25033,14 @@ Print only nonrepeated (unique) lines.
 Count lines. This option overrides @option{-d} and @option{-u}.  Both repeated
 and nonrepeated lines are counted.
 
-@item -@var{n}
+@item -f @var{n}
 Skip @var{n} fields before comparing lines.  The definition of fields
 is similar to @command{awk}'s default: nonwhitespace characters separated
 by runs of spaces and/or TABs.
 
-@item +@var{n}
+@item -s @var{n}
 Skip @var{n} characters before comparing lines.  Any fields specified with
-@samp{-@var{n}} are skipped first.
+@option{-f} are skipped first.
 
 @item @var{inputfile}
 Data is read from the input file named on the command line, instead of from
@@ -25063,22 +25061,7 @@ and the @code{join()} library function
 (@pxref{Join Function}).
 
 The program begins with a @code{usage()} function and then a brief outline of
-the options and their meanings in comments.
-The @code{BEGIN} rule deals with the command-line arguments and options. It
-uses a trick to get @code{getopt()} to handle options of the form @samp{-25},
-treating such an option as the option letter @samp{2} with an argument of
-@samp{5}. If indeed two or more digits are supplied (@code{Optarg} looks
-like a number), @code{Optarg} is
-concatenated with the option digit and then the result is added to zero to make
-it into a number.  If there is only one digit in the option, then
-@code{Optarg} is not needed. In this case, @code{Optind} must be decremented so that
-@code{getopt()} processes it next time.  This code is admittedly a bit
-tricky.
-
-If no options are supplied, then the default is taken, to print both
-repeated and nonrepeated lines.  The output file, if provided, is assigned
-to @code{outputfile}.  Early on, @code{outputfile} is initialized to the
-standard output, @file{/dev/stdout}:
+the options and their meanings in comments:
 
 @cindex @code{uniq.awk} program
 @example
@@ -25094,26 +25077,62 @@ standard output, @file{/dev/stdout}:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Updated August 2020 to current POSIX
 @c endfile
 @end ignore
 @c file eg/prog/uniq.awk
 
 function usage()
 @{
-    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
+    print("Usage: uniq [-udc [-f fields] [-s chars]] [ in [ out ]]") > "/dev/stderr"
     exit 1
 @}
 
 # -c    count lines. overrides -d and -u
 # -d    only repeated lines
 # -u    only nonrepeated lines
-# -n    skip n fields
-# +n    skip n characters, skip fields first
+# -f n  skip n fields
+# -s n  skip n characters, skip fields first
+@c endfile
+@end example
 
+The POSIX standard for @command{uniq} allows options to start with
+@samp{+} as well as with @samp{-}.  An initial @code{BEGIN} rule
+traverses the arguments changing any leading @samp{+} to @samp{-}
+so that the @code{getopt()} function can parse the options:
+
+@example
+@c file eg/prog/uniq.awk
+# As of 2020, '+' can be used as option character in addition to '-'
+# Previously allowed use of -N to skip fields and +N to skip
+# characters is no longer allowed, and not supported by this version.
+
+BEGIN @{
+    # Convert + to - so getopt can handle things
+    for (i = 1; i < ARGC; i++) @{
+        first = substr(ARGV[i], 1, 1)
+        if (ARGV[i] == "--" || (first != "-" && first != "+"))
+            break
+        else if (first == "+")
+            # Replace "+" with "-"
+            ARGV[i] = "-" substr(ARGV[i], 2)
+    @}
+@}
+@c endfile
+@end example
+
+The next @code{BEGIN} rule deals with the command-line arguments and options.
+If no options are supplied, then the default is taken, to print both
+repeated and nonrepeated lines.  The output file, if provided, is assigned
+to @code{outputfile}.  Early on, @code{outputfile} is initialized to the
+standard output, @file{/dev/stdout}:
+
+@example
+@c file eg/prog/uniq.awk
 BEGIN @{
     count = 1
     outputfile = "/dev/stdout"
-    opts = "udc0:1:2:3:4:5:6:7:8:9:"
+    opts = "udcf:s:"
     while ((c = getopt(ARGC, ARGV, opts)) != -1) @{
         if (c == "u")
             non_repeated_only++
@@ -25121,25 +25140,13 @@ BEGIN @{
             repeated_only++
         else if (c == "c")
             do_count++
-        else if (index("0123456789", c) != 0) @{
-            # getopt() requires args to options
-            # this messes us up for things like -5
-            if (Optarg ~ /^[[:digit:]]+$/)
-                fcount = (c Optarg) + 0
-            else @{
-                fcount = c + 0
-                Optind--
-            @}
-        @} else
+        else if (c == "f")
+            fcount = Optarg + 0
+        else if (c == "s")
+            charcount = Optarg + 0
+        else
             usage()
     @}
-
-@group
-    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) @{
-        charcount = substr(ARGV[Optind], 2) + 0
-        Optind++
-    @}
-@end group
 
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
@@ -25270,20 +25277,15 @@ As a side note, this program does not follow our recommended convention of namin
 global variables with a leading capital letter.  Doing that would
 make the program a little easier to follow.
 
-@ifset FOR_PRINT
 The logic for choosing which lines to print represents a @dfn{state
-machine}, which is ``a device that can be in one of a set number of stable
-conditions depending on its previous condition and on the present values
-of its inputs.''@footnote{This is the definition returned from entering
-@code{define: state machine} into Google.}
-Brian Kernighan suggests that
-``an alternative approach to state machines is to just read
-the input into an array, then use indexing.  It's almost always
-easier code, and for most inputs where you would use this, just
-as fast.''  Consider how to rewrite the logic to follow this
-suggestion.
-@end ifset
-
+machine}, which is ``a device which can be in one of a set number
+of stable conditions depending on its previous condition and on the
+present values of its inputs.''@footnote{This definition is from
+@uref{https://www.lexico.com/en/definition/state_machine}.} Brian
+Kernighan suggests that ``an alternative approach to state machines is
+to just read the input into an array, then use indexing.  It's almost
+always easier code, and for most inputs where you would use this, just
+as fast.''  Consider how to rewrite the logic to follow this suggestion.
 
 
 @node Wc Program
