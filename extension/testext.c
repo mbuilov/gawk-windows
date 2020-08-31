@@ -428,7 +428,7 @@ test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	size_t i;
 	(void) unused;		/* silence warnings */
 
-	sysval[0].val = (double)getuid();
+	sysval[0].val = getuid();
 
 	assert(result != NULL);
 	make_number(0.0, result);
