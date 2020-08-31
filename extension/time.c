@@ -84,7 +84,7 @@ vms_fake_nanosleep(struct timespec *rqdly, struct timespec *rmdly)
 #if defined(HAVE_SELECT) && defined(HAVE_SYS_SELECT_H)
 #include <sys/select.h>
 #endif
-#if defined(HAVE_GETSYSTEMTIMEASFILETIME)
+#if defined(HAVE_GETSYSTEMTIME)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -124,25 +124,21 @@ do_gettimeofday(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		gettimeofday(&tv,NULL);
 		curtime = tv.tv_sec+(tv.tv_usec/1000000.0);
 	}
-#elif defined(HAVE_GETSYSTEMTIMEASFILETIME)
+#elif defined(HAVE_GETSYSTEMTIME)
 	/* based on perl win32/win32.c:win32_gettimeofday() implementation */
 	{
-		union {
-			unsigned __int64 ft_i64;
-			FILETIME ft_val;
-		} ft;
-
-		/* # of 100-nanosecond intervals since January 1, 1601 (UTC) */
-		GetSystemTimeAsFileTime(&ft.ft_val);
-#ifdef __GNUC__
-#define Const64(x) x##LL
-#else
-#define Const64(x) x##i64
-#endif
-/* Number of 100 nanosecond units from 1/1/1601 to 1/1/1970 */
-#define EPOCH_BIAS  Const64(116444736000000000)
-		curtime = (ft.ft_i64 - EPOCH_BIAS)/10000000.0;
-#undef Const64
+		long long t;
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		t = xtimegm(
+			(unsigned)st.wYear - 1900,
+			(unsigned)st.wMonth - 1,
+			(unsigned)st.wDay,
+			(unsigned)st.wHour,
+			(unsigned)st.wMinute,
+			(unsigned)st.wSecond,
+			NULL);
+		curtime = (double) t + st.wMilliseconds/1000.0;
 	}
 #else
 	/* no way to retrieve system time on this platform */
@@ -200,7 +196,7 @@ do_sleep(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			/* probably interrupted */
 			update_ERRNO_int(errno);
 	}
-#elif defined(HAVE_GETSYSTEMTIMEASFILETIME)
+#elif defined(HAVE_GETSYSTEMTIME)
 	{
 		DWORD milliseconds = (DWORD) (secs * 1000);
 
