@@ -9,6 +9,9 @@ setlocal
 
 :: Note: these environment variables are taken in account (default value in parents):
 ::
+:: BLD_DIST     (dist)       - directory for build artifacts
+:: BLD_OBJ      (obj)        - directory for intermediate build files
+::
 :: CLCC         (cl)         - how to call cl, this may be for example "cl"
 :: CLVER        {auto}       - cl version, e.g. for cl version 19.26.28806 CLVER must be set to 19026
 :: CLLIB        (lib)        - how to call lib, this may be for example "lib"
@@ -39,7 +42,7 @@ setlocal
 :: re-execute batch file to avoid pollution of the environment variables space of the caller process
 if not defined BUILDBATRECURSIVE (
   set "BUILDBATRECURSIVE=%CMDCMDLINE:"=%"
-  %WINDIR%\System32\cmd.exe /s /c "call "%~dpnx0" "%*""
+  %SYSTEMROOT%\System32\cmd.exe /s /c "call "%~dpnx0" "%*""
   exit /b
 )
 
@@ -57,19 +60,22 @@ if ""=="%~1" (
   echo.
   echo where {options}:  [gcc^|clang^|cl^|clang-msvc] [c++] [pedantic] [debug] [32^|64] [analyze]
   echo.
-  echo %~nx0 clean      - cleanup intermediate build results
-  echo %~nx0 distclean  - cleanup intermediate build results and contents of the "dist" directory
+  echo %~nx0 clean      - cleanup intermediate build results in "%BLD_OBJ%" directory
+  echo %~nx0 distclean  - cleanup intermediate build results in "%BLD_OBJ%" directory and contents of "%BLD_DIST%" directory
   if not "%BUILDBATRECURSIVE:build.bat=%"=="%BUILDBATRECURSIVE%" ((echo.)&set /p DUMMY="Hit ENTER to close...")
   exit /b 1
 )
 
-set "FIND=%WINDIR%\System32\Find.exe"
+set "FIND=%SYSTEMROOT%\System32\Find.exe"
 
 :: remove double quotes
 if defined UNICODE_CTYPE set "UNICODE_CTYPE=%UNICODE_CTYPE:"=%"
 if defined LIBUTF16      set "LIBUTF16=%LIBUTF16:"=%"
 if defined MSCRTX        set "MSCRTX=%MSCRTX:"=%"
 if defined SAL_DEFS_H    set "SAL_DEFS_H=%SAL_DEFS_H:"=%"
+
+if not defined BLD_DIST (set BLD_DIST=dist) else set "BLD_DIST=%BLD_DIST:"=%"
+if not defined BLD_OBJ  (set BLD_OBJ=obj)   else set "BLD_OBJ=%BLD_OBJ:"=%"
 
 :: "all" by default
 set TOOLCHAIN=
@@ -111,23 +117,11 @@ if "awk"=="%A1%" (
 ) else (
   if "clean"=="%A1%" goto :do_clean
   if "distclean"=="%A1%" (
-    echo del dist\gawk.exe dist\*.dll dist\*.pdb
-    del dist\gawk.exe dist\*.dll dist\*.pdb 2>NUL
+    echo rd /q /s "%BLD_DIST%"
+    rd /q /s "%BLD_DIST%" > NUL 2>&1
 :do_clean
-    echo del *.pdb *.obj pc\*.obj *.a support\*.obj support\*.a extension\*.obj dist\*.exp dist\*.lib helpers\*.obj helpers\*.exe helpers\*.pdb *.dll.lib *.dll.exp
-    del *.pdb *.obj pc\*.obj *.a support\*.obj support\*.a extension\*.obj dist\*.exp dist\*.lib helpers\*.obj helpers\*.exe helpers\*.pdb *.dll.lib *.dll.exp 2>NUL
-    if defined UNICODE_CTYPE (
-      echo del "%UNICODE_CTYPE%\*.obj" "%UNICODE_CTYPE%\*.a"
-      del "%UNICODE_CTYPE%\*.obj" "%UNICODE_CTYPE%\*.a" 2>NUL
-    )
-    if defined LIBUTF16 (
-      echo del "%LIBUTF16%\*.obj" "%LIBUTF16%\*.a"
-      del "%LIBUTF16%\*.obj" "%LIBUTF16%\*.a" 2>NUL
-    )
-    if defined MSCRTX (
-      echo del "%MSCRTX%\*.obj" "%MSCRTX%\*.a"
-      del "%MSCRTX%\*.obj" "%MSCRTX%\*.a" 2>NUL
-    )
+    echo rd /q /s "%BLD_OBJ%"
+    rd /q /s "%BLD_OBJ%" > NUL 2>&1
     exit /b
   )
   if not "all"=="%A1%" (
@@ -192,12 +186,12 @@ if not defined TOOLCHAIN clang --version > NUL 2>&1 && (
 
 if not defined TOOLCHAIN (
   echo Can't determine toolchan.
-  echo Supported toolchains: CL^(MSVC^), GCC^(MinGW.org/Mingw-64^), CLANG^(Mingw-64/MSVC^).
+  echo Supported toolchains: CL^(MSVC^), GCC^(MinGW.org/mingw-w64^), CLANG^(mingw-w64/MSVC^).
   echo.
   echo To setup CL^(MSVC^) toolchain, run:
   echo  "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
   echo.
-  echo To setup GCC^(Mingw-64^) toolchain, first run:
+  echo To setup GCC^(mingw-w64^) toolchain, first run:
   echo  "C:\msys64\mingw64.exe"
   echo then make sure mingw-w64-x86_64-gcc is installed:
   echo  pacman -S mingw-w64-x86_64-gcc
@@ -206,10 +200,10 @@ if not defined TOOLCHAIN (
   echo then close MSYS window and in cmd.exe console change directory:
   echo  cd "%~dp0"
   echo.
-  echo Mingw-64 notes:
+  echo mingw-w64 notes:
   echo For GCC-i686     - install mingw-w64-i686-gcc
-  echo For CLANG-i686   - install mingw-w64-i686-clang
-  echo For CLANG-x86_64 - install mingw-w64-x86_64-clang
+  echo For CLANG-i686   - install mingw-w64-i686-clang & mingw-w64-i686-lld
+  echo For CLANG-x86_64 - install mingw-w64-x86_64-clang & mingw-w64-x86_64-lld
   exit /b 1
 )
 
@@ -369,15 +363,15 @@ set CC_INCLUDE=/I
 goto :do_build
 
 :cl_awk_ld
-call :execq "%GAWKLINK:^^=^% /DEFAULTLIB:WS2_32.lib /OUT:dist\%~1 %~2"
+call :execq "%GAWKLINK:^^=^% /DEFAULTLIB:WS2_32.lib /OUT:""%BLD_DIST%\%~1.exe"" %~2"
 exit /b
 
 :cl_shlib_ld
-call :execq "%SHLIBLINK:^^=^% /IMPLIB:%~1.lib /OUT:dist\%~1 %~2"
+call :execq "%SHLIBLINK:^^=^% /IMPLIB:""%BLD_OBJ%\extension\%~1\%~1.lib"" /OUT:""%BLD_DIST%\%~1.dll"" %~2"
 exit /b
 
 :cl_tool_ld
-call :execq "%TOOLLINK:^^=^% /OUT:helpers\%~1 %~2"
+call :execq "%TOOLLINK:^^=^% /OUT:""%BLD_DIST%\helpers\%~1.exe"" %~2"
 exit /b
 
 :::::::::::::::::::::: CL END :::::::::::::::::::
@@ -385,7 +379,7 @@ exit /b
 :toolchain1
 if not "%TOOLCHAIN%"=="gcc" goto :toolchain2
 
-:::::::::::: GCC (MinGW.org/Mingw-64) :::::::::::
+:::::::::::: GCC (MinGW.org/mingw-w64) :::::::::::
 
 if defined BUILDFORCPU set "BUILDFORCPU=-m%BUILDFORCPU%"
 if not defined GCC    (set "GCC=gcc %BUILDFORCPU%") else call :escape_cc GCC "%BUILDFORCPU%"
@@ -467,17 +461,27 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wendif-labels"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wenum-compare"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wexpansion-to-defined"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfloat-conversion"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfloat-equal"
+::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfloat-equal"
+
+:: MinGW.org: mingw-printf-format recognition is broken for C++
+if defined GCC_IS_MINGW_ORG if defined COMPILE_AS_CXX (
+  set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-format"
+  goto :no_wformat
+)
+
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat=2"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-contains-nul"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-extra-args"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-nonliteral"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-overflow=2"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-security"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-signedness"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-truncation=2"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-y2k"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-zero-length"
+
+:no_wformat
+
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-overflow=2"
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-signedness"
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-truncation=2"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wframe-address"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfree-nonheap-object"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Whsa"
@@ -549,7 +553,8 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsizeof-pointer-div"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsizeof-pointer-memaccess"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstack-protector"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstrict-aliasing=1"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstrict-overflow=5"
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstrict-overflow=2"
+::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstrict-overflow=5"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstringop-overflow=4"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wstringop-truncation"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsuggest-attribute=cold"
@@ -562,7 +567,7 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsuggest-final-methods"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsuggest-final-types"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch-bool"
-set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch-default"
+::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch-default"
 ::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch-enum"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wswitch-unreachable"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wsync-nand"
@@ -667,6 +672,9 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wmismatched-tags"
 ::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wredundant-tags"
 :cxx_not_gcc_10
 
+:: MinGW.org: mingw-printf-format recognition is broken for C++
+if defined GCC_IS_MINGW_ORG set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-suggest-attribute=format"
+
 :: disable some C++ warnings for gawk/shlib
 set "GAWK_NO_WARN=-Wno-vla"
 
@@ -729,15 +737,11 @@ if defined DEBUG_BUILD (
   )
 )
 
-if defined COMPILE_AS_CXX (
-  set "GAWKLINK=%GXX% -static -mconsole"
-  set "SHLIBLINK=%GXX% -static -mconsole -shared"
-  set "TOOLLINK=%GXX% -static -mconsole"
-) else (
-  set "GAWKLINK=%GCC% -static -mconsole"
-  set "SHLIBLINK=%GCC% -static -mconsole -shared"
-  set "TOOLLINK=%GCC% -static -mconsole"
-)
+if defined COMPILE_AS_CXX (set "LINKER=%GXX%") else set "LINKER=%GCC%"
+set "GAWKLINK=%LINKER% -static -mconsole"
+set "SHLIBLINK=%LINKER% -static -mconsole -shared"
+set "TOOLLINK=%LINKER% -static -mconsole"
+set LINKER=
 
 :: GCC from MinGW.org do not supports '-municode'
 if not defined GCC_IS_MINGW_ORG (
@@ -764,13 +768,15 @@ if defined DEBUG_BUILD (
   )
 )
 
-set "UNICODE_CTYPECC=%GCC% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
-set "LIBUTF16CC=%GCC% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
-set "MSCRTXCC=%GCC% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
-set "GAWKCC=%GCC% -c %CMNOPTS% %GAWK_NO_WARN% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
-set "SHLIBCC=%GCC% -c %CMNOPTS% %GAWK_NO_WARN% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
-set "TOOLCC=%GCC% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+if defined COMPILE_AS_CXX (set "COMPILER=%GXX%") else set "COMPILER=%GCC%"
+set "UNICODE_CTYPECC=%COMPILER% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
+set "LIBUTF16CC=%COMPILER% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
+set "MSCRTXCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+set "GAWKCC=%COMPILER% -c %CMNOPTS% %GAWK_NO_WARN% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
+set "SHLIBCC=%COMPILER% -c %CMNOPTS% %GAWK_NO_WARN% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
+set "TOOLCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
 set "GAWKRES=%WINDRES% %GAWK_VER_DEFINES% -o"
+set COMPILER=
 
 set CC_DEFINE=-D
 set CC_INCLUDE=-I
@@ -780,23 +786,23 @@ if defined DO_BUILD_SHLIB call :getdllstartup GCC || exit /b
 goto :do_build
 
 :gcc_awk_ld
-call :execq "%GAWKLINK:^^=^% -o dist\%~1 %~2 -lws2_32"
+call :execq "%GAWKLINK:^^=^% -o ""%BLD_DIST%\%~1.exe"" %~2 -lws2_32 -lmpfr -lgmp"
 exit /b
 
 :gcc_shlib_ld
-call :execq "%SHLIBLINK:^^=^% -Wl,-e%SHLIBDLLMAIN% -o dist\%~1 %~2"
+call :execq "%SHLIBLINK:^^=^% -Wl,-e%SHLIBDLLMAIN% -o ""%BLD_DIST%\%~1.dll"" %~2"
 exit /b
 
 :gcc_tool_ld
-call :execq "%TOOLLINK:^^=^% -o helpers\%~1 %~2"
+call :execq "%TOOLLINK:^^=^% -o ""%BLD_DIST%\helpers\%~1.exe"" %~2"
 exit /b
 
-::::::::: GCC (MinGW.org/Mingw-64) END ::::::::::
+::::::::: GCC (MinGW.org/mingw-w64) END ::::::::::
 
 :toolchain2
 if not "%TOOLCHAIN%"=="clang" goto :toolchain3
 
-:::::::::::::::: CLANG (Mingw-64) :::::::::::::::
+:::::::::::::::: CLANG (mingw-w64) :::::::::::::::
 
 if defined BUILDFORCPU set "BUILDFORCPU=-m%BUILDFORCPU%"
 if not defined CLANG   (set "CLANG=clang %BUILDFORCPU%")     else call :escape_cc CLANG "%BUILDFORCPU%"
@@ -847,13 +853,16 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-implicit-fallthrough"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-switch-enum"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-covered-switch-default"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-unused-macros"
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-float-equal"
 
 :clang_no_pedantic
 
 if not defined COMPILE_AS_CXX goto :clang_no_cxx
 
 :: compile as c++11
-::set "CMN_DEFINES=-x c++ -std=c++11 %CMN_DEFINES%"
+set "CMN_DEFINES=-std=c++11 %CMN_DEFINES%"
+
+:: avoid warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated
 set "CMN_DEFINES=-x c++ %CMN_DEFINES%"
 
 if not defined BUILD_PEDANTIC goto :clang_do_build
@@ -868,7 +877,7 @@ goto :clang_do_build
 :clang_no_cxx
 
 :: compile as c99
-::set "CMN_DEFINES=-std=c99 %CMN_DEFINES%"
+set "CMN_DEFINES=-std=c99 %CMN_DEFINES%"
 
 if not defined BUILD_PEDANTIC goto :clang_do_build
 
@@ -891,15 +900,11 @@ if defined DEBUG_BUILD (
   set "CMNOPTS=%WARNING_OPTIONS% %CMN_DEFINES% -pipe -DNDEBUG -O2 -flto"
 )
 
-if defined COMPILE_AS_CXX (
-  set "GAWKLINK=%CLANGXX% -static -municode -mconsole"
-  set "SHLIBLINK=%CLANGXX% -static -municode -mconsole -shared"
-  set "TOOLLINK=%CLANGXX% -static -municode -mconsole"
-) else (
-  set "GAWKLINK=%CLANG% -static -municode -mconsole"
-  set "SHLIBLINK=%CLANG% -static -municode -mconsole -shared"
-  set "TOOLLINK=%CLANG% -static -municode -mconsole"
-)
+if defined COMPILE_AS_CXX (set "LINKER=%CLANGXX%") else set "LINKER=%CLANG%"
+set "GAWKLINK=%LINKER% -static -municode -mconsole"
+set "SHLIBLINK=%LINKER% -static -municode -mconsole -shared"
+set "TOOLLINK=%LINKER% -static -municode -mconsole"
+set LINKER=
 
 if defined DEBUG_BUILD (
   set "LIBABSTRACTLIB=%AR% -csr "
@@ -913,13 +918,15 @@ if defined DEBUG_BUILD (
   set "TOOLLINK=%TOOLLINK% -flto -fuse-ld=lld"
 )
 
-set "UNICODE_CTYPECC=%CLANG% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
-set "LIBUTF16CC=%CLANG% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
-set "MSCRTXCC=%CLANG% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
-set "GAWKCC=%CLANG% -c %CMNOPTS% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
-set "SHLIBCC=%CLANG% -c %CMNOPTS% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
-set "TOOLCC=%CLANG% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+if defined COMPILE_AS_CXX (set "COMPILER=%CLANGXX%") else set "COMPILER=%CLANG%"
+set "UNICODE_CTYPECC=%COMPILER% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
+set "LIBUTF16CC=%COMPILER% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
+set "MSCRTXCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+set "GAWKCC=%COMPILER% -c %CMNOPTS% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
+set "SHLIBCC=%COMPILER% -c %CMNOPTS% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
+set "TOOLCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
 set "GAWKRES=%WINDRES% %GAWK_VER_DEFINES% -o"
+set COMPILER=
 
 set CC_DEFINE=-D
 set CC_INCLUDE=-I
@@ -930,29 +937,29 @@ goto :do_build
 
 :clang_awk_ld
 if defined DEBUG_BUILD (
-  call :execq "%GAWKLINK:^^=^% -Wl,dist\%~1.pdb -o dist\%~1 %~2 -lws2_32"
+  call :execq "%GAWKLINK:^^=^% -Wl,""%BLD_DIST%\%~1.pdb"" -o ""%BLD_DIST%\%~1.exe"" %~2 -lws2_32 -lmpfr -lgmp"
 ) else (
-  call :execq "%GAWKLINK:^^=^% -o dist\%~1 %~2 -lws2_32"
+  call :execq "%GAWKLINK:^^=^% -o ""%BLD_DIST%\%~1.exe"" %~2 -lws2_32 -lmpfr -lgmp"
 )
 exit /b
 
 :clang_shlib_ld
 if defined DEBUG_BUILD (
-  call :execq "%SHLIBLINK:^^=^% -Wl,dist\%~1.pdb -Wl,-e%SHLIBDLLMAIN% -o dist\%~1 %~2"
+  call :execq "%SHLIBLINK:^^=^% -Wl,""%BLD_DIST%\%~1.pdb"" -Wl,-e%SHLIBDLLMAIN% -o ""%BLD_DIST%\%~1.dll"" %~2"
 ) else (
-  call :execq "%SHLIBLINK:^^=^% -Wl,-e%SHLIBDLLMAIN% -o dist\%~1 %~2"
+  call :execq "%SHLIBLINK:^^=^% -Wl,-e%SHLIBDLLMAIN% -o ""%BLD_DIST%\%~1.dll"" %~2"
 )
 exit /b
 
 :clang_tool_ld
 if defined DEBUG_BUILD (
-  call :execq "%TOOLLINK:^^=^% -Wl,helpers\%~1.pdb -o helpers\%~1 %~2"
+  call :execq "%TOOLLINK:^^=^% -Wl,""%BLD_DIST%\helpers\%~1.pdb"" -o ""%BLD_DIST%\helpers\%~1.exe"" %~2"
 ) else (
-  call :execq "%TOOLLINK:^^=^% -o helpers\%~1 %~2"
+  call :execq "%TOOLLINK:^^=^% -o ""%BLD_DIST%\helpers\%~1.exe"" %~2"
 )
 exit /b
 
-:::::::::::::: CLANG (Mingw-64) END :::::::::::::
+:::::::::::::: CLANG (mingw-w64) END ::::::::::::
 
 :toolchain3
 if not "%TOOLCHAIN%"=="clangmsvc" goto :toolchain4
@@ -1008,6 +1015,7 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-implicit-fallthrough"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-switch-enum"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-covered-switch-default"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-unused-macros"
+set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-float-equal"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-nonportable-system-include-path"
 
 :clangmsvc_no_pedantic
@@ -1015,7 +1023,10 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-nonportable-system-include-path"
 if not defined COMPILE_AS_CXX goto :clangmsvc_no_cxx
 
 :: compile as c++11
-set "CMN_DEFINES=-x c++ -std=c++11 %CMN_DEFINES%"
+set "CMN_DEFINES=-std=c++11 %CMN_DEFINES%"
+
+:: avoid warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated
+set "CMN_DEFINES=-x c++ %CMN_DEFINES%"
 
 if not defined BUILD_PEDANTIC goto :clangmsvc_do_build
 
@@ -1053,15 +1064,11 @@ if defined DEBUG_BUILD (
   set "CMNOPTS=%NODEPRECATE% %WARNING_OPTIONS% %CMN_DEFINES% -pipe -DNDEBUG -O2 -flto"
 )
 
-if defined COMPILE_AS_CXX (
-  set "GAWKLINK=%CLANGMSVCXX% -static -municode -mconsole"
-  set "SHLIBLINK=%CLANGMSVCXX% -static -municode -mconsole -shared"
-  set "TOOLLINK=%CLANGMSVCXX% -static -municode -mconsole"
-) else (
-  set "GAWKLINK=%CLANGMSVC% -static -municode -mconsole"
-  set "SHLIBLINK=%CLANGMSVC% -static -municode -mconsole -shared"
-  set "TOOLLINK=%CLANGMSVC% -static -municode -mconsole"
-)
+if defined COMPILE_AS_CXX (set "LINKER=%CLANGMSVCXX%") else set "LINKER=%CLANGMSVC%"
+set "GAWKLINK=%LINKER% -static -municode -mconsole"
+set "SHLIBLINK=%LINKER% -static -municode -mconsole -shared"
+set "TOOLLINK=%LINKER% -static -municode -mconsole"
+set LINKER=
 
 if defined DEBUG_BUILD (
   set "LIBABSTRACTLIB=%CLLIB% /nologo /OUT:"
@@ -1075,13 +1082,15 @@ if defined DEBUG_BUILD (
   set "TOOLLINK=%TOOLLINK% -flto -fuse-ld=lld"
 )
 
-set "UNICODE_CTYPECC=%CLANGMSVC% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
-set "LIBUTF16CC=%CLANGMSVC% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
-set "MSCRTXCC=%CLANGMSVC% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
-set "GAWKCC=%CLANGMSVC% -c %CMNOPTS% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
-set "SHLIBCC=%CLANGMSVC% -c %CMNOPTS% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
-set "TOOLCC=%CLANGMSVC% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+if defined COMPILE_AS_CXX (set "COMPILER=%CLANGMSVCXX%") else set "COMPILER=%CLANGMSVC%"
+set "UNICODE_CTYPECC=%COMPILER% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
+set "LIBUTF16CC=%COMPILER% -c %CMNOPTS% -I""%LIBUTF16%"" -o"
+set "MSCRTXCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
+set "GAWKCC=%COMPILER% -c %CMNOPTS% %GAWK_DEFINES% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -DLOCALEDIR=\"\" -DDEFPATH=\".\" -DDEFLIBPATH=\"\" -DSHLIBEXT=\"dll\" -Isupport -Ipc -I. -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -I""%MSCRTX%"" -o"
+set "SHLIBCC=%COMPILER% -c %CMNOPTS% -DGAWK_STATIC_CRT -DHAVE_CONFIG_H -Iextension -Ipc -I. -I""%MSCRTX%"" -o"
+set "TOOLCC=%COMPILER% -c %CMNOPTS% -I""%MSCRTX%"" -I""%LIBUTF16%"" -I""%UNICODE_CTYPE%"" -o"
 set "GAWKRES=%CLRC% /nologo %GAWK_VER_DEFINES% /fo"
+set COMPILER=
 
 set CC_DEFINE=-D
 set CC_INCLUDE=-I
@@ -1089,15 +1098,15 @@ set CC_INCLUDE=-I
 goto :do_build
 
 :clangmsvc_awk_ld
-call :execq "%GAWKLINK:^^=^% -o dist\%~1 %~2 -lws2_32"
+call :execq "%GAWKLINK:^^=^% -o ""%BLD_DIST%\%~1.exe"" %~2 -lws2_32"
 exit /b
 
 :clangmsvc_shlib_ld
-call :execq "%SHLIBLINK:^^=^% -o dist\%~1 %~2"
+call :execq "%SHLIBLINK:^^=^% -o ""%BLD_DIST%\%~1.dll"" %~2"
 exit /b
 
 :clangmsvc_tool_ld
-call :execq "%TOOLLINK:^^=^% -o helpers\%~1 %~2"
+call :execq "%TOOLLINK:^^=^% -o ""%BLD_DIST%\helpers\%~1.exe"" %~2"
 exit /b
 
 :::::::::::::::::: CLANG-MSVC END :::::::::::::::
@@ -1108,10 +1117,9 @@ exit /b
 ::::: BUILDING :::::
 :do_build
 
-set CALL_STAT=0
+if not exist "%BLD_DIST%" call :execq "md ""%BLD_DIST%""" || goto :build_err
 
 if defined DO_BUILD_AWK (
-  if not exist dist call :exec md dist || goto :build_err
   call :unicode_ctype || goto :build_err
   call :libutf16      || goto :build_err
   call :mscrtx        || goto :build_err
@@ -1119,7 +1127,6 @@ if defined DO_BUILD_AWK (
   call :gawk          || goto :build_err
 )
 if defined DO_BUILD_SHLIB (
-  if not exist dist call :exec md dist || goto :build_err
   call :shlibs  || goto :build_err
 )
 if defined DO_BUILD_HELPERS (
@@ -1129,167 +1136,171 @@ if defined DO_BUILD_HELPERS (
   call :helpers       || goto :build_err
 )
 
-echo CALL_STAT=%CALL_STAT%
 echo OK!
 exit /b 0
 
 :build_err
-echo CALL_STAT=%CALL_STAT%
 echo *** Compilation failed! ***
 exit /b 1
 
 :::::: COMPILATION :::::
 :unicode_ctype
 
-call :cc UNICODE_CTYPECC "%UNICODE_CTYPE%\src\unicode_ctype.c"     || exit /b
-call :cc UNICODE_CTYPECC "%UNICODE_CTYPE%\src\unicode_toupper.c"   || exit /b
+if not exist "%BLD_OBJ%\unicode_ctype" call :execq "md ""%BLD_OBJ%\unicode_ctype""" || exit /b
+call :cc UNICODE_CTYPECC "%BLD_OBJ%\unicode_ctype" "%UNICODE_CTYPE%\src\unicode_ctype.c"   || exit /b
+call :cc UNICODE_CTYPECC "%BLD_OBJ%\unicode_ctype" "%UNICODE_CTYPE%\src\unicode_toupper.c" || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
-call :lib "unicode_ctype.a" ^
- "%UNICODE_CTYPE%\src\unicode_ctype.obj"   ^
- "%UNICODE_CTYPE%\src\unicode_toupper.obj"  || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :lib "%BLD_OBJ%\unicode_ctype\unicode_ctype.a" ^
+ "%BLD_OBJ%\unicode_ctype\unicode_ctype.obj"   ^
+ "%BLD_OBJ%\unicode_ctype\unicode_toupper.obj" || exit /b
 
 exit /b 0
 
 :libutf16
 
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf16_to_utf8.c"     || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf8_to_utf16.c"     || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf16_to_utf8_one.c" || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf8_to_utf16_one.c" || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf8_cstd.c"         || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf16_to_utf32.c"    || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf32_to_utf16.c"    || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf8_to_utf32.c"     || exit /b
-call :cc LIBUTF16CC "%LIBUTF16%\src\utf32_to_utf8.c"     || exit /b
+if not exist "%BLD_OBJ%\libutf16" call :execq "md ""%BLD_OBJ%\libutf16""" || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf16_to_utf8.c"     || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf8_to_utf16.c"     || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf16_to_utf8_one.c" || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf8_to_utf16_one.c" || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf8_cstd.c"         || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf16_to_utf32.c"    || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf32_to_utf16.c"    || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf8_to_utf32.c"     || exit /b
+call :cc LIBUTF16CC "%BLD_OBJ%\libutf16" "%LIBUTF16%\src\utf32_to_utf8.c"     || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
-call :lib "libutf16.a" ^
- "%LIBUTF16%\src\utf16_to_utf8.obj"     ^
- "%LIBUTF16%\src\utf8_to_utf16.obj"     ^
- "%LIBUTF16%\src\utf16_to_utf8_one.obj" ^
- "%LIBUTF16%\src\utf8_to_utf16_one.obj" ^
- "%LIBUTF16%\src\utf8_cstd.obj"         ^
- "%LIBUTF16%\src\utf16_to_utf32.obj"    ^
- "%LIBUTF16%\src\utf32_to_utf16.obj"    ^
- "%LIBUTF16%\src\utf8_to_utf32.obj"     ^
- "%LIBUTF16%\src\utf32_to_utf8.obj"  || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :lib "%BLD_OBJ%\libutf16\libutf16.a" ^
+ "%BLD_OBJ%\libutf16\utf16_to_utf8.obj"     ^
+ "%BLD_OBJ%\libutf16\utf8_to_utf16.obj"     ^
+ "%BLD_OBJ%\libutf16\utf16_to_utf8_one.obj" ^
+ "%BLD_OBJ%\libutf16\utf8_to_utf16_one.obj" ^
+ "%BLD_OBJ%\libutf16\utf8_cstd.obj"         ^
+ "%BLD_OBJ%\libutf16\utf16_to_utf32.obj"    ^
+ "%BLD_OBJ%\libutf16\utf32_to_utf16.obj"    ^
+ "%BLD_OBJ%\libutf16\utf8_to_utf32.obj"     ^
+ "%BLD_OBJ%\libutf16\utf32_to_utf8.obj"  || exit /b
 
 exit /b 0
 
 :mscrtx
 
-call :cc MSCRTXCC "%MSCRTX%\src\arg_parser.c"      || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\socket_fd.c"       || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\socket_file.c"     || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\wreaddir.c"        || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\wreadlink.c"       || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\xstat.c"           || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\locale_helpers.c"  || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\localerpl.c"       || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\sprintf_helpers.c" || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\utf16cvt.c"        || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\utf8env.c"         || exit /b
-call :cc MSCRTXCC "%MSCRTX%\src\utf8rpl.c"         || exit /b
+if not exist "%BLD_OBJ%\mscrtx" call :execq "md ""%BLD_OBJ%\mscrtx""" || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\arg_parser.c"      || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\socket_fd.c"       || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\socket_file.c"     || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\wreaddir.c"        || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\wreadlink.c"       || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\xstat.c"           || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\locale_helpers.c"  || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\localerpl.c"       || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf16cvt.c"        || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf8env.c"         || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf8rpl.c"         || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
-call :lib "mscrtx.a" ^
- "%MSCRTX%\src\arg_parser.obj"      ^
- "%MSCRTX%\src\socket_fd.obj"       ^
- "%MSCRTX%\src\socket_file.obj"     ^
- "%MSCRTX%\src\wreaddir.obj"        ^
- "%MSCRTX%\src\wreadlink.obj"       ^
- "%MSCRTX%\src\xstat.obj"           ^
- "%MSCRTX%\src\locale_helpers.obj"  ^
- "%MSCRTX%\src\localerpl.obj"       ^
- "%MSCRTX%\src\sprintf_helpers.obj" ^
- "%MSCRTX%\src\utf16cvt.obj"        ^
- "%MSCRTX%\src\utf8env.obj"         ^
- "%MSCRTX%\src\utf8rpl.obj"          || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :lib "%BLD_OBJ%\mscrtx\mscrtx.a" ^
+ "%BLD_OBJ%\mscrtx\arg_parser.obj"      ^
+ "%BLD_OBJ%\mscrtx\socket_fd.obj"       ^
+ "%BLD_OBJ%\mscrtx\socket_file.obj"     ^
+ "%BLD_OBJ%\mscrtx\wreaddir.obj"        ^
+ "%BLD_OBJ%\mscrtx\wreadlink.obj"       ^
+ "%BLD_OBJ%\mscrtx\xstat.obj"           ^
+ "%BLD_OBJ%\mscrtx\locale_helpers.obj"  ^
+ "%BLD_OBJ%\mscrtx\localerpl.obj"       ^
+ "%BLD_OBJ%\mscrtx\utf16cvt.obj"        ^
+ "%BLD_OBJ%\mscrtx\utf8env.obj"         ^
+ "%BLD_OBJ%\mscrtx\utf8rpl.obj"          || exit /b
 
 exit /b 0
 
 :support
 
-call :cc GAWKCC support\getopt.c     || exit /b
-call :cc GAWKCC support\getopt1.c    || exit /b
-call :cc GAWKCC support\random.c     || exit /b
-call :cc GAWKCC support\dfa.c        || exit /b
-call :cc GAWKCC support\localeinfo.c || exit /b
-call :cc GAWKCC support\regex.c      || exit /b
+if not exist "%BLD_OBJ%\support" call :execq "md ""%BLD_OBJ%\support""" || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\getopt.c     || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\getopt1.c    || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\random.c     || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\dfa.c        || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\localeinfo.c || exit /b
+call :cc GAWKCC "%BLD_OBJ%\support" support\regex.c      || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
-call :lib support\libsupport.a ^
- support\getopt.obj     ^
- support\getopt1.obj    ^
- support\random.obj     ^
- support\dfa.obj        ^
- support\localeinfo.obj ^
- support\regex.obj         || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :lib "%BLD_OBJ%\support\libsupport.a" ^
+ "%BLD_OBJ%\support\getopt.obj"     ^
+ "%BLD_OBJ%\support\getopt1.obj"    ^
+ "%BLD_OBJ%\support\random.obj"     ^
+ "%BLD_OBJ%\support\dfa.obj"        ^
+ "%BLD_OBJ%\support\localeinfo.obj" ^
+ "%BLD_OBJ%\support\regex.obj"         || exit /b
 
 exit /b 0
 
 :gawk
 
-call :cc GAWKCC array.c             || exit /b
-call :cc GAWKCC awkgram.c           || exit /b
-call :cc GAWKCC builtin.c           || exit /b
-call :cc GAWKCC pc\getid.c          || exit /b
-call :cc GAWKCC cint_array.c        || exit /b
-call :cc GAWKCC command.c           || exit /b
-call :cc GAWKCC debug.c             || exit /b
-call :cc GAWKCC eval.c              || exit /b
-call :cc GAWKCC ext.c               || exit /b
-call :cc GAWKCC field.c             || exit /b
-call :cc GAWKCC floatcomp.c         || exit /b
-call :cc GAWKCC gawkapi.c           || exit /b
-call :cc GAWKCC gawkcrtapi.c        || exit /b
-call :cc GAWKCC gawkmisc.c          || exit /b
-call :cc GAWKCC int_array.c         || exit /b
-call :cc GAWKCC io.c                || exit /b
-call :cc GAWKCC main.c              || exit /b
-call :cc GAWKCC mpfr.c              || exit /b
-call :cc GAWKCC msg.c               || exit /b
-call :cc GAWKCC node.c              || exit /b
-call :cc GAWKCC profile.c           || exit /b
-call :cc GAWKCC re.c                || exit /b
-call :cc GAWKCC replace.c           || exit /b
-call :cc GAWKCC str_array.c         || exit /b
-call :cc GAWKCC symbol.c            || exit /b
-call :cc GAWKCC version.c           || exit /b
+if not exist "%BLD_OBJ%\gawk" call :execq "md ""%BLD_OBJ%\gawk""" || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" array.c             || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" awkgram.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" builtin.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" pc\getid.c          || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" cint_array.c        || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" command.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" debug.c             || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" eval.c              || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" ext.c               || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" field.c             || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" floatcomp.c         || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" gawkapi.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" gawkcrtapi.c        || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" gawkmisc.c          || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" int_array.c         || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" io.c                || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" main.c              || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" mpfr.c              || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" msg.c               || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" node.c              || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" profile.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" re.c                || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" replace.c           || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" str_array.c         || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" symbol.c            || exit /b
+call :cc GAWKCC "%BLD_OBJ%\gawk" version.c           || exit /b
 
-call :res GAWKRES pc\version.rc "gawk" "gawk.exe" || exit /b
+call :res GAWKRES "%BLD_OBJ%\gawk" pc\version.rc "gawk" "gawk.exe" || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
-call :ld awk gawk.exe ^
- array.obj             ^
- awkgram.obj           ^
- builtin.obj           ^
- pc\getid.obj          ^
- cint_array.obj        ^
- command.obj           ^
- debug.obj             ^
- eval.obj              ^
- ext.obj               ^
- field.obj             ^
- floatcomp.obj         ^
- gawkapi.obj           ^
- gawkcrtapi.obj        ^
- gawkmisc.obj          ^
- int_array.obj         ^
- io.obj                ^
- main.obj              ^
- mpfr.obj              ^
- msg.obj               ^
- node.obj              ^
- profile.obj           ^
- re.obj                ^
- replace.obj           ^
- str_array.obj         ^
- symbol.obj            ^
- version.obj           ^
- pc\version.res.obj    ^
- support\libsupport.a mscrtx.a libutf16.a unicode_ctype.a || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :ld awk gawk           ^
+ "%BLD_OBJ%\gawk\array.obj"        ^
+ "%BLD_OBJ%\gawk\awkgram.obj"      ^
+ "%BLD_OBJ%\gawk\builtin.obj"      ^
+ "%BLD_OBJ%\gawk\getid.obj"        ^
+ "%BLD_OBJ%\gawk\cint_array.obj"   ^
+ "%BLD_OBJ%\gawk\command.obj"      ^
+ "%BLD_OBJ%\gawk\debug.obj"        ^
+ "%BLD_OBJ%\gawk\eval.obj"         ^
+ "%BLD_OBJ%\gawk\ext.obj"          ^
+ "%BLD_OBJ%\gawk\field.obj"        ^
+ "%BLD_OBJ%\gawk\floatcomp.obj"    ^
+ "%BLD_OBJ%\gawk\gawkapi.obj"      ^
+ "%BLD_OBJ%\gawk\gawkcrtapi.obj"   ^
+ "%BLD_OBJ%\gawk\gawkmisc.obj"     ^
+ "%BLD_OBJ%\gawk\int_array.obj"    ^
+ "%BLD_OBJ%\gawk\io.obj"           ^
+ "%BLD_OBJ%\gawk\main.obj"         ^
+ "%BLD_OBJ%\gawk\mpfr.obj"         ^
+ "%BLD_OBJ%\gawk\msg.obj"          ^
+ "%BLD_OBJ%\gawk\node.obj"         ^
+ "%BLD_OBJ%\gawk\profile.obj"      ^
+ "%BLD_OBJ%\gawk\re.obj"           ^
+ "%BLD_OBJ%\gawk\replace.obj"      ^
+ "%BLD_OBJ%\gawk\str_array.obj"    ^
+ "%BLD_OBJ%\gawk\symbol.obj"       ^
+ "%BLD_OBJ%\gawk\version.obj"      ^
+ "%BLD_OBJ%\gawk\version.res.obj"  ^
+ "%BLD_OBJ%\support\libsupport.a"  ^
+ "%BLD_OBJ%\mscrtx\mscrtx.a"       ^
+ "%BLD_OBJ%\libutf16\libutf16.a"   ^
+ "%BLD_OBJ%\unicode_ctype\unicode_ctype.a" || exit /b
 
 exit /b 0
 
@@ -1301,15 +1312,16 @@ call :shlib readdir_test %CC_DEFINE%READDIR_TEST readdir.c || exit /b
 call :shlib inplace        || exit /b
 call :shlib time           || exit /b
 
-call :shlib_cc stack       || exit /b
-call :shlib_cc gawkfts "%CC_DEFINE%FTS_ALIGN_BY=sizeof^(void*^)" || exit /b
-call :shlib_cc filefuncs   || exit /b
+if not exist "%BLD_OBJ%\extension\filefuncs" call :execq "md ""%BLD_OBJ%\extension\filefuncs""" || exit /b
+call :shlib_cc "%BLD_OBJ%\extension\filefuncs" stack       || exit /b
+call :shlib_cc "%BLD_OBJ%\extension\filefuncs" gawkfts "%CC_DEFINE%FTS_ALIGN_BY=sizeof^(void*^)" || exit /b
+call :shlib_cc "%BLD_OBJ%\extension\filefuncs" filefuncs   || exit /b
 
-:: note: next lines after ^ _must_ begin with a space
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
 call :shlib_ld filefuncs ^
- extension\stack.obj     ^
- extension\gawkfts.obj   ^
- extension\filefuncs.obj || exit /b
+ "%BLD_OBJ%\extension\filefuncs\stack.obj"     ^
+ "%BLD_OBJ%\extension\filefuncs\gawkfts.obj"   ^
+ "%BLD_OBJ%\extension\filefuncs\filefuncs.obj" || exit /b
 
 call :shlib rwarray        || exit /b
 call :shlib rwarray0       || exit /b
@@ -1329,43 +1341,52 @@ exit /b 0
 :: %1 - extension DLL name
 :: %2 - (optional) additional compiler options
 :: %3 - (optional) name of source file
-call :shlib_cc "%~1" "%~2" "%~3"         || exit /b
-call :shlib_ld "%~1" "extension\%~1.obj" || exit /b
+if not exist "%BLD_OBJ%\extension\%~1" call :execq "md ""%BLD_OBJ%\extension\%~1""" || exit /b
+call :shlib_cc "%BLD_OBJ%\extension\%~1" "%~1" "%~2" "%~3"                          || exit /b
+call :shlib_ld "%~1" "%BLD_OBJ%\extension\%~1\%~1.obj"                              || exit /b
 exit /b 0
 
 :shlib_cc
-:: %1 - object file base name
-:: %2 - (optional) additional compiler options
-:: %3 - (optional) source file name
-setlocal & set CALL_STAT=0
-:: %~2 doubles ^ in the options, un-double it
-set "OPTIONS=%~2"
+:: %1 - object file directory
+:: %2 - object file base name
+:: %3 - (optional) additional compiler options
+:: %4 - (optional) source file name
+setlocal
+:: %~3 doubles ^ in the options, un-double it
+set "OPTIONS=%~3"
 if defined OPTIONS set "OPTIONS=%OPTIONS:^^=^%"
-if ""=="%~3" (
-  call :cc SHLIBCC "extension\%~1.c" "%OPTIONS%"
+if ""=="%~4" (
+  call :cc SHLIBCC "%~1" "extension\%~2.c" "%OPTIONS%"
 ) else (
-  call :cc SHLIBCC "extension\%~3" "%OPTIONS%" "extension\%~1.obj"
+  call :cc SHLIBCC "%~1" "extension\%~4" "%OPTIONS%" "%~2.obj"
 )
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :shlib_ld
 :: %1 - dll name
 :: %2, %3, ... - object file(s) (pathnames)
-call :res GAWKRES pc\version.rc "%~1" "%~1.dll" GAWK_EXTENSION_DLL "extension\%~1.res.obj" || exit /b
-call :ld shlib %~1.dll %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9 extension\%~1.res.obj
+call :res GAWKRES "%BLD_OBJ%\extension\%~1" pc\version.rc "%~1" "%~1.dll" GAWK_EXTENSION_DLL "%~1.res.obj" || exit /b
+call :ld shlib %1 %2 %3 %4 %5 %6 %7 %8 %9 "%BLD_OBJ%\extension\%~1\%~1.res.obj"
 exit /b
 
 :helpers
-call :cc TOOLCC helpers\tst_ls.c || exit /b
-call :res GAWKRES pc\version.rc "tst_ls" "tst_ls.exe" GAWK_TEST_HELPER "helpers\tst_ls.res.obj" || exit /b
-call :ld tool tst_ls.exe helpers\tst_ls.obj helpers\tst_ls.res.obj mscrtx.a libutf16.a unicode_ctype.a || exit /b
+if not exist "%BLD_DIST%\helpers" call :execq "md ""%BLD_DIST%\helpers""" || exit /b
+if not exist "%BLD_OBJ%\helpers" call :execq "md ""%BLD_OBJ%\helpers""" || exit /b
+call :cc TOOLCC "%BLD_OBJ%\helpers" helpers\tst_ls.c || exit /b
+call :res GAWKRES "%BLD_OBJ%\helpers" pc\version.rc "tst_ls" "tst_ls.exe" GAWK_TEST_HELPER "tst_ls.res.obj" || exit /b
+:: note: next lines after ^ _must_ begin with a space - because they are not commands
+call :ld tool tst_ls ^
+ "%BLD_OBJ%\helpers\tst_ls.obj"     ^
+ "%BLD_OBJ%\helpers\tst_ls.res.obj" ^
+ "%BLD_OBJ%\mscrtx\mscrtx.a"        ^
+ "%BLD_OBJ%\libutf16\libutf16.a"    ^
+ "%BLD_OBJ%\unicode_ctype\unicode_ctype.a" || exit /b
 exit /b 0
 
 ::::::::::::::::: support routines :::::::::::::
 
 :exec
 :: simple command, without quotes, redirections, etc.
-set /A "CALL_STAT+=1"
 echo %*
 %*
 exit /b
@@ -1380,7 +1401,6 @@ exit /b
 :: Example:
 :: call :execq "%GAWK% ""BEGIN { for ^(i = 1; i ^<= 1030; i++^) print i, i}"" >_manyfiles"
  
-set /A CALL_STAT+=1
 set "COMMAND=%~1"
 :: escape special symbols for ECHO
 set "COMMAND=%COMMAND:>=^>%"
@@ -1413,67 +1433,73 @@ set "COMMAND=%COMMAND:^^^^=^%"
 %COMMAND:""="%
 exit /b
 
+:entryname
+set "ENTRYNAME=%~nx1"
+exit /b
+
 :cc
 :: compiler
 :: %1 - GAWKCC, SHLIBCC, TOOLCC ...
-:: %2 - support\getopt.c
-:: %3 - (optional) additional compiler options
-:: %4 - (optional) support\getopt.obj - name of object file
-setlocal & set CALL_STAT=0
-set "BASENAME=%~2"
+:: %2 - objdir name
+:: %3 - support\getopt.c
+:: %4 - (optional) additional compiler options
+:: %5 - (optional) getopt.obj - name of object file
+setlocal
+call :entryname "%~3"
 call set "CC=%%%~1%%"
-:: %~3 doubles ^ in the options, un-double it
-set "OPTIONS=%~3"
+:: %~4 doubles ^ in the options, un-double it
+set "OPTIONS=%~4"
 if defined OPTIONS set "OPTIONS=""%OPTIONS:^^=^%"""
-if ""=="%~4" (
-  call :execq "%CC:^^=^%""%BASENAME:.c=.obj%"" ""%~2"" %OPTIONS%"
+if ""=="%~5" (
+  call :execq "%CC:^^=^%""%~2\%ENTRYNAME:.c=.obj%"" ""%~3"" %OPTIONS%"
 ) else (
-  call :execq "%CC:^^=^%""%~4"" ""%~2"" %OPTIONS%"
+  call :execq "%CC:^^=^%""%~2\%~5"" ""%~3"" %OPTIONS%"
 )
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :res
 :: resource compiler
 :: %1 - GAWKRES ...
-:: %2 - resource.rc
-:: %3 - module name (gawk)
-:: %4 - module file (gawk.exe)
-:: %5 - (optional) GAWK_EXTENSION_DLL/GAWK_TEST_HELPER
-:: %6 - (optional) resource.res.obj
-setlocal & set CALL_STAT=0
-set "BASENAME=%~2"
+:: %2 - objdir name
+:: %3 - resource.rc
+:: %4 - module name (gawk)
+:: %5 - module file (gawk.exe)
+:: %6 - (optional) GAWK_EXTENSION_DLL/GAWK_TEST_HELPER
+:: %7 - (optional) resource.res.obj
+setlocal
+call :entryname "%~3"
 call set "RES=%%%~1%%"
-set "OPTIONS=%~5"
+set "OPTIONS=%~6"
 if defined OPTIONS set "OPTIONS=%CC_DEFINE%%OPTIONS%"
-set "OPTIONS=%OPTIONS% %CC_DEFINE%GAWK_MODULE_NAME=""%~3"" %CC_DEFINE%GAWK_MODULE_FILE_NAME=""%~4"""
+set "OPTIONS=%OPTIONS% %CC_DEFINE%GAWK_MODULE_NAME=""%~4"" %CC_DEFINE%GAWK_MODULE_FILE_NAME=""%~5"""
 call set "RES=%%RES:%CC_DEFINE%GAWK_VER_MAJOR=%OPTIONS% %CC_DEFINE%GAWK_VER_MAJOR%%"
-if ""=="%~6" (
-  call :execq "%RES:^^=^%""%BASENAME:.rc=.res.obj%"" ""%~2"""
+if ""=="%~7" (
+  call :execq "%RES:^^=^%""%~2\%ENTRYNAME:.rc=.res.obj%"" ""%~3"""
 ) else (
-  call :execq "%RES:^^=^%""%~6"" ""%~2"""
+  call :execq "%RES:^^=^%""%~2\%~7"" ""%~3"""
 )
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :lib
 :: static library linker
 :: %* - support\libsupport.a support\getopt.obj support\getopt1.obj ...
-setlocal & set CALL_STAT=0
+setlocal
 set "LIBOBJS=|%*"
 call set "LIBOBJS=%%LIBOBJS:|%1 =%%"
 call :execq "%LIBABSTRACTLIB:^^=^%""%~1"" %LIBOBJS:"=""%"
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :ld
 :: exe/shared library linker
-:: %* - awk gawk.exe array.obj ...
+:: %* - awk gawk array.obj ...
 :: %* - shlib testext.dll extension\testext.obj ...
-setlocal & set CALL_STAT=0
+setlocal
 set "LDOBJS=|%*"
 call set "LDOBJS=%%LDOBJS:|%1 =|%%"
 call set "LDOBJS=%%LDOBJS:|%2 =%%"
 :: call cl_awk_ld, cl_shlib_ld, cl_tool_ld, gcc_awk_ld, gcc_shlib_ld, gcc_tool_ld ...
 call :%TOOLCHAIN%_%~1_ld "%~2" "%LDOBJS:"=""%"
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :checkoptsuniq
 setlocal
@@ -1529,6 +1555,7 @@ exit /b
 :: %2 - "%CLANGMSVC% --version 2>&1"
 :: %3 - "clang version "
 setlocal
+set LANG=C
 call :extract_ver1 %2 %3 || exit /b 1
 endlocal & set "%1=%VER%" & set "GCC_IS_MINGW_ORG=%GCC_IS_MINGW_ORG%" & exit /b 0
 
@@ -1575,14 +1602,15 @@ endlocal & set "%1=%VER%" & exit /b 0
 :getdllstartup
 :: %1 - GCC, CLANG
 call :getdllstartup1 %1
-if exist aaa.dll (del /f aaa.dll && exit /b)
+if exist "%BLD_OBJ%\aaa.dll" del /f "%BLD_OBJ%\aaa.dll" && exit /b
 echo failed to determine dll startup function
 exit /b 1
 
 :getdllstartup1
 set "SHLIBDLLMAIN=_ExtDllMain@12"
 call set "COMMAND=%%%1:""="%%"
-for /f "tokens=* delims=" %%a in ('%%COMMAND%% --verbose -shared -x c -o aaa.dll - ^<NUL 2^>^&1') do (call :checkdllmaincrt %%a && exit /b)
+if not exist "%BLD_OBJ%" md "%BLD_OBJ%" || exit /b
+for /f "tokens=* delims=" %%a in ('%%COMMAND%% --verbose -shared -x c -o "%BLD_OBJ%\aaa.dll" - ^<NUL 2^>^&1') do (call :checkdllmaincrt %%a && exit /b)
 set "SHLIBDLLMAIN=ExtDllMain"
 exit /b
 
@@ -1619,7 +1647,7 @@ set GAWK_DAY=
 set GAWK_HOUR=
 set GAWK_MINUTE=
 :: current date & time, in UTC
-for /f "tokens=1,2 delims==" %%a in ('%%WINDIR%%\System32\Wbem\wmic.exe path Win32_UTCTime get /value') do (
+for /f "tokens=1,2 delims==" %%a in ('%%SYSTEMROOT%%\System32\Wbem\wmic.exe path Win32_UTCTime get /value') do (
   if "Year"=="%%a"        call set "GAWK_YEAR=%%b"
   if "Month"=="%%a"       call set "GAWK_MONTH=%%b"
   if "WeekInMonth"=="%%a" call set "GAWK_WEEK=%%b"
