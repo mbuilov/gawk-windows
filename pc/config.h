@@ -205,7 +205,9 @@
 #define HAVE_MKTIME 1
 
 /* Define to 1 if you have fully functional mpfr and gmp libraries. */
-/* #undef HAVE_MPFR */
+#ifdef __MINGW32__
+#define HAVE_MPFR 1
+#endif
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
@@ -290,6 +292,8 @@
 #ifdef __MINGW32__
 /* MinGW uses the replacement from missing_d, to support the %e specifier.  */
 #define strftime rpl_strftime
+/* Prevent from redefining strftime in "mscrtx/localerpl.h".  */
+#define localerpl_do_not_redefine_strftime
 #else
 #define HAVE_STRFTIME 1
 #endif
@@ -381,11 +385,7 @@
 #undef HAVE_TERMIOS_H
 
 /* Define to 1 if you have the `timegm' function. */
-#ifdef WINDOWS_NATIVE
-#define HAVE_TIMEGM 1
-#else
 #undef HAVE_TIMEGM
-#endif
 
 /* Define to 1 if you have the `tmpfile' function. */
 #ifdef __DJGPP__
@@ -540,8 +540,8 @@ typedef int check_sizeof_unsigned_long[1-2*(sizeof(unsigned long) != SIZEOF_UNSI
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
-/* Define to 1 if you have the `GetSystemTimeAsFileTime' function. */
-#define HAVE_GETSYSTEMTIMEASFILETIME 1
+/* Define to 1 if you have the `GetSystemTime' function. */
+#define HAVE_GETSYSTEMTIME 1
 
 /* Define to 1 if the character set is EBCDIC */
 #undef USE_EBCDIC
