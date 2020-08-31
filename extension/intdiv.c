@@ -48,8 +48,10 @@
 #include <gmp.h>
 #include <mpfr.h>
 #ifndef MPFR_RNDZ
+#if !defined(MPFR_VERSION_MAJOR) || MPFR_VERSION_MAJOR < 3
 /* for compatibility with MPFR 2.X */
 #define MPFR_RNDZ GMP_RNDZ
+#endif
 #endif
 #endif
 
@@ -99,19 +101,19 @@ mpz_conv(const awk_value_t *arg, mpz_ptr tmp)
 {
 	switch (arg->num_type) {
 	case AWK_NUMBER_TYPE_MPZ:
-		return arg->num_ptr;
+		return (mpz_ptr) arg->num_ptr;
 	case AWK_NUMBER_TYPE_MPFR:
-		if (! mpfr_number_p(arg->num_ptr))
+		if (! mpfr_number_p((mpfr_ptr) arg->num_ptr))
 			return NULL;
 		mpz_init(tmp);
-		mpfr_get_z(tmp, arg->num_ptr, MPFR_RNDZ);
+		mpfr_get_z(tmp, (mpfr_ptr) arg->num_ptr, MPFR_RNDZ);
 		return tmp;
 	case AWK_NUMBER_TYPE_DOUBLE:	/* can this happen? */
 		mpz_init(tmp);
 		mpz_set_d(tmp, double_to_int(arg->num_value));
 		return tmp;
 	default:	/* should never happen */
-		fatal(_("intdiv: invalid numeric type `%d'"), arg->num_type);
+		fatal(_("intdiv: invalid numeric type `%d'"), (int) arg->num_type);
 		return NULL;
 	}
 }
