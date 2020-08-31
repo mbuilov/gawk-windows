@@ -42,7 +42,7 @@
  * 11/2002: Modern machines are bigger, cut this down from 10.
  */
 
-static awk_ulong_t STR_CHAIN_MAX = 2u;
+static size_t STR_CHAIN_MAX = 2;
 
 static NODE **str_array_init(NODE *symbol, NODE *subs);
 static NODE **str_lookup(NODE *symbol, NODE *subs);
@@ -106,8 +106,11 @@ str_array_init(NODE *symbol, NODE *subs)
 		const char *val;
 
 		/* check relevant environment variables */
-		if ((newval = getenv_long("STR_CHAIN_MAX")) > 0)
-			STR_CHAIN_MAX = (awk_ulong_t) newval;
+		if ((newval = getenv_long("STR_CHAIN_MAX")) > 0) {
+			size_t sz = (size_t) (awk_ulong_t) newval;
+			if (sz > 0)
+				STR_CHAIN_MAX = sz;
+		}
 		if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
 			hash = gst_hash_string;
 	} else
@@ -152,7 +155,7 @@ str_lookup(NODE *symbol, NODE *subs)
 			&& (symbol->table_size / symbol->array_size) > STR_CHAIN_MAX) {
 		grow_table(symbol);
 		/* have to recompute hash value for new size */
-		hash1 = code1 % symbol->array_size;
+		hash1 = (size_t) (code1 % symbol->array_size);
 	}
 
 
@@ -478,14 +481,14 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %" AWKULONGFMT "\n", TO_AWK_ULONG(STR_CHAIN_MAX));
+	fprintf(output_fp, "STR_CHAIN_MAX: %" ZUFMT "\n", STR_CHAIN_MAX);
 	indent(indent_level);
 	fprintf(output_fp, "array_size: %" ZUFMT "\n", symbol->array_size);
 	indent(indent_level);
 	fprintf(output_fp, "table_size: %" ZUFMT "\n", symbol->table_size);
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain: %.2g\n",
-				((AWKNUM) symbol->table_size) / symbol->array_size);
+				((AWKNUM) symbol->table_size) / (AWKNUM) symbol->array_size);
 
 	indent(indent_level);
 	fprintf(output_fp, "memory: %.2g kB\n", str_kilobytes(symbol));
@@ -578,14 +581,14 @@ awk_hash(const char *s, size_t len, size_t hsize, awk_ulong_t *code)
 
 		switch (len & (8 - 1)) {
 		case 0:
-			do {	/* All fall throughs */
-				HASHC;
-		case 7:		HASHC;
-		case 6:		HASHC;
-		case 5:		HASHC;
-		case 4:		HASHC;
-		case 3:		HASHC;
-		case 2:		HASHC;
+			do {
+				HASHC; /* fall through */
+		case 7:		HASHC; /* fall through */
+		case 6:		HASHC; /* fall through */
+		case 5:		HASHC; /* fall through */
+		case 4:		HASHC; /* fall through */
+		case 3:		HASHC; /* fall through */
+		case 2:		HASHC; /* fall through */
 		case 1:		HASHC;
 			} while (--loop);
 		}
@@ -595,8 +598,8 @@ awk_hash(const char *s, size_t len, size_t hsize, awk_ulong_t *code)
 		*code = h;
 
 	if (h >= hsize)
-		h %= hsize;
-	return h;
+		h %= (awk_ulong_t) hsize;
+	return (size_t) h;
 }
 
 
@@ -690,7 +693,7 @@ grow_table(NODE *symbol)
 
 	for (k = 0; k < oldsize; k++) {
 		for (chain = old_b[k]; chain != NULL; chain = next) {
-			size_t hash1 = chain->ahcode % newsize;
+			size_t hash1 = (size_t) (chain->ahcode % newsize);
 			next = chain->ahnext;
 
 			/* remove from old list, add to new */
@@ -744,9 +747,9 @@ gst_hash_string(const char *str, size_t len, size_t hsize, awk_ulong_t *code)
 		*code = ret;
 
 	if (ret >= hsize)
-		ret %= hsize;
+		ret %= (awk_ulong_t) hsize;
 
-	return ret;
+	return (size_t) ret;
 }
 
 static awk_ulong_t
