@@ -780,7 +780,7 @@ tree_lookup(NODE *symbol, NODE *tree, awk_ulong_t k, unsigned m, awk_ulong_t bas
 	/* It's not there, install it */
 
 	tree->table_size++;
-	base += (size * i);
+	base += (awk_ulong_t) (size * i);
 	tn = tree->nodes[i];
 	if (n > NHAT) {
 		if (tn == NULL)
@@ -1168,21 +1168,22 @@ static size_t
 leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 {
 	NODE *r, *subs;
-	size_t num, i, ci, k = 0;
-	size_t size = array->array_size;
-	static char buf[100];
+	awk_ulong_t num;
+	size_t i, k = 0;
+	size_t const size = array->array_size;
 
 	for (i = 0; i < size; i++) {
-		ci = (assoc_kind & ADESC) != 0 ? (size - 1 - i) : i;
+		const size_t ci = (assoc_kind & ADESC) != 0 ? (size - 1 - i) : i;
 		r = array->nodes[ci];
 		if (r == NULL)
 			continue;
 
 		/* index */
-		num = array->array_base + ci;
+		num = array->array_base + (awk_ulong_t) ci;
 		if ((assoc_kind & AISTR) != 0) {
-			sprintf(buf, "%" ZUFMT "", num);
-			subs = make_string(buf, strlen(buf));
+			char buf[100];
+			unsigned len = (unsigned) sprintf(buf, "%" AWKULONGFMT "", TO_AWK_ULONG(num));
+			subs = make_string(buf, len);
 			subs->numbr = (double) num;
 			subs->flags |= (NUMCUR|NUMINT);
 		} else {
@@ -1225,7 +1226,7 @@ leaf_info(NODE *array, NODE *ndump, const char *aname)
 		val = array->nodes[i];
 		if (val == NULL)
 			continue;
-		subs->numbr = (double) (array->array_base + i);
+		subs->numbr = (double) (array->array_base + (awk_ulong_t) i);
 		assoc_info(subs, val, ndump, aname);
 	}
 	unref(subs);
