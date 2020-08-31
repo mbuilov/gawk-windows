@@ -235,7 +235,7 @@ if (PROCINFO["platform"] != "windows") {
   printf(fnmatch("[[:digit:]]"         , "0"  , 0))
   printf(fnmatch("[[:digit:]]"         , "\t" , 0))
   printf(fnmatch("[[:digit:]]"         , "t"  , 0))
-  # this test can be matched on Windows in non-UTF8 locale, so skip it
+  # this test can be wrongly matched on Windows in non-UTF8 locale, so skip it
 if (PROCINFO["platform"] != "windows" || ENVIRON["GAWKWINLOCALE"] == "UTF8") {
   printf(fnmatch("[[:print:]]"         , "\t" , 0))
 }
@@ -246,7 +246,7 @@ if (PROCINFO["platform"] != "windows" || ENVIRON["GAWKWINLOCALE"] == "UTF8") {
   # Windows non-UTF8: 0101101010110011
   # else:             01011010101110011
   printf("\n")
-  # this test can be not matched on Windows in non-UTF8 locale, so skip it
+  # this test can be wrongly not matched on Windows in non-UTF8 locale, so skip it
 if (PROCINFO["platform"] != "windows" || ENVIRON["GAWKWINLOCALE"] == "UTF8") {
   printf(fnmatch("[[:blank:]]"         , "\t" , 0))
 }
