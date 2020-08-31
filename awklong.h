@@ -249,6 +249,7 @@ struct awk_ulong_t {
 	awk_ulong_t operator+(int i_) const_method {return ul + (unsigned AWKLONG) i_;}
 	awk_ulong_t operator-(int i_) const_method {return ul - (unsigned AWKLONG) i_;}
 	awk_ulong_t operator+(unsigned u_) const_method {return ul + u_;}
+	awk_ulong_t operator-(unsigned u_) const_method {return ul - u_;}
 	awk_ulong_t operator*(unsigned u_) const_method {return ul * u_;}
 	awk_ulong_t operator/(unsigned u_) const_method {return ul / u_;}
 	awk_ulong_t operator-(unsigned long ul_) const_method {return ul - ul_;}
