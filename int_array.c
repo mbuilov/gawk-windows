@@ -137,7 +137,8 @@ is_integer(NODE *symbol, NODE *subs)
 	if ((subs->flags & NUMCUR) != 0) {
 #endif /* CHECK_INTEGER_USING_FORCE_NUMBER */
 		d = subs->numbr;
-		if (AWKLONGMIN <= d && d <= AWKLONGMAX && d == (AWKNUM) (awk_long_t) d) {
+		/* cint_array.c do not supports indexes larger than 32 bits */
+		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d) {
 			/*
 			 * The numeric value is an integer, but we must
 			 * protect against strings that cannot be generated
@@ -167,7 +168,6 @@ is_integer(NODE *symbol, NODE *subs)
 	const char *cp = subs->stptr;
 	size_t const len = subs->stlen;
 	const char *const cpend = cp + len;
-	bool in_range = true;
 	awk_long_t l;
 
 	if (len == 0 || ((l = char_digit_value((unsigned char) *cp)) == -1 && *cp != '-'))
@@ -199,32 +199,30 @@ is_integer(NODE *symbol, NODE *subs)
 		int i = char_digit_value((unsigned char) *cp);
 		if (i == -1)
 			return NULL;
-		if (l <= AWKLONGMAX/10) {
-			l *= 10;
-			if (i <= AWKLONGMAX - l) {
-				l += i;
-				continue;
-			}
-			/* Compile-time check that, for example, -128 + 1 == -127 */
-			(void) sizeof(int[1-2*!(AWKLONGMIN + 1 == -AWKLONGMAX)]);
-			if (--i == AWKLONGMAX - l &&
-			    *subs->stptr == '-' &&
-			    cp + 1 == cpend)
-			{
-				l = AWKLONGMIN;
-				break;
-			}
+		if (l <= (AWKLONGMAX - 9)/10) {
+			l = l*10 + i;
+			continue;
 		}
-		in_range = false;	/* Out of range */
+		if (l > AWKLONGMAX/10)
+			return NULL;	/* Out of range */
+		l *= 10;
+		if (i <= AWKLONGMAX - l) {
+			l += i;
+			continue;
+		}
+		/* Compile-time check that, for example, -128 + 1 == -127 */
+		(void) sizeof(int[1-2*!(AWKLONGMIN + 1 == -AWKLONGMAX)]);
+		if (--i == AWKLONGMAX - l &&
+		    *subs->stptr == '-' &&
+		    cp + 1 == cpend)
+		{
+			l = AWKLONGMIN;
+			break;
+		}
+		return NULL;	/* Out of range */
 	}
 
-	/* Good integer.  According to logic of force_number(),
-	   ignore truncation error if integer value can't be
-	   stored in subs->numbr without loss.  */
-
-	if (!in_range)
-		l = (*subs->stptr == '-') ? AWKLONGMIN : AWKLONGMAX;
-	else if (l > 0 && *subs->stptr == '-')
+	if (l > 0 && *subs->stptr == '-')
 		l = -l;
 
 	subs->numbr = (AWKNUM) l;
@@ -235,8 +233,8 @@ is_integer(NODE *symbol, NODE *subs)
 	}
 	subs->flags |= NUMCUR;
 
-	/* Check if parsed integer has been stored without loss.  */
-	if (in_range && l == (awk_long_t) subs->numbr) {
+	/* cint_array.c do not supports indexes larger than 32 bits */
+	if (l <= INT32_MAX && l >= INT32_MIN) {
 		subs->flags |= NUMINT;
 		return & success_node;
 	}
@@ -685,7 +683,7 @@ int_dump(NODE *symbol, NODE *ndump)
 			symbol->table_size, int_size, str_size);
 	indent(indent_level);
 	fprintf(output_fp, "Avg # of items per chain (int): %.2g\n",
-			((AWKNUM) int_size) / symbol->array_size);
+			((AWKNUM) int_size) / (AWKNUM) symbol->array_size);
 
 	indent(indent_level);
 	fprintf(output_fp, "memory: %.2g kB (total)\n", int_kilobytes(symbol));
@@ -779,7 +777,7 @@ int_hash(awk_long_t k, size_t hsize)
 	h += h >> 6;
 
 	if (h >= hsize)
-		h %= hsize;
+		h %= (uint32_t) hsize;
 	return h;
 }
 
