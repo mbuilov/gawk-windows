@@ -2,7 +2,7 @@
 :: beginfile2.bat --- test BEGINFILE/ENDFILE/getline/nextfile/exit combinations
 :: note: --Test 10-- counts lines of this batch file
 @echo off
-::set "AWK=../gawk.exe"
+setlocal
 set "AWKPROG=beginfile2.in"
 set "SCRIPT=%~nx0"
 
