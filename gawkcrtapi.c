@@ -40,7 +40,7 @@
 
 #ifdef GAWK_USE_CRT_API
 
-ATTRIBUTE_PRINTF_PTR(format, 1, 2)
+ATTRIBUTE_PRINTF(format, 1, 2)
 static int
 crt_printf(const char *format, ...)
 {
@@ -64,18 +64,12 @@ crt_open(const char *name, int flags, ...)
 }
 
 static int
-crt_putchar(int c)
-{
-	return putchar(c);
-}
-
-static int
 crt_stat(const char *path, gawk_stat_t *buf)
 {
 	return stat(path, buf);
 }
 
-ATTRIBUTE_PRINTF_PTR(format, 2, 3)
+ATTRIBUTE_PRINTF(format, 2, 3)
 static int
 crt_fprintf(FILE *stream, const char *format, ...)
 {
@@ -85,21 +79,6 @@ crt_fprintf(FILE *stream, const char *format, ...)
 	ret = vfprintf(stream, format, ap);
 	va_end(ap);
 	return ret;
-}
-
-ATTRIBUTE_PRINTF_PTR(format, 1, 0)
-static int
-crt_vprintf(const char *format, va_list ap)
-{
-	return vprintf(format, ap);
-}
-
-
-ATTRIBUTE_PRINTF_PTR(format, 2, 0)
-static int
-crt_vfprintf(FILE *stream, const char *format, va_list ap)
-{
-	return vfprintf(stream, format, ap);
 }
 
 static char **
@@ -275,7 +254,7 @@ gawk_crt_api_t crt_api_impl = {
 	ferror,
 	fileno,
 
-	crt_putchar,
+	putchar,
 	fputc,
 	getchar,
 	fgetc,
@@ -326,8 +305,8 @@ gawk_crt_api_t crt_api_impl = {
 	sprintf,
 	snprintf,
 
-	crt_vprintf,
-	crt_vfprintf,
+	vprintf,
+	vfprintf,
 	vsprintf,
 	vsnprintf,
 
@@ -337,6 +316,7 @@ gawk_crt_api_t crt_api_impl = {
 	crt_errno_p,
 #endif
 	strerror,
+	strftime,
 
 	mkstemp,
 
@@ -431,6 +411,26 @@ gawk_crt_api_t crt_api_impl = {
 	c32srchr,
 	c32schrnul,
 #endif /* WINDOWS_NATIVE */
+
+#ifdef WINDOWS_NATIVE
+	xtimegm,
+#endif
+
+#if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
+	(void (*)(void *)) mpz_init,
+	(void (*)(void *)) mpz_clear,
+	(void (*)(void *, double)) mpz_set_d,
+	(void (*)(void *, void *, const void *, const void *)) mpz_tdiv_qr,
+	(int (*)(const void *)) mpfr_number_p,
+	(int (*)(void *, const void *, int)) mpfr_get_z,
+#else
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+#endif
 
 	/* Add more CRT replacements here.  */
 };
