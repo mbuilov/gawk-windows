@@ -7,15 +7,25 @@
 @echo off
 setlocal
 
+:: Note: these environment variables are taken in account (default value in parents):
+::
+:: BLD_DIST      (dist)       - path to gawk distribution directory
+:: GAWKLOCALE    ()           - default value of LC_ALL and LANG environment variables
+
 :: re-execute batch file to avoid pollution of the environment variables space of the caller process
 if not defined TESTBATRECURSIVE (
   set "TESTBATRECURSIVE=%CMDCMDLINE:"=%"
-  %WINDIR%\System32\cmd.exe /s /c "call "%~dpnx0" "%*""
+  %SYSTEMROOT%\System32\cmd.exe /s /c "call "%~dpnx0" "%*""
   exit /b
 )
 
 :: run commands from the directory of this batch file
 pushd "%~dp0"
+
+if not defined BLD_DIST (set BLD_DIST=dist) else set "BLD_DIST=%BLD_DIST:"=%"
+
+:: make BLD_DIST path absolute
+call :get_abs_dir "%BLD_DIST%" BLD_DIST
 
 if not "%~2"=="" (set DO_TEST_ONLY=x) else set "DO_TEST_ONLY=%~1"
 
@@ -27,6 +37,8 @@ if defined DO_TEST_ONLY (
   if not "%DO_TEST_ONLY%"=="locale" (
   if not "%DO_TEST_ONLY%"=="shlib" (
   if not "%DO_TEST_ONLY%"=="extra" (
+  if not "%DO_TEST_ONLY%"=="inet" (
+  if not "%DO_TEST_ONLY%"=="mpfr" (
     echo Usage:
     echo.
     echo %~nx0         - run all tests
@@ -37,22 +49,23 @@ if defined DO_TEST_ONLY (
     echo %~nx0 locale  - run only locale tests
     echo %~nx0 shlib   - run only tests of extension DLLs
     echo %~nx0 extra   - run only extra tests
+    echo %~nx0 inet    - run only inet tests
+    echo %~nx0 mpfr    - run only mpfr tests
     if not "%TESTBATRECURSIVE:test.bat=%"=="%TESTBATRECURSIVE%" ((echo.)&set /p DUMMY="Hit ENTER to close...")
     exit /b 1
-))))))))
+))))))))))
 
-set "FIND=%WINDIR%\System32\Find.exe"
+set "FIND=%SYSTEMROOT%\System32\Find.exe"
 
-set CALL_STAT=0
+:: strange enough, but the 'more' command will not work if environment variable MORE is defined
+set MORE=
 
 call :tests || goto :test_err
 
-echo CALL_STAT=%CALL_STAT%
 echo OK!
 exit /b 0
 
 :test_err
-echo CALL_STAT=%CALL_STAT%
 echo *** Test failed! ***
 exit /b 1
 
@@ -74,17 +87,19 @@ echo.some systems may omit a leading zero and the floating point
 echo.precision may lead to slightly different output in a few cases.
 echo.===============================================================
 
-setlocal & set CALL_STAT=0
+setlocal
 
 set TESTS_UNSUPPORTED=0
 set TESTS_PARTIAL=0
 set TESTS_SKIPPED=0
 
+set "GAWK=%BLD_DIST%\gawk.exe"
+
 :: For testing, use only standard windows utilities
-call :execq "set ""Path=%WINDIR%\system32;%WINDIR%;%WINDIR%\System32\Wbem"""
+call :execq "set ""Path=%SYSTEMROOT%\system32;%SYSTEMROOT%;%SYSTEMROOT%\System32\Wbem"""
 
 call :change_locale C || goto :exit_local
-dist\gawk.exe -f "test\printlang.awk" || ((echo.failed to execute: dist\gawk.exe -f "test\printlang.awk") & goto :exit_local)
+"%GAWK%" -f "test\printlang.awk" || ((echo.failed to execute: "%GAWK%" -f "test\printlang.awk") & goto :exit_local)
 
 call :exec cd test
 set err=%ERRORLEVEL%
@@ -99,11 +114,10 @@ if %err% equ 0 echo Unsupported tests: %TESTS_UNSUPPORTED%
 if %err% equ 0 echo Partial tests:     %TESTS_PARTIAL%
 if %err% equ 0 echo Skipped tests:     %TESTS_SKIPPED%
 
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b %err%
+endlocal & exit /b %err%
 
 :tests_in_directory
 call :execq "set AWKPATH=." || exit /b
-set "GAWK=..\dist\gawk.exe"
 
 if defined DO_TEST_ONLY if not "%DO_TEST_ONLY%"=="basic" goto :try_unix_tests
 echo.======== Starting basic tests ========
@@ -146,10 +160,22 @@ call :shlib_tests           || exit /b
 echo.======== Done with shared library tests ========
 
 :try_extra_tests
-if defined DO_TEST_ONLY if not "%DO_TEST_ONLY%"=="extra" goto :end_of_tests
+if defined DO_TEST_ONLY if not "%DO_TEST_ONLY%"=="extra" goto :try_inet_tests
 echo.======== Starting extra tests ========
 call :extra_tests           || exit /b
 echo.======== Done with extra tests ========
+
+:try_inet_tests
+if defined DO_TEST_ONLY if not "%DO_TEST_ONLY%"=="inet" goto :try_mpfr_tests
+echo.======== Starting inet tests ========
+call :inet_tests            || exit /b
+echo.======== Done with inet tests ========
+
+:try_mpfr_tests
+if defined DO_TEST_ONLY if not "%DO_TEST_ONLY%"=="mpfr" goto :end_of_tests
+echo.======== Starting MPFR tests ========
+call :mpfr_tests            || exit /b
+echo.======== Done with MPFR tests ========
 
 :end_of_tests
 
@@ -160,49 +186,48 @@ if defined DO_TEST_ONLY (
 )
 exit /b
 
-:::::: BASIC TESTS :::::
+:::::: BASIC_TESTS (266 upstream tests + 1 additional test + 2 debug test) :::::
 :basic_tests
 
-call :runtest_in      addcomma                          || exit /b
-call :runtest_in      anchgsub                          || exit /b
-call :runtest_in      anchor                            || exit /b
+call :runtest_in      addcomma                                || exit /b
+call :runtest_in      anchgsub                                || exit /b
+call :runtest_in      anchor                                  || exit /b
 
-call :execq "copy argarray.in argarray.input > NUL"     || exit /b
-call :execq "echo just a test | %GAWK% -f argarray.awk ./argarray.input - > _argarray" || exit /b
-call :cmpdel argarray                                   || exit /b
-call :exec del /q argarray.input
+call :execq "copy argarray.in argarray.input > NUL"           || exit /b
+call :execq "echo just a test | ""%GAWK%"" -f argarray.awk ./argarray.input - > _argarray" || exit /b
+call :cmpdel argarray && call :exec del /q argarray.input     || exit /b
 
-call :runtest_in      arrayind1                         || exit /b
-call :runtest         arrayind2                         || exit /b
-call :runtest         arrayind3                         || exit /b
-call :runtest_fail    arrayparm                         || exit /b
-call :runtest         arrayprm2                         || exit /b
-call :runtest         arrayprm3                         || exit /b
-call :runtest         arrayref                          || exit /b
-call :runtest         arrymem1                          || exit /b
-call :runtest         arryref2                          || exit /b
-call :runtest_fail    arryref3                          || exit /b
-call :runtest_fail    arryref4                          || exit /b
-call :runtest_fail    arryref5                          || exit /b
-call :runtest         arynasty                          || exit /b
-call :runtest         arynocls -v "INPUT=arynocls.in"   || exit /b
-call :runtest_fail    aryprm1                           || exit /b
-call :runtest_fail    aryprm2                           || exit /b
-call :runtest_fail    aryprm3                           || exit /b
-call :runtest_fail    aryprm4                           || exit /b
-call :runtest_fail    aryprm5                           || exit /b
-call :runtest_fail    aryprm6                           || exit /b
-call :runtest_fail    aryprm7                           || exit /b
-call :runtest         aryprm8                           || exit /b
-call :runtest         aryprm9                           || exit /b
-call :runtest         arysubnm                          || exit /b
-call :runtest         aryunasgn                         || exit /b
-call :runtest_in      asgext                            || exit /b
+call :runtest_in      arrayind1                               || exit /b
+call :runtest         arrayind2                               || exit /b
+call :runtest         arrayind3                               || exit /b
+call :runtest_fail    arrayparm                               || exit /b
+call :runtest         arrayprm2                               || exit /b
+call :runtest         arrayprm3                               || exit /b
+call :runtest         arrayref                                || exit /b
+call :runtest         arrymem1                                || exit /b
+call :runtest         arryref2                                || exit /b
+call :runtest_fail    arryref3                                || exit /b
+call :runtest_fail    arryref4                                || exit /b
+call :runtest_fail    arryref5                                || exit /b
+call :runtest         arynasty                                || exit /b
+call :runtest         arynocls -v "INPUT=arynocls.in"         || exit /b
+call :runtest_fail    aryprm1                                 || exit /b
+call :runtest_fail    aryprm2                                 || exit /b
+call :runtest_fail    aryprm3                                 || exit /b
+call :runtest_fail    aryprm4                                 || exit /b
+call :runtest_fail    aryprm5                                 || exit /b
+call :runtest_fail    aryprm6                                 || exit /b
+call :runtest_fail    aryprm7                                 || exit /b
+call :runtest         aryprm8                                 || exit /b
+call :runtest         aryprm9                                 || exit /b
+call :runtest         arysubnm                                || exit /b
+call :runtest         aryunasgn                               || exit /b
+call :runtest_in      asgext                                  || exit /b
 
-setlocal & set CALL_STAT=0
-call :exec set AWKPATH=lib                              || goto :exit_local
-call :runtest         awkpath                           || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+call :exec set AWKPATH=lib                                    || goto :exit_local
+call :runtest         awkpath                                 || goto :exit_local
+endlocal
 
 call :runtest_in      assignnumfield                          || exit /b
 call :runtest         assignnumfield2                         || exit /b
@@ -224,10 +249,10 @@ call :runtest_in      concat1                                 || exit /b
 call :runtest         concat2                                 || exit /b
 call :runtest         concat3                                 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in      concat4                                 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         concat5                                 || exit /b
 call :runtest         convfmt                                 || exit /b
@@ -238,10 +263,10 @@ call :runtest         delarpm2                                || exit /b
 call :runtest         delarprm                                || exit /b
 call :runtest_fail    delfunc                                 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in      dfamb1                                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         dfastress                               || exit /b
 call :runtest         dynlj                                   || exit /b
@@ -291,10 +316,10 @@ call :runtest_in      gsubtst3 --re-interval                  || exit /b
 call :runtest         gsubtst4                                || exit /b
 call :runtest_in      gsubtst5                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale C                                         || goto :exit_local
 call :runtest         gsubtst6                                || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      gsubtst7                                || exit /b
 call :runtest_in      gsubtst8                                || exit /b
@@ -308,7 +333,7 @@ call :runtest         intprec                                 || exit /b
 call :runtest         iobug1                                  || exit /b
 call :runtest         leaddig                                 || exit /b
 call :runtest_in      leadnl                                  || exit /b
-call :runtest_in      litoct  --traditional                   || exit /b
+call :runtest_in      litoct --traditional                    || exit /b
 call :runtest_in      longsub                                 || exit /b
 call :runtest_in      longwrds -v "SORT=sort"                 || exit /b
 call :runtest_in      manglprm                                || exit /b
@@ -316,7 +341,7 @@ call :runtest         math                                    || exit /b
 call :runtest_in      membug1                                 || exit /b
 call :runtest         memleak                                 || exit /b
 
-call :execq "%GAWK% -f messages.awk >_out2 2>_out3" && ^
+call :execq """%GAWK%"" -f messages.awk >_out2 2>_out3" && ^
 call :cmpdel out1 && ^
 call :cmpdel out2 && ^
 call :cmpdel out3                                             || exit /b
@@ -343,7 +368,7 @@ call :runtest_in      noloop2                                 || exit /b
 call :runtest_in      nonl --lint                             || exit /b
 call :runtest_fail    noparms                                 || exit /b
 
-call :execq "<NUL set /p=A B C D E | %GAWK% ""{ print $NF }"" - nors.in > _nors" && ^
+call :execq "<NUL set /p=A B C D E | ""%GAWK%"" ""{ print $NF }"" - nors.in > _nors" && ^
 call :cmpdel nors                                             || exit /b
 
 call :runtest_fail    nulinsrc                                || exit /b
@@ -374,10 +399,10 @@ call :runtest_in      parsefld                                || exit /b
 call :runtest_fail    parseme                                 || exit /b
 call :runtest         pcntplus                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest         posix_compare --posix                   || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         posix2008sub --posix                    || exit /b
 call :runtest_in      prdupval                                || exit /b
@@ -391,17 +416,17 @@ call :runtest         prt1eval                                || exit /b
 call :runtest         prtoeval                                || exit /b
 call :runtest         rand                                    || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :exec set GAWKTEST_NO_TRACK_MEM=1                        || goto :exit_local
 call :runtest randtest "-vRANDOM=" "-vNSAMPLES=1024" "-vMAX_ALLOWED_SIGMA=5" "-vNRUNS=50" || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      range1                                  || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale C                                         || goto :exit_local
 call :runtest         range2                                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_fail    readbuf                                 || exit /b
 call :runtest_in      rebrackloc                              || exit /b
@@ -417,30 +442,30 @@ call :runtest_in      reindops                                || exit /b
 call :runtest_in      reparse                                 || exit /b
 call :runtest_in      resplit                                 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in      rri1                                    || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      rs                                      || exit /b
 call :runtest_in      rscompat --traditional                  || exit /b
 call :runtest_in      rsnul1nl                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 :: Suppose that block size for pipe is at most 128kB:
-set "COMMAND=%GAWK% ""BEGIN { for ^(i = 1; i ^<= 128*64+1; i++^) print """"abcdefgh123456\n"""" }"" 2>&1"
-set "COMMAND=%COMMAND% | %GAWK% ""BEGIN { RS = """"""""; ORS = """"\n\n"""" }; { print }"" 2>&1"
-set "COMMAND=%COMMAND% | %GAWK% "" /^^[^^a]/; END{ print NR }"""
+set "COMMAND=""%GAWK%"" ""BEGIN { for ^(i = 1; i ^<= 128*64+1; i++^) print """"abcdefgh123456\n"""" }"" 2>&1"
+set "COMMAND=%COMMAND% | ""%GAWK%"" ""BEGIN { RS = """"""""; ORS = """"\n\n"""" }; { print }"" 2>&1"
+set "COMMAND=%COMMAND% | ""%GAWK%"" "" /^^[^^a]/; END{ print NR }"""
 call :execq "%COMMAND% >_rsnulbig" && call :cmpdel rsnulbig   || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
-set "COMMAND=%GAWK% ""BEGIN { ORS = """"""""; n = """"\n""""; for ^(i = 1; i ^<= 10; i++^) n = ^(n n^); "
+setlocal
+set "COMMAND=""%GAWK%"" ""BEGIN { ORS = """"""""; n = """"\n""""; for ^(i = 1; i ^<= 10; i++^) n = ^(n n^); "
 set "COMMAND=%COMMAND%for ^(i = 1; i ^<= 128; i++^) print n; print """"abc\n"""" }"" 2>&1"
-set "COMMAND=%COMMAND% | %GAWK% ""BEGIN { RS = """"""""; ORS = """"\n\n"""" };{ print }"" 2>&1"
-set "COMMAND=%COMMAND% | %GAWK% "" /^^[^^a]/; END { print NR }"""
+set "COMMAND=%COMMAND% | ""%GAWK%"" ""BEGIN { RS = """"""""; ORS = """"\n\n"""" };{ print }"" 2>&1"
+set "COMMAND=%COMMAND% | ""%GAWK%"" "" /^^[^^a]/; END { print NR }"""
 call :execq "%COMMAND% >_rsnulbig2" && call :cmpdel rsnulbig2 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      rsnulw                                  || exit /b
 call :runtest         rstest1                                 || exit /b
@@ -458,10 +483,10 @@ call :runtest         sigpipe1                                || exit /b
 call :runtest         sortempty                               || exit /b
 call :runtest_in      sortglos                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :exec set LC_ALL=C                                       || goto :exit_local
 call :runtest         spacere                                 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      splitargv                               || exit /b
 call :runtest         splitarr                                || exit /b
@@ -475,17 +500,17 @@ call :runtest         strnum1                                 || exit /b
 call :runtest         strnum2                                 || exit /b
 call :runtest_in      strtod                                  || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in      subamp                                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      subback                                 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest         subi18n                                 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         subsepnm                                || exit /b
 call :runtest         subslash                                || exit /b
@@ -510,7 +535,7 @@ call :runtest_fail    unterm                                  || exit /b
 call :runtest_in      uparrfs                                 || exit /b
 call :runtest         uplus                                   || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in      wideidx                                 || goto :exit_local
 call :runtest         wideidx2                                || goto :exit_local
@@ -518,63 +543,88 @@ call :runtest         widesub                                 || goto :exit_loca
 call :runtest         widesub2                                || goto :exit_local
 call :runtest_in      widesub3                                || goto :exit_local
 call :runtest         widesub4                                || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      wjposer1                                || exit /b
 call :runtest         zero2                                   || exit /b
 call :runtest         zeroe0                                  || exit /b
 call :runtest         zeroflag                                || exit /b
 
+:: + 1 additional test
+:: this test is not in upstream yet - check that gawk warns about incorrect use of character class references
+call :execq """%GAWK%"" ""/[:space:]/"" < NUL 2>&1 | ""%FIND%"" ""[[:space:]]"" > NUL" || exit /b
+
+:: + 2 debug test
+:: ARRAYDEBUG_TESTS
+"%GAWK%" "BEGIN{adump(f, -1)}" < NUL > NUL 2>&1 || (
+  set /A TESTS_SKIPPED+=2 & >&2 echo *** Skipped 2 tests: gawk was not compiled to support the array debug tests
+  goto :skip_arr_debug_test
+)
+
+call :execq """%GAWK%"" -f arrdbg.awk -v ""okfile=arrdbg.ok"" -v ""mpfr_okfile=arrdbg-mpfr.ok"" | ""%FIND%"" ""array_f"" > _arrdbg" && ^
+call :cmpdel arrdbg && call :exec del /q arrdbg-mpfr.ok       || exit /b
+
+"%GAWK%" --version | "%FIND%" "MPFR" > NUL 2>&1 || (
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: gawk was built without MPFR support
+  goto :skip_arr_debug_test
+)
+
+call :execq """%GAWK%"" -M -f arrdbg.awk -v ""okfile=arrdbg.ok"" -v ""mpfr_okfile=arrdbg-mpfr.ok"" | ""%FIND%"" ""array_f"" > _arrdbg-mpfr" && ^
+call :cmpdel arrdbg-mpfr && call :exec del /q arrdbg.ok       || exit /b
+
+:skip_arr_debug_test
 exit /b 0
 
-:::::: UNIX TESTS :::::
+:::::: UNIX_TESTS (10 of 11 upstream tests - 1 test is unsupported) :::::
 :unix_tests
 
-call :execq "(fflush.bat ""%GAWK%"") >_fflush" && call :cmpdel fflush || exit /b
+call :execq "(fflush.bat ""%GAWK%"") >_fflush" && ^
+call :cmpdel fflush                                           || exit /b
 call :runtest         getlnhd                                 || exit /b
 call :execq "(localenl.bat ""%GAWK%"")"                       || exit /b
 
 call :execq "del /q winpid.done 2> NUL"
-call :execq "wmic process call create CommandLine=""\""%CD%\%GAWK%\"" -f .\winpid.awk"" CurrentDirectory=""%CD%"" 2>&1 | %FIND% ""ProcessId"" > _winpid" || exit /b
+call :execq "wmic process call create CommandLine=""\""%GAWK%\"" -f .\winpid.awk"" CurrentDirectory=""%CD%"" 2>&1 | ""%FIND%"" ""ProcessId"" > _winpid" || exit /b
 call :waitfor winpid.done                                     || exit /b
 call :cmpdel winpid                                           || exit /b
 call :exec del /q winpid.ok winpid.done                       || exit /b
 
 call :runtest pipeio1 && call :exec del /q test1 test2        || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
-call :runtest pipeio2 "-vSRCDIR=."                            || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+call :runtest         pipeio2 "-vSRCDIR=."                    || goto :exit_local
+endlocal
 
-:: UNSUPPORTED test: poundbang - cannot be ported to windows
-set /A TESTS_UNSUPPORTED+=1 & echo Unsupported test: poundbang
+:: UNSUPPORTED test: poundbang - cannot be ported to Windows
+set /A TESTS_UNSUPPORTED+=1 & >&2 echo *** Unsupported 1 test: poundbang
 
-setlocal & set CALL_STAT=0
-set "RTLENCMD=%GAWK% ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
-set "COMMAND=%GAWK% ""BEGIN {printf """"0\n\n\n1\n\n\n\n\n2\n\n""""; exit}"""
-call :execq "%COMMAND% | %RTLENCMD% > _rtlen" && call :cmpdel rtlen || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+set "RTLENCMD=""%GAWK%"" ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
+set "COMMAND=""%GAWK%"" ""BEGIN {printf """"0\n\n\n1\n\n\n\n\n2\n\n""""; exit}"""
+call :execq "%COMMAND% | %RTLENCMD% > _rtlen" && ^
+call :cmpdel rtlen                                            || goto :exit_local
+endlocal
 
-setlocal & set CALL_STAT=0
-set "RTLENCMD=%GAWK% ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
-set "COMMAND="
-set "COMMAND=%COMMAND%%GAWK% ""BEGIN {printf """"0""""; exit}"" | %RTLENCMD%"
-set "COMMAND=%COMMAND%&%GAWK% ""BEGIN {printf """"0\n""""; exit}"" | %RTLENCMD%"
-set "COMMAND=%COMMAND%&%GAWK% ""BEGIN {printf """"0\n\n""""; exit}""| %RTLENCMD%"
-call :execq "(%COMMAND%) > _rtlen01" && call :cmpdel rtlen01  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+set "RTLENCMD=""%GAWK%"" ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
+set "COMMAND=""%GAWK%"" ""BEGIN {printf """"0""""; exit}"" | %RTLENCMD%"
+set "COMMAND=%COMMAND%&""%GAWK%"" ""BEGIN {printf """"0\n""""; exit}"" | %RTLENCMD%"
+set "COMMAND=%COMMAND%&""%GAWK%"" ""BEGIN {printf """"0\n\n""""; exit}"" | %RTLENCMD%"
+call :execq "(%COMMAND%) > _rtlen01" && ^
+call :cmpdel rtlen01                                          || goto :exit_local
+endlocal
 
 call :runtest_fail_ space -f """ """ .\space.awk              || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :exec set TZ=UTC                                         || goto :exit_local
 call :runtest strftlng                                        || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 exit /b 0
 
-:::::: EXTENSION TESTS :::::
+:::::: GAWK_EXT_TESTS (203 of 209 upstream tests - 6 tests are unsupported) :::::
 :ext_tests
 
 call :runtest_fail    aadelete1                               || exit /b
@@ -588,66 +638,67 @@ call :runtest         arraysort2                              || exit /b
 call :runtest         arraytype                               || exit /b
 call :runtest_in      backw                                   || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
-call :execq "%GAWK% -f 2>&1 | %FIND% /v ""patchlevel"" | %FIND% /v ""--parsedebug"" > _badargs" && ^
+call :execq """%GAWK%"" -f 2>&1 | ""%FIND%"" /v ""patchlevel"" | ""%FIND%"" /v ""--parsedebug"" > _badargs" && ^
 call :cmpdel badargs                                          || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
 call :execq "(echo x&echo y&echo z) > Xfile"                   || goto :exit_local
 call :runtest beginfile1 beginfile1.awk . ./no/such/file Xfile || goto :exit_local
-call :exec del /q Xfile
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+call :exec del /q Xfile                                        || goto :exit_local
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
 call :exec set LC_ALL=C                                       || goto :exit_local
-call :exec set AWK=%GAWK%                                     || goto :exit_local
+call :exec set "AWK=%GAWK%"                                   || goto :exit_local
 call :execq "(beginfile2.bat) > _beginfile2 2>&1" && ^
 call :cmpdel beginfile2                                       || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_ binmode1 -v "BINMODE=3" """BEGIN { print BINMODE }""" || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
-call :change_locale "en_US.UTF-8"                                                          || goto :exit_local
+call :change_locale "en_US.UTF-8"                                                         || goto :exit_local
 :: BINMODE=2 is needed for PC tests.
-call :execq "%GAWK% -b -vBINMODE=2 -f charasbytes.awk charasbytes.in > _charasbytes1"      || goto :exit_local
-call :execq "echo 0000000000000000 > _charasbytes2"                                        || goto :exit_local
-call :execq "fc /b _charasbytes1 _charasbytes2 | %FIND% ""0000"" > _charasbytes"           || goto :exit_local
-call :cmpdel charasbytes                                                                   || goto :exit_local
-call :exec del /q _charasbytes1 _charasbytes2                                              || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+call :execq """%GAWK%"" -b -vBINMODE=2 -f charasbytes.awk charasbytes.in > _charasbytes1" || goto :exit_local
+call :execq "echo 0000000000000000 > _charasbytes2"                                       || goto :exit_local
+call :execq "fc /b _charasbytes1 _charasbytes2 | ""%FIND%"" ""0000"" > _charasbytes"      || goto :exit_local
+call :cmpdel charasbytes                                                                  || goto :exit_local
+call :exec del /q _charasbytes1 _charasbytes2                                             || goto :exit_local
+endlocal
 
-call :execq "(for /L %%%%i in (1,1,3) do @%GAWK% -f colonwarn.awk %%%%i < colonwarn.in) > _colonwarn" && ^
+call :execq "(for /L %%%%i in (1,1,3) do @""%GAWK%"" -f colonwarn.awk %%%%i < colonwarn.in) > _colonwarn" && ^
 call :cmpdel colonwarn                                        || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale C                                         || goto :exit_local
 call :runtest         clos1way                                || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
 call :runtest_fail_in clos1way2                               || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_fail    clos1way3                               || exit /b
 call :runtest_fail    clos1way4                               || exit /b
 
-call :execq_fail "%GAWK% -f clos1way5.awk > clos1way5.tmp 2>&1" clos1way5.tmp && ^
-call :execq "type clos1way5.tmp | %FIND% /V ""The process tried to write to a nonexistent pipe."" > _clos1way5" && ^
-call :cmpdel clos1way5 && call :exec del clos1way5.tmp        || exit /b
+call :execq_fail """%GAWK%"" -f clos1way5.awk > _clos1way5 2> clos1way5.tmp1" clos1way5.tmp2 && ^
+call :execq """%FIND%"" ""clos1way5"" < clos1way5.tmp1 >> _clos1way5" && ^
+call :execq "type clos1way5.tmp2 >> _clos1way5" && ^
+call :cmpdel clos1way5 && call :exec del /q clos1way5.tmp1 clos1way5.tmp2 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
-call :execq "%GAWK% -f clos1way6.awk > _clos1way6.out 2> _clos1way6.err" && ^
-call :execq "copy /b _clos1way6.err + _clos1way6.out _clos1way6 >NUL" || goto :exit_local
+call :execq """%GAWK%"" -f clos1way6.awk > _clos1way6.out 2> _clos1way6.err" && ^
+call :execq "copy /b _clos1way6.err + _clos1way6.out _clos1way6 >NUL"     || goto :exit_local
 call :cmpdel clos1way6 && call :exec del /q _clos1way6.out _clos1way6.err || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         crlf                                    || exit /b
 call :runtest_fail_   dbugeval --debug -f NUL "< dbugeval.in" || exit /b
@@ -661,24 +712,24 @@ call :runtest         delsub                                  || exit /b
 ::call :runtest_ devfd 1 /dev/fd/4 /dev/fd/5 "4<devfd.in4" "5<devfd.in5"  || exit /b
 ::call :runtest  devfd1 "4<devfd.in1" "5<devfd.in2"                       || exit /b
 ::call :runtest_ devfd2 1 /dev/fd/4 /dev/fd/5 "4<devfd.in1" "5<devfd.in2" || exit /b
-set /A TESTS_UNSUPPORTED+=3 & echo Unsupported tests: devfd devfd1 devfd2
+set /A TESTS_UNSUPPORTED+=3 & >&2 echo *** Unsupported 3 tests: devfd devfd1 devfd2
 
 call :runtest_in      dfacheck1                               || exit /b
 
-call :execq "%GAWK% --dump-variables 1 < dumpvars.in > NUL" && ^
-call :execq "%FIND% /v ""ENVIRON"" < awkvars.out | %FIND% /v ""PROCINFO"" > _dumpvars" && ^
+call :execq """%GAWK%"" --dump-variables 1 < dumpvars.in > NUL" && ^
+call :execq "< awkvars.out ""%FIND%"" /v ""ENVIRON"" | ""%FIND%"" /v ""PROCINFO"" > _dumpvars" && ^
 call :cmpdel dumpvars && call :exec del /q awkvars.out        || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
 call :runtest         errno errno.in                          || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 set OK_SUFFIX=_win
-call :execq "(exit.bat %GAWK%) > _exit 2>&1" && ^
+call :execq "(exit.bat ""%GAWK%"") > _exit 2>&1" && ^
 call :cmpdel exit                                             || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in      fieldwdth                               || exit /b
 call :runtest         forcenum --non-decimal-data             || exit /b
@@ -719,32 +770,32 @@ call :runtest         id                                      || exit /b
 call :runtest_in      igncdym                                 || exit /b
 call :runtest_in      igncfs                                  || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest         ignrcas2                                || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         ignrcas4                                || exit /b
 call :runtest_in      ignrcase                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set "SCRIPT=""BEGIN {print sandwich^(""""a"""", """"b"""", """"c""""^)}"""
 call :runtest_        incdupe --lint -i inclib -i inclib.awk "%SCRIPT%" || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-call :runtest_fail_   incdupe2 --lint -f inclib -f inclib.awk    || exit /b
-call :runtest_        incdupe3 --lint -f hello -f hello.awk      || exit /b
-call :runtest_fail_   incdupe4 --lint -f hello -i hello.awk      || exit /b
-call :runtest_fail_   incdupe5 --lint -i hello -f hello.awk      || exit /b
-call :runtest_fail_   incdupe6 --lint -i inchello -f hello.awk   || exit /b
-call :runtest_fail_   incdupe7 --lint -f hello -i inchello       || exit /b
+call :runtest_fail_   incdupe2 --lint -f inclib -f inclib.awk  || exit /b
+call :runtest_        incdupe3 --lint -f hello -f hello.awk    || exit /b
+call :runtest_fail_   incdupe4 --lint -f hello -i hello.awk    || exit /b
+call :runtest_fail_   incdupe5 --lint -i hello -f hello.awk    || exit /b
+call :runtest_fail_   incdupe6 --lint -i inchello -f hello.awk || exit /b
+call :runtest_fail_   incdupe7 --lint -f hello -i inchello     || exit /b
 
 call :runtest         include                                 || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 set "SCRIPT=""BEGIN {print sandwich^(""""a"""", """"b"""", """"c""""^)}"""
 call :runtest_        include2 --include inclib "%SCRIPT%"    || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         indirectbuiltin                         || exit /b
 call :runtest_in      indirectcall                            || exit /b
@@ -763,9 +814,9 @@ call :runtest_fail    lintwarn   --lint                       || exit /b
 
 if exist junk call :exec rd /q /s junk                        || exit /b
 call :exec md junk                                            || exit /b
-call :execq "%GAWK% ""BEGIN { for ^(i = 1; i ^<= 1030; i++^) print i, i}"" >_manyfiles" || exit /b
-call :execq "%GAWK% -f manyfiles.awk _manyfiles _manyfiles"                             || exit /b
-call :execq "wc.bat ""junk\*"" | %GAWK% ""$1 != 2"" | wc.bat > _manyfiles"              || exit /b
+call :execq """%GAWK%"" ""BEGIN { for ^(i = 1; i ^<= 1030; i++^) print i, i}"" >_manyfiles" || exit /b
+call :execq """%GAWK%"" -f manyfiles.awk _manyfiles _manyfiles"                             || exit /b
+call :execq "(wc.bat ""junk\*"") | ""%GAWK%"" ""$1 != 2"" | (wc.bat > _manyfiles)"          || exit /b
 call :cmpdel manyfiles                                        || exit /b
 call :exec rd /q /s junk                                      || exit /b
 
@@ -773,31 +824,31 @@ call :runtest         match1                                  || exit /b
 call :runtest_fail    match2                                  || exit /b
 call :runtest_in      match3                                  || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest         mbstr1                                  || goto :exit_local
 call :runtest_in      mbstr2                                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_fail_   mixed1 -f NUL --source """BEGIN {return junk}""" || exit /b
 call :runtest_in      mktime                                  || exit /b
 call :runtest_fail    muldimposix --posix                     || exit /b
 call :runtest_fail    nastyparm                               || exit /b
 
-setlocal & set CALL_STAT=0
-call :exec set TZ=GMT                                         || goto :exit_local
-call :execq "%GAWK% -f negtime.awk > _negtime 2>&1"           || goto :exit_local
-call :execq "%GAWK% -f checknegtime.awk negtime.ok _negtime"  || goto :exit_local
-call :exec del /q _negtime                                    || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+call :exec set TZ=GMT                                            || goto :exit_local
+call :execq """%GAWK%"" -f negtime.awk > _negtime 2>&1"          || goto :exit_local
+call :execq """%GAWK%"" -f checknegtime.awk negtime.ok _negtime" || goto :exit_local
+call :exec del /q _negtime                                       || goto :exit_local
+endlocal
 
-call :execq "(next.bat %GAWK%) > _next 2>&1" && ^
+call :execq "(next.bat ""%GAWK%"") > _next 2>&1" && ^
 call :cmpdel next                                             || exit /b
 
 call :runtest         nondec                                  || exit /b
 call :runtest         nondec2 --non-decimal-data              || exit /b
 
-call :execq "%GAWK% -f nonfatal1.awk 2>&1 | %GAWK% ""{print gensub^(/invalid[:].*$/, """"invalid"""", 1, $0^)}"" >_nonfatal1" && ^
+call :execq """%GAWK%"" -f nonfatal1.awk 2>&1 | ""%GAWK%"" ""{print gensub^(/invalid[:].*$/, """"invalid"""", 1, $0^)}"" >_nonfatal1" && ^
 call :cmpdel nonfatal1                                        || exit /b
 
 call :runtest         nonfatal2                               || exit /b
@@ -814,10 +865,10 @@ call :runtest         nsfuncrecurse                           || exit /b
 call :runtest         nsindirect1                             || exit /b
 call :runtest         nsindirect2                             || exit /b
 
-call :execq "%GAWK% -f nsprof1.awk --pretty-print=_nsprof1" && ^
+call :execq """%GAWK%"" -f nsprof1.awk --pretty-print=_nsprof1" && ^
 call :cmpdel nsprof1                                          || exit /b
 
-call :execq "%GAWK% -f nsprof2.awk --pretty-print=_nsprof2" && ^
+call :execq """%GAWK%"" -f nsprof2.awk --pretty-print=_nsprof2" && ^
 call :cmpdel nsprof2                                          || exit /b
 
 call :runtest         patsplit                                || exit /b
@@ -827,74 +878,74 @@ call :runtest         printfbad2 --lint printfbad2.in         || exit /b
 call :runtest         printfbad3                              || exit /b
 call :runtest_fail    printfbad4                              || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest         printhuge                               || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest         procinfs                                || exit /b
 
-call :execq "%GAWK% --profile=ap-profile0.out -f profile0.awk profile0.in > NUL" || exit /b
-call :execq "more +2 ap-profile0.out > _profile0 && del /q ap-profile0.out"      || exit /b
-call :cmpdel profile0                                         || exit /b
+call :execq """%GAWK%"" --profile=ap-profile0.out -f profile0.awk profile0.in > NUL" || exit /b
+call :execq "more +2 ap-profile0.out > _profile0 && del /q ap-profile0.out"          || exit /b
+call :cmpdel profile0                                                                || exit /b
 
-call :execq "%GAWK% -f xref.awk dtdgport.awk > _profile1.out1"        || exit /b
-call :execq "%GAWK% --pretty-print=ap-profile1.out -f xref.awk"       || exit /b
-call :execq "%GAWK% -f ap-profile1.out dtdgport.awk > _profile1.out2" || exit /b
-call :cmpdel_ _profile1.out1 _profile1.out2                           || exit /b
-call :exec del /q ap-profile1.out _profile1.out1                      || exit /b
+call :execq """%GAWK%"" -f xref.awk dtdgport.awk > _profile1.out1"        || exit /b
+call :execq """%GAWK%"" --pretty-print=ap-profile1.out -f xref.awk"       || exit /b
+call :execq """%GAWK%"" -f ap-profile1.out dtdgport.awk > _profile1.out2" || exit /b
+call :cmpdel_ _profile1.out1 _profile1.out2                               || exit /b
+call :exec del /q ap-profile1.out _profile1.out1                          || exit /b
 
-call :execq "%GAWK% --profile=ap-profile2.out -v sortcmd=sort -f xref.awk dtdgport.awk > NUL" || exit /b
-call :execq "more +2 ap-profile2.out > _profile2 && del /q ap-profile2.out"                   || exit /b
-call :cmpdel profile2                                         || exit /b
+call :execq """%GAWK%"" --profile=ap-profile2.out -v ""sortcmd=sort"" -f xref.awk dtdgport.awk > NUL" || exit /b
+call :execq "more +2 ap-profile2.out > _profile2 && del /q ap-profile2.out"                           || exit /b
+call :cmpdel profile2                                                                                 || exit /b
 
-call :execq "%GAWK% --profile=ap-profile3.out -f profile3.awk > NUL"   || exit /b
+call :execq """%GAWK%"" --profile=ap-profile3.out -f profile3.awk > NUL"    || exit /b
 call :execq "more +2 ap-profile3.out > _profile3 && del /q ap-profile3.out" || exit /b
-call :cmpdel profile3                                         || exit /b
+call :cmpdel profile3                                                       || exit /b
 
-call :execq "%GAWK% -f profile4.awk --pretty-print=_profile4" || exit /b
-call :cmpdel profile4                                         || exit /b
+call :execq """%GAWK%"" -f profile4.awk --pretty-print=_profile4" || exit /b
+call :cmpdel profile4                                             || exit /b
 
-call :execq "%GAWK% -f profile5.awk --pretty=_profile5.out 2> _profile5.err" || exit /b
-call :execq "copy /b _profile5.out + _profile5.err _profile5 >NUL" || exit /b
-call :cmpdel profile5 /t && call :exec del /q _profile5.out _profile5.err || exit /b
+call :execq """%GAWK%"" -f profile5.awk --pretty=_profile5.out 2> _profile5.err" || exit /b
+call :execq "copy /b _profile5.out + _profile5.err _profile5 >NUL"               || exit /b
+call :cmpdel profile5 /t && call :exec del /q _profile5.out _profile5.err        || exit /b
 
-call :execq "%GAWK% --profile=ap-profile6.out -f profile6.awk > NUL"   || exit /b
+call :execq """%GAWK%"" --profile=ap-profile6.out -f profile6.awk > NUL"    || exit /b
 call :execq "more +2 ap-profile6.out > _profile6 && del /q ap-profile6.out" || exit /b
-call :cmpdel profile6                                         || exit /b
+call :cmpdel profile6                                                       || exit /b
 
-call :execq "%GAWK% --profile=ap-profile7.out -f profile7.awk > NUL"   || exit /b
+call :execq """%GAWK%"" --profile=ap-profile7.out -f profile7.awk > NUL"    || exit /b
 call :execq "more +2 ap-profile7.out > _profile7 && del /q ap-profile7.out" || exit /b
-call :cmpdel profile7                                         || exit /b
+call :cmpdel profile7                                                       || exit /b
 
-call :execq "%GAWK% -f profile8.awk --pretty-print=_profile8" || exit /b
-call :cmpdel profile8                                         || exit /b
+call :execq """%GAWK%"" -f profile8.awk --pretty-print=_profile8" || exit /b
+call :cmpdel profile8                                             || exit /b
 
-call :execq "%GAWK% -f profile9.awk --pretty-print=_profile9" || exit /b
-call :cmpdel profile9                                         || exit /b
+call :execq """%GAWK%"" -f profile9.awk --pretty-print=_profile9" || exit /b
+call :cmpdel profile9                                             || exit /b
 
-call :execq "%GAWK% -f profile10.awk --pretty-print=_profile10" || exit /b
-call :cmpdel profile10                                        || exit /b
+call :execq """%GAWK%"" -f profile10.awk --pretty-print=_profile10" || exit /b
+call :cmpdel profile10                                              || exit /b
 
-call :execq "%GAWK% -f profile11.awk --pretty-print=_profile11" || exit /b
-call :cmpdel profile11                                        || exit /b
+call :execq """%GAWK%"" -f profile11.awk --pretty-print=_profile11" || exit /b
+call :cmpdel profile11                                              || exit /b
 
 call :runtest         profile12 "--profile=ap-profile12.out" profile12.in || exit /b
-call :exec del /q ap-profile12.out                            || exit /b
+call :exec del /q ap-profile12.out                                        || exit /b
 
-call :execq "%GAWK% -f profile13.awk --pretty-print=_profile13.out 2> _profile13.err" || exit /b
-call :execq "copy /b _profile13.out + _profile13.err _profile13 >NUL"  || exit /b
-call :cmpdel profile13 && call :exec del /q _profile13.out _profile13.err || exit /b
+call :execq """%GAWK%"" -f profile13.awk --pretty-print=_profile13.out 2> _profile13.err" || exit /b
+call :execq "copy /b _profile13.out + _profile13.err _profile13 >NUL"                     || exit /b
+call :cmpdel profile13 && call :exec del /q _profile13.out _profile13.err                 || exit /b
 
 :: UNSUPPORTED tests: pseudo-terminal api is not supported yet on Windows
 ::call :runtest         pty1                                    || exit /b
 ::call :runtest         pty2                                    || exit /b
-set /A TESTS_UNSUPPORTED+=2 & echo Unsupported tests: pty1 pty2
+set /A TESTS_UNSUPPORTED+=2 & >&2 echo *** Unsupported 2 tests: pty1 pty2
 
-setlocal & set CALL_STAT=0
+setlocal
 call :exec set AWKBUFSIZE=4096                                || goto :exit_local
 call :runtest_in        rebuf                                 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           regnul1                               || exit /b
 call :runtest           regnul2                               || exit /b
@@ -902,20 +953,20 @@ call :runtest           regx8bit                              || exit /b
 call :runtest           reginttrad --traditional -r           || exit /b
 call :runtest_in        reint --re-interval                   || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in        reint2 --re-interval                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest_in        rsgetline                             || exit /b
 
-call :execq "type rsgetline.in | %GAWK% -f rsgetline.awk > _rsglstdin 2>&1" && ^
+call :execq "type rsgetline.in | ""%GAWK%"" -f rsgetline.awk > _rsglstdin 2>&1" && ^
 call :cmpdel rsglstdin                                        || exit /b
 
 call :runtest_in        rsstart1                              || exit /b
 call :runtest_in        rsstart2                              || exit /b
 
-call :execq "type rsstart1.in | %GAWK% -f rsstart2.awk > _rsstart3" && ^
+call :execq "type rsstart1.in | ""%GAWK%"" -f rsstart2.awk > _rsstart3" && ^
 call :cmpdel rsstart3                                         || exit /b
 
 call :runtest_in        rstest6                               || exit /b
@@ -926,19 +977,19 @@ call :runtest_in        sortfor                               || exit /b
 call :runtest_in        sortfor2                              || exit /b
 call :runtest           sortu                                 || exit /b
 
-call :execq_fail "%GAWK% --source=""BEGIN { a = 5;"" --source=""print a }"" > _sourcesplit 2>&1" _sourcesplit && ^
+call :execq_fail """%GAWK%"" --source=""BEGIN { a = 5;"" --source=""print a }"" > _sourcesplit 2>&1" _sourcesplit && ^
 call :cmpdel sourcesplit                                      || exit /b
 
 call :runtest_in        split_after_fpat                      || exit /b
 call :runtest_in        splitarg4                             || exit /b
 call :runtest_in        strftfld                              || exit /b
 
-setlocal & set CALL_STAT=0
-call :change_locale C                                         || goto :exit_local
-call :exec set TZ=GMT0                                        || goto :exit_local
-call :execq "%GAWK% -v OUTPUT=_strftime -v DATECMD=gmt_time.bat -f strftime.awk" || goto :exit_local
-call :cmpdel strftime && call :exec del /q strftime.ok        || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+call :change_locale C                                                                || goto :exit_local
+call :exec set TZ=GMT0                                                               || goto :exit_local
+call :execq """%GAWK%"" -v OUTPUT=_strftime -v DATECMD=gmt_time.bat -f strftime.awk" || goto :exit_local
+call :cmpdel strftime && call :exec del /q strftime.ok                               || goto :exit_local
+endlocal
 
 call :runtest           strtonum                              || exit /b
 call :runtest           strtonum1                             || exit /b
@@ -955,8 +1006,8 @@ call :runtest_in        symtab5                               || exit /b
 call :runtest_fail      symtab6                               || exit /b
 call :runtest_fail_in   symtab7                               || exit /b
 
-call :execq "%GAWK% -d__symtab8 -f symtab8.awk symtab8.in > _symtab8" || exit /b
-call :execq "type __symtab8 | %FIND% /v ""ENVIRON"" | %FIND% /v ""PROCINFO"" | %FIND% /v ""FILENAME"" >> _symtab8" || exit /b
+call :execq """%GAWK%"" -d__symtab8 -f symtab8.awk symtab8.in > _symtab8" || exit /b
+call :execq "< __symtab8 ""%FIND%"" /v ""ENVIRON"" | ""%FIND%"" /v ""PROCINFO"" | ""%FIND%"" /v ""FILENAME"" >> _symtab8" || exit /b
 call :cmpdel symtab8 && call :exec del /q __symtab8           || exit /b
 
 call :runtest           symtab9                               || exit /b
@@ -967,12 +1018,12 @@ call :runtest           symtab11                              || exit /b
 
 :: UNSUPPORTED test: reading files with timeout is not supported yet on windows
 ::call :runtest           timeout                               || exit /b
-set /A TESTS_UNSUPPORTED+=1 & echo Unsupported test: timeout
+set /A TESTS_UNSUPPORTED+=1 & >&2 echo *** Unsupported 1 test: timeout
 
 call :runtest           typedregex1                           || exit /b
 call :runtest           typedregex2                           || exit /b
 call :runtest           typedregex3                           || exit /b
-call :runtest typedregex4 -v "x=@/foo/" "y=@/bar/" /dev/null  || exit /b
+call :runtest           typedregex4 -v "x=@/foo/" "y=@/bar/" /dev/null || exit /b
 call :runtest_in        typedregex5                           || exit /b
 call :runtest_in        typedregex6                           || exit /b
 call :runtest           typeof1                               || exit /b
@@ -980,21 +1031,11 @@ call :runtest           typeof2                               || exit /b
 call :runtest_fail      typeof3                               || exit /b
 call :runtest           typeof4                               || exit /b
 call :runtest_in        typeof5                               || exit /b
-call :runtest watchpoint1 -D watchpoint1.in "< watchpoint1.script" || exit /b
+call :runtest           watchpoint1 -D watchpoint1.in "< watchpoint1.script" || exit /b
 
-(echo.%GAWK_DEFINES%) | %FIND% "ARRAYDEBUG" > NUL || ^
-rem. && (
-  set /A TESTS_SKIPPED+=1 & echo Skipped test: gawk was not compiled to support the array debug tests
-  goto :skip_arr_test
-)
-
-call :runtest           arrdbg -v "okfile=arrdbg.ok" "| %FIND% ""array_f""" && ^
-call :exec del /q arrdbg.ok                                   || exit /b
-
-:skip_arr_test
 exit /b 0
 
-:::::: MACHINE-SPECIFIC TESTS :::::
+:::::: MACHINE_TESTS (3 tests) :::::
 :machine_tests
 
 call :runtest           double1                               || exit /b
@@ -1003,295 +1044,308 @@ call :runtest           intformat                             || exit /b
 
 exit /b 0
 
-:::::: CHARACTER SET TESTS :::::
+:::::: LOCALE_CHARSET_TESTS (22 tests) :::::
 :charset_tests
 
 call :runtest           asort                                 || exit /b
 call :runtest           asorti                                || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in        backbigs1                             || goto :exit_local
 call :runtest_in        backsmalls1                           || goto :exit_local
 call :runtest           backsmalls2                           || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           fmttest                               || exit /b
 call :runtest           fnarydel                              || exit /b
 call :runtest           fnparydl                              || exit /b
 
-"%GAWK%" "--locale=JAPANESE_japan.20932" --version > NUL 2>&1
-if ERRORLEVEL 1 (
-  set /A TESTS_SKIPPED+=1 & echo Skipped test: JAPANESE_japan.20932 locale is not supported by the OS, skipping the test
+"%GAWK%" "--locale=JAPANESE_japan.20932" --version > NUL 2>&1 || (
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: JAPANESE_japan.20932 locale is not supported by the OS, skipping the test
   goto :skip_jp_test
 )
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "JAPANESE_japan.20932"                    || goto :exit_local
 call :runtest           jarebug jarebug.in                    || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 :skip_jp_test
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest           lc_num1                               || goto :exit_local
 call :runtest_in        mbfw1                                 || goto :exit_local
 call :runtest_in        mbprintf1                             || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "ja_JP.UTF-8"                             || goto :exit_local
 call :runtest           mbprintf2                             || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
 call :runtest_in        mbprintf3                             || goto :exit_local
 call :runtest_in        mbprintf4                             || goto :exit_local
 call :runtest           mbprintf5 mbprintf5.in                || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "ru_RU.UTF-8"                             || goto :exit_local
 call :runtest_in        mtchi18n                              || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "fr_FR.UTF-8"                             || goto :exit_local
-call :execq "%GAWK% -f nlstringtest.awk > _nlstringtest 2>&1" && ^
+call :execq """%GAWK%"" -f nlstringtest.awk > _nlstringtest 2>&1" && ^
 call :cmpdel_ nlstringtest-nogettext.ok _nlstringtest         || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           rebt8b2                               || exit /b
 
-setlocal & set CALL_STAT=0
+setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-set "RTLENCMD=%GAWK% ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
-set "COMMAND=%GAWK% ""BEGIN {printf """"0\n\n\n1\n\n\n\n\n2\n\n""""; exit}"""
+set "RTLENCMD=""%GAWK%"" ""BEGIN {RS=""""""""}; {print length^(RT^)}"""
+set "COMMAND=""%GAWK%"" ""BEGIN {printf """"0\n\n\n1\n\n\n\n\n2\n\n""""; exit}"""
 call :execq "%COMMAND% | %RTLENCMD% > _rtlenmb" && call :cmpdel rtlenmb || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           sort1                                 || exit /b
 call :runtest_in        sprintfc                              || exit /b
 
 exit /b 0
 
-:::::: SHARED LIBRARY TESTS :::::
+:::::: SHLIB_TESTS (23 of 25 tests - 2 tests are not supported, + 11 additional tests) :::::
 :shlib_tests
 
-call :execq "%GAWK% --version | %GAWK% ""/API/ { exit 1 }""" && (
-  set /A TESTS_SKIPPED+=1 & echo Skipped test: shlib tests not supported on this system
+call :execq """%GAWK%"" --version | ""%GAWK%"" ""/API/ { exit 1 }""" && (
+  set /A TESTS_SKIPPED+=34 & >&2 echo *** Skipped 34 tests: shlib tests not supported on this system
   exit /b 0
 )
 
 call :runtest_in        apiterm                               || exit /b
 
-setlocal & set CALL_STAT=0
-call :get_top_srcdir
-call :runtest           filefuncs -v "builddir=""%top_srcdir:\=/%""" "dist\filefuncs.dll" || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+setlocal
+call :get_abs_dir ".." TOP
+call :runtest           filefuncs -v "builddir=""%TOP:\=/%""" """%BLD_DIST%\filefuncs.dll""" || goto :exit_local
+endlocal
 
 call :runtest           fnmatch                               || exit /b
-call :runtest           fnmatch_bugs                          || exit /b
-call :runtest           fnmatch_more                          || exit /b
-call :runtest           fnmatch_fbsd                          || exit /b
-call :runtest           fnmatch_obsd "--locale=C"             || exit /b
-call :runtest           fnmatchmb "--locale=en_US.UTF-8"      || exit /b
-
-setlocal & set CALL_STAT=0
-set OK_SUFFIX=_win
-call :runtest           fnmatch_glibc                         || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
-
-setlocal & set CALL_STAT=0
-call :exec set GAWKWINLOCALE=UTF8
-call :runtest           fnmatch_glibc "--locale=en_US.UTF-8"  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
-
-setlocal & set CALL_STAT=0
-set OK_SUFFIX=_win
-call :runtest           fnmatch_de "--locale=German_Germany.28591" || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
-
-call :execq "%GAWK% -f fnmatch_u8_de.awk --locale=de_DE.UTF-8 > _fnmatch_u8_de" && ^
-call :cmpdel_ fnmatch_de_win.ok _fnmatch_u8_de                || exit /b
-
-call :runtest           fnmatch_u8_en "--locale=en_US.UTF-8"  || exit /b
 
 :: UNSUPPORTED tests: fork is not available under Windows yet
 ::call :runtest           fork                                  || exit /b
 ::call :runtest           fork2                                 || exit /b
-set /A TESTS_UNSUPPORTED+=2 & echo Unsupported tests: fork fork2
+set /A TESTS_UNSUPPORTED+=2 & >&2 echo *** Unsupported 2 tests: fork fork2
 
-call :execq "%GAWK% -f fts.awk" && ^
+call :execq """%GAWK%"" -f fts.awk" && ^
 call :cmpdel fts && call :exec del /q fts.ok                  || exit /b
 
 call :runtest           functab4                              || exit /b
 
-call :execq "%GAWK% -f getfile.awk -v ""TESTEXT_QUIET=1"" -ltestext < getfile.awk > _getfile 2>&1" || exit /b
-call :execq "type _getfile   | %FIND% /v ""get_file:""  > ap-getfile.out" || exit /b
-call :execq "type _getfile   | %FIND%    ""get_file:"" >> ap-getfile.out" || exit /b
-call :execq "type getfile.ok | %FIND% /v ""get_file:""  > getfile.ok1"    || exit /b
-call :execq "type getfile.ok | %FIND%    ""get_file:"" >> getfile.ok1"    || exit /b
+call :execq """%GAWK%"" -f getfile.awk -v ""TESTEXT_QUIET=1"" -ltestext < getfile.awk > _getfile 2>&1" || exit /b
+call :execq "< _getfile   ""%FIND%"" /v ""get_file:""  > ap-getfile.out" || exit /b
+call :execq "< _getfile   ""%FIND%""    ""get_file:"" >> ap-getfile.out" || exit /b
+call :execq "< getfile.ok ""%FIND%"" /v ""get_file:""  > getfile.ok1"    || exit /b
+call :execq "< getfile.ok ""%FIND%""    ""get_file:"" >> getfile.ok1"    || exit /b
 call :cmpdel_ getfile.ok1 ap-getfile.out /t && call :exec del /q _getfile getfile.ok1 || exit /b
 
-setlocal & set CALL_STAT=0
-set "SCRIPT=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
-call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
+setlocal
 call :execq "copy /b /y inplace.1.in _inplace1.1 > NUL"       || goto :exit_local
 call :execq "copy /b /y inplace.2.in _inplace1.2 > NUL"       || goto :exit_local
-call :execq "%GAWK% -i inplace %SCRIPT% _inplace1.1 - _inplace1.2 < inplace.in > _inplace1 2>&1" || goto :exit_local
+set "SCRIPT=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
+call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
+call :execq """%GAWK%"" -i inplace %SCRIPT% _inplace1.1 - _inplace1.2 < inplace.in > _inplace1 2>&1" || goto :exit_local
 call :cmpdel inplace1 && ^
 call :cmpdel inplace1.1 && ^
 call :cmpdel inplace1.2 || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :execq "copy /b /y inplace.1.in _inplace2.1 > NUL"       || goto :exit_local
 call :execq "copy /b /y inplace.2.in _inplace2.2 > NUL"       || goto :exit_local
 set "SCRIPT=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
 call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
-call :execq "%GAWK% -i inplace -v inplace::suffix=.bak %SCRIPT% _inplace2.1 - _inplace2.2 < inplace.in > _inplace2 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v inplace::suffix=.bak %SCRIPT% _inplace2.1 - _inplace2.2 < inplace.in > _inplace2 2>&1" || goto :exit_local
 call :cmpdel inplace2 && ^
 call :cmpdel inplace2.1 && ^
 call :cmpdel inplace2.2 && ^
 call :cmpdel inplace2.1.bak && ^
 call :cmpdel inplace2.2.bak || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :execq "copy /b /y inplace.1.in _inplace2bcomp.1 > NUL"  || goto :exit_local
 call :execq "copy /b /y inplace.2.in _inplace2bcomp.2 > NUL"  || goto :exit_local
 set "SCRIPT=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
 call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
-call :execq "%GAWK% -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT% _inplace2bcomp.1 - _inplace2bcomp.2 < inplace.in > _inplace2bcomp 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT% _inplace2bcomp.1 - _inplace2bcomp.2 < inplace.in > _inplace2bcomp 2>&1" || goto :exit_local
 call :cmpdel inplace2bcomp && ^
 call :cmpdel inplace2bcomp.1 && ^
 call :cmpdel inplace2bcomp.2 && ^
 call :cmpdel inplace2bcomp.1.orig && ^
 call :cmpdel inplace2bcomp.2.orig || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :execq "copy /b /y inplace.1.in _inplace3.1 > NUL"       || goto :exit_local
 call :execq "copy /b /y inplace.2.in _inplace3.2 > NUL"       || goto :exit_local
 set "SCRIPT1=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
 set "SCRIPT2=""BEGIN {print """"Before""""} {gsub^(/bar/, """"foo""""^); print} END {print """"After""""}"""
 call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
-call :execq "%GAWK% -i inplace -v inplace::suffix=.bak %SCRIPT1% _inplace3.1 - _inplace3.2 < inplace.in > _inplace3 2>&1" || goto :exit_local
-call :execq "%GAWK% -i inplace -v inplace::suffix=.bak %SCRIPT2% _inplace3.1 - _inplace3.2 < inplace.in >> _inplace3 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v inplace::suffix=.bak %SCRIPT1% _inplace3.1 - _inplace3.2 < inplace.in > _inplace3 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v inplace::suffix=.bak %SCRIPT2% _inplace3.1 - _inplace3.2 < inplace.in >> _inplace3 2>&1" || goto :exit_local
 call :cmpdel inplace3 && ^
 call :cmpdel inplace3.1 && ^
 call :cmpdel inplace3.2 && ^
 call :cmpdel inplace3.1.bak && ^
 call :cmpdel inplace3.2.bak || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
-setlocal & set CALL_STAT=0
+setlocal
 call :execq "copy /b /y inplace.1.in _inplace3bcomp.1 > NUL"  || goto :exit_local
 call :execq "copy /b /y inplace.2.in _inplace3bcomp.2 > NUL"  || goto :exit_local
 set "SCRIPT1=""BEGIN {print """"before""""} {gsub^(/foo/, """"bar""""^); print} END {print """"after""""}"""
 set "SCRIPT2=""BEGIN {print """"Before""""} {gsub^(/bar/, """"foo""""^); print} END {print """"After""""}"""
 call :exec set AWKPATH=../awklib/eg/lib                       || goto :exit_local
-call :execq "%GAWK% -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT1% _inplace3bcomp.1 - _inplace3bcomp.2 < inplace.in > _inplace3bcomp 2>&1" || goto :exit_local
-call :execq "%GAWK% -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT2% _inplace3bcomp.1 - _inplace3bcomp.2 < inplace.in >> _inplace3bcomp 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT1% _inplace3bcomp.1 - _inplace3bcomp.2 < inplace.in > _inplace3bcomp 2>&1" || goto :exit_local
+call :execq """%GAWK%"" -i inplace -v INPLACE_SUFFIX=.orig %SCRIPT2% _inplace3bcomp.1 - _inplace3bcomp.2 < inplace.in >> _inplace3bcomp 2>&1" || goto :exit_local
 call :cmpdel inplace3bcomp && ^
 call :cmpdel inplace3bcomp.1 && ^
 call :cmpdel inplace3bcomp.2 && ^
 call :cmpdel inplace3bcomp.1.orig && ^
 call :cmpdel inplace3bcomp.2.orig || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           ordchr                                || exit /b
-call :execq "%GAWK% --load ordchr ""BEGIN {print chr^(ord^(""""z""""^)^)}"" > _ordchr2 2>&1" && ^
+
+call :execq """%GAWK%"" --load ordchr ""BEGIN {print chr^(ord^(""""z""""^)^)}"" > _ordchr2 2>&1" && ^
 call :cmpdel ordchr2                                          || exit /b
 
-setlocal & set CALL_STAT=0 & set TESTS_PARTIAL=0
-call :get_top_srcdir
+setlocal & set TESTS_PARTIAL=0
+call :get_abs_dir ".." TOP
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic directory link, ignoring)
-call :execq "%GAWK% -f readdir.awk ""%top_srcdir%"" > _readdir" || goto :exit_local
-call :execq "..\helpers\tst_ls -afi ""%top_srcdir%"" > _dirlist"   || goto :exit_local
-call :execq "..\helpers\tst_ls -lna ""%top_srcdir%"" > _longlist1" || goto :exit_local
+call :execq "mklink ""%TOP%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic file link, ignoring)
+call :execq "mklink ""%TOP%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic directory link, ignoring)
+call :execq """%GAWK%"" -f readdir.awk ""%TOP%"" > _readdir"  || goto :exit_local
+call :execq """%BLD_DIST%\helpers\tst_ls"" -afi ""%TOP%"" > _dirlist"   || goto :exit_local
+call :execq """%BLD_DIST%\helpers\tst_ls"" -lna ""%TOP%"" > _longlist1" || goto :exit_local
 call :execq "more +1 _longlist1 > _longlist"                  || goto :exit_local
-call :execq "%GAWK% -f readdir0.awk -v extout=_readdir -v dirlist=_dirlist -v longlist=_longlist > readdir.ok" || goto :exit_local
-call :execq "del /q ""%top_srcdir%\FFF"" 2>NUL"
-call :execq "rd /q ""%top_srcdir%\DDD"" 2>NUL"
+call :execq """%GAWK%"" -f readdir0.awk -v extout=_readdir -v dirlist=_dirlist -v longlist=_longlist > readdir.ok" || goto :exit_local
+call :execq "del /q ""%TOP%\FFF"" 2>NUL"
+call :execq "rd /q ""%TOP%\DDD"" 2>NUL"
 call :cmpdel readdir && call :exec del /q readdir.ok _dirlist _longlist1 _longlist || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
+endlocal & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
 
-setlocal & set CALL_STAT=0 & set TESTS_PARTIAL=0
-call :get_top_srcdir
+setlocal & set TESTS_PARTIAL=0
+call :get_abs_dir ".." TOP
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic directory link, ignoring)
-call :execq "%GAWK% -lreaddir -F/ ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%top_srcdir%"" > readdir_test.ok" || goto :exit_local
-call :execq "%GAWK% -lreaddir_test ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%top_srcdir%"" > _readdir_test" || goto :exit_local
-call :execq "del /q ""%top_srcdir%\FFF"" 2>NUL"
-call :execq "rd /q ""%top_srcdir%\DDD"" 2>NUL"
+call :execq "mklink ""%TOP%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic file link, ignoring)
+call :execq "mklink ""%TOP%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic directory link, ignoring)
+call :execq """%GAWK%"" -lreaddir -F/ ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%TOP%"" > readdir_test.ok" || goto :exit_local
+call :execq """%GAWK%"" -lreaddir_test ""{printf """"[%%%%s] [%%%%s] [%%%%s] [%%%%s]\n"""", $1, $2, $3, $4}"" ""%TOP%"" > _readdir_test" || goto :exit_local
+call :execq "del /q ""%TOP%\FFF"" 2>NUL"
+call :execq "rd /q ""%TOP%\DDD"" 2>NUL"
 call :cmpdel readdir_test && call :exec del /q readdir_test.ok || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
+endlocal & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
 
-setlocal & set CALL_STAT=0 & set TESTS_PARTIAL=0
-call :get_top_srcdir
+setlocal & set TESTS_PARTIAL=0
+call :get_abs_dir ".." TOP
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
-call :execq "mklink ""%top_srcdir%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic file link, ignoring)
-call :execq "mklink ""%top_srcdir%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & echo Partial test: can't create symbolic directory link, ignoring)
-call :execq "%GAWK% -lreaddir -F/ -f readdir_retest.awk ""%top_srcdir%"" > readdir_retest.ok" || goto :exit_local
-call :execq "%GAWK% -lreaddir_test -F/ -f readdir_retest.awk ""%top_srcdir%"" > _readdir_retest" || goto :exit_local
-call :execq "del /q ""%top_srcdir%\FFF"" 2>NUL"
-call :execq "rd /q ""%top_srcdir%\DDD"" 2>NUL"
+call :execq "mklink ""%TOP%\FFF"" f1\f2\f3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic file link, ignoring)
+call :execq "mklink ""%TOP%\DDD"" /D d1\d2\d3 2>NUL" || (set /A TESTS_PARTIAL+=1 & >&2 echo *** Partial 1 test: can't create symbolic directory link, ignoring)
+call :execq """%GAWK%"" -lreaddir -F/ -f readdir_retest.awk ""%TOP%"" > readdir_retest.ok" || goto :exit_local
+call :execq """%GAWK%"" -lreaddir_test -F/ -f readdir_retest.awk ""%TOP%"" > _readdir_retest" || goto :exit_local
+call :execq "del /q ""%TOP%\FFF"" 2>NUL"
+call :execq "rd /q ""%TOP%\DDD"" 2>NUL"
 call :cmpdel readdir_retest && call :exec del /q readdir_retest.ok || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT% & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
+endlocal & set /A TESTS_PARTIAL+=%TESTS_PARTIAL%
 
-call :execq "%GAWK% -l readfile ""BEGIN {printf """"%%%%s"""", readfile^(""""Makefile.am""""^)}"" > _readfile 2>&1" || exit /b
+call :execq """%GAWK%"" -l readfile ""BEGIN {printf """"%%%%s"""", readfile^(""""Makefile.am""""^)}"" > _readfile 2>&1" && ^
 call :cmpdel_ Makefile.am _readfile                           || exit /b
 
 call :runtest           readfile2 readfile2.awk readdir.awk   || exit /b
 call :runtest           revout                                || exit /b
 call :runtest           revtwoway                             || exit /b
 call :runtest_in        rwarray -lrwarray  "-v FORMAT=3.1"    || exit /b
+
+:: + 1 additional test
 call :runtest_in        rwarray -lrwarray0 "-v FORMAT=3.0"    || exit /b
 
-setlocal & set CALL_STAT=0
-call :get_top_srcdir
-call :execq "%GAWK% "" /^^^(@load^|BEGIN^)/,/^^}/"" ""%top_srcdir:\=/%/extension/testext.c"" > testext.awk" || goto :exit_local
+setlocal
+call :get_abs_dir ".." TOP
+call :execq """%GAWK%"" "" /^^^(@load^|BEGIN^)/,/^^}/"" ""%TOP:\=/%/extension/testext.c"" > testext.awk" || goto :exit_local
 call :runtest           testext                               || goto :exit_local
 call :exec del /q testext.awk testexttmp.txt                  || goto :exit_local
-endlocal & set /A CALL_STAT+=%CALL_STAT%
+endlocal
 
 call :runtest           time                                  || exit /b
 
+:: + 10 additional tests (not in upstream)
+call :runtest           fnmatch_bugs                          || exit /b
+call :runtest           fnmatch_more                          || exit /b
+call :runtest           fnmatch_fbsd                          || exit /b
+call :runtest           fnmatch_obsd "--locale=C"             || exit /b
+call :runtest           fnmatchmb "--locale=en_US.UTF-8"      || exit /b
+
+setlocal
+set OK_SUFFIX=_win
+call :runtest           fnmatch_glibc                         || goto :exit_local
+endlocal
+
+setlocal
+set OK_SUFFIX=_win_utf8
+call :exec set GAWKWINLOCALE=UTF8                             || goto :exit_local
+call :runtest           fnmatch_glibc "--locale=en_US.UTF-8"  || goto :exit_local
+endlocal
+
+setlocal
+set OK_SUFFIX=_win
+call :runtest           fnmatch_de "--locale=German_Germany.28591" || goto :exit_local
+endlocal
+
+call :execq """%GAWK%"" -f fnmatch_u8_de.awk --locale=de_DE.UTF-8 > _fnmatch_u8_de" && ^
+call :cmpdel_ fnmatch_de_win.ok _fnmatch_u8_de                || exit /b
+
+call :runtest           fnmatch_u8_en "--locale=en_US.UTF-8"  || exit /b
+
 exit /b 0
 
-:::::: EXTRA TESTS :::::
+:::::: EXTRA_TESTS (2 of 3 tests - 1 test is unsupported) :::::
 :extra_tests
 
-call :execq "%GAWK% -f inftest.awk > _inftest"                || exit /b
+call :execq """%GAWK%"" -f inftest.awk > _inftest"            || exit /b
 call :execq "more inftest.ok > _inftest.ok"                   || exit /b
 call :cmpdel_ _inftest.ok _inftest /c && call :exec del _inftest.ok || exit /b
 
-::regtest
-call :execq "%GAWK% -f reg\exp-eq.awk < reg\exp-eq.in > reg\_exp-eq 2>&1" && ^
+:: regtest: reg/exp-eq.awk, reg/func.awk, reg/func2.awk
+
+call :execq """%GAWK%"" -f reg\exp-eq.awk < reg\exp-eq.in > reg\_exp-eq 2>&1" && ^
 call :cmpdel_ reg\exp-eq.good reg\_exp-eq                     || exit /b
 
+:: convert forward slashes to backward ones
 call :execq "(for /f ""tokens=1* delims=/"" %%%%a in (reg\func.good) do (echo %%%%a\%%%%b)) > reg\_func.good" || exit /b
-call :execq "%GAWK% -f reg\func.awk < reg\func.in > reg\_func 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
+call :execq """%GAWK%"" -f reg\func.awk < reg\func.in > reg\_func 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
 call :cmpdel_ reg\_func.good reg\_func && call :exec del reg\_func.good || exit /b
 
+:: convert forward slashes to backward ones
 call :execq "cmd /s /c ""for /f ""tokens=1* delims=/"" %%%%a in ^(reg\func2.good^) do @^(^(echo %%%%a\%%%%b^)^&exit /b^)"" > reg\_func2.good" || exit /b
 call :execq "more +1 reg\func2.good >> reg\_func2.good" || exit /b
-call :execq "%GAWK% -f reg\func2.awk < reg\func2.in > reg\_func2 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
+call :execq """%GAWK%"" -f reg\func2.awk < reg\func2.in > reg\_func2 2>&1 && cmd /c ""exit /b 1"" || cmd /c ""exit /b 0""" && ^
 call :cmpdel_ reg\_func2.good reg\_func2 && call :exec del reg\_func2.good || exit /b
 
 :: UNSUPPORTED
 :: this test fails under Windows - lower case greek letter 0xf2 (Greek_Greece.28597),
 :: when converting to upper case, do not maps to 0xd3 (Greek_Greece.28597)
-::setlocal & set CALL_STAT=0
+::setlocal
 ::call :change_locale "Greek_Greece.28597"                      || goto :exit_local
 ::call :runtest ignrcas3                                        || goto :exit_local
-::endlocal & set /A CALL_STAT+=%CALL_STAT%
-set /A TESTS_UNSUPPORTED+=1 & echo Unsupported test: ignrcas3
+::endlocal
+set /A TESTS_UNSUPPORTED+=1 & >&2 echo *** Unsupported 1 test: ignrcas3
+
+exit /b
+
+:::::: INET_TESTS (3 network tests) :::::
+:inet_tests
 
 call :inet_test  9 DISCARD inetdis || exit /b
 call :inet_test 13 DAYTIME inetday || exit /b
@@ -1300,48 +1354,86 @@ call :inet_test  7 DAYTIME inetech || exit /b
 exit /b 0
 
 :inet_test
-:: %1 - 7, 9, 13
+:: %1 - 7, 9, 13 (port)
 :: %2 - ECHO, DISCARD, DAYTIME
 :: %3 - inetdis, inetday, inetech
-call :checksvc udp 4 "0.0.0.0" %1 %2 && (call :%3 udp "127.0.0.1" || exit /b)
-call :checksvc udp 6 "[::]"    %1 %2 && (call :%3 udp "[::1]" 6   || exit /b)
-call :checksvc tcp 4 "0.0.0.0" %1 %2 && (call :%3 tcp "127.0.0.1" || exit /b)
-call :checksvc tcp 6 "[::]"    %1 %2 && (call :%3 tcp "[::1]" 6   || exit /b)
+call :checksvc udp 4 "0.0.0.0" %1 %2 && (call :%3 udp "127.0.0.1" %1   || exit /b)
+call :checksvc udp 6 "[::]"    %1 %2 && (call :%3 udp "[::1]"     %1 6 || exit /b)
+call :checksvc tcp 4 "0.0.0.0" %1 %2 && (call :%3 tcp "127.0.0.1" %1   || exit /b)
+call :checksvc tcp 6 "[::]"    %1 %2 && (call :%3 tcp "[::1]"     %1 6 || exit /b)
 exit /b 0
 
 :inetdis
 :: %1 - udp, tcp
 :: %2 - "127.0.0.1" or "[::1]"
-:: %3 - <empty> or 6
-call :execq "%GAWK% ""BEGIN { print """"%1:%~2"""" ^|^& """"/inet%3/%1/0/%~2/9""""}"" > _inetdis 2>&1" || exit /b
+:: %3 - 9
+:: %4 - <empty> or 6
+call :execq """%GAWK%"" ""BEGIN { print """"%1:%~2"""" ^|^& """"/inet%4/%1/0/%~2/%3""""}"" > _inetdis 2>&1" || exit /b
 call :execq "rem.>inetdis.ok" && call :cmpdel inetdis && call :exec del /q inetdis.ok || exit /b
 exit /b
 
 :inetday
 :: %1 - udp, tcp
 :: %2 - "127.0.0.1" or "[::1]"
-:: %3 - <empty> or 6
-call :execq "%GAWK% ""BEGIN { print """""""" ^|^& """"/inet%3/%1/0/%~2/13""""; """"/inet%3/%1/0/%~2/13"""" ^|^& getline; print $0}"" > _inetday" || exit /b
-call :execq "type _inetday | %FIND% /v """"" && call :exec del /q _inetday || exit /b
+:: %3 - 13
+:: %4 - <empty> or 6
+call :execq """%GAWK%"" ""BEGIN { print """""""" ^|^& """"/inet%4/%1/0/%~2/%3""""; """"/inet%4/%1/0/%~2/%3"""" ^|^& getline; print $0}"" > _inetday" || exit /b
+call :execq """%FIND%"" /v """" < _inetday" && call :exec del /q _inetday || exit /b
 exit /b
 
 :inetech
 :: %1 - udp, tcp
 :: %2 - "127.0.0.1" or "[::1]"
-:: %3 - <empty> or 6
-call :execq "%GAWK% ""BEGIN { print """"[%1 %~2 %3]"""" ^|^& """"/inet%3/%1/0/%~2/7""""; """"/inet%3/%1/0/%~2/7"""" ^|^& getline; print $0}"" > _inetech" || exit /b
+:: %3 - 7
+:: %4 - <empty> or 6
+call :execq """%GAWK%"" ""BEGIN { print """"[%1 %~2 %3]"""" ^|^& """"/inet%4/%1/0/%~2/%3""""; """"/inet%4/%1/0/%~2/%3"""" ^|^& getline; print $0}"" > _inetech" || exit /b
 call :execq "(echo.[%1 %~2 %3]) > inetech.ok" && call :cmpdel inetech && call :exec del /q inetech.ok || exit /b
 exit /b
 
 :checksvc
 :: %1 - udp, tcp
-:: %2 - 4 or 6
-:: %3 - "0.0.0.0" or "[::]"
-:: %4 - 7, 9, 13
+:: %2 - 4 or 6 (IPv4/IPv6)
+:: %3 - "0.0.0.0" or "[::]" (address)
+:: %4 - 7, 9, 13 (port)
 :: %5 - ECHO, DISCARD, DAYTIME
-(for /f "tokens=1,2" %%a in ('netstat -na') do (echo [%%a:%%b])) | %FIND% /i "[%1:%~3:%4]" >NUL && exit /b
-set /A TESTS_SKIPPED+=1 & echo Skipped test: no %1 %5 service on local IPv%2 port %4, skipping test
+(for /f "tokens=1,2" %%a in ('netstat -na') do (echo [%%a:%%b])) | "%FIND%" /i "[%1:%~3:%4]" >NUL && exit /b
+set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: no %1 %5 service on local IPv%2 port %4, skipping test
 exit /b 1
+
+:::::: NEED_MPFR (20 tests) :::::
+:mpfr_tests
+
+"%GAWK%" --version | "%GAWK%" " /MPFR/ { exit 1 }" && (
+  set /A TESTS_SKIPPED+=20 & >&2 echo *** Skipped 20 tests: gawk was built without MPFR support
+  exit /b 0
+)
+
+call :runtest           mpfrbigint   -M                       || exit /b
+call :runtest_in        mpfrbigint2  -M --non-decimal-data    || exit /b
+call :runtest_in        mpfrcase     -M                       || exit /b
+call :runtest_in        mpfrcase2    -M                       || exit /b
+call :runtest           mpfrexprange -M "-vPREC=53"           || exit /b
+call :runtest_in        mpfrfield    -M                       || exit /b
+call :runtest           mpfrieee     -M "-vPREC=double"       || exit /b
+
+call :execq """%GAWK%"" -M -p- -f mpfrmemok1.awk > __mpfrmemok1" && ^
+call :execq "more +1 __mpfrmemok1 > _mpfrmemok1" && ^
+call :cmpdel mpfrmemok1 && call :exec del /q __mpfrmemok1     || exit /b
+
+call :runtest           mpfrnegzero  -M                       || exit /b
+call :runtest_in        mpfrnonum    -M                       || exit /b
+call :runtest_in        mpfrnr       -M                       || exit /b
+call :runtest           mpfrrem      -M                       || exit /b
+call :runtest           mpfrrnd      -M "-vPREC=53"           || exit /b
+call :runtest           mpfrrndeval  -M                       || exit /b
+call :runtest           mpfrsort     -M "-vPREC=53"           || exit /b
+call :runtest           mpfrsqrt     -M                       || exit /b
+call :runtest           mpfrstrtonum -M                       || exit /b
+call :runtest           mpgforcenum  -M                       || exit /b
+call :runtest_          mpfruplus    -M -f "uplus.awk"        || exit /b
+call :runtest           mpfranswer42 -M                       || exit /b
+
+exit /b 0
 
 ::::::::::::::::: support routines :::::::::::::
 
@@ -1387,11 +1479,11 @@ exit /b
 :: %5 = %3
 :: %6 = "<"
 :: %7 = %1.in
-setlocal & set CALL_STAT=0
+setlocal
 :: %~7 doubles ^ in the value, un-double it
-set "COMMAND=%GAWK% %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
+set "COMMAND=""%GAWK%"" %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
 call :execq "%COMMAND:^^=^%" && call :cmpdel %1
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :runtest_fail_
 :: run test %1, then append "EXIT CODE: 2" to _%1, then compare _%1 with %1.ok
@@ -1403,11 +1495,11 @@ endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
 :: %6 = "<"
 :: %7 = %1.in
 :: awk should fail
-setlocal & set CALL_STAT=0
+setlocal
 :: %~7 doubles ^ in the value, un-double it
-set "COMMAND=%GAWK% %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
+set "COMMAND=""%GAWK%"" %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
 call :execq_fail "%COMMAND:^^=^%" "_%1" && call :cmpdel %1
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :runtest_ok_
 :: run test %1, then append "EXIT CODE: 0" to _%1, then compare _%1 with %1.ok
@@ -1419,11 +1511,11 @@ endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
 :: %6 = "<"
 :: %7 = %1.in
 :: awk should NOT fail
-setlocal & set CALL_STAT=0
+setlocal
 :: %~7 doubles ^ in the value, un-double it
-set "COMMAND=%GAWK% %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
+set "COMMAND=""%GAWK%"" %~2 %~3 %~4 %~5 %~6 %~7 > _%1 2>&1"
 call :execq_ok "%COMMAND:^^=^%" "_%1" && call :cmpdel %1
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :cmpdel
 :: compare %1.ok with _%1 -> if equal, delete _%1
@@ -1439,7 +1531,6 @@ exit /b
 
 :exec
 :: simple command, without quotes, redirections, etc.
-set /A "CALL_STAT+=1"
 echo %*
 %*
 exit /b
@@ -1454,7 +1545,6 @@ exit /b
 :: Example:
 :: call :execq "%GAWK% ""BEGIN { for ^(i = 1; i ^<= 1030; i++^) print i, i}"" >_manyfiles"
  
-set /A CALL_STAT+=1
 set "COMMAND=%~1"
 :: escape special symbols for ECHO
 set "COMMAND=%COMMAND:>=^>%"
@@ -1492,10 +1582,10 @@ exit /b
 :: %2 - file to append exit code to
 call :execq "%~1" && exit /b 1
 :: reset ERRORLEVEL
-setlocal & set "err1=%ERRORLEVEL%" & set CALL_STAT=0
+setlocal & set "err1=%ERRORLEVEL%"
 cmd /c exit /b 0
 call :execq "(echo.EXIT CODE: %err1%) >> ""%~2"""
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+endlocal & exit /b
 
 :execq_ok
 :: %1 - complex command in double-quotes that should not fail
@@ -1524,10 +1614,14 @@ if not defined GAWKLOCALE (call :execq "set ""LANG=%~1""") else (call :execq "se
 exit /b
 
 :exit_local
-:: exit local scope accounting CALL_STAT
-endlocal & set /A CALL_STAT+=%CALL_STAT% & exit /b
+:: exit local scope
+endlocal & exit /b
 
-:get_top_srcdir
-for /f "tokens=* delims=" %%a in ("%CD%") do set "top_srcdir=%%~dpa"
-set "top_srcdir=%top_srcdir:~0,-1%"
+:get_abs_dir
+:: get absoulte path to directory
+:: %1 - (relative) path to change current directory to
+:: %2 - result variable name
+pushd "%~1"
+for /f "tokens=* delims=" %%a in ("%CD%") do set "%2=%%~a"
+popd
 exit /b
