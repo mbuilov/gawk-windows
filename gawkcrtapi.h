@@ -339,17 +339,17 @@ gawk_crt_free(void *ptr)
 	gawk_crt()->crt_free(ptr);
 }
 
-#if !defined(_MSC_VER) || !defined(_PREFAST_)
-#define gawk_crt_printf		gawk_crt()->crt_printf
-#define gawk_crt_fprintf	gawk_crt()->crt_fprintf
-#define gawk_crt_sprintf	gawk_crt()->crt_sprintf
-#define gawk_crt_snprintf	gawk_crt()->crt_snprintf
-#else
+#ifdef _PREFAST_
 /* Annotate printf-like format string so compiler will check passed args.  */
 int gawk_crt_printf(_Printf_format_string_ const char *format, ...);
 int gawk_crt_fprintf(FILE *file, _Printf_format_string_ const char *format, ...);
 int gawk_crt_sprintf(char *str, _Printf_format_string_ const char *format, ...);
 int gawk_crt_snprintf(char *str, size_t size, _Printf_format_string_ const char *format, ...);
+#else
+#define gawk_crt_printf		gawk_crt()->crt_printf
+#define gawk_crt_fprintf	gawk_crt()->crt_fprintf
+#define gawk_crt_sprintf	gawk_crt()->crt_sprintf
+#define gawk_crt_snprintf	gawk_crt()->crt_snprintf
 #endif
 
 static inline FILE *
