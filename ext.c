@@ -76,11 +76,23 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible': %s"),
 		      lib_name, dlerror_());
 
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#ifdef __cplusplus
+#pragma GCC diagnostic ignored "-Wconditionally-supported"
+#endif
+#endif
+	/* cast pointer-to-object to pointer-to-function */
 	install_func = (int (*)(const gawk_api_t *const, gawk_extension_api_ver_t *))
-				dlsym(dl, TO_STRING(GAWK_DYN_EXT_INIT_FUNC));
+				dlsym(dl, TO_STRING(GAWK_EXT_INIT_FUNC_NAME));
+#if defined(__GNUC__) && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic pop
+#endif
+
 	if (install_func == NULL)
 		fatal(_("load_ext: library `%s': cannot call function `%s': %s"),
-		      lib_name, TO_STRING(GAWK_DYN_EXT_INIT_FUNC), dlerror_());
+		      lib_name, TO_STRING(GAWK_EXT_INIT_FUNC_NAME), dlerror_());
 
 	ret = install_func(& api_impl, & ver);
 	if (ret < 0) {
@@ -92,7 +104,7 @@ load_ext(const char *lib_name)
 	}
 	if (ret == 0)
 		awkwarn(_("load_ext: library `%s' initialization routine `%s' failed"),
-			lib_name, TO_STRING(GAWK_DYN_EXT_INIT_FUNC));
+			lib_name, TO_STRING(GAWK_EXT_INIT_FUNC_NAME));
 }
 
 /* make_builtin --- register name to be called as func with a builtin body */
@@ -169,7 +181,7 @@ NODE *
 get_argument(size_t i)
 {
 	NODE *t;
-	awk_ulong_t arg_count;
+	size_t arg_count;
 	INSTRUCTION *pc;
 
 	pc = TOP()->code_ptr;		/* Op_ext_builtin instruction */
