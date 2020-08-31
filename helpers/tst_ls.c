@@ -50,10 +50,6 @@
 #include "mscrtx/localerpl.h"
 #include "mscrtx/console_setup.h"
 
-#ifndef _O_U8TEXT
-#include "mscrtx/sprintf_helpers.h"
-#endif
-
 /* printf-format specifier for unsigned long long.
    A c99-compatible standard runtime library must support "%llu".  */
 #ifndef LLUFMT
@@ -62,6 +58,11 @@
 
 #define STDERR_BIT 1
 #define STDOUT_BIT 2
+
+/* not defined under MinGW.org */
+#ifndef INT_MAX
+#define INT_MAX ((unsigned)-1/2)
+#endif
 
 /* exact copy of the same function in extension/readdir.c */
 static unsigned long long
@@ -198,9 +199,28 @@ static void vprintf_to_stdout(const int std_streams_to_utf8, const wchar_t forma
 	/* old MSVCRT.DLL do not supports _O_U8TEXT file mode, print in utf16 and convert to utf8 manually */
 	if (STDOUT_BIT & std_streams_to_utf8) {
 		wchar_t wbuf[256], *wb = wbuf;
-		const int n = vswprintf_helper(&wb, sizeof(wbuf)/sizeof(wbuf[0]), format, ap);
-		if (-1 == n)
-			return;
+		size_t buf_size = sizeof(wbuf)/sizeof(wbuf[0]);
+		int n;
+		for (;;) {
+			n = _vsnwprintf(wb, buf_size, format, ap);
+			if (n != -1)
+				break;
+			if (wb != wbuf)
+				free(wb);
+			if (buf_size < 65536)
+				buf_size *= 2;
+			else if (buf_size <= INT_MAX - 65536)
+				buf_size += 65536;
+			else {
+				errno = ENOMEM;
+				return;
+			}
+			/* make sure will not overflow size_t */
+			(void)sizeof(int[1-2*!(INT_MAX <= (size_t)-1/sizeof(wchar_t))]);
+			wb = (wchar_t*)malloc(buf_size*sizeof(wchar_t));
+			if (!wb)
+				return;
+		}
 		if (n) {
 			const utf16_char_t *w = (const utf16_char_t*)wb;
 			const utf16_char_t *const e = w + n;
@@ -210,14 +230,13 @@ static void vprintf_to_stdout(const int std_streams_to_utf8, const wchar_t forma
 				const size_t x = utf16_to_utf8(&w, &b, sizeof(buf) - 1, (size_t)(e - w));
 				if (!x) {
 					errno = (w == e) ? E2BIG : EILSEQ;
-					goto out;
+					break;
 				}
 				/* assume buffer size is big enough so at least one utf8-character has been decoded */
 				*b = '\0';
 				fputs(buf, stdout);
 			} while (w != e);
 		}
-out:
 		if (wb != wbuf)
 			free(wb);
 		return;
@@ -312,7 +331,7 @@ int wmain(int argc, wchar_t *argv[]);
 # endif
 int wmain(int argc, wchar_t *argv[])
 #else
-/* mingw32 from MinGW.org (not 32-bit variant of Mingw-64) do not supports wmain(),
+/* mingw32 from MinGW.org (not 32-bit variant of mingw-w64) do not supports wmain(),
   so the CRT startup code will convert wide-character program arguments to multibyte ones,
   but this is just a waste of time, since we ignore the arguments completely. */
 int main(int argc, char *argv[])
