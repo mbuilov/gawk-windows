@@ -2,12 +2,12 @@
 #include "../gawkapi.h"
 #define TO_STRING1(s) #s
 #define TO_STRING(s) TO_STRING1(s)
-#ifdef RC_INVOKED
-#define GAWK_RUNTIME "MSVC"
-#elif defined __MINGW64_VERSION_MAJOR
-#define GAWK_RUNTIME "Mingw-w64"
+#if defined __MINGW64_VERSION_MAJOR
+#define GAWK_RUNTIME "mingw-w64"
 #elif defined __MINGW32__
 #define GAWK_RUNTIME "MinGW.org"
+#elif defined RC_INVOKED
+#define GAWK_RUNTIME "MSVC"
 #else
 #define GAWK_RUNTIME "unknown"
 #endif
