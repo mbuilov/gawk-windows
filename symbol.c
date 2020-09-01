@@ -132,7 +132,7 @@ make_params(char **pnames, size_t pcount)
 	NODE *p, *parms;
 	size_t i;
 
-	if (!pcount || pnames == NULL)
+	if (pcount == 0 || pnames == NULL)
 		return NULL;
 
 	ezalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
@@ -160,7 +160,7 @@ install_params(NODE *func)
 	assert(func->type == Node_func);
 
 	pcount = func->param_cnt;
-	if (!pcount || (parms = func->fparms) == NULL)
+	if (pcount == 0 || (parms = func->fparms) == NULL)
 		return;
 
 	for (i = 0; i < pcount; i++)
@@ -184,10 +184,10 @@ remove_params(NODE *func)
 	assert(func->type == Node_func);
 
 	pcount = func->param_cnt;
-	if (!pcount || (parms = func->fparms) == NULL)
+	if (pcount == 0 || (parms = func->fparms) == NULL)
 		return;
 
-	for (i = pcount; i; i--) {
+	for (i = pcount; i > 0; i--) {
 		NODE *tmp;
 		NODE *tmp2;
 
@@ -239,7 +239,7 @@ destroy_symbol(NODE *r)
 
 	switch (r->type) {
 	case Node_func:
-		if (r->param_cnt) {
+		if (r->param_cnt > 0) {
 			NODE *n;
 			size_t i, pcount;
 			pcount = r->param_cnt;
@@ -465,7 +465,7 @@ function_list(bool sort)
 void
 print_vars(NODE **table, Func_print print_func, FILE *fp)
 {
-#if defined _MSC_VER && defined _PREFAST_
+#if defined _PREFAST_
 #define print_func fprintf
 #endif
 	unsigned i;
@@ -484,7 +484,7 @@ print_vars(NODE **table, Func_print print_func, FILE *fp)
 		else if (r->type == Node_var)
 			valinfo(r->var_value, print_func, fp);
 	}
-#if defined _MSC_VER && defined _PREFAST_
+#if defined _PREFAST_
 #undef print_func
 #endif
 }
@@ -602,7 +602,7 @@ load_symbols(void)
 	for (i = 0; tables[i] != NULL; i++) {
 		list = assoc_list(tables[i], "@unsorted", ASORTI);
 		max = tables[i]->table_size * 2;
-		if (!max)
+		if (max == 0)
 			continue;
 		for (j = 0; j < max; j += 2) {
 			r = list[j+1];
@@ -689,7 +689,7 @@ check_param_names(void)
 
 	for (i = 0; i < max; i += 2) {
 		f = list[i+1];
-		if (f->type == Node_builtin_func || !f->param_cnt)
+		if (f->type == Node_builtin_func || f->param_cnt == 0)
 			continue;
 
 		/* loop over each param in function i */
