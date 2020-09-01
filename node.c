@@ -247,10 +247,10 @@ r_format_val(const char *format, unsigned index, NODE *s)
 
 		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
-			r = format_tree("%.0f", 4, dummy, 2u);
+			r = format_tree("%.0f", 4, dummy, 2);
 			s->stfmt = STFMT_UNUSED;
 		} else {
-			r = format_tree(format, fmt_list[index]->stlen, dummy, 2u);
+			r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
 			assert(r != NULL);
 			s->stfmt = index;
 		}
@@ -329,7 +329,7 @@ r_dupnode(NODE *n)
 #endif
 
 	r->flags |= MALLOC;
-	r->valref = 1u;
+	r->valref = 1;
 	/*
 	 * DON'T call free_wstr(r) here!
 	 * r->wstptr still points at n->wstptr's value, and we
@@ -402,7 +402,7 @@ make_str_node(const char *s, size_t len, int flags)
 	r->type = Node_val;
 	r->numbr = 0;
 	r->flags = (MALLOC|STRING|STRCUR);
-	r->valref = 1u;
+	r->valref = 1;
 	r->stfmt = STFMT_UNUSED;
 #ifdef HAVE_MPFR
 	r->strndmode = MPFR_round_mode;
@@ -503,8 +503,8 @@ r_unref(NODE *tmp)
 {
 #ifdef GAWKDEBUG
 	/* Do the same as in awk.h:unref().  */
-	assert(tmp == NULL || tmp->valref);
-	if (tmp == NULL || --tmp->valref)
+	assert(tmp == NULL || tmp->valref > 0);
+	if (tmp == NULL || --tmp->valref > 0)
 		return;
 #endif
 
@@ -582,12 +582,13 @@ parse_escape(const char **string_ptr)
 	case '5':
 	case '6':
 	case '7':
-		i = (unsigned) (c - '0');
+		i = (unsigned) char_digit_value((unsigned char) c);
 		count = 0;
 		while (++count < 3) {
-			if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
+			int d = char_digit_value((unsigned char) *(*string_ptr)++);
+			if ((unsigned) d <= 7) {
 				i *= 8;
-				i += (unsigned) (c - '0');
+				i += (unsigned) d;
 			} else {
 				(*string_ptr)--;
 				break;
@@ -832,7 +833,7 @@ wstr2str(NODE *n)
 	mbstate_t mbs;
 	char *newval, *cp;
 
-	assert(n->valref == 1u);
+	assert(n->valref == 1);
 	assert((n->flags & WSTRCUR) != 0);
 
 	/*
