@@ -216,6 +216,25 @@
 # define DONT_COMPILE_UNREACHABLE_CODE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* charp_const_cast --- cast (const char *) to (char *) */
+
+static inline char *
+charp_const_cast(const char *str)
+{
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_CAST_QUAL
+	return (char*) str;
+PRAGMA_WARNING_POP
+}
+
+#ifdef __cplusplus
+}
+#endif
+
 /* Assume expression X is always TRUE.  */
 #ifndef ASSUME
 # ifdef __clang__
@@ -1254,25 +1273,6 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 int outbuf_fprintf(awk_output_buf_t *outbuf, _Printf_format_string_ const char *format, ...);
 #endif
 
-static inline char *cast_conststr(const char *s)
-{
-#if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
-#endif
-		return (char *) s;
-#if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-}
-
 /* Constructor functions */
 
 /* r_make_string_type --- make a string or strnum or regexp value in result from the passed-in string */
@@ -1298,7 +1298,7 @@ r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
 		cp[length] = '\0';
 		result->str_value.str = cp;
 	} else {
-		result->str_value.str = cast_conststr(string);
+		result->str_value.str = charp_const_cast(string);
 	}
 
 	return result;

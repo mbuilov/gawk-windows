@@ -2474,17 +2474,6 @@ str_terminate_f(NODE *n, char *savep)
 #define str_terminate(n, save) str_terminate_f((n), &save)
 #define str_restore(n, save) (n)->stptr[(n)->stlen] = save
 
-/* charp_const_cast --- cast (const char *) to (char *) */
-
-static inline char *
-charp_const_cast(const char *str)
-{
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_DISABLE_CAST_QUAL
-	return (char*) str;
-PRAGMA_WARNING_POP
-}
-
 #ifdef SIGPIPE
 #define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
 #define set_sigpipe_to_default() signal(SIGPIPE, SIG_DFL)
@@ -2499,7 +2488,6 @@ PRAGMA_WARNING_POP
 #define die_via_sigpipe() exit(EXIT_FATAL)
 #endif	/* !WINDOWS_NATIVE */
 #endif	/* !SIGPIPE */
-
 
 /* char_digit_value --- return [0..9] if char looks like a decimal digit,
    otherwise return -1.  */
