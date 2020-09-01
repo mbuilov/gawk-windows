@@ -73,7 +73,7 @@ static char *adjust_namespace(char *name, bool *malloced);
 #define pp_next	rnode
 #define pp_comment	sub.nodep.x.cmnt
 
-#if defined(__DJGPP__) || defined(SIGHUP)
+#if defined __DJGPP__ || defined SIGHUP
 ATTRIBUTE_NORETURN static void dump_and_exit(int signum);
 static void just_dump(int signum);
 #endif
@@ -1272,7 +1272,7 @@ void
 pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 		size_t len, int delim, bool breaklines)
 {
-#if defined _MSC_VER && defined _PREFAST_
+#if defined _PREFAST_
 #define print_func fprintf
 #endif
 	char *s = pp_string(in_str, len, delim);
@@ -1290,13 +1290,13 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 		}
 	}
 	efree(s);
-#if defined _MSC_VER && defined _PREFAST_
+#if defined _PREFAST_
 #undef print_func
 #endif
 }
 
 
-#if defined(__DJGPP__) || defined(SIGHUP)
+#if defined __DJGPP__ || defined SIGHUP
 extern INSTRUCTION *code_block; /* defined in main.c */
 
 /* just_dump --- dump the profile and function stack and keep going */
@@ -1314,7 +1314,7 @@ just_dump(int signum)
 
 /* dump_and_exit --- dump the profile, the function stack, and exit */
 
-#if defined(__DJGPP__) || defined(SIGHUP)
+#if defined __DJGPP__ || defined SIGHUP
 static void
 dump_and_exit(int signum)
 {
