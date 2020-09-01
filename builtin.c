@@ -232,7 +232,7 @@ do_fflush(nargs_t nargs)
 	 */
 
 	/* fflush() */
-	if (!nargs) {
+	if (nargs == 0) {
 		status = flush_io();	// ERRNO updated
 		return make_number((AWKNUM) status);
 	}
