@@ -126,7 +126,7 @@ null_lookup(NODE *symbol, NODE *subs)
 	unsigned i;
 	const array_funcs_t *afunc = NULL;
 
-	assert(!symbol->table_size);
+	assert(symbol->table_size == 0);
 
 	/*
 	 * Check which array type wants to accept this sub; traverse
@@ -398,7 +398,7 @@ concat_exp(nargs_t nargs, bool do_subsep)
 	for (i = 1; i <= nargs; i++) {
 		r = TOP();
 		if (r->type == Node_var_array) {
-			while (--i)
+			while (--i > 0)
 				DEREF(args_array[i]);	/* avoid memory leak */
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(r));
 		}
@@ -414,7 +414,7 @@ concat_exp(nargs_t nargs, bool do_subsep)
 	memcpy(str, r->stptr, r->stlen);
 	s = str + r->stlen;
 	DEREF(r);
-	for (i = nargs - 1; i; i--) {
+	for (i = nargs - 1; i > 0; i--) {
 		if (subseplen == 1)
 			*s++ = *SUBSEP;
 		else if (subseplen > 0) {
@@ -468,7 +468,7 @@ adjust_fcall_stack(NODE *symbol, size_t nsubs)
 	pcount = func->param_cnt;
 	sp = frame_ptr->stack;
 
-	for (; pcount; pcount--) {
+	for (; pcount > 0; pcount--) {
 		r = *sp++;
 		if (r->type != Node_array_ref
 				|| r->orig_array->type != Node_var_array)
@@ -478,7 +478,7 @@ adjust_fcall_stack(NODE *symbol, size_t nsubs)
 		/* Case 1 */
 		if (n == symbol
 			&& symbol->parent_array != NULL
-			&& nsubs
+			&& nsubs > 0
 		) {
 			/*
 			 * 'symbol' is a subarray, and 'r' is the same subarray:
@@ -551,9 +551,9 @@ do_delete(NODE *symbol, size_t nsubs)
         (void) force_string(s);	/* may have side effects. */    \
         DEREF(s);                                               \
     }                                                           \
-} while (--n)
+} while (--n > 0)
 
-	if (!nsubs) {
+	if (nsubs == 0) {
 		/* delete array */
 
 		adjust_fcall_stack(symbol, 0);	/* fix function call stack; See above. */
@@ -563,7 +563,7 @@ do_delete(NODE *symbol, size_t nsubs)
 
 	/* NB: subscripts are in reverse order on stack */
 
-	for (i = nsubs; i; i--) {
+	for (i = nsubs; i > 0; i--) {
 		subs = PEEK(i - 1);
 		if (subs->type != Node_val) {
 			free_subs(i);
@@ -582,7 +582,7 @@ do_delete(NODE *symbol, size_t nsubs)
 			return;
 		}
 
-		if (i > 1u) {
+		if (i > 1) {
 			if (val->type != Node_var_array) {
 				/* e.g.: a[1] = 1; delete a[1][1] */
 
@@ -711,7 +711,7 @@ value_info(NODE *n)
 					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 #ifdef HAVE_MPFR
-		fprintf(output_fp, ", RNDMODE=\"%c\"", (char) n->strndmode);
+		fprintf(output_fp, ", ROUNDMODE=\"%c\"", (char) n->strndmode);
 #endif
 	}
 
@@ -862,7 +862,7 @@ asort_actual(nargs_t nargs, sort_context_t ctxt)
 	DEREF(s);
 
 	num_elems = assoc_length(array);
-	if (!num_elems || list == NULL) {
+	if (num_elems == 0 || list == NULL) {
 		/* source array is empty */
 		if (dest != NULL && dest != array)
 			assoc_clear(dest);
@@ -1309,17 +1309,17 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		qsort_compfunc comp_func;
 		assoc_kind_t kind;
 	} sort_funcs[] = {
-{ "@ind_str_asc",	sort_up_index_string,	(AINDEX|AISTR|AASC) },
-{ "@ind_num_asc",	sort_up_index_number,	(AINDEX|AINUM|AASC) },
-{ "@val_str_asc",	sort_up_value_string,	(AVALUE|AVSTR|AASC) },
-{ "@val_num_asc",	sort_up_value_number,	(AVALUE|AVNUM|AASC) },
-{ "@ind_str_desc",	sort_down_index_string,	(AINDEX|AISTR|ADESC) },
-{ "@ind_num_desc",	sort_down_index_number,	(AINDEX|AINUM|ADESC) },
-{ "@val_str_desc",	sort_down_value_string,	(AVALUE|AVSTR|ADESC) },
-{ "@val_num_desc",	sort_down_value_number,	(AVALUE|AVNUM|ADESC) },
-{ "@val_type_asc",	sort_up_value_type,	(AVALUE|AASC) },
-{ "@val_type_desc",	sort_down_value_type,	(AVALUE|ADESC) },
-{ "@unsorted",		0,			(AINDEX) },
+{ "@ind_str_asc",	sort_up_index_string,	AINDEX|AISTR|AASC },
+{ "@ind_num_asc",	sort_up_index_number,	AINDEX|AINUM|AASC },
+{ "@val_str_asc",	sort_up_value_string,	AVALUE|AVSTR|AASC },
+{ "@val_num_asc",	sort_up_value_number,	AVALUE|AVNUM|AASC },
+{ "@ind_str_desc",	sort_down_index_string,	AINDEX|AISTR|ADESC },
+{ "@ind_num_desc",	sort_down_index_number,	AINDEX|AINUM|ADESC },
+{ "@val_str_desc",	sort_down_value_string,	AVALUE|AVSTR|ADESC },
+{ "@val_num_desc",	sort_down_value_number,	AVALUE|AVNUM|ADESC },
+{ "@val_type_asc",	sort_up_value_type,	AVALUE|AASC },
+{ "@val_type_desc",	sort_down_value_type,	AVALUE|ADESC },
+{ "@unsorted",		0,			AINDEX },
 };
 
 	/*
@@ -1381,7 +1381,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		code = bcalloc(Op_func_call, 2, 0);
 		code->func_body = f;
 		code->func_name = NULL;		/* not needed, func_body already assigned */
-		(code + 1)->expr_count = 4u;	/* function takes 4 arguments */
+		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
 		code->nexti = bcalloc(Op_stop, 1, 0);
 
 		/*

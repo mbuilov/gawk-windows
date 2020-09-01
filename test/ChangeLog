@@ -1,3 +1,36 @@
+2020-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mbstr1.ok, mbstr2.ok: Updated after code changes.
+
+2020-08-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile14.ok: Updated. Somehow it was not done right to
+	start.
+
+2020-08-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): New tests, profile14 and profile15.
+	* profile14.awk, profile14.ok, profile15.awk, profile15.ok: New files.
+
+2020-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nsprof1.ok, nsprof2.ok: Updated after code changes.
+
+2020-08-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Simplify handling of tests that have an -mpfr.ok file.
+
+	* Gentests: Remove CHECK_MPFR handling. Instead, read the
+	EXTRA_DIST list of files and generate better checking tests
+	for tests that have an -mpfr.ok file. Use GAWK_TEST__ARGS
+	instead of AWKFLAGS.
+	* Makefile.am (CHECK_MPFR): Removed.
+	(arrdbg, testext): Checks updated.
+
+2020-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXPECTED_FAIL_ZOS): Add posix_compare to the list.
+
 2020-07-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (EXTRA_DIST): Remove arrdbug-mpfr.ok and

@@ -12,7 +12,7 @@ GL=/usr/local/src/Gnu/gnulib/build-aux
 
 for i in $(cd $GL ; echo *)
 do
-	for dir in . extension/build-aux doc
+	for dir in ./build-aux doc
 	do
 		if [ -f $GL/$i ] && [ -f $dir/$i ]
 		then

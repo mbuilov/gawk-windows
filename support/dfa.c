@@ -2524,7 +2524,7 @@ static int
 compare (const void *a, const void *b)
 {
   position const *p = (position const*) a, *q = (position const*) b;
-  return p->index < q->index ? -1 : p->index > q->index;
+  return (p->index > q->index) - (p->index < q->index);
 }
 
 static void

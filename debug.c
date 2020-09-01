@@ -272,19 +272,19 @@ static unsigned history_size = DEFAULT_HISTSIZE;  /* max # of lines in history f
 
 static const struct dbg_option option_list[] = {
 {"history_size", &history_size, NULL, NULL, &set_history_size,
-	gettext_noop("set or show the number of lines to keep in history file.") },
+	gettext_noop("set or show the number of lines to keep in history file") },
 {"listsize", &list_size, NULL, NULL, &set_listsize,
-	gettext_noop("set or show the list command window size.") },
+	gettext_noop("set or show the list command window size") },
 {"outfile", NULL, NULL, &output_file, &set_gawk_output,
-	gettext_noop("set or show gawk output file.") },
+	gettext_noop("set or show gawk output file") },
 {"prompt", NULL, NULL, &dgawk_prompt, &set_prompt,
-	gettext_noop("set or show debugger prompt."), },
+	gettext_noop("set or show debugger prompt"), },
 {"save_history", NULL, &do_save_history, NULL, &set_save_history,
-	gettext_noop("(un)set or show saving of command history (value=on|off).") },
+	gettext_noop("(un)set or show saving of command history (value=on|off)") },
 {"save_options", NULL, &do_save_options, NULL, &set_save_options,
-	gettext_noop("(un)set or show saving of options (value=on|off).") },
+	gettext_noop("(un)set or show saving of options (value=on|off)") },
 {"trace", NULL, &do_trace, NULL, &set_trace,
-	gettext_noop("(un)set or show instruction tracing (value=on|off).") },
+	gettext_noop("(un)set or show instruction tracing (value=on|off)") },
 {0, NULL, NULL, NULL, NULL, 0},
 };
 
@@ -389,7 +389,7 @@ pop_binding(volatile jmp_buf *stack_place, jmp_buf *tag, unsigned *valid)
 #define CHECK_PROG_RUNNING() \
 	do { \
 		if (! prog_running) { \
-			d_error(_("program not running.")); \
+			d_error(_("program not running")); \
 			return false; \
 		} \
 	} while (false)
@@ -546,7 +546,7 @@ source_find(const char *src)
 	int errno_val = 0;
 
 	if (src == NULL || *src == '\0') {
-		d_error(_("no current source file."));
+		d_error(_("no current source file"));
 		return NULL;
 	}
 
@@ -1697,7 +1697,7 @@ condition_triggered(struct condition *cndn)
 		return false;   /* not triggered */
 
 	force_number(r);
-	di = ! iszero(r);
+	di = ! is_zero(r);
 	DEREF(r);
 	return di;
 }
@@ -3170,7 +3170,7 @@ do_continue(CMDARG *arg, enum argtype cmd)
 	}
 	b = find_breakpoint(stop.break_point);
 	if (b == NULL) {
-		d_error(_("invalid breakpoint number %u."), stop.break_point);
+		d_error(_("invalid breakpoint number %u"), stop.break_point);
 		return false;
 	}
 	if (!arg->a_int) {
@@ -5112,7 +5112,7 @@ unserialize_list(enum env_type type)
 			field_cnt++;
 			if (field_cnt == MAX_FIELD)
 #ifdef GAWKDEBUG
-				fatal("Increase MAX_FIELD and recompile.");
+				fatal("Increase MAX_FIELD and recompile");
 #else
 				return;
 #endif

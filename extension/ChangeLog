@@ -1,3 +1,29 @@
+2020-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* intdiv.c (do_intdiv): Change quotient and remainder to
+	local variables. No need to allocate/free them via the API.
+
+2020-07-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Use parent directory's m4 and build-aux.
+	* Makefile.am (ACLOCAL_AMFLAGS): Updated.
+	* m4, build-aux: Subdirectories removed.
+	* Makefile.in: Regenerated.
+
+2020-07-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Update to 1.16.
+
+2020-07-20  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.20.2.
+
+2020-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* intdiv.c (do_intdiv): Release the quotient and remainder
+	values when done with them. Fixes a memory leak. Thanks to
+	Andrew Schorr and valgrind for the report.
+
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Miscellanious fixes from Michael Builov <mbuilov@gmail.com>.

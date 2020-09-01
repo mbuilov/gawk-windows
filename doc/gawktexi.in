@@ -54,7 +54,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2020
+@set UPDATE-MONTH August, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -930,6 +930,7 @@ particular records in a file and perform operations upon them.
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                  The data types.
 * Memory Allocation Functions::         Functions for allocating memory.
+* API Ownership of MPFR and GMP Values:: Managing MPFR and GMP Values.
 * Constructor Functions::               Functions for creating values.
 * Registration Functions::              Functions to register things with
                                         @command{gawk}.
@@ -11643,9 +11644,14 @@ One possibly undesirable effect of this definition of remainder is that
 -17 % 8 = -1
 @end example
 
+@noindent
+This definition is compliant with the POSIX standard, which says that the @code{%}
+operator produces results equivalent to using the standard C
+@code{fmod()} function, and that function in turn works as just
+described.
+
 In other @command{awk} implementations, the signedness of the remainder
 may be machine-dependent.
-@c FIXME !!! what does posix say?
 
 @cindex portability @subentry @code{**} operator and
 @cindex @code{*} (asterisk) @subentry @code{**} operator
@@ -13752,6 +13758,7 @@ or with Boolean operators (indeed, they cannot be used with any operators).
 An @command{awk} program may have multiple @code{BEGIN} and/or @code{END}
 rules.  They are executed in the order in which they appear: all the @code{BEGIN}
 rules at startup and all the @code{END} rules at termination.
+
 @code{BEGIN} and @code{END} rules may be intermixed with other rules.
 This feature was added in the 1987 version of @command{awk} and is included
 in the POSIX standard.
@@ -13780,7 +13787,7 @@ run.@footnote{The original version of @command{awk} kept
 reading and ignoring input until the end of the file was seen.}  However, if an
 @code{END} rule exists, then the input is read, even if there are
 no other rules in the program.  This is necessary in case the @code{END}
-rule checks the @code{FNR} and @code{NR} variables.
+rule checks the @code{FNR} and @code{NR} variables, or the fields.
 
 @node I/O And BEGIN/END
 @subsubsection Input/Output from @code{BEGIN} and @code{END} Rules
@@ -13808,6 +13815,7 @@ Traditionally, due largely to implementation issues, @code{$0} and
 @code{NF} were @emph{undefined} inside an @code{END} rule.
 The POSIX standard specifies that @code{NF} is available in an @code{END}
 rule. It contains the number of fields from the last input record.
+@c FIXME: Update this if POSIX is ever fixed.
 Most probably due to an oversight, the standard does not say that @code{$0}
 is also preserved, although logically one would think that it should be.
 In fact, all of BWK @command{awk}, @command{mawk}, and @command{gawk}
@@ -13819,7 +13827,7 @@ The third point follows from the first two.  The meaning of @samp{print}
 inside a @code{BEGIN} or @code{END} rule is the same as always:
 @samp{print $0}.  If @code{$0} is the null string, then this prints an
 empty record.  Many longtime @command{awk} programmers use an unadorned
-@samp{print} in @code{BEGIN} and @code{END} rules, to mean @samp{@w{print ""}},
+@samp{print} in @code{BEGIN} and @code{END} rules to mean @samp{@w{print ""}},
 relying on @code{$0} being null.  Although one might generally get away with
 this in @code{BEGIN} rules, it is a very bad idea in @code{END} rules,
 at least in @command{gawk}.  It is also poor style, because if an empty
@@ -13863,12 +13871,19 @@ As with the @code{BEGIN} and @code{END} rules
 @ifdocbook
 (see the previous @value{SECTION}),
 @end ifdocbook
-all @code{BEGINFILE} rules in a program are merged, in the order they are
-read by @command{gawk}, and all @code{ENDFILE} rules are merged as well.
+@code{BEGINFILE} rules in a program execute in the order they are
+read by @command{gawk}. Similarly, all @code{ENDFILE} rules also execute in
+the order they are read.
 
-The body of the @code{BEGINFILE} rules is executed just before
+The bodies of the @code{BEGINFILE} rules execute just before
 @command{gawk} reads the first record from a file.  @code{FILENAME}
 is set to the name of the current file, and @code{FNR} is set to zero.
+
+Prior to @value{PVERSION} 5.1.1 of @command{gawk}, as an accident of the
+implementation, @code{$0} and the fields retained any previous values
+they had in @code{BEGINFILE} rules.  Starting with @value{PVERSION}
+5.1.1, @code{$0} and the fields are cleared, since no record has been
+read yet from the file that is about to be processed.
 
 The @code{BEGINFILE} rule provides you the opportunity to accomplish two tasks
 that would otherwise be difficult or impossible to perform:
@@ -13904,7 +13919,7 @@ it will be called before any @code{END} rules.
 The @code{ENDFILE} rule is executed even for empty input files.
 
 Normally, when an error occurs when reading input in the normal
-input-processing loop, the error is fatal.  However, if an @code{ENDFILE}
+input-processing loop, the error is fatal.  However, if a @code{BEGINFILE}
 rule is present, the error becomes non-fatal, and instead @code{ERRNO}
 is set.  This makes it possible to catch and process I/O errors at the
 level of the @command{awk} program.
@@ -13923,28 +13938,6 @@ forms of @code{getline} are allowed.
 @code{BEGINFILE} and @code{ENDFILE} are @command{gawk} extensions.
 In most other @command{awk} implementations, or if @command{gawk} is in
 compatibility mode (@pxref{Options}), they are not special.
-
-@c FIXME: For 4.2 maybe deal with this?
-@ignore
-Date:     Tue, 17 May 2011 02:06:10 PDT
-From:     rankin@pactechdata.com (Pat Rankin)
-Message-Id: <110517015127.20240f4a@pactechdata.com>
-Subject:  BEGINFILE
-To:       arnold@skeeve.com
-
-     The documentation for BEGINFILE states that FNR is 0, which seems
-pretty obvious.  It doesn't mention what the value of $0 is, and that's
-not obvious.  I think setting it to null before starting the BEGINFILE
-action would be preferable to leaving whatever was there in the last
-record of the previous file.
-
-     ENDFILE can retain the last record in $0.  I guess it has to if
-the END rule's actions see that value too.  But the beginning of a new
-file doesn't just mean that the old one has been closed; the old file
-is being superseded, so leaving the old data around feels wrong to me.
-[If the user wants to keep it on hand, he or she can use an ENDFILE
-rule to grab it before moving on to the next file.]
-@end ignore
 
 @node Empty
 @subsection The Empty Pattern
@@ -18030,7 +18023,7 @@ the possibly null separator string
 after @code{@var{array}[@var{i}]}.
 The possibly null leading separator will be in @code{@var{seps}[0]}.
 So a non-null @var{string} with @var{n} fields will have @var{n+1} separators.
-A null @var{string} will not have neither fields nor separators.
+A null @var{string} has no fields or separators.
 
 The @code{patsplit()} function splits strings into pieces in a
 manner similar to the way input lines are split into fields using @code{FPAT}
@@ -22794,7 +22787,7 @@ option, we take a different branch:
 
 First, we search this option for a possible embedded equal sign, as the
 specification of long options allows an argument to an option
-@samp{--someopt:} to be specified as @samp{--someopt=answer} as well as
+@samp{--someopt} to be specified as @samp{--someopt=answer} as well as
 @samp{@w{--someopt answer}}.
 
 @example
@@ -25015,8 +25008,6 @@ END @{
 @node Uniq Program
 @subsection Printing Nonduplicated Lines of Text
 
-@c FIXME: One day, update to current POSIX version of uniq
-
 @cindex printing @subentry unduplicated lines of text
 @cindex text, printing @subentry unduplicated lines of
 @cindex @command{uniq} utility
@@ -25026,7 +25017,7 @@ prints unique lines---hence the name.  @command{uniq} has a number of
 options. The usage is as follows:
 
 @display
-@command{uniq} [@option{-udc} [@code{-@var{n}}]] [@code{+@var{n}}] [@var{inputfile} [@var{outputfile}]]
+@command{uniq} [@option{-udc} [@code{-f @var{n}}] [@code{-s @var{n}}]] [@var{inputfile} [@var{outputfile}]]
 @end display
 
 The options for @command{uniq} are:
@@ -25042,14 +25033,14 @@ Print only nonrepeated (unique) lines.
 Count lines. This option overrides @option{-d} and @option{-u}.  Both repeated
 and nonrepeated lines are counted.
 
-@item -@var{n}
+@item -f @var{n}
 Skip @var{n} fields before comparing lines.  The definition of fields
 is similar to @command{awk}'s default: nonwhitespace characters separated
 by runs of spaces and/or TABs.
 
-@item +@var{n}
+@item -s @var{n}
 Skip @var{n} characters before comparing lines.  Any fields specified with
-@samp{-@var{n}} are skipped first.
+@option{-f} are skipped first.
 
 @item @var{inputfile}
 Data is read from the input file named on the command line, instead of from
@@ -25070,22 +25061,7 @@ and the @code{join()} library function
 (@pxref{Join Function}).
 
 The program begins with a @code{usage()} function and then a brief outline of
-the options and their meanings in comments.
-The @code{BEGIN} rule deals with the command-line arguments and options. It
-uses a trick to get @code{getopt()} to handle options of the form @samp{-25},
-treating such an option as the option letter @samp{2} with an argument of
-@samp{5}. If indeed two or more digits are supplied (@code{Optarg} looks
-like a number), @code{Optarg} is
-concatenated with the option digit and then the result is added to zero to make
-it into a number.  If there is only one digit in the option, then
-@code{Optarg} is not needed. In this case, @code{Optind} must be decremented so that
-@code{getopt()} processes it next time.  This code is admittedly a bit
-tricky.
-
-If no options are supplied, then the default is taken, to print both
-repeated and nonrepeated lines.  The output file, if provided, is assigned
-to @code{outputfile}.  Early on, @code{outputfile} is initialized to the
-standard output, @file{/dev/stdout}:
+the options and their meanings in comments:
 
 @cindex @code{uniq.awk} program
 @example
@@ -25101,26 +25077,62 @@ standard output, @file{/dev/stdout}:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Updated August 2020 to current POSIX
 @c endfile
 @end ignore
 @c file eg/prog/uniq.awk
 
 function usage()
 @{
-    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
+    print("Usage: uniq [-udc [-f fields] [-s chars]] [ in [ out ]]") > "/dev/stderr"
     exit 1
 @}
 
 # -c    count lines. overrides -d and -u
 # -d    only repeated lines
 # -u    only nonrepeated lines
-# -n    skip n fields
-# +n    skip n characters, skip fields first
+# -f n  skip n fields
+# -s n  skip n characters, skip fields first
+@c endfile
+@end example
 
+The POSIX standard for @command{uniq} allows options to start with
+@samp{+} as well as with @samp{-}.  An initial @code{BEGIN} rule
+traverses the arguments changing any leading @samp{+} to @samp{-}
+so that the @code{getopt()} function can parse the options:
+
+@example
+@c file eg/prog/uniq.awk
+# As of 2020, '+' can be used as option character in addition to '-'
+# Previously allowed use of -N to skip fields and +N to skip
+# characters is no longer allowed, and not supported by this version.
+
+BEGIN @{
+    # Convert + to - so getopt can handle things
+    for (i = 1; i < ARGC; i++) @{
+        first = substr(ARGV[i], 1, 1)
+        if (ARGV[i] == "--" || (first != "-" && first != "+"))
+            break
+        else if (first == "+")
+            # Replace "+" with "-"
+            ARGV[i] = "-" substr(ARGV[i], 2)
+    @}
+@}
+@c endfile
+@end example
+
+The next @code{BEGIN} rule deals with the command-line arguments and options.
+If no options are supplied, then the default is taken, to print both
+repeated and nonrepeated lines.  The output file, if provided, is assigned
+to @code{outputfile}.  Early on, @code{outputfile} is initialized to the
+standard output, @file{/dev/stdout}:
+
+@example
+@c file eg/prog/uniq.awk
 BEGIN @{
     count = 1
     outputfile = "/dev/stdout"
-    opts = "udc0:1:2:3:4:5:6:7:8:9:"
+    opts = "udcf:s:"
     while ((c = getopt(ARGC, ARGV, opts)) != -1) @{
         if (c == "u")
             non_repeated_only++
@@ -25128,25 +25140,13 @@ BEGIN @{
             repeated_only++
         else if (c == "c")
             do_count++
-        else if (index("0123456789", c) != 0) @{
-            # getopt() requires args to options
-            # this messes us up for things like -5
-            if (Optarg ~ /^[[:digit:]]+$/)
-                fcount = (c Optarg) + 0
-            else @{
-                fcount = c + 0
-                Optind--
-            @}
-        @} else
+        else if (c == "f")
+            fcount = Optarg + 0
+        else if (c == "s")
+            charcount = Optarg + 0
+        else
             usage()
     @}
-
-@group
-    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) @{
-        charcount = substr(ARGV[Optind], 2) + 0
-        Optind++
-    @}
-@end group
 
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
@@ -25277,20 +25277,15 @@ As a side note, this program does not follow our recommended convention of namin
 global variables with a leading capital letter.  Doing that would
 make the program a little easier to follow.
 
-@ifset FOR_PRINT
 The logic for choosing which lines to print represents a @dfn{state
-machine}, which is ``a device that can be in one of a set number of stable
-conditions depending on its previous condition and on the present values
-of its inputs.''@footnote{This is the definition returned from entering
-@code{define: state machine} into Google.}
-Brian Kernighan suggests that
-``an alternative approach to state machines is to just read
-the input into an array, then use indexing.  It's almost always
-easier code, and for most inputs where you would use this, just
-as fast.''  Consider how to rewrite the logic to follow this
-suggestion.
-@end ifset
-
+machine}, which is ``a device which can be in one of a set number
+of stable conditions depending on its previous condition and on the
+present values of its inputs.''@footnote{This definition is from
+@uref{https://www.lexico.com/en/definition/state_machine}.} Brian
+Kernighan suggests that ``an alternative approach to state machines is
+to just read the input into an array, then use indexing.  It's almost
+always easier code, and for most inputs where you would use this, just
+as fast.''  Consider how to rewrite the logic to follow this suggestion.
 
 
 @node Wc Program
@@ -28737,6 +28732,12 @@ front of the @code{BEGIN} and @code{END} rules,
 the @code{BEGINFILE} and @code{ENDFILE} rules,
 the pattern--action rules, and the functions.
 
+@item
+Functions are listed alphabetically. All functions in the @code{awk}
+namespace are listed first, in alphabetical order.  Then come the
+functions in namespaces.  The namespaces are listed in alphabetical order,
+and the functions within each namespace are listed alphabetically.
+
 @end itemize
 
 The profiled version of your program may not look exactly like what you
@@ -30972,7 +30973,6 @@ commands in a program.  This can be very enlightening, as the following
 partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
 
-@c FIXME: This will need updating if num-handler branch is ever merged in.
 @smallexample
 @group
 gawk> @kbd{dump}
@@ -33216,6 +33216,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 * General Data Types::                   The data types.
 * Memory Allocation Functions::          Functions for allocating memory.
 * Constructor Functions::                Functions for creating values.
+* API Ownership of MPFR and GMP Values:: Managing MPFR and GMP Values.
 * Registration Functions::               Functions to register things with
                                          @command{gawk}.
 * Printing Messages::                    Functions for printing messages.
@@ -33359,10 +33360,19 @@ does not support this keyword, you should either place
 @item
 All pointers filled in by @command{gawk} point to memory
 managed by @command{gawk} and should be treated by the extension as
-read-only.  Memory for @emph{all} strings passed into @command{gawk}
+read-only.
+
+Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from calling one of
 @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()},
 and is managed by @command{gawk} from then on.
+
+Memory for MPFR/GMP values that come from @command{gawk}
+should also be treated as read-only.  However, unlike strings,
+memory for MPFR/GMP values allocated by an extension and passed
+into @command{gawk} is @emph{copied} by @command{gawk}; the extension
+should then free the values itself to avoid memory leaks. This is
+discussed further in @strong{API Ownership of MPFR and GMP Values}.
 
 @item
 The API defines several simple @code{struct}s that map values as seen
@@ -33530,6 +33540,13 @@ in data received from @command{gawk}. In addition, by examining the
 @code{type} member, an extension can determine if the @code{ptr}
 member is either a GMP integer (type @code{mpz_ptr}), or an MPFR
 floating-point value (type @code{mpfr_ptr_t}), and cast it appropriately.
+
+@quotation CAUTION
+Any MPFR or MPZ values that you create and pass to @command{gawk}
+to save are @emph{copied}. This means you are responsible to release
+the storage once you're done with it. See the sample @code{intdiv}
+extension for some example code.
+@end quotation
 
 @item typedef void *awk_scalar_t;
 Scalars can be represented as an opaque type. These values are obtained
@@ -33717,7 +33734,16 @@ The arguments are the same as for the @code{emalloc()} macro.
 
 Two additional functions allocate MPFR and GMP objects for use
 by extension functions that need to create and then return such
-values:
+values.
+
+@quotation NOTE
+These functions are obsolete. Extension functions that need local MPFR
+and GMP values should simply allocate them on the stack and clear them,
+as any other code would.
+@end quotation
+
+@noindent
+The functions are:
 
 @table @code
 @item void *get_mpfr_ptr();
@@ -33739,6 +33765,9 @@ which is included from @code{<mpfr.h>}).  The actual return values are of
 types @code{mpfr_ptr} and @code{mpz_ptr} respectively, and you should cast
 the return values appropriately before assigning the results to variables
 of the correct types.
+
+The memory allocated by these functions should be freed with
+@code{gawk_free()}.
 
 @node Constructor Functions
 @subsection Constructor Functions
@@ -33780,14 +33809,11 @@ pointed to by @code{result}.
 This function creates a GMP number value in @code{result}.
 The @code{mpz} must be from a call to @code{get_mpz_ptr()}
 (and thus be of real underlying type @code{mpz_ptr}).
-@command{gawk} takes ownership of this memory.
 
 @item static inline awk_value_t *
 @itemx make_number_mpfr(void *mpfr, awk_value_t *result);
 This function creates an MPFR number value in @code{result}.
 The @code{mpfr} must be from a call to @code{get_mpfr_ptr()}.
-(and thus be of real underlying type @code{mpfr_ptr})
-@command{gawk} takes ownership of this memory.
 
 @item static inline awk_value_t *
 @itemx make_const_user_input(const char *string, size_t length, awk_value_t *result);
@@ -33814,6 +33840,44 @@ to be a @samp{char *} value pointing to data previously obtained from
 @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 
 @end table
+
+@node API Ownership of MPFR and GMP Values
+@subsection Managing MPFR and GMP Values
+@cindex MPFR values, API ownership of
+@cindex GMP values, API ownership of
+@cindex API, ownership of MPFR and GMP values
+
+MPFR and GMP values are different from string values, where you can
+``take ownership'' of the value simply by assigning pointers. For example:
+
+@example
+char *p = gawk_malloc(42);      p @ii{``owns'' the memory}
+char *q = p;
+p = NULL;                       @ii{now} q @ii{``owns'' it}
+@end example
+
+MPFR and GMP objects are indeed allocated on the stack or dynamically,
+but the MPFR and GMP libraries treat these objects as values, the same way that
+you would pass an @code{int} or a @code{double} by value.  There is no
+way to ``transfer ownership'' of MPFR and GMP objects.  Thus, code in
+an extension should look like this:
+
+@example
+mpz_t part1, part2, answer;             @ii{declare local values}
+
+mpz_set_si(part1, 21);                  @ii{do some computations}
+mpz_set_si(part2, 21);
+mpz_add(answer, part1, part2);
+@dots{}
+/* assume that result is a parameter of type (awk_value_t *). */
+make_number_mpz(answer, & result);      @ii{set it with final GMP value}
+
+mpz_clear(part1);                       @ii{release intermediate values}
+mpz_clear(part2);
+mpz_clear(answer);
+
+return result;
+@end example
 
 @node Registration Functions
 @subsection Registration Functions

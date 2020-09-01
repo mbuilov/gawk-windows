@@ -699,7 +699,7 @@ dump_fcall_stack(FILE *fp)
 	NODE *f, *func;
 	size_t i, k = 0;
 
-	if (!fcall_count)
+	if (fcall_count == 0)
 		return;
 	fprintf(fp, _("\n\t# Function Call Stack:\n\n"));
 
@@ -996,7 +996,7 @@ set_LINT(void)
 			}
 		}
 	} else {
-		if (! iszero(n))
+		if (! is_zero(n))
 			do_flags |= DO_LINT_ALL;
 	}
 
@@ -1439,7 +1439,7 @@ free_arrayfor(NODE *r)
 		NODE *n;
 		size_t num_elems = r->for_list_size;
 		NODE **list = r->for_list;
-		while (num_elems) {
+		while (num_elems > 0) {
 			n = list[--num_elems];
 			unref(n);
 		}
@@ -1607,7 +1607,7 @@ op_assign(OPCODE op)
 		break;
 	}
 
-	if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+	if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 		/* optimization */
 		t1->numbr = x;
 	} else {

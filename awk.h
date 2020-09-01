@@ -521,7 +521,6 @@ typedef struct exp_node {
 			uni_char_t *wsp;
 			size_t slen;
 			size_t wslen;
-			size_t sref;
 			unsigned idx;
 			enum commenttype comtype;
 		} val;
@@ -538,6 +537,7 @@ typedef struct exp_node {
 		return *this;
 	}
 #endif
+	size_t valref;
 } NODE;
 
 #define vname sub.nodep.name
@@ -573,7 +573,6 @@ typedef struct exp_node {
  */
 #define stptr	sub.val.sp		/* note: may not be NUL-terminated! (and may contain NULs) */
 #define stlen	sub.val.slen
-#define valref	sub.val.sref
 #define stfmt	sub.val.idx
 #define strndmode sub.val.rndmode
 #define wstptr	sub.val.wsp		/* note: NUL-terminated! (but may contain NULs) */
@@ -1190,8 +1189,6 @@ struct block_header {
 enum block_id {
 	BLOCK_NODE = 0,
 	BLOCK_BUCKET,
-	BLOCK_MPFR,
-	BLOCK_MPZ,
 	BLOCK_MAX	/* count */
 };
 
@@ -1481,7 +1478,7 @@ static inline uintmax_t get_number_uj(const NODE *n)
 	return r;
 }
 
-static bool iszero(NODE *n)
+static inline bool is_zero(NODE *n)
 {
 #if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic push
@@ -1512,7 +1509,7 @@ static bool iszero(NODE *n)
 #define is_mpg_float(n)		0
 #define is_mpg_integer(n)	0
 
-static inline bool iszero(const NODE *n)
+static inline bool is_zero(const NODE *n)
 {
 #if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic push
@@ -2373,7 +2370,7 @@ boolval(NODE *t)
 {
 	(void) fixtype(t);
 	if ((t->flags & NUMBER) != 0)
-		return ! iszero(t);
+		return ! is_zero(t);
 	return (t->stlen > 0);
 }
 
@@ -2442,7 +2439,7 @@ make_number_node_real(enum flagvals flags, const char *file, unsigned line)
 	getnode_at(r, file, line);
 	clearnode(r);
 	r->type = Node_val;
-	r->valref = 1u;
+	r->valref = 1;
 	r->flags = ((node_flags_t) flags|MALLOC|NUMBER|NUMCUR);
 	return r;
 }

@@ -41,7 +41,7 @@ static inline void
 unfield(NODE **l, NODE **r)
 {
 	/* if was a field, turn it into a var */
-	if (((*r)->flags & MALLOC) != 0 || (*r)->valref == 1u) {
+	if (((*r)->flags & MALLOC) != 0 || (*r)->valref == 1) {
 		(*l) = (*r);
 	} else {
 		(*l) = dupnode(*r);
@@ -71,7 +71,7 @@ r_interpret(INSTRUCTION *code)
 
 
 /* array subscript */
-#define mk_sub(n)  	(n == 1u ? POP_SCALAR() : concat_exp(n, true))
+#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, true))
 
 #ifdef EXEC_HOOK
 #define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (false)
@@ -110,7 +110,13 @@ top:
 
 		switch (op) {
 		case Op_rule:
-			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline */
+			currule = pc->in_rule;   /* for use in Op_K_next, Op_K_nextfile, Op_K_getline */
+			// 8/2020: See node BEGINFILE/ENDFILE in the manual.  We clear the record
+			// since conceptually we are before reading a new record from the
+			// upcoming file but haven't read it yet.
+			if (currule == BEGINFILE)
+				set_record("", 0, NULL);
+
 			/* fall through */
 		case Op_func:
 			source = pc->source_file;
@@ -618,7 +624,7 @@ mod:
 			lhs = TOP_ADDRESS();
 			t1 = *lhs;
 			force_number(t1);
-			if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 				/* optimization */
 				t1->numbr += x;
 				r = t1;
@@ -637,8 +643,8 @@ mod:
 			t1 = *lhs;
 			force_number(t1);
 			r = make_number(t1->numbr);
-			if (t1->valref == 1u && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
- 				/* optimization */
+			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+				/* optimization */
 				t1->numbr += x;
 			} else {
 				*lhs = make_number(t1->numbr + x);
@@ -764,13 +770,13 @@ mod:
 
 			if (t1 != *lhs) {
 				unref(*lhs);
-				if (t1->valref == 1u)
+				if (t1->valref == 1)
 					*lhs = t1;
 				else
 					*lhs = dupnode(t1);
 			}
 
-			if (t1 != t2 && t1->valref == 1u && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {
+			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {
 				size_t nlen = t1->stlen + t2->stlen;
 
 				erealloc(t1->stptr, char *, nlen + 1, "r_interpret");
@@ -949,7 +955,7 @@ mod:
 
 			/* sanity: check if empty */
 			num_elems = assoc_length(array);
-			if (!num_elems)
+			if (num_elems == 0)
 				goto arrayfor;
 
 			if (sorted_in == NULL)		/* do this once */
@@ -985,7 +991,7 @@ arrayfor:
 			r->for_array = array;		/* array */
 			PUSH(r);
 
-			if (!num_elems)
+			if (num_elems == 0)
 				JUMPTO(pc->target_jmp);   /* Op_arrayfor_final */
 		}
 			break;
@@ -1038,7 +1044,7 @@ arrayfor:
 			awk_value_t *ef_ret = pc->extfunc((int) arg_count, & result, f);
 			r = awk_value_to_node(ef_ret);
 			(void) POP_CODE();
-			while (arg_count--) {
+			while (arg_count-- > 0) {
 				t1 = POP();
 				if (t1->type == Node_val)
 					DEREF(t1);

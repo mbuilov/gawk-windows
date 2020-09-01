@@ -1169,7 +1169,7 @@ simple_stmt
 			if ($3 != NULL) {
 				NODE *n = $3->nexti->nexti->memory;
 
-				if ((n->flags & (STRING|STRCUR)) != 0 || ! iszero(n))
+				if ((n->flags & (STRING|STRCUR)) != 0 || ! is_zero(n))
 					goto regular_print;
 
 				bcfree($3->lasti);			/* Op_field_spec */
@@ -2419,7 +2419,7 @@ negate_num(NODE *n)
 
 #ifdef HAVE_MPFR
 	if (is_mpg_integer(n)) {
-		if (! iszero(n)) {
+		if (! is_zero(n)) {
 			mpz_neg(n->mpg_i, n->mpg_i);
 			return;
 		}
@@ -4991,7 +4991,7 @@ shadow_funcs(void)
 
 	/* End with fatal if the user requested it.  */
 	if (shadow && lintfunc == r_fatal)
-		lintwarn(_("there were shadowed variables."));
+		lintwarn(_("there were shadowed variables"));
 }
 
 

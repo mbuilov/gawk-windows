@@ -772,7 +772,7 @@ str2wstr(NODE *n, size_t **ptr)
 			/* Warn the user something's wrong */
 			if (! warned) {
 				warned = true;
-				awkwarn(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
+				awkwarn(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale"));
 			}
 
 			/*
@@ -1024,10 +1024,6 @@ void init_btowc_cache(void)
 struct block_header nextfree[BLOCK_MAX] = {
 	BLOCK_HEADER_INIT(NODE, "node"),
 	BLOCK_HEADER_INIT(BUCKET, "bucket"),
-#ifdef HAVE_MPFR
-	BLOCK_HEADER_INIT(mpfr_t, "mpfr"),
-	BLOCK_HEADER_INIT(mpz_t, "mpz"),
-#endif
 };
 
 #ifdef MEMDEBUG

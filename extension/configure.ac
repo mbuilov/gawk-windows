@@ -27,10 +27,10 @@ AC_INIT([GNU Awk Bundled Extensions],[5.1.0],[bug-gawk@gnu.org],[gawk-extensions
 
 AC_PREREQ([2.69])
 
-AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([../m4])
+AC_CONFIG_AUX_DIR([../build-aux])
 
-AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
+AM_INIT_AUTOMAKE([1.16 -Wall -Werror])
 
 GAWK_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
@@ -55,7 +55,7 @@ AC_LANG([C])
 dnl initialize GNU gettext
 dnl this seems to help with finding MPFR on some systems, too.
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.19.7])
+AM_GNU_GETTEXT_VERSION([0.20.2])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 

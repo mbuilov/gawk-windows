@@ -1,5 +1,5 @@
 # threadlib.m4 serial 11 (gettext-0.18.2)
-dnl Copyright (C) 2005-2014 Free Software Foundation, Inc.
+dnl Copyright (C) 2005-2015 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -68,7 +68,7 @@ changequote(,)dnl
          dnl bugs that lead to endless loops or crashes. See
          dnl <http://cygwin.com/ml/cygwin/2009-08/msg00283.html>.
          osf*) gl_use_threads=no ;;
-         cygwin* | msys*)
+         cygwin*)
                case `uname -r` in
                  1.[0-5].*) gl_use_threads=no ;;
                  *)         gl_use_threads=yes ;;

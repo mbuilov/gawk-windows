@@ -1,6 +1,6 @@
 /* locale information
 
-   Copyright 2016-2019 Free Software Foundation, Inc.
+   Copyright 2016-2020 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ using_simple_locale (bool multibyte)
     {
       a[0] = (char) i;
       b[0] = (char) (i + 1);
-      if (strcoll (a, b) <= 0)
+      if (0 <= strcoll (a, b))
         return false;
     }
 

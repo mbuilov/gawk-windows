@@ -298,7 +298,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	/*
 	 * Maybe "+" or "-" was the field.  mpg_strtoui
 	 * won't check for that and set errno, so we have
-	 * to check manuall.
+	 * to check manually.
 	 */
 	if (*cp1 == '\0') {
 		*cpend = save;
@@ -623,7 +623,7 @@ set_ROUNDMODE(void)
 			ROUND_MODE = rndm;
 			MPFR_round_mode = n->stptr[0];
 		} else
-			awkwarn(_("RNDMODE value `%.*s' is invalid"), TO_PRINTF_WIDTH(n->stlen), n->stptr);
+			awkwarn(_("ROUNDMODE value `%.*s' is invalid"), TO_PRINTF_WIDTH(n->stlen), n->stptr);
 	}
 }
 
@@ -1565,9 +1565,9 @@ mpg_interpret(INSTRUCTION **cp)
 		case Op_assign_exp:
 			fprintf(stderr, "++ %s: mpg_interpret\n", opcode2str(op));
 			fflush(stderr);
-			// fall thru to break
-		default:
 			break;
+		default:
+			return true;	/* unhandled */
 		}
 	}
 

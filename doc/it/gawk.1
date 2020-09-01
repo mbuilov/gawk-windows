@@ -13,6 +13,7 @@
 .\"Aggiornam. a gawk-5.0.0 di A.G. Colombo - Luglio 2019
 .\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - revis. M. Curreli - Aprile 2020
 .\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Giugno 2020
+.\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Luglio 2020
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -29,7 +30,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Mar 23 2020" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jul 2 2020" "Free Software Foundation" "Utility Commands"
 .SH NOME
 gawk \- linguaggio per il riconoscimento e il trattamento di espressioni
 regolari
@@ -337,6 +338,18 @@ il sorgente del programma principale.
 I file letti come specificato da
 .B \-\^\-include
 sono trattati come se iniziassero con la direttiva implicita \fB@namespace "awk"\fR.
+.TP
+.PD 0
+.BI \-I
+.TP
+.PD
+.B \-\^\-trace
+Stampa i nomi del codice-byte generato internamente, nell'ordine
+in cui sono incontrati durante l'esecuzione del programma.
+Questa trace è stampata sullo standard error.
+Ogni ``codice operativo'' è preceduto da un segno
+.B +
+nell'output.
 .TP
 .PD 0
 .BI "\-l " lib
@@ -929,7 +942,6 @@ valori per i suoi campi.
 .SS Variabili predefinite
 Le variabili predefinite di
 .IR gawk " sono:
-.PP
 .TP "\w'\fBFIELDWIDTHS\fR'u+1n"
 .B ARGC
 Il numero di argomenti da riga di comando (non include le opzioni di
@@ -1685,7 +1697,6 @@ Le costanti stringa in \*(AK sono sequenze di caratteri racchiusi tra
 doppi apici (come \fB"valore"\fR).  All'interno delle stringhe, sono riconosciute alcune
 .IR "sequenze di protezione" ,
 come in in C.  Queste sono:
-.PP
 .TP "\w'\fB\e\^\fIddd\fR'u+1n"
 .B \e\e
 Una barra inversa letterale.
@@ -2216,7 +2227,6 @@ dei linguaggi.  Gli operatori, le strutture di controllo e le istruzioni
 di input/output ricalcano quelli corrispondenti nel linguaggio C.
 .SS Operatori
 Gli operatori di \*(AK, in ordine decrescente di precedenza, sono
-.PP
 .TP "\w'\fB*= /= %= ^=\fR'u+1n"
 .BR ( \&.\|.\|. )
 Raggruppamento
@@ -2324,7 +2334,6 @@ le seguenti:
 .RE
 .SS "Istruzioni di I/O"
 Le istruzioni di input/output sono le seguenti:
-.PP
 .TP "\w'\fBprintf \fIfmt, lista-espressioni\fR'u+1n"
 \fBclose(\fIfile \fR[\fB, \fIcome\fR]\fB)\fR
 Chiude un file, una pipe o un coprocesso.
@@ -2843,7 +2852,6 @@ Si può usare solo con l'operatore bidirezionale di I/O
 Come sopra, ma usando porte UDP/IP invece che TCP/IP.
 .SS Funzioni numeriche
 \*(AK ha le seguenti funzioni aritmetiche predefinite:
-.PP
 .TP "\w'\fBsrand(\fR[\fIespressione\^\fR]\fB)\fR'u+1n"
 .BI atan2( y , " x" )
 Restituisce l'arcotangente di
@@ -2909,7 +2917,6 @@ del seme.
 .SS Funzioni di stringa
 .I Gawk
 offre le seguenti funzioni di stringa predefinite:
-.PP
 .TP "\w'\fBsprintf(\^\fIfmt\fB\^, \fIlista-espressioni\^\fB)\fR'u+1n"
 \fBasort(\fIs \fR[\fB, \fId\fR [\fB, \fIcome\fR] ]\fB)\fR
 Restituisce il numero di elementi del
@@ -3263,7 +3270,6 @@ dei file di log contenenti informazioni relative alla data e all'ora [di un even
 .I gawk
 mette a disposizione le seguenti funzioni per ottenere data e ora
 e per formattarle come desiderato.
-.PP
 .TP "\w'\fBsystime()\fR'u+1n"
 \fBmktime(\fIdatespec\fR [\fB, \fIutc-flag\fR]\fB)\fR
 Traduce
@@ -3386,7 +3392,6 @@ bit.
 Restituisce il risultato derivante dall'applicazione della funzione booleana
 XOR bit per bit ai valori degli argomenti della lista degli argomenti.  Gli
 argomenti devono essere almeno due.
-.PP
 .SS Funzioni di tipo
 Le seguenti funzioni forniscono informazioni relative agli argomenti
 che vengono loro passati.
@@ -3603,7 +3608,6 @@ chiede a
 .I gawk
 di scrivere il profilo e lo stack delle chiamate a funzione e di terminare l'esecuzione del programma.
 .SH INTERNAZIONALIZZAZIONE
-.PP
 Le costanti di tipo stringa sono sequenze di caratteri racchiuse fra doppi
 apici.  In un ambiente dove non si parla inglese, è possibile segnare delle
 stringhe in un programma \*(AK per richiederne la traduzione nel linguaggio

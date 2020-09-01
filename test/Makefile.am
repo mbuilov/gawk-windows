@@ -982,6 +982,10 @@ EXTRA_DIST = \
 	profile12.ok \
 	profile13.awk \
 	profile13.ok \
+	profile14.awk \
+	profile14.ok \
+	profile15.awk \
+	profile15.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -1424,7 +1428,8 @@ GAWK_EXT_TESTS = \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 profile11 profile12 profile13 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 profile12 profile13 \
+        profile14 profile15 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	sandbox1 shadow shadowbuiltin sortfor sortfor2 sortu \
@@ -1486,7 +1491,8 @@ NEED_POSIX = escapebrace printf0 posix2008sub paramasfunc1 paramasfunc2 muldimpo
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
-	profile4 profile5 profile8 profile9 profile10 profile11 profile13
+	profile4 profile5 profile8 profile9 profile10 profile11 profile13 \
+	profile14 profile15
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2
@@ -1506,10 +1512,6 @@ FAIL_CODE1 = \
 	fnamedat fnarray fnarray2 fnasgnm fnmisc funsmnam gsubasgn \
 	incdupe2 lintwarn match2 mixed1 noparms paramasfunc1 paramasfunc2 \
 	paramdup paramres parseme readbuf synerr1 synerr2 unterm
-
-# List of files which have .ok versions for MPFR
-CHECK_MPFR = \
-	arraytype fnarydel fnparydl forcenum numrange rand
 
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
@@ -1554,6 +1556,7 @@ EXPECTED_FAIL_ZOS = \
 	ignrcas2 lc_num1 localenl localenl mbfw1 mbprintf1 mbprintf2 \
 	mbprintf3 mbprintf4 mbprintf5 mbstr1 mbstr2 mtchi18n nlstringtest \
 	nofile nonfatal2 numrange printhuge profile5 profile5 rebt8b2 \
+	posix_compare \
 	regrange reint2 rri1 sigpipe1 sort1 sortfor sortu space sprintfc \
 	subamp subi18n symtab1 symtab11 symtab8 timeout wideidx wideidx2 \
 	widesub widesub2 widesub3 widesub4
@@ -2250,9 +2253,9 @@ testext::
 	@echo $@
 	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
-	fi
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum'; \
+	then cmp "."/$@-mpfr.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; \
+	else cmp "."/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt ; fi
 
 getfile:
 	@echo $@
@@ -2400,10 +2403,9 @@ ignrcas3::
 arrdbg:
 	@echo $@
 	@$(AWK) -v "okfile=./$@.ok" -v "mpfr_okfile=./$@-mpfr.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; else \
-	$(CMP) ./$@-mpfr.ok _$@ && rm -f _$@ ./$@.ok ./$@-mpfr.ok ; \
-	fi
-
+	@-if echo "$$GAWK_TEST_ARGS" | egrep -q -e '-M|--bignum'; \
+	then cmp "."/$@-mpfr.ok _$@ && rm -f _$@ $@.ok $@-mpfr.ok ; \
+	else cmp "."/$@.ok _$@ && rm -f _$@ $@.ok $@-mpfr.ok ; fi
 
 sourcesplit:
 	@echo $@

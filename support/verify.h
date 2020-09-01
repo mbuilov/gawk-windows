@@ -1,6 +1,6 @@
 /* Compile-time assert-like macros.
 
-   Copyright (C) 2005-2006, 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2009-2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -244,6 +244,22 @@ template <int w>
 
 /* @assert.h omit start@  */
 
+#if defined __GNUC__ && 3 < __GNUC__ + (3 < __GNUC_MINOR__ + (4 <= __GNUC_PATCHLEVEL__))
+# define _GL_HAS_BUILTIN_TRAP 1
+#elif defined __has_builtin
+# define _GL_HAS_BUILTIN_TRAP __has_builtin (__builtin_trap)
+#else
+# define _GL_HAS_BUILTIN_TRAP 0
+#endif
+
+#if defined __GNUC__ && 4 < __GNUC__ + (5 <= __GNUC_MINOR__)
+# define _GL_HAS_BUILTIN_UNREACHABLE 1
+#elif defined __has_builtin
+# define _GL_HAS_BUILTIN_UNREACHABLE __has_builtin (__builtin_unreachable)
+#else
+# define _GL_HAS_BUILTIN_UNREACHABLE 0
+#endif
+
 /* Each of these macros verifies that its argument R is nonzero.  To
    be portable, R should be an integer constant expression.  Unlike
    assert (R), there is no run-time overhead.
@@ -271,24 +287,29 @@ template <int w>
 # define verify(R) _GL_VERIFY (R, "verify (" #R ")", -)
 #endif
 
-#ifndef __has_builtin
-# define __has_builtin(x) 0
-#endif
-
 /* Assume that R always holds.  Behavior is undefined if R is false,
-   fails to evaluate, or has side effects.  Although assuming R can
-   help a compiler generate better code or diagnostics, performance
-   can suffer if R uses hard-to-optimize features such as function
-   calls not inlined by the compiler.  */
+   fails to evaluate, or has side effects.
 
-#if __has_builtin (__builtin_unreachable) \
-     || (defined __GNUC__ && 4 < __GNUC__ + (5 <= __GNUC_MINOR__))
+   'assume (R)' is a directive from the programmer telling the
+   compiler that R is true so the compiler needn't generate code to
+   test R.  This is why 'assume' is in verify.h: it's related to
+   static checking (in this case, static checking done by the
+   programmer), not dynamic checking.
+
+   'assume (R)' can affect compilation of all the code, not just code
+   that happens to be executed after the assume (R) is "executed".
+   For example, if the code mistakenly does 'assert (R); assume (R);'
+   the compiler is entitled to optimize away the 'assert (R)'.
+
+   Although assuming R can help a compiler generate better code or
+   diagnostics, performance can suffer if R uses hard-to-optimize
+   features such as function calls not inlined by the compiler.  */
+
+#if _GL_HAS_BUILTIN_UNREACHABLE
 # define assume(R) ((R) ? (void) 0 : __builtin_unreachable ())
 #elif 1200 <= _MSC_VER
 # define assume(R) __assume (R)
-#elif ((defined GCC_LINT || defined lint) \
-       && (__has_builtin (__builtin_trap) \
-           || 3 < __GNUC__ + (3 < __GNUC_MINOR__ + (4 <= __GNUC_PATCHLEVEL__))))
+#elif (defined GCC_LINT || defined lint) && _GL_HAS_BUILTIN_TRAP
   /* Doing it this way helps various packages when configured with
      --enable-gcc-warnings, which compiles with -Dlint.  It's nicer
      when 'assume' silences warnings even with older GCCs.  */

@@ -4157,7 +4157,7 @@ do_typeof(nargs_t nargs)
 			/* fall through */
 		default:
 			if (res == NULL) {
-				awkwarn(_("typeof detected invalid flags combination `%s'; please file a bug report."), flags2str(arg->flags));
+				awkwarn(_("typeof detected invalid flags combination `%s'; please file a bug report"), flags2str(arg->flags));
 				res = "unknown";
 			}
 			break;

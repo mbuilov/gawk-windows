@@ -253,7 +253,7 @@ extern "C" {
 
 /* Current version of the API. */
 #define gawk_api_major_version 4
-#define gawk_api_minor_version 0
+#define gawk_api_minor_version 1
 enum {
 	GAWK_API_MAJOR_VERSION = gawk_api_major_version,
 	GAWK_API_MINOR_VERSION = gawk_api_minor_version
@@ -542,6 +542,13 @@ enum AWK_NUMBER_TYPE {
 	AWK_NUMBER_TYPE_MPFR,
 	AWK_NUMBER_TYPE_MPZ
 };
+
+/*
+ * When type is AWK_NUMBER_MPFR or AWK_NUMBER_MPZ, the memory pointed to
+ * by the ptr member belongs to gawk if it came from gawk.  Otherwise the
+ * memory belongs to the extension and gawk copies it when its received.
+ * See the manual for further discussion.
+ */
 
 typedef struct awk_number {
 	double d;	/* always populated in data received from gawk */
@@ -993,20 +1000,6 @@ typedef struct gawk_api {
 					awk_flat_array_t *data);
 
 	/*
-	 * A function that returns mpfr data should call this function
-	 * to allocate and initialize an mpfr_ptr for use in an
-	 * awk_value_t structure that will be handed to gawk.
-	 */
-	void *(*api_get_mpfr)(void);
-
-	/*
-	 * A function that returns mpz data should call this function
-	 * to allocate and initialize an mpz_ptr for use in an
-	 * awk_value_t structure that will be handed to gawk.
-	 */
-	void *(*api_get_mpz)(void);
-
-	/*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype argument, so that may be
@@ -1208,9 +1201,6 @@ r_set_array_element_by_elem(const gawk_api_t *api,
 #define get_file(name, namelen, filetype, fd, ibuf, obuf) \
 	(gawk_api()->api_get_file(name, namelen, filetype, fd, ibuf, obuf))
 
-#define get_mpfr_ptr()	((mpfr_ptr) gawk_api()->api_get_mpfr())
-#define get_mpz_ptr()	((mpz_ptr) gawk_api()->api_get_mpz())
-
 #define register_ext_version(version) \
 	(gawk_api()->api_register_ext_version(version))
 
@@ -1370,8 +1360,7 @@ make_number(double num, awk_value_t *result)
 
 /*
  * make_number_mpz --- make an mpz number value in result.
- * The mpz_ptr_val must be from a call to get_mpz_ptr. Gawk will now
- * take ownership of this memory.
+ * Gawk will copy number value the mpz_ptr_val points to.
  */
 
 static inline awk_value_t *
@@ -1385,8 +1374,7 @@ make_number_mpz(void *mpz_ptr_val, awk_value_t *result)
 
 /*
  * make_number_mpfr --- make an mpfr number value in result.
- * The mpfr_ptr_val must be from a call to get_mpfr_ptr. Gawk will now
- * take ownership of this memory.
+ * Gawk will copy number value the mpfr_ptr_val points to.
  */
 
 static inline awk_value_t *

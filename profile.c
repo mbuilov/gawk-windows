@@ -2085,6 +2085,9 @@ pp_namespace(const char *name, INSTRUCTION *comment)
 	// info saved in Op_namespace instructions.
 	current_namespace = name;
 
+	// force newline, could be after a comment
+	fprintf(prof_fp, "\n");
+
 	if (do_profile)
 		prof_indent(SPACEOVER);
 

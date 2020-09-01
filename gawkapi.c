@@ -31,14 +31,6 @@
 #include "mscrtx/localerpl.h"
 #endif
 
-#ifdef HAVE_MPFR
-#define getmpfr(n)	getblock(n, BLOCK_MPFR, mpfr_ptr)
-#define freempfr(n)	freeblock(n, BLOCK_MPFR)
-
-#define getmpz(n)	getblock(n, BLOCK_MPZ, mpz_ptr)
-#define freempz(n)	freeblock(n, BLOCK_MPZ)
-#endif
-
 /* Declare some globals used by api_get_file: */
 extern INSTRUCTION *main_beginfile;
 
@@ -490,7 +482,7 @@ assign_number(NODE *node, awk_value_t *val)
 		val->num_ptr = &node->mpg_i;
 		break;
 	default:
-		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
+		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report"), flags2str(node->flags));
 	}
 #endif
 }
@@ -576,7 +568,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -610,7 +602,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -637,7 +629,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -670,7 +662,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				}
 				/* fall through */
 			default:
-				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				awkwarn(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report"), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
 				break;
 			}
@@ -1262,42 +1254,6 @@ api_release_value(awk_value_cookie_t value)
 	return awk_true;
 }
 
-/* api_get_mpfr --- allocate an mpfr_ptr */
-
-static void *
-api_get_mpfr(void)
-{
-#ifdef HAVE_MPFR
-	mpfr_ptr p;
-	getmpfr(p);
-	mpfr_init(p);
-	return p;
-#else
-	fatal(_("api_get_mpfr: MPFR not supported"));
-# ifndef DONT_COMPILE_UNREACHABLE_CODE
-	return NULL;	// silence compiler warning
-# endif
-#endif
-}
-
-/* api_get_mpz --- allocate an mpz_ptr */
-
-static void *
-api_get_mpz(void)
-{
-#ifdef HAVE_MPFR
-	mpz_ptr p;
-	getmpz(p);
-	mpz_init(p);
-	return p;
-#else
-	fatal(_("api_get_mpfr: MPFR not supported"));
-# ifndef DONT_COMPILE_UNREACHABLE_CODE
-	return NULL;	// silence compiler warning
-# endif
-#endif
-}
-
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
@@ -1570,10 +1526,6 @@ gawk_api_t api_impl = {
 	api_clear_array,
 	api_flatten_array_typed,
 	api_release_flattened_array,
-
-	/* Memory allocation */
-	api_get_mpfr,
-	api_get_mpz,
 
 	/* Find/open a file */
 	api_get_file,

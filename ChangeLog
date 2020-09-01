@@ -1,3 +1,127 @@
+2020-08-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* interpret.h (r_interpret): At Op_rule, check if in BEGINFILE. If so,
+	clear the record.  Fixes an issue reported by Pat Rankin in May, 2011.
+
+2020-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y, builtin.c, command.y, debug.c, gawkapi.c,
+	io.c, node.c: Make all messages consistent: Remove final periods
+	from messages that had them.
+	* TODO: Updated.
+
+2020-08-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (NODE): Move valref completely out of the union. Fixes
+	core dumps on old GCC on CentOS 7.
+
+2020-08-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix TIDYMEM / use of mtrace.
+
+	* configure.ac: Add mtrace to list of functions searched for.
+	* symbol.c (make_symbol): Set valref to 1. Allows the
+	release_all_vars function to work.
+
+	Unrelated:
+
+	* array.c (value_info): Spell ROUNDMODE correctly in output.
+	* mpfr.c (set_ROUNDMODE): Ditto.
+
+2020-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Regenerated with Bison 3.7.1.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* profile.c (pp_namespace): Always print a newline before the
+	@namespace, in case it comes after a comment. Thanks to J Naman
+	for the report.
+	* symbol.c (comp_symbol): Adjust comparison so that names in the
+	awk namespace come out first. Makes the order of functions in
+	pretty-printed output more sane. Thanks also to J Naman for
+	getting me to explore this issue.
+
+2020-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* custom.h (FLEXIBLE_ARRAY_MEMBER): Define to 1 for dfa.h.
+
+2020-07-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Eliminate 'iszero: redefined' warning from tcc.
+
+	* awk.h (is_zero): Renamed from `iszero'.
+	(boolval): Update usage.
+	* awkgram.y [GRAMMAR]: Ditto.
+	(negate_num): Ditto.
+	* debug.c (condition_triggered): Ditto.
+	* eval.c (set_LINT): Ditto.
+
+2020-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Regenerated with Bison 3.7.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* gawkapi.h (api_get_mpfr, api_get_mpz): Mark as obsolete.
+
+2020-07-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.in: Regenerated.
+
+2020-07-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Update to 1.16.
+	* ar-lib, compile, config.guess, config.rpath, config.sub,
+	depcomp, install-sh, missing, ylwrap: Moved to build-aux.
+
+2020-07-20  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.20.2.
+
+2020-07-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* NEWS: Fix title on leading set of changes. Thanks to
+	Marcus <marcuscruse@ya.ru> for the report.
+
+	Unrelated: Bump minor API version since semantics have changed.
+
+	* gawkapi.h (api_minor_version): Increase to 1.
+
+	Unrelated: Fix a spelling error in a comment.
+
+	* mpfr.c (force_mpnum): Fix a typo.
+
+2020-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (gawk_api_minor_version): Increase, since the
+	MPFR/MPZ stuff changed some.  Remains source and binary
+	compatible, but semantics are different.
+
+2020-07-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish cleaning up MPFR valgrind issues.
+
+	* awk.h (struct block_header): Remove MPFR and GMP enums.
+	* gawkapi.c (getmpfr, freempfr, getmpz, freempz): Removed
+	(api_get_mpfr): Use emalloc instead of getmpfr.
+	(api_get_mpz): Use emalloc instead of getmpz.
+	* gawkapi.h: Add comments on MPFR and MPZ
+	(make_number_mpfr, make_number_mpz): Update comments.
+	* node.c (nextfree): Remove mpfr and mpz entries.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* config.guess, config.sub: Updated from GNULIB.
+
+2020-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mpfr.c (mpg_interpret): Small speedup. If do_itrace and opcode is
+	not one that's handled, return early.
+
 2020-07-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mpfr.c (mpg_interpret): Make the instruction tracing more sane.

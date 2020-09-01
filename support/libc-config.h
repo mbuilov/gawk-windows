@@ -1,6 +1,6 @@
 /* System definitions for code taken from the GNU C Library
 
-   Copyright 2017-2019 Free Software Foundation, Inc.
+   Copyright 2017-2020 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -55,8 +55,17 @@
 
 #ifndef __glibc_clang_prereq
 # if defined __clang_major__ && defined __clang_minor__
-#  define __glibc_clang_prereq(maj, min) \
-     ((maj) < __clang_major__ + ((min) <= __clang_minor__))
+#  ifdef __apple_build_version__
+/* Apple for some reason renumbers __clang_major__ and __clang_minor__.
+   Gnulib code uses only __glibc_clang_prereq (3, 5); map it to
+   6000000 <= __apple_build_version__.  Support for other calls to
+   __glibc_clang_prereq can be added here as needed.  */
+#   define __glibc_clang_prereq(maj, min) \
+      ((maj) == 3 && (min) == 5 ? 6000000 <= __apple_build_version__ : 0)
+#  else
+#   define __glibc_clang_prereq(maj, min) \
+      ((maj) < __clang_major__ + ((min) <= __clang_minor__))
+#  endif
 # else
 #  define __glibc_clang_prereq(maj, min) 0
 # endif
@@ -190,4 +199,5 @@
 
 /* A substitute for glibc <shlib-compat.h>, good enough for Gnulib.  */
 #define SHLIB_COMPAT(lib, introduced, obsoleted) 0
-#define versioned_symbol(lib, local, symbol, version)
+#define compat_symbol(lib, local, symbol, version) extern int dummy
+#define versioned_symbol(lib, local, symbol, version) extern int dummy

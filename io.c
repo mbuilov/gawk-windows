@@ -1223,7 +1223,7 @@ close_one(void)
 			rp->flag |= RED_USED;
 			errno = 0;
 			if (rp->output.gawk_fclose(&rp->output) != 0)
-				awkwarn(_("close of `%s' failed: %s."),
+				awkwarn(_("close of `%s' failed: %s"),
 					rp->value, strerror(errno));
 			awk_output_buf_reset(&rp->output);
 			break;
@@ -1524,13 +1524,13 @@ flush_io(void)
 #define messagefunc printf
 #endif
 				if ((rp->flag & RED_PIPE) != 0)
-					messagefunc(_("pipe flush of `%s' failed: %s."),
+					messagefunc(_("pipe flush of `%s' failed: %s"),
 						rp->value, strerror(errno));
 				else if ((rp->flag & RED_TWOWAY) != 0)
-					messagefunc(_("co-process flush of pipe to `%s' failed: %s."),
+					messagefunc(_("co-process flush of pipe to `%s' failed: %s"),
 						rp->value, strerror(errno));
 				else
-					messagefunc(_("file flush of `%s' failed: %s."),
+					messagefunc(_("file flush of `%s' failed: %s"),
 						rp->value, strerror(errno));
 #if defined _MSC_VER && defined _PREFAST_
 #undef messagefunc

@@ -4,10 +4,10 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
 
-Changes from 5.0.1 to 5.0.2
+Changes from 5.1.0 to 5.1.1
 ---------------------------
 
-1. Infrastructure upgrades: Bison 3.6.3.
+1. Infrastructure upgrades: Bison 3.7.1, Gettext 0.20.2.
 
 2. asort and asorti now allow FUNCTAB and SYMTAB as the first argument if a
    second destination array is supplied. Similarly, using either array as
@@ -20,6 +20,22 @@ Changes from 5.0.1 to 5.0.2
 
 4. A number of subtle bugs relating to MPFR mode that caused differences
    between regular operation and MPFR mode have been fixed.
+
+5. The API now handles MPFR/GMP values slightly differently, requiring
+   different memory management for those values. See the manual for the
+   details if you have an extension using those values.  As a result,
+   the minor version was incremented.
+
+6. The duplication of m4 and build-aux directories between the main
+   directory and the extension directory has been removed. This
+   simplifies the distribution.
+
+7. The test suite has been improved, making it easier to run the entire
+   suite with -M. Use `GAWK_TEST_ARGS=-M make check' to do so.
+
+8. Profiling and pretty-printing output has been modified slightly so
+   that functions are presented in a reasonable order with respect
+   to the namespaces that contain them.
 
 Changes from 5.0.1 to 5.1.0
 ---------------------------

@@ -1,0 +1,38 @@
+#: 200810_ Prettyprint weirdness to show Arnold
+BEGIN {
+	IGNORECASE = 1
+	printf ("\n")
+	printf "test \"%s\"\tin FUNCTAB=%s (good!)\n", "masterlib::libfunc", "masterlib::libfunc" in FUNCTAB
+	exit
+	#..1.1.1...............
+}
+
+# --5-5-5-----------
+
+#..4.4.4.............
+function overridefunc(note)
+{
+	printf "%s:\tHello Lone Star state from @namespace awk\n", note
+}
+
+@namespace "masterlib"	# masterlib is library of "default" user-defined functions
+
+
+# e-o-function tstlib()
+
+#..3.3.3.............
+function libfunc(note)
+{
+	printf "%s:\tHello World from @namespace masterlib\n", note
+}
+
+@namespace "nlib"
+
+
+# e-o-begin
+
+#..2.2.2.............
+function tstlib(note)
+{
+	printf "Tstv1=%s;\tfrom @namespace nlib\n", Tstv1
+}
