@@ -14,7 +14,7 @@ for %%a in (C English_USA.28591 en_US.UTF-8) do (
   ^(echo.line7^)&^
   ^(echo.line8^)&^
   ^(echo.line9^)
-  ) | "%~1" --posix -f localenl.awk || ((echo.LC_ALL=%%a FAILED) & endlocal & exit /b)
+  ) | %* --posix -f localenl.awk || ((echo.LC_ALL=%%a FAILED) & endlocal & exit /b)
   (echo.LC_ALL=%%a passed)
 )
 endlocal
