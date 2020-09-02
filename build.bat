@@ -41,6 +41,7 @@ setlocal
 
 :: re-execute batch file to avoid pollution of the environment variables space of the caller process
 if not defined BUILDBATRECURSIVE (
+  set TERM_PROGRAM=
   set "BUILDBATRECURSIVE=%CMDCMDLINE:"=%"
   %SYSTEMROOT%\System32\cmd.exe /s /c "call "%~dpnx0" "%*""
   exit /b
