@@ -419,9 +419,12 @@ set "CMN_DEFINES=%CMN_DEFINES% -D_POSIX_C_SOURCE"
 
 set WARNING_OPTIONS=-Wall
 
+:: MinGW.org: mingw-printf-format recognition is broken for C++
+if defined GCC_IS_MINGW_ORG if defined COMPILE_AS_CXX set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-format"
+
 if not defined BUILD_PEDANTIC goto :gcc_no_pedantic
 
-:: everything
+:: common C/C++ warnings
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wextra"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Waddress"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Waddress-of-packed-member"
@@ -464,10 +467,7 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfloat-conversion"
 ::set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wfloat-equal"
 
 :: MinGW.org: mingw-printf-format recognition is broken for C++
-if defined GCC_IS_MINGW_ORG if defined COMPILE_AS_CXX (
-  set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wno-format"
-  goto :no_wformat
-)
+if defined GCC_IS_MINGW_ORG if defined COMPILE_AS_CXX goto :no_wformat
 
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat=2"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wformat-contains-nul"
@@ -618,6 +618,7 @@ set "CMN_DEFINES=-x c++ %CMN_DEFINES%"
 
 if not defined BUILD_PEDANTIC goto :gcc_do_build
 
+:: C++-specific warnings
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wabi-tag"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Waligned-new=all"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wc++11-compat"
@@ -687,6 +688,7 @@ goto :gcc_do_build
 
 if not defined BUILD_PEDANTIC goto :gcc_do_build
 
+:: C-specific warnings
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wabsolute-value"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wbad-function-cast"
 set "WARNING_OPTIONS=%WARNING_OPTIONS% -Wc++-compat"
