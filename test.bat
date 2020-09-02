@@ -190,7 +190,7 @@ if defined DO_TEST_ONLY (
 )
 exit /b
 
-:::::: BASIC_TESTS (266 upstream tests + 1 additional test + 2 debug test) :::::
+:::::: BASIC_TESTS (266 upstream tests + 1 additional test + 2 debug tests) :::::
 :basic_tests
 
 call :runtest_in      addcomma                                || exit /b
@@ -1128,7 +1128,7 @@ call :runtest_in        sprintfc                              || exit /b
 
 exit /b 0
 
-:::::: SHLIB_TESTS (23 of 25 tests - 2 tests are not supported, + 11 additional tests) :::::
+:::::: SHLIB_TESTS (23 of 25 upstream tests - 2 tests are not supported, + 11 additional tests) :::::
 :shlib_tests
 
 call :execq "%QGAWK% --version | %QGAWK% ""/API/ { exit 1 }""" && (
@@ -1323,7 +1323,7 @@ call :runtest           fnmatch_u8_en "--locale=en_US.UTF-8"  || exit /b
 
 exit /b 0
 
-:::::: EXTRA_TESTS (2 of 3 tests - 1 test is unsupported) :::::
+:::::: EXTRA_TESTS (2 of 3 upstream tests - 1 test is unsupported, + 3 additional tests) :::::
 :extra_tests
 
 if not defined GAWK_TEST_ARGS goto :inftest_no_mpfr
@@ -1361,9 +1361,14 @@ call :cmpdel_ reg\_func2.good reg\_func2 && call :exec del reg\_func2.good || ex
 ::endlocal
 set /A TESTS_UNSUPPORTED+=1 & >&2 echo *** Unsupported 1 test: ignrcas3
 
+:: + 3 additional tests (not in upstream)
+call :runtest           unicode-non-bmp1 "--locale=ru_RU.UTF-8" "<" unicode-non-bmp.txt || exit /b
+call :runtest           unicode-non-bmp2 "--locale=ru_RU.UTF-8" "<" unicode-non-bmp.txt || exit /b
+call :runtest           unicode-non-bmp3 "--locale=ru_RU.UTF-8" "<" unicode-non-bmp.txt || exit /b
+
 exit /b
 
-:::::: INET_TESTS (3 network tests) :::::
+:::::: INET_TESTS (3*4 network tests) :::::
 :inet_tests
 
 call :inet_test  9 DISCARD inetdis || exit /b
