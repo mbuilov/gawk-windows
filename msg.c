@@ -38,7 +38,7 @@ unsigned fatal_tag_valid = 0;
 /* err --- print an error message with source line and file and record */
 
 /* VARARGS2 */
-void
+ATTRIBUTE_PRINTF(emsg, 3, 0) void
 err(bool isfatal, const char *s, const char *emsg, va_list argp)
 {
 	const char *file;
@@ -113,7 +113,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 /* msg --- take a varargs error message and print it */
 
-void
+ATTRIBUTE_PRINTF(mesg, 1, 2) void
 msg(const char *mesg, ...)
 {
 	va_list args;
@@ -124,7 +124,7 @@ msg(const char *mesg, ...)
 
 /* r_warning --- print a warning message */
 
-void
+ATTRIBUTE_PRINTF(mesg, 1, 2) void
 r_warning(const char *mesg, ...)
 {
 	va_list args;
@@ -133,7 +133,7 @@ r_warning(const char *mesg, ...)
 	va_end(args);
 }
 
-void
+ATTRIBUTE_PRINTF(mesg, 1, 2) void
 error(const char *mesg, ...)
 {
 	va_list args;
@@ -156,7 +156,7 @@ set_loc(const char *file, unsigned line)
 
 /* r_fatal --- print a fatal error message and abort the program */
 
-void
+ATTRIBUTE_PRINTF(mesg, 1, 2) void
 r_fatal(const char *mesg, ...)
 {
 	va_list args;
