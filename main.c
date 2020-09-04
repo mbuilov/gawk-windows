@@ -1756,6 +1756,7 @@ parse_args(int argc, char **argv)
 			 * The following is to allow for whitespace at the end
 			 * of a #! /bin/gawk line in an executable file
 			 */
+			assert(optarg);
 			scan = optarg;
 			if (argv[optind-1] != optarg)
 				while (isspace((unsigned char) *scan))
