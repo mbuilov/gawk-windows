@@ -1,6 +1,6 @@
 BEGIN {
   if (PROCINFO["platform"] == "windows") {
-    print "foo" | "set /p x= & cmd /c \"cmd /c (echo.^%x^%)\" & exit 12"
+    print "foo" | "set /p x=& cmd /c \"cmd /c (echo.^%x^%)\" & exit 12"
   } else {
     print "foo" | "read x ; echo $x ; exit 12"
   }
