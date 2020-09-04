@@ -151,7 +151,7 @@ static struct _getopt_data getopt_data;
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
 
-#ifndef getenv
+#if !defined(getenv) && !defined(_MSC_VER)
 extern char *getenv (const char *name);
 #endif
 
