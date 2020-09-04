@@ -1829,7 +1829,7 @@ watchpoint_triggered(struct list_item *w)
 			w->cur_size = (t2->type == Node_var_array) ? assoc_length(t2) : 0;
 	} else if (! t1) { /* 1, 2 */
 		w->old_value = 0;
-		/* new != NULL */
+		assert(t2); /* new != NULL */
 		if (t2->type == Node_val)
 			w->cur_value = dupnode(t2);
 		else {
