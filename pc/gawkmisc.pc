@@ -809,6 +809,7 @@ int w32_execvp(const char *file, char **argv)
 		struct wide_arg *wa = gawk_wargs;
 		for (; wa; wa = wa->next)
 			n++;
+		assert(n);
 		if (n >= sizeof(argptrs)/sizeof(argptrs[0])) {
 			warr = (wchar_t**) malloc(sizeof(wchar_t*)*(n + 1));
 			if (warr == NULL)
