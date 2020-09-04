@@ -1929,7 +1929,7 @@ Cautionary or warning notes look like this.
 
 @c fakenode --- for prepinfo
 @unnumberedsubsec Dark Corners
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry quotes
 @quotation
 @i{Dark corners are basically fractal---no matter how much
 you illuminate, there's always a smaller but darker one.}
@@ -8921,7 +8921,7 @@ that does handle nested @code{@@include} statements.
 @subsection Using @code{getline} from a Pipe
 
 @c From private email, dated October 2, 1988. Used by permission, March 2013.
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry quotes
 @quotation
 @i{Omniscience has much to recommend it.
 Failing that, attention to details would be useful.}
@@ -11388,7 +11388,7 @@ $ @kbd{gawk 'BEGIN @{ print "hello, \}
 In POSIX mode (@pxref{Options}), @command{gawk} does not
 allow escaped newlines.  Otherwise, it behaves as just described.
 
-Brian Kernighan's @command{awk} and BusyBox @command{awk}
+BWK @command{awk} and BusyBox @command{awk}
 remove the backslash but leave the newline
 intact, as part of the string:
 
@@ -12239,7 +12239,7 @@ For maximum portability, do not use the @samp{**} operator.
 
 @node Concatenation
 @subsection String Concatenation
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry quotes
 @quotation
 @i{It seemed like a good idea at the time.}
 @author Brian Kernighan
@@ -19494,8 +19494,8 @@ and pipes.
 Prior to @value{PVERSION} 4.0.2, @command{gawk}
 would flush only the standard output if there was no argument,
 and flush all output files and pipes if the argument was the null
-string. This was changed in order to be compatible with Brian
-Kernighan's @command{awk}, in the hope that standardizing this
+string. This was changed in order to be compatible with BWK
+@command{awk}, in the hope that standardizing this
 feature in POSIX would then be easier (which indeed proved to be the case).
 
 With @command{gawk},
@@ -22017,7 +22017,7 @@ it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
 manageable and making programs more readable.
 
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry quotes
 @cindex Plauger, P.J.@:
 In their seminal 1976 book, @cite{Software Tools},@footnote{Sadly, over 35
 years later, many of the lessons taught by this book have yet to be
@@ -26267,6 +26267,8 @@ As a side note, this program does not follow our recommended convention of namin
 global variables with a leading capital letter.  Doing that would
 make the program a little easier to follow.
 
+@ifset FOR_PRINT
+@cindex Kernighan, Brian
 The logic for choosing which lines to print represents a @dfn{state
 machine}, which is ``a device which can be in one of a set number
 of stable conditions depending on its previous condition and on the
@@ -26276,6 +26278,7 @@ Kernighan suggests that ``an alternative approach to state machines is
 to just read the input into an array, then use indexing.  It's almost
 always easier code, and for most inputs where you would use this, just
 as fast.''  Consider how to rewrite the logic to follow this suggestion.
+@end ifset
 
 
 @node Wc Program
@@ -28387,12 +28390,13 @@ Fix this problem.
 without relying on @code{ord()} and @code{chr()}.)
 
 @item
+@cindex Kernighan, Brian
 In @file{uniq.awk} (@pxref{Uniq Program}, the
 logic for choosing which lines to print represents a @dfn{state
-machine}, which is ``a device that can be in one of a set number of stable
+machine}, which is ``a device which can be in one of a set number of stable
 conditions depending on its previous condition and on the present values
-of its inputs.''@footnote{This is the definition returned from entering
-@code{define: state machine} into Google.}
+of its inputs.''@footnote{This definition is from
+@uref{https://www.lexico.com/en/definition/state_machine}.}
 Brian Kernighan suggests that
 ``an alternative approach to state machines is to just read
 the input into an array, then use indexing.  It's almost always
