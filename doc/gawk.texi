@@ -25959,10 +25959,12 @@ have to be gone through and turned back into group numbers,
 so that the rest of the code will work as expected:
 
 @example
-@c file eg/prog/id.awk
 @ignore
+@c file eg/prog/id.awk
 
+@c endfile
 @end ignore
+@c file eg/prog/id.awk
     groupnames = getgruser(user)
     split(groupnames, groups, " ")
     for (i = 1; i in groups; i++) @{

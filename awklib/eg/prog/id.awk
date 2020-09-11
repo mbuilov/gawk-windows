@@ -160,9 +160,7 @@ function fill_info_for_user(user,
     split(pwent, fields, ":")
     uid = fields[3] + 0
     gid = fields[4] + 0
-ignore
 
-end ignore
     groupnames = getgruser(user)
     split(groupnames, groups, " ")
     for (i = 1; i in groups; i++) {
