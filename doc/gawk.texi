@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH August, 2020
+@set UPDATE-MONTH September, 2020
 @set VERSION 5.1
 @set PATCHLEVEL 0
 
@@ -25613,27 +25613,31 @@ This information is part of what is provided by @command{gawk}'s
 However, the @command{id} utility provides a more palatable output than just
 individual numbers.
 
-Here is a simple version of @command{id} written in @command{awk}.
-It uses the user database library functions
-(@pxref{Passwd Functions})
+The POSIX version of @command{id} takes several options that give you
+control over the output's format, such as printing only real ids, or printing
+only numbers or only names.  Additionally, you can print the information
+for a specific user, instead of that of the current user.
+
+Here is a version of POSIX @command{id} written in @command{awk}.
+It uses the @code{getopt()} library function
+(@pxref{Getopt Function}),
+the user database library functions
+(@pxref{Passwd Functions}),
 and the group database library functions
 (@pxref{Group Functions})
 from @ref{Library Functions}.
 
-The program is fairly straightforward.  All the work is done in the
-@code{BEGIN} rule.  The user and group ID numbers are obtained from
-@code{PROCINFO}.
-The code is repetitive.  The entry in the user database for the real user ID
-number is split into parts at the @samp{:}. The name is the first field.
-Similar code is used for the effective user ID number and the group
-numbers:
+The program is moderately straightforward.  All the work is done in the
+@code{BEGIN} rule.
+It starts with explanatory comments, a list of options,
+and then a @code{usage()} function:
 
 @cindex @code{id.awk} program
 @example
 @c file eg/prog/id.awk
 # id.awk --- implement id in awk
 #
-# Requires user and group library functions
+# Requires user and group library functions and getopt
 @c endfile
 @ignore
 @c file eg/prog/id.awk
@@ -25643,6 +25647,7 @@ numbers:
 # Revised February 1996
 # Revised May 2014
 # Revised September 2014
+# Revised September 2020
 
 @c endfile
 @end ignore
@@ -25651,59 +25656,87 @@ numbers:
 # uid=12(foo) euid=34(bar) gid=3(baz) \
 #             egid=5(blat) groups=9(nine),2(two),1(one)
 
-@group
-BEGIN @{
-    uid = PROCINFO["uid"]
-    euid = PROCINFO["euid"]
-    gid = PROCINFO["gid"]
-    egid = PROCINFO["egid"]
-@end group
-
-    printf("uid=%d", uid)
-    pw = getpwuid(uid)
-    pr_first_field(pw)
+# Options:
+#   -G Output all group ids as space separated numbers (ruid, euid, groups)
+#   -g Output only the euid as a number
+#   -n Ouput name instead of the numeric value (with -g/-G/-u)
+#   -r Output ruid/rguid instead of effective id
+#   -u Output only effective user id, as a number
 
 @group
-    if (euid != uid) @{
-        printf(" euid=%d", euid)
-        pw = getpwuid(euid)
-@end group
-@group
-        pr_first_field(pw)
-    @}
-@end group
-
-    printf(" gid=%d", gid)
-    pw = getgrgid(gid)
-    pr_first_field(pw)
-
-    if (egid != gid) @{
-        printf(" egid=%d", egid)
-        pw = getgrgid(egid)
-        pr_first_field(pw)
-    @}
-
-    for (i = 1; ("group" i) in PROCINFO; i++) @{
-        if (i == 1)
-            printf(" groups=")
-        group = PROCINFO["group" i]
-        printf("%d", group)
-        pw = getgrgid(group)
-        pr_first_field(pw)
-        if (("group" (i+1)) in PROCINFO)
-            printf(",")
-    @}
-
-    print ""
-@}
-
-function pr_first_field(str,  a)
+function usage()
 @{
-    if (str != "") @{
-        split(str, a, ":")
-        printf("(%s)", a[1])
-    @}
+    printf("Usage:\n" \
+           "\tid [user]\n" \
+           "\tid −G [−n] [user]\n" \
+           "\tid −g [−nr] [user]\n" \
+           "\tid −u [−nr] [user]\n") > "/dev/stderr"
+
+    exit 1
 @}
+@end group
+@c endfile
+@end example
+
+The first step is to parse the options using @code{getopt()},
+and to set various flag variables according to the options given:
+
+@example
+@c file eg/prog/id.awk
+BEGIN @{
+    # parse args
+    while ((c = getopt(ARGC, ARGV, "Ggnru")) != -1) @{
+        if (c == "G")
+            groupset_only++
+        else if (c == "g")
+            egid_only++
+        else if (c == "n")
+            names_not_groups++
+        else if (c == "r")
+            real_ids_only++
+        else if (c == "u")
+            euid_only++
+        else
+            usage()
+    @}
+@c endfile
+@end example
+
+The next step is to check that no conflicting options were
+provided. @option{-G} and @option{-r} are mutually exclusive.
+It is also not allowed to provide more than one user name
+on the command line:
+
+@example
+@c file eg/prog/id.awk
+    if (groupset_only && real_ids_only)
+        usage()
+    else if (ARGC - Optind > 1)
+        usage()
+@c endfile
+@end example
+
+The user and group ID numbers are obtained from
+@code{PROCINFO} for the current user, or from the
+user and password databases for a user supplied on
+the command line. In the latter case, @code{real_ids_only}
+is set, since it's not possible to print information about
+the effective user and group IDs:
+
+@example
+@c file eg/prog/id.awk
+    if (ARGC - Optind == 0) @{
+        # gather info for current user
+        uid = PROCINFO["uid"]
+        euid = PROCINFO["euid"]
+        gid = PROCINFO["gid"]
+        egid = PROCINFO["egid"]
+        for (i = 1; ("group" i) in PROCINFO; i++)
+            groupset[i] = PROCINFO["group" i]
+    @} else @{
+        fill_info_for_user(ARGV[ARGC-1])
+        real_ids_only++
+    @}
 @c endfile
 @end example
 
@@ -25716,18 +25749,230 @@ there are.
 
 This loop works by starting at one, concatenating the value with
 @code{"group"}, and then using @code{in} to see if that value is
-in the array (@pxref{Reference to Elements}).  Eventually, @code{i} is incremented past
+in the array (@pxref{Reference to Elements}).  Eventually, @code{i} increments past
 the last group in the array and the loop exits.
 
 The loop is also correct if there are @emph{no} supplementary
 groups; then the condition is false the first time it's
 tested, and the loop body never executes.
 
-The @code{pr_first_field()} function simply isolates out some
-code that is used repeatedly, making the whole program
-shorter and cleaner. In particular, moving the check for
-the empty string into this function saves several lines of code.
 
+Now, based on the options, we decide what information to print.
+For @option{-G} (print just the group set), we then select
+whether to print names or numbers. In either case, when done
+we exit:
+
+@example
+@c file eg/prog/id.awk
+    if (groupset_only) @{
+        if (names_not_groups) @{
+            for (i = 1; i in groupset; i++) @{
+                entry = getgrgid(groupset[i])
+                name = get_first_field(entry)
+                printf("%s", name)
+                if ((i + 1) in groupset)
+                    printf(" ")
+            @}
+        @} else @{
+            for (i = 1; i in groupset; i++) @{
+                printf("%u", groupset[i])
+                if ((i + 1) in groupset)
+                    printf(" ")
+            @}
+        @}
+
+        print ""    # final newline
+        exit 0
+    @}
+@c endfile
+@end example
+
+Otherwise, for @option{-g} (effective group ID only), we
+check if @option{-r} was also provided, in which case we
+use the real group ID. Then based on @option{-n}, we decide
+whether to print names or numbers. Here too, when done,
+we exit:
+
+@example
+@c file eg/prog/id.awk
+    else if (egid_only) @{
+        id = real_ids_only ? gid : egid
+        if (names_not_groups) @{
+            entry = getgrgid(id)
+            name = get_first_field(entry)
+            printf("%s\n", name)
+        @} else @{
+            printf("%u\n", id)
+        @}
+
+        exit 0
+    @}
+@c endfile
+@end example
+
+The @code{get_first_field()} function extracts the group name from
+the group database entry for the given group ID.
+
+Similar processing logic applies to @option{-u} (effective user ID only),
+combined with @option{-r} and @option{-n}:
+
+@example
+@c file eg/prog/id.awk
+    else if (euid_only) @{
+        id = real_ids_only ? uid : euid
+        if (names_not_groups) @{
+            entry = getpwuid(id)
+            name = get_first_field(entry)
+            printf("%s\n", name)
+        @} else @{
+            printf("%u\n", id)
+        @}
+
+        exit 0
+    @}
+@c endfile
+@end example
+
+At this point, we haven't exited yet, so we print
+the regular, default output, based either on the current
+user's information, or that of the user whose name was
+provided on the command line. We start with the real user ID:
+
+@example
+@c file eg/prog/id.awk
+    printf("uid=%d", uid)
+    pw = getpwuid(uid)
+    print_first_field(pw)
+@c endfile
+@end example
+
+The @code{print_first_field()} function prints the user's
+login name from the password file entry, surrounded by
+parentheses. It is shown soon.
+Printing the effective user ID is next:
+
+@example
+@c file eg/prog/id.awk
+    if (euid != uid && ! real_ids_only) @{
+        printf(" euid=%d", euid)
+        pw = getpwuid(euid)
+        print_first_field(pw)
+    @}
+@c endfile
+@end example
+
+Similar logic applies to the real and effective group IDs:
+
+@example
+@c file eg/prog/id.awk
+    printf(" gid=%d", gid)
+    pw = getgrgid(gid)
+    print_first_field(pw)
+
+    if (egid != gid && ! real_ids_only) @{
+        printf(" egid=%d", egid)
+        pw = getgrgid(egid)
+        print_first_field(pw)
+    @}
+@c endfile
+@end example
+
+Finally, we print the group set and the terminating newline:
+
+@example
+@c file eg/prog/id.awk
+    for (i = 1; i in groupset; i++) @{
+        if (i == 1)
+            printf(" groups=")
+        group = groupset[i]
+        printf("%d", group)
+        pw = getgrgid(group)
+        print_first_field(pw)
+        if ((i + 1) in groupset)
+            printf(",")
+    @}
+
+    print ""
+@}
+@c endfile
+@end example
+
+The @code{get_first_field()} function extracts the first field
+from a password or group file entry for use as a user or group
+name. Fields are separated by @samp{:} characters:
+
+@example
+@c file eg/prog/id.awk
+function get_first_field(str,  a)
+@{
+    if (str != "") @{
+        split(str, a, ":")
+        return a[1]
+    @}
+@}
+@c endfile
+@end example
+
+This function is then used by @code{print_first_field()} to
+output the given name surrounded by parentheses:
+
+@example
+@c file eg/prog/id.awk
+function print_first_field(str)
+@{
+    first = get_first_field(str)
+    printf("(%s)", first)
+@}
+@c endfile
+@end example
+
+These two functions simply isolate out some code that is used repeatedly,
+making the whole program shorter and cleaner. In particular, moving the
+check for the empty string into @code{get_first_field()} saves several
+lines of code.
+
+Finally, @code{fill_info_for_user()} fetches user, group, and group
+set information for the user named on the command.  The code is fairly
+straightforward, merely requiring that we exit if the given user doesn't
+exist:
+
+@example
+@c file eg/prog/id.awk
+function fill_info_for_user(user,   
+                            pwent, fields, groupnames, grent, groups, i)
+@{
+    pwent = getpwnam(user)
+    if (pwent == "") @{
+        printf("id: '%s': no such user\n", user) > "/dev/stderr"
+        exit 1
+    @}
+
+    split(pwent, fields, ":")
+    uid = fields[3] + 0
+    gid = fields[4] + 0
+@c endfile
+@end example
+
+Getting the group set is a little awkward. The library routine
+@code{getgruser()} returns a list of group @emph{names}. These
+have to be gone through and turned back into group numbers,
+so that the rest of the code will work as expected:
+
+@example
+@c file eg/prog/id.awk
+@ignore
+
+@end ignore
+    groupnames = getgruser(user)
+    split(groupnames, groups, " ")
+    for (i = 1; i in groups; i++) @{
+        grent = getgrnam(groups[i])
+        split(grent, fields, ":")
+        groupset[i] = fields[3] + 0
+    @}
+@}
+@c endfile
+@end example
 
 @node Split Program
 @subsection Splitting a Large File into Pieces
