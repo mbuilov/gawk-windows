@@ -25321,9 +25321,25 @@ of picking the input line apart by characters.
 @cindex searching @subentry files for regular expressions
 @cindex files @subentry searching for regular expressions
 @cindex @command{egrep} utility
-The @command{egrep} utility searches files for patterns.  It uses regular
-expressions that are almost identical to those available in @command{awk}
-(@pxref{Regexp}).
+The @command{grep} family of programs searches files for patterns.
+These programs have an unusual history.
+Initially there was @command{grep} (Global Regular Expression Print),
+which used what are now called Basic Regular Expressions (BREs).
+Later there was @command{egrep} (Extended @command{grep}) which used
+what are now called Extended Regular Expressions (EREs). (These are almost
+identical to those available in @command{awk}; @pxref{Regexp}).
+There was also @command{fgrep} (Fast @command{grep}), which searched
+for matches of one more fixed strings.
+
+POSIX chose to combine these three programs into one, simply named
+@command{grep}.  On a POSIX system, @command{grep}'s default behavior
+is to search using BREs. You use @command{-E} to specify the use
+of EREs, and @option{-F} to specify searching for fixed strings.
+
+In practice, systems continue to come with separate @command{egrep}
+and @command{fgrep} utilities, for backwards compatibilty. This
+@value{SECTION} provides an @command{awk} implementation of @command{egrep},
+which supports all of the POSIX-mandated options.
 You invoke it as follows:
 
 @display
@@ -25341,17 +25357,12 @@ The options to @command{egrep} are as follows:
 
 @table @code
 @item -c
-Print out a count of the lines that matched the pattern, instead of the
+Print a count of the lines that matched the pattern, instead of the
 lines themselves.
 
-@item -s
-Be silent.  No output is produced and the exit value indicates whether
-the pattern was matched.
-
-@item -v
-Invert the sense of the test. @command{egrep} prints the lines that do
-@emph{not} match the pattern and exits successfully if the pattern is not
-matched.
+@item -e @var{pattern}
+Use @var{pattern} as the regexp to match.  The purpose of the @option{-e}
+option is to allow patterns that start with a @samp{-}.
 
 @item -i
 Ignore case distinctions in both the pattern and the input data.
@@ -25359,17 +25370,30 @@ Ignore case distinctions in both the pattern and the input data.
 @item -l
 Only print (list) the names of the files that matched, not the lines that matched.
 
-@item -e @var{pattern}
-Use @var{pattern} as the regexp to match.  The purpose of the @option{-e}
-option is to allow patterns that start with a @samp{-}.
+@item -q
+Be quiet.  No output is produced and the exit value indicates whether
+the pattern was matched.
+
+@item -s
+Be silent. Do not print error messages for files that could
+not be opened.
+
+@item -v
+Invert the sense of the test. @command{egrep} prints the lines that do
+@emph{not} match the pattern and exits successfully if the pattern is not
+matched.
+
+@item -x
+Match the entire input line in order to consider the match as having
+succeeded.
 @end table
 
 This version uses the @code{getopt()} library function
-(@pxref{Getopt Function})
-and the file transition library program
-(@pxref{Filetrans Function}).
+(@pxref{Getopt Function}) and @command{gawk}'s
+@code{BEGINFILE} and @code{ENDFILE} special patterns
+(@pxref{BEGINFILE/ENDFILE}).
 
-The program begins with a descriptive comment and then a @code{BEGIN} rule
+The program begins with descriptive comments and then a @code{BEGIN} rule
 that processes the command-line arguments with @code{getopt()}.  The @option{-i}
 (ignore case) option is particularly easy with @command{gawk}; we just use the
 @code{IGNORECASE} predefined variable
@@ -25385,43 +25409,63 @@ that processes the command-line arguments with @code{getopt()}.  The @option{-i}
 @c file eg/prog/egrep.awk
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Revised September 2020
 
 @c endfile
 @end ignore
 @c file eg/prog/egrep.awk
 # Options:
 #    -c    count of lines
-#    -s    silent - use exit value
-#    -v    invert test, success if no match
+#    -e    argument is pattern
 #    -i    ignore case
 #    -l    print filenames only
-#    -e    argument is pattern
+#    -n    add line number to output
+#    -q    quiet - use exit value
+#    -s    silent - don't print errors
+#    -v    invert test, success if no match
+#    -x    the entire line must match
 #
-# Requires getopt and file transition library functions
+# Requires getopt library function
+# Uses IGNORECASE, BEGINFILE and ENDFILE
+# Invoke using gawk -f egrep.awk -- options ...
 
 BEGIN @{
-    while ((c = getopt(ARGC, ARGV, "ce:svil")) != -1) @{
+    while ((c = getopt(ARGC, ARGV, "ce:ilnqsvx")) != -1) @{
         if (c == "c")
             count_only++
-        else if (c == "s")
-            no_print++
-        else if (c == "v")
-            invert++
+        else if (c == "e")
+            pattern = Optarg
         else if (c == "i")
             IGNORECASE = 1
         else if (c == "l")
             filenames_only++
-        else if (c == "e")
-            pattern = Optarg
+        else if (c == "n")
+            line_numbers++
+        else if (c == "q")
+            no_print++
+        else if (c == "s")
+            no_errors++
+        else if (c == "v")
+            invert++
+        else if (c == "x")
+            full_line++
         else
             usage()
     @}
 @c endfile
 @end example
 
+@noindent
+Note the comment about invocation: Because several of the options overlap
+with @command{gawk}'s, a @option{--} is needed to tell @command{gawk}
+to stop looking for options.
+
 Next comes the code that handles the @command{egrep}-specific behavior. If no
 pattern is supplied with @option{-e}, the first nonoption on the
-command line is used.  The @command{awk} command-line arguments up to @code{ARGV[Optind]}
+command line is used.
+If the pattern is empty, that means no pattern was supplied, so it's
+necessary to print an error message and exit.
+The @command{awk} command-line arguments up to @code{ARGV[Optind]}
 are cleared, so that @command{awk} won't try to process them as files.  If no
 files are specified, the standard input is used, and if multiple files are
 specified, we make sure to note this so that the @value{FN}s can precede the
@@ -25432,58 +25476,42 @@ matched lines in the output:
     if (pattern == "")
         pattern = ARGV[Optind++]
 
+    if (pattern == "")
+      usage()
+
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
+
     if (Optind >= ARGC) @{
         ARGV[1] = "-"
         ARGC = 2
     @} else if (ARGC - Optind > 1)
         do_filenames++
-
-#    if (IGNORECASE)
-#        pattern = tolower(pattern)
 @}
 @c endfile
 @end example
 
-The last two lines are commented out, as they are not needed in
-@command{gawk}.  They should be uncommented if you have to use another version
-of @command{awk}.
-
-The next set of lines should be uncommented if you are not using
-@command{gawk}.  This rule translates all the characters in the input line
-into lowercase if the @option{-i} option is specified.@footnote{It
-also introduces a subtle bug;
-if a match happens, we output the translated line, not the original.}
-The rule is
-commented out as it is not necessary with @command{gawk}:
-
-@example
-@c file eg/prog/egrep.awk
-#@{
-#    if (IGNORECASE)
-#        $0 = tolower($0)
-#@}
-@c endfile
-@end example
-
-The @code{beginfile()} function is called by the rule in @file{ftrans.awk}
-when each new file is processed.  In this case, it is very simple; all it
-does is initialize a variable @code{fcount} to zero. @code{fcount} tracks
+The @code{BEGINFILE} rule executes
+when each new file is processed.  In this case, it is fairly simple; it
+initializes a variable @code{fcount} to zero. @code{fcount} tracks
 how many lines in the current file matched the pattern.
-Naming the parameter @code{junk} shows we know that @code{beginfile()}
-is called with a parameter, but that we're not interested in its value:
+
+Here also is where we implement the @option{-s} option. We check
+if @code{ERRNO} has been set, and if @option{-s} was supplied.
+In that case, it's necessary to move on to the next file. Otherwise
+@command{gawk} would exit with an error:
 
 @example
 @c file eg/prog/egrep.awk
-function beginfile(junk)
-@{
+BEGINFILE @{
     fcount = 0
+    if (ERRNO && no_errors)
+        nextfile
 @}
 @c endfile
 @end example
 
-The @code{endfile()} function is called after each file has been processed.
+The @code{ENDFILE} rule executes after each file has been processed.
 It affects the output only when the user wants a count of the number of lines that
 matched.  @code{no_print} is true only if the exit status is desired.
 @code{count_only} is true if line counts are desired.  @command{egrep}
@@ -25494,8 +25522,7 @@ know the total number of lines that matched the pattern:
 
 @example
 @c file eg/prog/egrep.awk
-function endfile(file)
-@{
+ENDFILE @{
     if (! no_print && count_only) @{
         if (do_filenames)
             print file ":" fcount
@@ -25510,18 +25537,19 @@ function endfile(file)
 @c endfile
 @end example
 
-The @code{BEGINFILE} and @code{ENDFILE} special patterns
-(@pxref{BEGINFILE/ENDFILE}) could be used, but then the program would be
-@command{gawk}-specific. Additionally, this example was written before
-@command{gawk} acquired @code{BEGINFILE} and @code{ENDFILE}.
-
 The following rule does most of the work of matching lines. The variable
-@code{matches} is true if the line matched the pattern. If the user
+@code{matches} is true (non-zero) if the line matched the pattern.
+If the user specified that the entire line must match (with @option{-x}),
+the code checks this condition by looking at the values of
+@code{RSTART} and @code{RLENGTH}.  If those indicate that the match
+is not over the full line, @code{matches} is set to zero (false).
+
+If the user
 wants lines that did not match, the sense of @code{matches} is inverted
 using the @samp{!} operator. @code{fcount} is incremented with the value of
 @code{matches}, which is either one or zero, depending upon a
 successful or unsuccessful match.  If the line does not match, the
-@code{next} statement just moves on to the next record.
+@code{next} statement just moves on to the next input line.
 
 A number of additional tests are made, but they are only done if we
 are not counting lines.  First, if the user only wants the exit status
@@ -25529,7 +25557,8 @@ are not counting lines.  First, if the user only wants the exit status
 line in this file matched, and we can skip on to the next file with
 @code{nextfile}.  Similarly, if we are only printing @value{FN}s, we can
 print the @value{FN}, and then skip to the next file with @code{nextfile}.
-Finally, each line is printed, with a leading @value{FN} and colon
+Finally, each line is printed, with a leading @value{FN},
+optional colon and line number, and the final colon
 if necessary:
 
 @cindex @code{!} (exclamation point) @subentry @code{!} operator
@@ -25537,7 +25566,10 @@ if necessary:
 @example
 @c file eg/prog/egrep.awk
 @{
-    matches = ($0 ~ pattern)
+    matches = match($0, pattern)
+    if (matches && full_line && (RSTART != 1 || RLENGTH != length()))
+         matches = 0
+
     if (invert)
         matches = ! matches
 
@@ -25556,7 +25588,10 @@ if necessary:
         @}
 
         if (do_filenames)
-            print FILENAME ":" $0
+            if (line_numbers)
+               print FILENAME ":" FNR ":" $0
+            else
+               print FILENAME ":" $0
         else
             print
     @}
@@ -25582,13 +25617,12 @@ and then exits:
 @c file eg/prog/egrep.awk
 function usage()
 @{
-    print("Usage: egrep [-csvil] [-e pat] [files ...]") > "/dev/stderr"
-    print("\n\tegrep [-csvil] pat [files ...]") > "/dev/stderr"
+    print("Usage:\tegrep [-cilnqsvx] [-e pat] [files ...]") > "/dev/stderr"
+    print("\tegrep [-cilnqsvx] pat [files ...]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
-
 
 @node Id Program
 @subsection Printing Out User Information
