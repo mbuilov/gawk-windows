@@ -2505,11 +2505,6 @@ reorder_tokens (struct dfa *d)
                           : NULL);
 
   for (idx_t i = 0; i < d->tindex; i++)
-    for (idx_t j = 0; j < d->follows[i].nelem; j++)
-      if (map[d->follows[i].elems[j].index] < 0)
-        map[d->follows[i].elems[j].index] = nleaves++;
-
-  for (idx_t i = 0; i < d->tindex; i++)
     {
       if (map[i] < 0)
         {
@@ -2527,7 +2522,12 @@ reorder_tokens (struct dfa *d)
         multibyte_prop[map[i]] = d->multibyte_prop[i];
 
       for (idx_t j = 0; j < d->follows[i].nelem; j++)
-        d->follows[i].elems[j].index = map[d->follows[i].elems[j].index];
+        {
+          if (map[d->follows[i].elems[j].index] == -1)
+            map[d->follows[i].elems[j].index] = nleaves++;
+
+          d->follows[i].elems[j].index = map[d->follows[i].elems[j].index];
+        }
 
       qsort (d->follows[i].elems, d->follows[i].nelem,
              sizeof *d->follows[i].elems, compare);
@@ -2700,6 +2700,17 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
         case STAR:
         case PLUS:
+          /* Every element in the lastpos of the argument is in the backward
+             set of every element in the firstpos.  */
+          if (d->epsilon)
+            {
+              tmp.elems = lastpos - stk[-1].nlastpos;
+              tmp.nelem = stk[-1].nlastpos;
+              for (position *p = firstpos - stk[-1].nfirstpos;
+                   p < firstpos; p++)
+                merge2 (&backward[p->index], &tmp, &merged);
+            }
+
           /* Every element in the firstpos of the argument is in the follow
              of every element in the lastpos.  */
           {
