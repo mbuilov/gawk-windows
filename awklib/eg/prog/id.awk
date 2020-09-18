@@ -16,7 +16,7 @@
 # Options:
 #   -G Output all group ids as space separated numbers (ruid, euid, groups)
 #   -g Output only the euid as a number
-#   -n Ouput name instead of the numeric value (with -g/-G/-u)
+#   -n Output name instead of the numeric value (with -g/-G/-u)
 #   -r Output ruid/rguid instead of effective id
 #   -u Output only effective user id, as a number
 
