@@ -1,0 +1,37 @@
+gawk: ./iolint.awk:7: warning: `f1' used for input file and for output file
+0
+0
+gawk: ./iolint.awk:16: warning: `echo hello' used for input file and two-way pipe
+gawk: ./iolint.awk:17: warning: `echo hello' used for input pipe and two-way pipe
+gawk: ./iolint.awk:17: warning: `echo hello' used for input file and input pipe
+hello hello hello
+0
+0
+0
+foo
+0
+gawk: ./iolint.awk:30: warning: close: `cat' is not an open file, pipe or co-process
+-1
+gawk: ./iolint.awk:35: warning: unnecessary mixing of `>' and `>>' for file `f2'
+0
+gawk: ./iolint.awk:37: warning: close: `f2' is not an open file, pipe or co-process
+-1
+gawk: ./iolint.awk:42: warning: `md5sum' used for output file and output pipe
+b1946ac92492d2347c6235b4d2611184  -
+0
+0
+gawk: ./iolint.awk:49: warning: `echo hello' used for input pipe and output file
+0
+0
+gawk: ./iolint.awk:58: warning: `cat' used for output file and output pipe
+gawk: ./iolint.awk:59: warning: `cat' used for output pipe and two-way pipe
+gawk: ./iolint.awk:59: warning: `cat' used for output file and two-way pipe
+hello
+gawk: ./iolint.awk:60: warning: failure status (141) on two-way pipe close of `cat': Success
+141
+0
+0
+gawk: ./iolint.awk:67: warning: `echo hello' used for input pipe and output pipe
+hello
+0
+0

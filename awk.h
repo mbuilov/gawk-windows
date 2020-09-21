@@ -957,6 +957,7 @@ typedef void (*Func_ptr)(void);
 /* structure used to dynamically maintain a linked-list of open files/pipes */
 struct redirect {
 	enum redirect_flags {
+		RED_NONE	= 0,
 		RED_FILE	= 1,
 		RED_PIPE	= 2,
 		RED_READ	= 4,
@@ -980,6 +981,7 @@ struct redirect {
 	const char *mode;
 	awk_output_buf_t output;
 };
+typedef enum redirect_flags redirect_flags_t;
 
 /* values for BINMODE, used as bit flags */
 

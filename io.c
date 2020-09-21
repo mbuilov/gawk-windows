@@ -725,7 +725,70 @@ redflags2str(int flags)
 		{ 0, NULL }
 	};
 
+	if (flags == RED_NONE)
+		return "RED_NONE";
+
 	return genflags2str(flags, redtab);
+}
+
+/* check_duplicated_redirections --- see if the same name used differently */
+
+static void
+check_duplicated_redirections(const char *name, size_t len,
+		redirect_flags_t oldflags, redirect_flags_t newflags)
+{
+	static struct mixture {
+		redirect_flags_t common;
+		redirect_flags_t mode;
+		redirect_flags_t other_mode;
+		const char *message;
+	} mixtures[] = {
+		{ RED_FILE, RED_READ, RED_WRITE,
+			gettext_noop("`%.*s' used for input file and for output file") },
+		{ RED_READ, RED_FILE, RED_PIPE,
+			gettext_noop("`%.*s' used for input file and input pipe") },
+		{ RED_READ, RED_FILE, RED_TWOWAY,
+			gettext_noop("`%.*s' used for input file and two-way pipe") },
+		{ RED_NONE, (RED_FILE|RED_READ), (RED_PIPE|RED_WRITE),
+			gettext_noop("`%.*s' used for input file and output pipe") },
+		{ (RED_FILE|RED_WRITE), (RED_FILE|RED_WRITE), RED_APPEND,
+			gettext_noop("unnecessary mixing of `>' and `>>' for file `%.*s'") },
+		{ RED_NONE, (RED_FILE|RED_WRITE), (RED_PIPE|RED_READ),
+			gettext_noop("`%.*s' used for input pipe and output file") },
+		{ RED_WRITE, RED_FILE, RED_PIPE,
+			gettext_noop("`%.*s' used for output file and output pipe") },
+		{ RED_WRITE, RED_FILE, RED_TWOWAY,
+			gettext_noop("`%.*s' used for output file and two-way pipe") },
+		{ RED_PIPE, RED_READ, RED_WRITE,
+			gettext_noop("`%.*s' used for input pipe and output pipe") },
+		{ RED_READ, RED_PIPE, RED_TWOWAY,
+			gettext_noop("`%.*s' used for input pipe and two-way pipe") },
+		{ RED_WRITE, RED_PIPE, RED_TWOWAY,
+			gettext_noop("`%.*s' used for output pipe and two-way pipe") },
+	};
+	int i = 0, j = sizeof(mixtures) / sizeof(mixtures[0]);
+
+	oldflags &= ~(RED_NOBUF|RED_EOF|RED_PTY);
+	newflags &= ~(RED_NOBUF|RED_EOF|RED_PTY);
+
+	for (i = 0; i < j; i++) {
+		bool both_have_common = \
+			(   (oldflags & mixtures[i].common) == mixtures[i].common
+			 && (newflags & mixtures[i].common) == mixtures[i].common);
+		bool old_has_mode = (oldflags & mixtures[i].mode) == mixtures[i].mode;
+		bool new_has_mode = (newflags & mixtures[i].mode) == mixtures[i].mode;
+		bool old_has_other_mode = (oldflags & mixtures[i].other_mode) == mixtures[i].other_mode;
+		bool new_has_other_mode = (newflags & mixtures[i].other_mode) == mixtures[i].other_mode;
+
+		if (   both_have_common
+		    && oldflags != newflags
+		    && (   (old_has_mode || new_has_mode)
+			&& (old_has_other_mode || new_has_other_mode)))
+		{
+			lintwarn(_(mixtures[i].message), len, name);
+			return;
+		}
+	}
 }
 
 /* redirect_string --- Redirection for printf and print commands, use string info */
@@ -735,8 +798,8 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		int redirtype, int *errflg, int extfd, bool failure_fatal)
 {
 	struct redirect *rp;
-	int tflag = 0;
-	int outflag = 0;
+	redirect_flags_t tflag = RED_NONE;
+	redirect_flags_t outflag = RED_NONE;
 	const char *direction = "to";
 	const char *mode;
 	int fd;
@@ -831,20 +894,16 @@ redirect_string(const char *str, size_t explen, bool not_string,
 
 		/* now check for a match */
 		if (strlen(rp->value) == explen
-		    && memcmp(rp->value, str, explen) == 0
-		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
-			|| (outflag != 0
-			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
+		    && memcmp(rp->value, str, explen) == 0) {
+			if (do_lint) {
+				check_duplicated_redirections(rp->value, explen, rp->flag, tflag);
+			}
 
-			int rpflag = (rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY));
-			int newflag = (tflag & ~(RED_NOBUF|RED_EOF|RED_PTY));
-
-			if (do_lint && rpflag != newflag)
-				lintwarn(
-		_("unnecessary mixing of `>' and `>>' for file `%.*s'"),
-					(int) explen, rp->value);
-
-			break;
+			if (((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
+			    || (outflag != 0
+				&& (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
+				break;
+			}
 		}
 	}
 
@@ -1340,6 +1399,9 @@ close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 		if (do_lint) {
 			if ((rp->flag & RED_PIPE) != 0)
 				lintwarn(_("failure status (%d) on pipe close of `%s': %s"),
+					 status, rp->value, s);
+			else if ((rp->flag & RED_TWOWAY) != 0)
+				lintwarn(_("failure status (%d) on two-way pipe close of `%s': %s"),
 					 status, rp->value, s);
 			else
 				lintwarn(_("failure status (%d) on file close of `%s': %s"),
