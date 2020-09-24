@@ -1484,7 +1484,7 @@ ATTRIBUTE_PRINTF(fmt, 3, 0)
 static size_t underlying_strftime (char *s, size_t maxsize, const char *format, const struct tm *tp)
 {
 # ifdef LOCALERPL_H_INCLUDED
-  return localerpl_rpl_strftime (s, maxsize, format, tp);
+  return localerpl_strftime (s, maxsize, format, tp);
 # else
   return strftime (s, maxsize, format, tp);
 # endif
