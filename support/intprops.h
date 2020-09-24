@@ -101,7 +101,7 @@
 /* The width in bits of the integer type or expression T.
    Do not evaluate T.
    Padding bits are not supported; this is checked at compile-time below.  */
-#define TYPE_WIDTH(t) (sizeof (t) * CHAR_BIT)
+#define TYPE_WIDTH(t) (sizeof ((t)) * CHAR_BIT)
 
 /* The maximum and minimum values for the integer type T.  */
 #define TYPE_MINIMUM(t) ((t) ~ TYPE_MAXIMUM (t))
@@ -545,7 +545,7 @@
    overflow problems.  *R's type is T, with extrema TMIN and TMAX.
    T must be a signed integer type.  Return 1 if the result overflows.  */
 #define _GL_INT_OP_CALC(a, b, r, op, overflow, ut, t, tmin, tmax) \
-  ((void) (*(t*) (sizeof (t) == sizeof (*r) ? r : NULL) \
+  ((void) (*(t*) (sizeof (t) == sizeof (*(r)) ? r : NULL) \
            = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t)), \
    overflow (a, b, tmin, tmax) ? 1 : 0)
 
