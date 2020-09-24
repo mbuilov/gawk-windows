@@ -4,7 +4,7 @@ rem print current date and time in GMT
 rem like Unix command "LC_ALL=C TZ=GMT0 date"
 rem i.g.: Tue Mar 24 13:29:07 GMT 2020
 
-for /f "tokens=1,2 delims==" %%a in ('wmic path Win32_UTCTime get /value') do (
+for /f "tokens=1,2 delims==" %%a in ('wmic path Win32_UTCTime get /value ^< NUL') do (
   if "%%a"=="Day"       (set "day=0%%b")         else (
   if "%%a"=="Hour"      (set "hour=0%%b")        else (
   if "%%a"=="Minute"    (set "minute=0%%b")      else (
