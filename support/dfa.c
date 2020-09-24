@@ -3656,8 +3656,8 @@ free_mbdata (struct dfa *d)
 }
 
 /* Return true if every construct in D is supported by this DFA matcher.  */
-static bool _GL_ATTRIBUTE_PURE
-dfa_supported (struct dfa const *d)
+bool
+dfasupported (struct dfa const *d)
 {
   for (idx_t i = 0; i < d->tindex; i++)
     {
@@ -3813,7 +3813,7 @@ dfacomp (char const *s, idx_t len, struct dfa *d, bool searchflag)
 
   dfassbuild (d);
 
-  if (dfa_supported (d))
+  if (dfasupported (d))
     {
       maybe_disable_superset_dfa (d);
       dfaanalyze (d, searchflag);
