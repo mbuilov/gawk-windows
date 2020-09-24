@@ -60,6 +60,7 @@ if defined DO_TEST_ONLY (
 set "FIND=%SYSTEMROOT%\System32\Find.exe"
 
 :: strange enough, but the 'more' command will not work if environment variable MORE is defined
+:: WindowsXP: if environment variable 'MORE' is not defined, this command will raise ERRORLEVEL!
 set MORE=
 
 call :tests || goto :test_err
@@ -90,6 +91,8 @@ echo.precision may lead to slightly different output in a few cases.
 echo.===============================================================
 
 setlocal
+
+:: note: here ERRORLEVEL is zero due to setlocal
 
 set TESTS_UNSUPPORTED=0
 set TESTS_PARTIAL=0
@@ -562,7 +565,7 @@ call :execq "%QGAWK% ""/[:space:]/"" < NUL 2>&1 | ""%FIND%"" ""[[:space:]]"" > N
 :: + 2 debug tests
 :: ARRAYDEBUG_TESTS
 %GAWK% "BEGIN{adump(f, -1)}" < NUL > NUL 2>&1 || (
-  set /A TESTS_SKIPPED+=2 & >&2 echo *** Skipped 2 tests: gawk was not compiled to support the array debug tests
+  set /A TESTS_SKIPPED+=2 & >&2 echo *** Skipped 2 tests: arrdbg, arrdbg-mpfr - gawk was not compiled to support the array debug tests
   goto :skip_arr_debug_test
 )
 
@@ -570,7 +573,7 @@ call :execq """%BLD_DIST%\gawk.exe"" -f arrdbg.awk -v ""okfile=arrdbg.ok"" -v ""
 call :cmpdel arrdbg && call :exec del /q arrdbg.ok arrdbg-mpfr.ok || exit /b
 
 %GAWK% --version | "%FIND%" "MPFR" > NUL 2>&1 || (
-  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: gawk was built without MPFR support
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: arrdbg-mpfr - gawk was built without MPFR support
   goto :skip_arr_debug_test
 )
 
@@ -588,14 +591,20 @@ call :cmpdel fflush                                           || exit /b
 call :runtest         getlnhd                                 || exit /b
 call :execq "(localenl.bat %QGAWK%)"                          || exit /b
 
+:: check if we have enough privileges to run wmic
+<NUL 2>&1 1>NUL wmic process /? | "%FIND%" /v "" > NUL && (
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: winpid - not enough privileges to run wmic
+  goto :skip_winpid
+)
 setlocal
 set "EGAWK=%GAWK:"=\""%"
 call :execq "del /q winpid.done 2> NUL"                       || goto :exit_local
-call :execq "wmic process call create CommandLine=""%EGAWK% -f .\winpid.awk"" CurrentDirectory=""%CD%"" 2>&1 | ""%FIND%"" ""ProcessId"" > _winpid" || goto :exit_local
+call :execq "wmic process call create ""%EGAWK% -f .\winpid.awk"",""%CD%"" 2>&1 | ""%FIND%"" ""ProcessId"" > _winpid" || goto :exit_local
 call :waitfor winpid.done                                     || goto :exit_local
 call :cmpdel winpid                                           || goto :exit_local
 call :exec del /q winpid.ok winpid.done                       || goto :exit_local
 endlocal
+:skip_winpid
 
 call :runtest pipeio1 && call :exec del /q test1 test2        || exit /b
 
@@ -998,12 +1007,18 @@ call :runtest_in        split_after_fpat                      || exit /b
 call :runtest_in        splitarg4                             || exit /b
 call :runtest_in        strftfld                              || exit /b
 
+:: check if we have enough privileges to run wmic
+<NUL 2>&1 1>NUL wmic path Win32_UTCTime /? | "%FIND%" /v "" > NUL && (
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: strftime - not enough privileges to run wmic
+  goto :skip_strftime
+)
 setlocal
 call :change_locale C                                                             || goto :exit_local
 call :exec set TZ=GMT0                                                            || goto :exit_local
 call :execq "%QGAWK% -v OUTPUT=_strftime -v DATECMD=gmt_time.bat -f strftime.awk" || goto :exit_local
 call :cmpdel strftime && call :exec del /q strftime.ok                            || goto :exit_local
 endlocal
+:skip_strftime
 
 call :runtest           strtonum                              || exit /b
 call :runtest           strtonum1                             || exit /b
@@ -1076,7 +1091,7 @@ call :runtest_mpfr      fnarydel                              || exit /b
 call :runtest_mpfr      fnparydl                              || exit /b
 
 %GAWK% "--locale=JAPANESE_japan.20932" --version > NUL 2>&1 || (
-  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: JAPANESE_japan.20932 locale is not supported by the OS, skipping the test
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: jarebug - JAPANESE_japan.20932 locale is not supported by the OS
   goto :skip_jp_test
 )
 setlocal
@@ -1092,10 +1107,15 @@ call :runtest_in        mbfw1                                 || goto :exit_loca
 call :runtest_in        mbprintf1                             || goto :exit_local
 endlocal
 
+%GAWK% "--locale=ja_JP.UTF-8" --version > NUL 2>&1 || (
+  set /A TESTS_SKIPPED+=1 & >&2 echo *** Skipped 1 test: mbprintf2 - ja_JP.UTF-8 locale is not supported by the OS
+  goto :skip_ja_jp_test
+)
 setlocal
 call :change_locale "ja_JP.UTF-8"                             || goto :exit_local
 call :runtest           mbprintf2                             || goto :exit_local
 endlocal
+:skip_ja_jp_test
 
 setlocal
 call :change_locale "en_US.UTF-8"                             || goto :exit_local
@@ -1636,7 +1656,7 @@ set /A timeout+=1
 goto :waitfor1
 
 :change_locale
-call :exec set LANGUAGE=
+if defined LANGUAGE call :exec set LANGUAGE=
 if not defined GAWKLOCALE (call :execq "set ""LC_ALL=%~1""") else (call :execq "set ""LC_ALL=%GAWKLOCALE%""")
 if not defined GAWKLOCALE (call :execq "set ""LANG=%~1""") else (call :execq "set ""LANG=%GAWKLOCALE%""")
 exit /b
