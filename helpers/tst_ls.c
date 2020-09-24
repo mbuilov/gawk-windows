@@ -4,7 +4,7 @@
  *
  * Michael M. Builov
  * mbuilov@gmail.com
- * Written 4-6/2020
+ * Written 4-9/2020
  */
 
 /*
@@ -48,20 +48,12 @@
 #include "mscrtx/utf8env.h"
 #include "mscrtx/locale_helpers.h"
 #include "mscrtx/localerpl.h"
-#include "mscrtx/console_setup.h"
+#include "mscrtx/consoleio.h"
 
-/* printf-format specifier for unsigned long long.
-   A c99-compatible standard runtime library must support "%llu".  */
-#ifndef LLUFMT
-# define LLUFMT "llu"
-#endif
-
-#define STDERR_BIT 1
-#define STDOUT_BIT 2
-
-/* not defined under MinGW.org */
-#ifndef INT_MAX
-#define INT_MAX ((unsigned)-1/2)
+/* wprintf-format specifier for unsigned long long.
+  Note: under WindowsXP, msvcrt.dll do not supports "%llu".  */
+#ifndef LLUWFMT
+# define LLUWFMT L"I64u"
 #endif
 
 /* exact copy of the same function in extension/readdir.c */
@@ -163,7 +155,7 @@ static HANDLE open_dir(
 
 	/* Path should not exceed the limit of 32767 wide characters.  */
 	if (dir_len > 32767 - 3) {
-		fwprintf(stderr, L"%ls: too long directory path: \"%ls\"\n",
+		fwprintfmb(stderr, L"%ls: too long directory path: \"%ls\"\n",
 			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
@@ -172,7 +164,7 @@ static HANDLE open_dir(
 		size_t sz = sizeof(wchar_t)*(dir_len + 3);
 		path = (wchar_t*) malloc(sz);
 		if (path == NULL) {
-			fwprintf(stderr, L"%ls: can't allocate memory of %u bytes\n",
+			fwprintfmb(stderr, L"%ls: can't allocate memory of %u bytes\n",
 				prog, 0u + (unsigned) sz);
 			return INVALID_HANDLE_VALUE;
 		}
@@ -185,7 +177,7 @@ static HANDLE open_dir(
 	if (path != path_buf)
 		free(path);
 	if (INVALID_HANDLE_VALUE == h) {
-		fwprintf(stderr, L"%ls: can't open directory \"%ls\"\n",
+		fwprintfmb(stderr, L"%ls: can't open directory \"%ls\"\n",
 			prog, dirname);
 		return INVALID_HANDLE_VALUE;
 	}
@@ -193,68 +185,7 @@ static HANDLE open_dir(
 	return h;
 }
 
-static void vprintf_to_stdout(const int std_streams_to_utf8, const wchar_t format[], va_list ap)
-{
-#ifndef _O_U8TEXT
-	/* old MSVCRT.DLL do not supports _O_U8TEXT file mode, print in utf16 and convert to utf8 manually */
-	if (STDOUT_BIT & std_streams_to_utf8) {
-		wchar_t wbuf[256], *wb = wbuf;
-		size_t buf_size = sizeof(wbuf)/sizeof(wbuf[0]);
-		int n;
-		for (;;) {
-			n = _vsnwprintf(wb, buf_size, format, ap);
-			if (n != -1)
-				break;
-			if (wb != wbuf)
-				free(wb);
-			if (buf_size < 65536)
-				buf_size *= 2;
-			else if (buf_size <= INT_MAX - 65536)
-				buf_size += 65536;
-			else {
-				errno = ENOMEM;
-				return;
-			}
-			/* make sure will not overflow size_t */
-			(void)sizeof(int[1-2*!(INT_MAX <= (size_t)-1/sizeof(wchar_t))]);
-			wb = (wchar_t*)malloc(buf_size*sizeof(wchar_t));
-			if (!wb)
-				return;
-		}
-		if (n) {
-			const utf16_char_t *w = (const utf16_char_t*)wb;
-			const utf16_char_t *const e = w + n;
-			do {
-				char buf[512];
-				utf8_char_t *b = (utf8_char_t*)buf;
-				const size_t x = utf16_to_utf8(&w, &b, sizeof(buf) - 1, (size_t)(e - w));
-				if (!x) {
-					errno = (w == e) ? E2BIG : EILSEQ;
-					break;
-				}
-				/* assume buffer size is big enough so at least one utf8-character has been decoded */
-				*b = '\0';
-				fputs(buf, stdout);
-			} while (w != e);
-		}
-		if (wb != wbuf)
-			free(wb);
-		return;
-	}
-#endif
-	vfwprintf(stdout, format, ap);
-	(void)std_streams_to_utf8;
-}
-
-static void printf_to_stdout(const int std_streams_to_utf8, const wchar_t format[], ...)
-{
-	va_list ap;
-	va_start(ap, format);
-	vprintf_to_stdout(std_streams_to_utf8, format, ap);
-	va_end(ap);
-}
-
-static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int afi, const int std_streams_to_utf8)
+static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int afi)
 {
 	WIN32_FIND_DATAW ffd;
 
@@ -264,12 +195,8 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 		return 2;
 
 	/* print fake total */
-	if (!afi) {
-		if (std_streams_to_utf8 & STDOUT_BIT)
-			fprintf(stdout, "total 555\n");
-		else
-			fwprintf(stdout, L"total 555\n");
-	}
+	if (!afi)
+		puts("total 555");
 
 	do {
 		unsigned long long ino;
@@ -278,12 +205,12 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 
 		if (afi) {
 			/* ls -afi */
-			printf_to_stdout(std_streams_to_utf8, L"%" LLUFMT " %ls\n", ino, ffd.cFileName);
+			wprintfmb(L"%" LLUWFMT L" %ls\n", ino, ffd.cFileName);
 		}
 		else {
 			/* ls -lna */
 			unsigned name_len = (unsigned) wcslen(ffd.cFileName);
-			printf_to_stdout(std_streams_to_utf8, L"%c%ls %2.u 1000 1000 %8.u Mar 27 2016 %ls%ls\n",
+			wprintfmb(L"%lc%ls %2.u 1000 1000 %8.u Mar 27 2016 %ls%ls\n",
 				'd' == ftype ? L'd' :
 				'l' == ftype ? L'l' :
 				L'-',
@@ -303,12 +230,8 @@ static int process_dir(const wchar_t prog[], const wchar_t dirname[], const int 
 		FindClose(h);
 
 		if (ERROR_NO_MORE_FILES != err) {
-			if (std_streams_to_utf8 & STDERR_BIT)
-				fprintf(stderr, "%ls: FindNextFileW() failed with error: %lx\n",
-					prog, (unsigned long) err);
-			else
-				fwprintf(stderr, L"%ls: FindNextFileW() failed with error: %lx\n",
-					prog, (unsigned long) err);
+			fwprintfmb(stderr, L"%ls: FindNextFileW() failed with error: %lx\n",
+				prog, (unsigned long) err);
 			return 2;
 		}
 	}
@@ -319,8 +242,8 @@ static int usage(const wchar_t prog[])
 {
 	const wchar_t *name = wcsrchr(prog, L'\\');
 	name = name != NULL ? name + 1 : prog;
-	fwprintf(stderr, L"%ls - Generate output similar to \"ls -afi\" or \"ls -lna\" for the readdir test on Windows\n", name);
-	fwprintf(stderr, L"Usage: %ls [--locale=<locale>] (-afi|-lna) <dir>\n", name);
+	fwprintfmb(stderr, L"%ls - Generate output similar to \"ls -afi\" or \"ls -lna\" for the gawk readdir test on Windows\n", name);
+	fwprintfmb(stderr, L"Usage: %ls [--locale=<locale>] (-afi|-lna) <dir>\n", name);
 	return 2;
 }
 
@@ -339,13 +262,8 @@ int main(int argc, char *argv[])
 {
 	struct wide_arg *const wargs = arg_parse_command_line(&argc);
 
-	/* We will write only wide-character strings to stderr/stdout if they are print to console.  */
-	const int std_streams_is_file =
-		((-1 == console_set_wide(_fileno(stderr))) ? STDERR_BIT : 0) |
-		((-1 == console_set_wide(_fileno(stdout))) ? STDOUT_BIT : 0);
-
 	if (wargs == NULL) {
-		fwprintf(stderr, L"Failed to parse command-line arguments list");
+		fputs("Failed to parse command-line arguments list\n", stderr);
 		return 2;
 	}
 
@@ -386,7 +304,7 @@ int main(int argc, char *argv[])
 
 		if (locale) {
 			if (wset_locale_helper(LC_ALL, locale)) {
-				fwprintf(stderr, L"%ls: bad locale: %ls\n", prog, locale);
+				fwprintfmb(stderr, L"%ls: bad locale: %ls\n", prog, locale);
 				return 2;
 			}
 		}
@@ -394,36 +312,25 @@ int main(int argc, char *argv[])
 			struct set_locale_err err;
 			if (set_locale_from_env("", &err)) {
 				if (err.lc)
-					fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", prog, err.cat, err.lc);
+					fwprintfmb(stderr, L"%ls: bad locale: %ls=%ls\n", prog, err.cat, err.lc);
 				else
-					fwprintf(stderr, L"%ls: failed to set default locale\n", prog);
+					fwprintfmb(stderr, L"%ls: failed to set default locale\n", prog);
 				return 2;
 			}
 		}
 
-		{
-			/* for UTF8-locale, fwprintf() should print text in UTF8 if stderr/stdout is redirected to a file */
-			int std_streams_to_utf8 = localerpl_is_utf8() ? std_streams_is_file : 0;
-
-#ifdef _O_U8TEXT
-			if (std_streams_to_utf8 & STDERR_BIT)
-				(void) _setmode(_fileno(stderr), _O_U8TEXT);
-			if (std_streams_to_utf8 & STDOUT_BIT)
-				(void) _setmode(_fileno(stdout), _O_U8TEXT);
-			std_streams_to_utf8 = 0;
-#endif
-
-			if (process_dir(prog, w->value, afi, std_streams_to_utf8))
-				return 2;
-		}
+		if (process_dir(prog, w->value, afi))
+			return 2;
 	}
 
 	arg_free_wide_args(wargs);
+	console_buffers_reset();
+	utf8_env_shadow_reset();
 	return 0;
 }
 
 void utf8_env_fatal(void)
 {
-	fwprintf(stderr, L"failed to create environment variables table\n");
+	fputs("failed to create environment variables table\n", stderr);
 	exit(3);
 }
