@@ -24,6 +24,7 @@ setlocal
 :: AR           (ar)         - how to call ar, this may be for example "ar"
 :: GCCAR        (gcc-ar)     - how to call gcc-ar, this may be for example "gcc-ar"
 :: WINDRES      (windres)    - how to call windres, this may be for example "windres"
+:: GCC_IS_MINGW_ORG {auto}   - non-empty if using gcc/g++ from MinGW.org project
 ::
 :: CLANG        (clang)      - how to call clang, this may be for example "clang -m32"
 :: CLANGXX      (clang++)    - how to call clang++, this may be for example "clang++ -m32"
@@ -78,12 +79,6 @@ if defined SAL_DEFS_H    set "SAL_DEFS_H=%SAL_DEFS_H:"=%"
 if not defined BLD_DIST (set BLD_DIST=dist) else set "BLD_DIST=%BLD_DIST:"=%"
 if not defined BLD_OBJ  (set BLD_OBJ=obj)   else set "BLD_OBJ=%BLD_OBJ:"=%"
 
-:: "all" by default
-set TOOLCHAIN=
-set DO_BUILD_AWK=x
-set DO_BUILD_SHLIB=x
-set DO_BUILD_HELPERS=x
-
 set A1=
 set A2=
 set A3=
@@ -103,18 +98,21 @@ for /f "tokens=1,2,3,4,5,6,7,8" %%a in (%1) do (
   set "A8=%%h"
 )
 
+:: "all" by default
+set TOOLCHAIN=
+set DO_BUILD_AWK=x
+set DO_BUILD_SHLIB=x
+set DO_BUILD_HELPERS=x
+
 if "awk"=="%A1%" (
   set DO_BUILD_SHLIB=
   set DO_BUILD_HELPERS=
-  set DO_TEST=
 ) else (if "shlib"=="%A1%" (
   set DO_BUILD_AWK=
   set DO_BUILD_HELPERS=
-  set DO_TEST=
 ) else (if "helpers"=="%A1%" (
   set DO_BUILD_AWK=
   set DO_BUILD_SHLIB=
-  set DO_TEST=
 ) else (
   if "clean"=="%A1%" goto :do_clean
   if "distclean"=="%A1%" (
@@ -175,7 +173,7 @@ endlocal & set "TOOLCHAIN=%SPECTOOLCHAIN%"
 (call :isoptionset "32"       %~1) && set BUILDFORCPU=32
 (call :isoptionset "64"       %~1) && set "BUILDFORCPU=%BUILDFORCPU%64"
 
-if "%BUILDFORCPU%"=="3264" ((echo ERROR: Duplicate CPU architecture) && exit /b 1)
+if "%BUILDFORCPU%"=="3264" ((echo ERROR: Duplicate target CPU architecture) && exit /b 1)
 
 :: choose toolchain
 if not defined TOOLCHAIN cl > NUL 2>&1 && set TOOLCHAIN=cl
@@ -262,7 +260,6 @@ if not "%TOOLCHAIN%"=="cl" goto :toolchain1
 
 :::::::::::::::::::::: CL :::::::::::::::::::::::
 
-if defined BUILDFORCPU echo WARNING: Build option "%BUILDFORCPU%" is not supported for CL
 if not defined CLCC   (set CLCC=cl)     else call :escape_cc CLCC
 if not defined CLLIB  (set CLLIB=lib)   else call :escape_cc CLLIB
 if not defined CLLINK (set CLLINK=link) else call :escape_cc CLLINK
@@ -274,6 +271,8 @@ if not defined CLVER (
     exit /b 1
   )
 )
+
+if not defined BUILDFORCPU (echo Please specify target CPU architecture: 32 or 64) & exit /b 1
 
 :: define _Noreturn for pc/config.h & support/cdefs.h
 :: define __inline for gettext.h
@@ -334,21 +333,28 @@ set "WARNING_OPTIONS=%WARNING_OPTIONS% /wd4800 /wd4623 /wd4626 /wd5027 /wd5039 /
 :: define HAVE___RESTRICT for support/libc-config.h
 set "GAWK_DEFINES=%GAWK_DEFINES% /D_Restrict_=__restrict /DHAVE___INLINE /DHAVE___RESTRICT"
 
+set "SUBSYSTEM=/SUBSYSTEM:CONSOLE"
+
+:: WindowsXP support
+if "%BUILDFORCPU%"=="32" set "SUBSYSTEM=%SUBSYSTEM%,5.01%"
+if "%BUILDFORCPU%"=="64" set "SUBSYSTEM=%SUBSYSTEM%,5.02%"
+
 if defined DEBUG_BUILD (
   :: debugging options
   set "CMNOPTS=/nologo %NODEPRECATE% %WARNING_OPTIONS% %CMN_DEFINES% /Od /Z7 /EHsc /MTd"
   set "LIBABSTRACTLIB=%CLLIB% /nologo /OUT:"
-  set "GAWKLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /DEBUG /INCREMENTAL:NO"
-  set "SHLIBLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /DEBUG /INCREMENTAL:NO /DLL /Entry:ExtDllMain /DEFAULTLIB:kernel32 /DEFAULTLIB:libvcruntimed /DEFAULTLIB:libucrtd"
-  set "TOOLLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /DEBUG /INCREMENTAL:NO"
+  set "GAWKLINK=%CLLINK% /nologo %SUBSYSTEM% /DEBUG /INCREMENTAL:NO"
+  set "SHLIBLINK=%CLLINK% /nologo %SUBSYSTEM% /DEBUG /INCREMENTAL:NO /DLL /Entry:ExtDllMain /DEFAULTLIB:kernel32 /DEFAULTLIB:libvcruntimed /DEFAULTLIB:libucrtd"
+  set "TOOLLINK=%CLLINK% /nologo %SUBSYSTEM% /DEBUG /INCREMENTAL:NO"
 ) else (
   :: release options
   set "CMNOPTS=/nologo %NODEPRECATE% %WARNING_OPTIONS% %CMN_DEFINES% /Ox /GF /Gy /GS- /GL /EHsc /DNDEBUG /MT"
   set "LIBABSTRACTLIB=%CLLIB% /nologo /LTCG /OUT:"
-  set "GAWKLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /LTCG"
-  set "SHLIBLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /LTCG /DLL /Entry:ExtDllMain /DEFAULTLIB:kernel32 /DEFAULTLIB:libvcruntime /DEFAULTLIB:libucrt"
-  set "TOOLLINK=%CLLINK% /nologo /SUBSYSTEM:CONSOLE /LTCG"
+  set "GAWKLINK=%CLLINK% /nologo %SUBSYSTEM% /LTCG"
+  set "SHLIBLINK=%CLLINK% /nologo %SUBSYSTEM% /LTCG /DLL /Entry:ExtDllMain /DEFAULTLIB:kernel32 /DEFAULTLIB:libvcruntime /DEFAULTLIB:libucrt"
+  set "TOOLLINK=%CLLINK% /nologo %SUBSYSTEM% /LTCG"
 )
+set SUBSYSTEM=
 
 set "UNICODE_CTYPECC=%CLCC% /c %CMNOPTS% /I""%UNICODE_CTYPE%"" /Fo"
 set "LIBUTF16CC=%CLCC% /c %CMNOPTS% /I""%LIBUTF16%"" /Fo"
@@ -387,10 +393,7 @@ if not defined GCC    (set "GCC=gcc %BUILDFORCPU%") else call :escape_cc GCC "%B
 if not defined GXX    (set "GXX=g++ %BUILDFORCPU%") else call :escape_cc GXX "%BUILDFORCPU%"
 if not defined AR     (set AR=ar)                   else call :escape_cc AR
 if not defined GCCAR  (set GCCAR=gcc-ar)            else call :escape_cc GCCAR
-set WINDRES_ARCH=
-if "%BUILDFORCPU%"=="-m32" set "WINDRES_ARCH=-F pe-i386"
-if "%BUILDFORCPU%"=="-m64" set "WINDRES_ARCH=-F pe-x86-64"
-if not defined WINDRES (set "WINDRES=windres %WINDRES_ARCH%") else call :escape_cc WINDRES "%WINDRES_ARCH%"
+if defined BUILDFORCPU set "BUILDFORCPU=%BUILDFORCPU:-m=%"
 
 if not defined GCCVER (
   :: also define GCC_IS_MINGW_ORG if using ming32 build environment by the MinGW.org project
@@ -399,6 +402,13 @@ if not defined GCCVER (
     exit /b 1
   )
 )
+
+if not defined BUILDFORCPU (echo Please specify target CPU architecture: 32 or 64) & exit /b 1
+
+set WINDRES_ARCH=
+if "%BUILDFORCPU%"=="32" set "WINDRES_ARCH=-F pe-i386"
+if "%BUILDFORCPU%"=="64" set "WINDRES_ARCH=-F pe-x86-64"
+if not defined WINDRES (set "WINDRES=windres %WINDRES_ARCH%") else call :escape_cc WINDRES "%WINDRES_ARCH%"
 
 set "GAWK_VER_DEFINES=%GAWK_VER_DEFINES:/D=-D%"
 
@@ -741,9 +751,13 @@ if defined DEBUG_BUILD (
 )
 
 if defined COMPILE_AS_CXX (set "LINKER=%GXX%") else set "LINKER=%GCC%"
-set "GAWKLINK=%LINKER% -static -mconsole"
-set "SHLIBLINK=%LINKER% -static -mconsole -shared"
-set "TOOLLINK=%LINKER% -static -mconsole"
+set "LINKER=%LINKER% -mconsole"
+:: WindowsXP support
+if "%BUILDFORCPU%"=="32" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=1"
+if "%BUILDFORCPU%"=="64" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=2"
+set "GAWKLINK=%LINKER% -static"
+set "SHLIBLINK=%LINKER% -static -shared"
+set "TOOLLINK=%LINKER% -static"
 set LINKER=
 
 :: GCC from MinGW.org do not supports '-municode'
@@ -812,10 +826,7 @@ if not defined CLANG   (set "CLANG=clang %BUILDFORCPU%")     else call :escape_c
 if not defined CLANGXX (set "CLANGXX=clang++ %BUILDFORCPU%") else call :escape_cc CLANGXX "%BUILDFORCPU%"
 if not defined AR      (set AR=ar)                           else call :escape_cc AR
 if not defined LLVMAR  (set LLVMAR=llvm-ar)                  else call :escape_cc LLVMAR
-set WINDRES_ARCH=
-if "%BUILDFORCPU%"=="-m32" set "WINDRES_ARCH=-F pe-i386"
-if "%BUILDFORCPU%"=="-m64" set "WINDRES_ARCH=-F pe-x86-64"
-if not defined WINDRES (set "WINDRES=windres %WINDRES_ARCH%") else call :escape_cc WINDRES "%WINDRES_ARCH%"
+if defined BUILDFORCPU set "BUILDFORCPU=%BUILDFORCPU:-m=%"
 
 if not defined CLANGVER (
   call :extract_ver CLANGVER "%CLANG% --version 2>&1" "clang version " || (
@@ -823,6 +834,13 @@ if not defined CLANGVER (
     exit /b 1
   )
 )
+
+if not defined BUILDFORCPU (echo Please specify target CPU architecture: 32 or 64) & exit /b 1
+
+set WINDRES_ARCH=
+if "%BUILDFORCPU%"=="32" set "WINDRES_ARCH=-F pe-i386"
+if "%BUILDFORCPU%"=="64" set "WINDRES_ARCH=-F pe-x86-64"
+if not defined WINDRES (set "WINDRES=windres %WINDRES_ARCH%") else call :escape_cc WINDRES "%WINDRES_ARCH%"
 
 set "GAWK_VER_DEFINES=%GAWK_VER_DEFINES:/D=-D%"
 
@@ -903,10 +921,19 @@ if defined DEBUG_BUILD (
   set "CMNOPTS=%WARNING_OPTIONS% %CMN_DEFINES% -pipe -DNDEBUG -O2 -flto"
 )
 
+set "GAWKLINK=%LINKER% -static"
+set "SHLIBLINK=%LINKER% -static -shared"
+set "TOOLLINK=%LINKER% -static"
+set LINKER=
+
 if defined COMPILE_AS_CXX (set "LINKER=%CLANGXX%") else set "LINKER=%CLANG%"
-set "GAWKLINK=%LINKER% -static -municode -mconsole"
-set "SHLIBLINK=%LINKER% -static -municode -mconsole -shared"
-set "TOOLLINK=%LINKER% -static -municode -mconsole"
+set "LINKER=%LINKER% -mconsole -municode"
+:: WindowsXP support
+if "%BUILDFORCPU%"=="32" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=1"
+if "%BUILDFORCPU%"=="64" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=2"
+set "GAWKLINK=%LINKER% -static"
+set "SHLIBLINK=%LINKER% -static -shared"
+set "TOOLLINK=%LINKER% -static"
 set LINKER=
 
 if defined DEBUG_BUILD (
@@ -975,6 +1002,7 @@ if not defined CLANGMSVCXX (set "CLANGMSVCXX=clang++ %BUILDFORCPU%") else call :
 if not defined CLLIB       (set CLLIB=lib)                           else call :escape_cc CLLIB
 if not defined LLVMAR      (set LLVMAR=llvm-ar)                      else call :escape_cc LLVMAR
 if not defined CLRC        (set CLRC=rc)                             else call :escape_cc CLRC
+if defined BUILDFORCPU set "BUILDFORCPU=%BUILDFORCPU:-m=%"
 
 if not defined CLANGMSVCVER (
   call :extract_ver CLANGMSVCVER "%CLANGMSVC% --version 2>&1" "clang version " || (
@@ -982,6 +1010,8 @@ if not defined CLANGMSVCVER (
     exit /b 1
   )
 )
+
+if not defined BUILDFORCPU (echo Please specify target CPU architecture: 32 or 64) & exit /b 1
 
 set "GAWK_VER_DEFINES=%GAWK_VER_DEFINES:/D=-D%"
 
@@ -1068,22 +1098,34 @@ if defined DEBUG_BUILD (
 )
 
 if defined COMPILE_AS_CXX (set "LINKER=%CLANGMSVCXX%") else set "LINKER=%CLANGMSVC%"
-set "GAWKLINK=%LINKER% -static -municode -mconsole"
-set "SHLIBLINK=%LINKER% -static -municode -mconsole -shared"
-set "TOOLLINK=%LINKER% -static -municode -mconsole"
+set "LINKER=%LINKER% -mconsole -municode"
+set "GAWKLINK=%LINKER% -static"
+set "SHLIBLINK=%LINKER% -static -shared"
+set "TOOLLINK=%LINKER% -static"
 set LINKER=
+
+set "SUBSYSTEM=/SUBSYSTEM:CONSOLE"
+
+:: WindowsXP support
+if "%BUILDFORCPU%"=="32" set "SUBSYSTEM=%SUBSYSTEM%,5.01%"
+if "%BUILDFORCPU%"=="64" set "SUBSYSTEM=%SUBSYSTEM%,5.02%"
+
+:: cannot pass /SUBSYSTEM:CONSOLE,5.01 via -Wl,<option> - use linker response file
+if not exist "%BLD_OBJ%" call :execq "md ""%BLD_OBJ%""" || (echo Failed to create directory: "%BLD_OBJ%") && exit /b 1
+call :execq "(echo %SUBSYSTEM%) > ""%BLD_OBJ%\subsys.resp""" || (echo Failed to create linker response file: "%BLD_OBJ%\subsys.resp") && exit /b 1
 
 if defined DEBUG_BUILD (
   set "LIBABSTRACTLIB=%CLLIB% /nologo /OUT:"
-  set "GAWKLINK=%GAWKLINK% -fstack-protector-all -Wl,/SUBSYSTEM:CONSOLE -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
-  set "SHLIBLINK=%SHLIBLINK% -fstack-protector-all -Wl,/SUBSYSTEM:CONSOLE -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/Entry:ExtDllMain -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
-  set "TOOLLINK=%TOOLLINK% -fstack-protector-all -Wl,/SUBSYSTEM:CONSOLE -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
+  set "GAWKLINK=%GAWKLINK% -fstack-protector-all -Wl,@""%BLD_OBJ%\subsys.resp"" -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
+  set "SHLIBLINK=%SHLIBLINK% -fstack-protector-all -Wl,@""%BLD_OBJ%\subsys.resp"" -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/Entry:ExtDllMain -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
+  set "TOOLLINK=%TOOLLINK% -fstack-protector-all -Wl,@""%BLD_OBJ%\subsys.resp"" -Wl,/DEBUG -Wl,/INCREMENTAL:NO -Wl,/NODEFAULTLIB:libcmt -Wl,/DEFAULTLIB:libcmtd -Wl,/DEFAULTLIB:kernel32 -Wl,/DEFAULTLIB:libvcruntimed -Wl,/DEFAULTLIB:libucrtd"
 ) else (
   set "LIBABSTRACTLIB=%LLVMAR% -csr "
-  set "GAWKLINK=%GAWKLINK% -flto -fuse-ld=lld"
-  set "SHLIBLINK=%SHLIBLINK% -flto -fuse-ld=lld"
-  set "TOOLLINK=%TOOLLINK% -flto -fuse-ld=lld"
+  set "GAWKLINK=%GAWKLINK% -flto -fuse-ld=lld -Wl,@""%BLD_OBJ%\subsys.resp"""
+  set "SHLIBLINK=%SHLIBLINK% -flto -fuse-ld=lld -Wl,@""%BLD_OBJ%\subsys.resp"""
+  set "TOOLLINK=%TOOLLINK% -flto -fuse-ld=lld -Wl,@""%BLD_OBJ%\subsys.resp"""
 )
+set SUBSYSTEM=
 
 if defined COMPILE_AS_CXX (set "COMPILER=%CLANGMSVCXX%") else set "COMPILER=%CLANGMSVC%"
 set "UNICODE_CTYPECC=%COMPILER% -c %CMNOPTS% -I""%UNICODE_CTYPE%"" -o"
@@ -1200,7 +1242,7 @@ call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\locale_helpers.c"  || exit /b
 call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\localerpl.c"       || exit /b
 call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf16cvt.c"        || exit /b
 call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf8env.c"         || exit /b
-call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\utf8rpl.c"         || exit /b
+call :cc MSCRTXCC "%BLD_OBJ%\mscrtx" "%MSCRTX%\src\consoleio.c"       || exit /b
 
 :: note: next lines after ^ _must_ begin with a space - because they are not commands
 call :lib "%BLD_OBJ%\mscrtx\mscrtx.a" ^
@@ -1214,7 +1256,7 @@ call :lib "%BLD_OBJ%\mscrtx\mscrtx.a" ^
  "%BLD_OBJ%\mscrtx\localerpl.obj"       ^
  "%BLD_OBJ%\mscrtx\utf16cvt.obj"        ^
  "%BLD_OBJ%\mscrtx\utf8env.obj"         ^
- "%BLD_OBJ%\mscrtx\utf8rpl.obj"          || exit /b
+ "%BLD_OBJ%\mscrtx\consoleio.obj" || exit /b
 
 exit /b 0
 
@@ -1560,7 +1602,7 @@ exit /b
 setlocal
 set LANG=C
 call :extract_ver1 %2 %3 || exit /b 1
-endlocal & set "%1=%VER%" & set "GCC_IS_MINGW_ORG=%GCC_IS_MINGW_ORG%" & exit /b 0
+endlocal & set "%1=%VER%" & set "GCC_IS_MINGW_ORG=%GCC_IS_MINGW_ORG%" & set "BUILDFORCPU=%BUILDFORCPU%" & exit /b 0
 
 :extract_ver1
 :: %1 - "%CLANGMSVC% --version 2>&1"
@@ -1575,18 +1617,27 @@ set "CCCMD=%CCCMD:(=^(%"
 set "CCCMD=%CCCMD:)=^)%"
 set "CCCMD=%CCCMD:^^=%"
 for /f "tokens=*" %%a in ('%CCCMD:""="%') do (call :extract_ver2 %2 "%%a" && exit /b 0)
-exit /b 1
+if not defined VER exit /b 1
+if not defined BUILDFORCPU exit /b 1
+exit /b 0
 
 :extract_ver2
 :: %1 - prefix string
 :: %2 - some text
 set "TEXT=%~2"
+if not defined BUILDFORCPU if not "%TEXT:Target: x86_64=%"=="%TEXT%" set BUILDFORCPU=64
+if not defined BUILDFORCPU if not "%TEXT:Target: i686=%"=="%TEXT%"   set BUILDFORCPU=32
+if not defined BUILDFORCPU if not "%TEXT: for x64=%"=="%TEXT%"       set BUILDFORCPU=64
+if not defined BUILDFORCPU if not "%TEXT: for x86=%"=="%TEXT%"       set BUILDFORCPU=32
+if not defined BUILDFORCPU if "%TEXT%"=="Target: mingw32"            set BUILDFORCPU=32
 call set "TEXT=%%TEXT:%~1=%%"
 if "%TEXT%"=="%~2" exit /b 1
 if not "%TEXT:MinGW.org=%"=="%TEXT%" set GCC_IS_MINGW_ORG=1
 for /f "tokens=1" %%b in ("%TEXT%") do (set "VER=%%b")
-call :combine_ver VER
-exit /b
+call :combine_ver VER || exit /b
+:: fast-exit if both VER & BUILDFORCPU are defined
+if defined BUILDFORCPU exit /b
+exit /b 1
 
 :combine_ver
 :: 9.3 -> 9003
