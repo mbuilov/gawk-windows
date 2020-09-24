@@ -2113,7 +2113,7 @@ Note di avviso o raccomandazioni di cautela sono stampate in questo modo.
 
 @c fakenode --- for prepinfo
 @unnumberedsubsec Angoli Bui
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry citazioni di
 @quotation
 @i{Gli angoli bui sono essenzialmente frattali --- per quanto vengano
 illuminati, ce n'@`e sempre uno pi@`u piccolo e pi@`u buio.}
@@ -9267,7 +9267,7 @@ che gestisce le istruzioni @code{@@include} nidificate.
 @subsection Usare @code{getline} da una @dfn{pipe}
 
 @c From private email, dated October 2, 1988. Used by permission, March 2013.
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry citazioni di
 @quotation
 @i{L'onniscienza ha molti aspetti positivi.
 Se non si pu@`o ottenerla, l'attenzione ai dettagli pu@`o aiutare.}
@@ -12713,7 +12713,7 @@ Per garantire la massima portabilit@`a @`e meglio non usare l'operatore @samp{**
 
 @node Concatenazione
 @subsection Concatenazione di stringhe
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry citazioni di
 @quotation
 @i{Allora ci era sembrata una buona idea.}
 @author Brian Kernighan
@@ -20360,8 +20360,8 @@ avrebbe svuotato solo i buffer dello standard output se non era
 specificato alcun argomento,
 e svuotato tutti i buffer dei file in output e delle @dfn{pipe} se
 l'argomento era la stringa nulla.
-Questo @`e stato modificato per essere compatibile con l'@command{awk} di
-Kernighan, nella speranza che standardizzare questa
+Questo @`e stato modificato per essere compatibile con BWK @command{awk},
+nella speranza che standardizzare questa
 funzionalit@`a in POSIX sarebbe stato pi@`u agevole (come poi @`e effettivamente
 successo).
 
@@ -22905,7 +22905,7 @@ consente di incapsulare in un unico contenitore algoritmi e azioni di
 programma.  Semplifica la programmazione, rendendo lo sviluppo di un programma
 pi@`u gestibile, e rendendo i programmi pi@`u leggibili.
 
-@cindex Kernighan, Brian
+@cindex Kernighan, Brian @subentry citazioni di
 @cindex Plauger, P.J.@:
 Nel loro autorevole libro del 1976,
 @cite{Software Tools},@footnote{Purtroppo, a distanza di oltre 35 anni,
@@ -24597,7 +24597,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 #
 # Initial version: March, 1991
 # Revised: May, 1993
-# Opzioni lunghe aggiunte da Greg Minshall, Gennaio 2020
+# Long options added by Greg Minshall, January 2020
 @c endfile
 @end ignore
 @c file eg/lib/getopt.awk
@@ -26185,8 +26185,8 @@ argomenti non validi:
 @group
 function sintassi()
 @{
-    print("sintassi: cut [-f lista] [-d c] [-s] [file...]") > "/dev/stderr"
-    print("sintassi: cut [-c lista] [file...]") > "/dev/stderr"
+    print("Uso: cut [-f lista] [-d c] [-s] [file...]") > "/dev/stderr"
+    print("Uso: cut [-c lista] [file...]") > "/dev/stderr"
     exit 1
 @}
 @end group
@@ -26736,14 +26736,13 @@ siano state specificate opzioni non valide, e quindi esce:
 @c file eg/prog/egrep.awk
 function sintassi()
 @{
-    print("sintassi: egrep [-csvil] [-e criterio_di_ricerca] [file ...]")\
+    print("Uso:\tegrep [-cilnqsvx] [-e criterio_di_ricerca] [file ...]")\
     	> "/dev/stderr"
-    print("\n\tegrep [-csvil] criterio_di_ricerca [file ...]") > "/dev/stderr"
+    print("\tegrep [-cilnqsvx] criterio_di_ricerca [file ...]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
-
 
 @node Programma id
 @subsection Stampare informazioni sull'utente
@@ -26772,27 +26771,27 @@ Questa informazione @`e parte di ci@`o che @`e reso disponibile dal vettore
 Comunque, il programma di utilit@`a @command{id} fornisce un output pi@`u
 comprensibile che non una semplice lista di numeri.
 
-Ecco una versione semplice di @command{id} scritta in @command{awk}.
+La versione POSIX di @command{id} prevede numerose opzioni che consentono
+di controllare il formato dell'output, come stampare solo gli @dfn{id}
+reali, o stampare solo numeri o solo nomi.  Inoltre, @`e possibile stampare
+informazioni riguardo a un dato utente, invece che solo quelle relative
+all'utente corrente.
+
+Quel che segue @`e una versione del comando POSIX @command{id} scritta in
+@command{awk}.
+Usa la funzione di libreria @code{getopt()}
+(@pxref{Funzione getopt}),
+le funzioni di libreria del database che descrive gli utenti
+(@pxref{Funzioni Passwd}),
 Usa le funzioni di libreria che riguardano il database degli utenti
 (@pxref{Funzioni Passwd})
 e le funzioni di libreria che riguardano il database dei gruppi
-(@pxref{Funzioni Group})
-contenute
-@iftex
-nel
-@end iftex
-@ifnottex
-in
-@end ifnottex
-@ref{Funzioni di libreria}.
+(@pxref{Funzioni Group}).
 
 Il programma @`e abbastanza semplice.  Tutto il lavoro @`e svolto nella regola
-@code{BEGIN}.  I numeri ID di utente e di gruppo sono ottenuti da
-@code{PROCINFO}.
-Il codice @`e ripetitivo.  La riga nel database degli utenti che descrive
-l'ID reale dell'utente @`e divisa in parti, separate tra loro da @samp{:}.
-Il nome @`e il primo campo.  Un codice analogo @`e usato per l'ID effettivo, e
-per i numeri che descrivono i gruppi:
+@code{BEGIN}.
+Inizia com dei commenti di spiegazioni, una lista di opzioni e infine
+una funzione @code{sintassi()} function:
 
 @cindex @code{id.awk} (programma)
 @cindex programma @subentry @code{id.awk}
@@ -26800,7 +26799,7 @@ per i numeri che descrivono i gruppi:
 @c file eg/prog/id.awk
 # id.awk --- implement id in awk
 #
-# Richiede funzioni di libreria per utente e gruppo
+# Richiede funzioni di libreria per utente e gruppo e getopt
 @c endfile
 @ignore
 @c file eg/prog/id.awk
@@ -26810,91 +26809,344 @@ per i numeri che descrivono i gruppi:
 # Revised February 1996
 # Revised May 2014
 # Revised September 2014
+# Revised September 2020
 
 @c endfile
 @end ignore
 @c file eg/prog/id.awk
 # l'output @`e:
 # uid=12(pippo) euid=34(pluto) gid=3(paperino) \
-# egid=5(paperina) groups=9(nove),2(due),1(uno)
+#               egid=5(paperina) groups=9(nove),2(due),1(uno)
+
+# Opzioni:
+#   -G Scrive tutti gli id di gruppo come numeri separati da spazi
+#             (ruid, euid, groups)
+#   -g Scrive solo euid come numero
+#   -n Scrive il nome invece del valore numerico (con -g/-G/-u)
+#   -r Scrive ruid/rguid incece di euid (id effettivo)
+#   -u Scrive solo euid (id effettivo) dell'utente, come numero
 
 @group
-BEGIN @{
-    uid = PROCINFO["uid"]
-    euid = PROCINFO["euid"]
-    gid = PROCINFO["gid"]
-    egid = PROCINFO["egid"]
-@end group
+function sintassi()
+@{
+    printf("Uso:\n" \
+           "\tid [user]\n" \
+           "\tid −G [−n] [user]\n" \
+           "\tid −g [−nr] [user]\n" \
+           "\tid −u [−nr] [user]\n") > "/dev/stderr"
 
+    exit 1
+@}
+@end group
+@c endfile
+@end example
+
+Il primo passo @`e quello di scandire le opzioni usando @code{getopt()},
+e di impostare varie variabili di tipo flag a seconda delle opzioni
+specificate:
+
+@example
+@c file eg/prog/id.awk
+BEGIN @{
+    # scansione argomenti specificati
+    while ((c = getopt(ARGC, ARGV, "Ggnru")) != -1) @{
+        if (c == "G")
+            groupset_only++
+        else if (c == "g")
+            egid_only++
+        else if (c == "n")
+            names_not_groups++
+        else if (c == "r")
+            real_ids_only++
+        else if (c == "u")
+            euid_only++
+        else
+            sintassi()
+    @}
+@c endfile
+@end example
+
+Il passo successivo @`e quello di controllare che non siano state
+specificate opzioni mutualmente esclusive.
+Le opzioni @option{-G} e @option{-r} sono di questo tipo.
+Inoltre, non @`e possibile specificare pi@`u di un nome utente
+sulla riga di comando:
+
+@example
+@c file eg/prog/id.awk
+    if (groupset_only && real_ids_only)
+        sintassi()
+    else if (ARGC - Optind > 1)
+        sintassi()
+@c endfile
+@end example
+
+I numeri dell'ID di utente e di gruppo sono ottenuti
+dal vettore @code{PROCINFO} dell'utente corrente, oppure
+dal database degli utenti e delle password, per un
+utente il cui nome sia stato specificato nella riga di
+comando.
+In quest'ultimo caos, viene impostato il flag @code{real_ids_only},
+poich@'e non @`e possibile stampare informazioni riguardo agli
+ID di utente e di gruppo effettivi:
+
+@example
+@c file eg/prog/id.awk
+    if (ARGC - Optind == 0) @{
+        # ottieni informazioni for l'utente corrente
+        uid = PROCINFO["uid"]
+        euid = PROCINFO["euid"]
+        gid = PROCINFO["gid"]
+        egid = PROCINFO["egid"]
+        for (i = 1; ("group" i) in PROCINFO; i++)
+            groupset[i] = PROCINFO["group" i]
+    @} else @{
+        scrivi_info_utente(ARGV[ARGC-1])
+        real_ids_only++
+    @}
+@c endfile
+@end example
+
+Il test contenuto nel ciclo @code{for} @`e degno di nota.
+Ogni ulteriore gruppo nel vettore @code{PROCINFO} ha come indice
+da @code{"group1"} a @code{"group@var{N}"} per qualche valore di
+@var{N} (ovvero, il numero totale di gruppi ulteriori).
+Peraltro, non sappiamo in anticipo quanti siano questi gruppi
+supplementari.
+
+Questo ciclo funziona, a partire dal valore uno, concatenando il valore
+a @code{"group"}, e usando poi l'istruzione @code{in} per verificare se
+tale valore @`e presente nel vettore (@pxref{Visitare elementi}).
+Dopo alcune iterazioni, @code{i} supera il valore dell'ultimo gruppo
+presente nel vettore, e il ciclo termina.
+
+Il ciclo funziona correttamente anche se @emph{non} ci sono gruppi
+ulteriori; in tal caso la condizione non @`e verificata fin dal
+primo tentativo di verifica, e il corpo del ciclo non viene mai
+eseguito.
+
+A questo punto, a seconda delle opzioni, si decide quale
+informazione stampare.
+Per l'opzione @option{-G} (stampare solo l'insieme dei gruppo), occorre
+poi scegliere se stampare nomi o numeri.  In entrambi i casi, il programma
+esce dopo aver eseguito la stampa:
+
+@example
+@c file eg/prog/id.awk
+    if (groupset_only) @{
+        if (names_not_groups) @{
+            for (i = 1; i in groupset; i++) @{
+                entry = getgrgid(groupset[i])
+                name = ottieni_primo_campo(entry)
+                printf("%s", name)
+                if ((i + 1) in groupset)
+                    printf(" ")
+            @}
+        @} else @{
+            for (i = 1; i in groupset; i++) @{
+                printf("%u", groupset[i])
+                if ((i + 1) in groupset)
+                    printf(" ")
+            @}
+        @}
+
+        print ""    # a-capo finale
+        exit 0
+    @}
+@c endfile
+@end example
+
+Altrimenti, per l'opzione @option{-g} (solo il group ID effettivo), si
+controlla se @`e stata anche specificata l'opzione @option{-r}, nel qual
+caso bisogna usare il group ID reale.
+Occorre poi scegliere, in base all'opzione @option{-n}, se stampare
+nomi o numeri.  Anche qui il programma esce dopo aver eseguito la stampa:
+
+@example
+@c file eg/prog/id.awk
+    else if (egid_only) @{
+        id = real_ids_only ? gid : egid
+        if (names_not_groups) @{
+            entry = getgrgid(id)
+            name = ottieni_primo_campo(entry)
+            printf("%s\n", name)
+        @} else @{
+            printf("%u\n", id)
+        @}
+
+        exit 0
+    @}
+@c endfile
+@end example
+
+La funzione @code{ottieni_primo_campo()} estrae il nome del gruppo dalla
+descrizione del group ID stesso, contenuta nel database dei gruppi.
+
+Una logica simile viene seguita per l'opzione @option{-u}
+(solo user ID effettivo), combinata con le opzioni @option{-r} e @option{-n}:
+
+@example
+@c file eg/prog/id.awk
+    else if (euid_only) @{
+        id = real_ids_only ? uid : euid
+        if (names_not_groups) @{
+            entry = getpwuid(id)
+            name = ottieni_primo_campo(entry)
+            printf("%s\n", name)
+        @} else @{
+            printf("%u\n", id)
+        @}
+
+        exit 0
+    @}
+@c endfile
+@end example
+
+A questo punto non abbiamo ancora finito, e quindi stampiamo
+l'output normale, di default, a riguardo dell'utente corrente
+o dell'utente che era stato specificato sulla riga di comando.
+Iniziamo a stmpare l'user ID reale:
+
+@example
+@c file eg/prog/id.awk
     printf("uid=%d", uid)
     pw = getpwuid(uid)
     stampa_primo_campo(pw)
+@c endfile
+@end example
 
-@group
-    if (euid != uid) @{
+La funzione @code{stampa_primo_campo()} stampa il nome dell'utente
+dalla descrizione contenuta nel file password, racchiusa tra
+parentesi.  Vedere qui sotto.
+Poi si stampa l'user ID effettivo:
+
+@example
+@c file eg/prog/id.awk
+    if (euid != uid && ! real_ids_only) @{
         printf(" euid=%d", euid)
         pw = getpwuid(euid)
-@end group
-@group
         stampa_primo_campo(pw)
     @}
-@end group
+@c endfile
+@end example
 
+Una logica simile si applica ai group ID reale ed effettivo:
+
+@example
+@c file eg/prog/id.awk
     printf(" gid=%d", gid)
     pw = getgrgid(gid)
     stampa_primo_campo(pw)
 
-    if (egid != gid) @{
+    if (egid != gid && ! real_ids_only) @{
         printf(" egid=%d", egid)
         pw = getgrgid(egid)
         stampa_primo_campo(pw)
     @}
+@c endfile
+@end example
 
-    for (i = 1; ("group" i) in PROCINFO; i++) @{
+Per finire, stampiamo l'insieme dei gruppi e l'a-capo finale:
+
+@example
+@c file eg/prog/id.awk
+    for (i = 1; i in groupset; i++) @{
         if (i == 1)
             printf(" gruppi=")
-        group = PROCINFO["group" i]
+        group = groupset[i]
         printf("%d", group)
         pw = getgrgid(group)
         stampa_primo_campo(pw)
-        if (("group" (i+1)) in PROCINFO)
+        if ((i + 1) in groupset)
             printf(",")
     @}
 
     print ""
 @}
+@c endfile
+@end example
 
+La funzione @code{ottieni_primo_campo()} estrae il primo campo
+da una riga del file delle password o da quello dei gruppi,
+perch@'e venga usato come nome utente o nome del gruppo.
+I campi in questi file sono separati da caratteri @samp{:}:
+
+@example
+@c file eg/prog/id.awk
 function stampa_primo_campo(str,  a)
 @{
     if (str != "") @{
         split(str, a, ":")
-        printf("(%s)", a[1])
+        return a[1]
     @}
 @}
 @c endfile
 @end example
 
-Il test incluso nel ciclo @code{for} @`e degno di nota.
-Ogni ulteriore gruppo nel vettore @code{PROCINFO} ha come indice da
-@code{"group1"} a @code{"group@var{N}"} dove il numero
-@var{N} @`e il numero totale di gruppi ulteriori).
-Tuttavia, non si sa quanti di questi gruppi ci siano per un dato utente.
+Questa funzione @`e poi usata dalla funzione @code{stampa_primo_campo()}
+per stampare il nome trovato, racchiuso tra parentesi:
 
-Questo ciclo inizia da uno, concatena il valore di ogni iterazione con
-@code{"group"}, e poi usando l'istruzione @code{in} verifica se quella
-chiave @`e nel vettore (@pxref{Visitare elementi}).  Quando @code{i} @`e
-incrementato oltre l'ultimo gruppo presente nel vettore, il ciclo termina.
+@example
+@c file eg/prog/id.awk
+function stampa_primo_campo(str)
+@{
+    first = ottieni_primo_campo(str)
+    printf("(%s)", first)
+@}
+@c endfile
+@end example
 
-Il ciclo funziona correttamente anche se @emph{non} ci sono ulteriori
-gruppi; in quel caso la condizione risulta falsa fin dal primo controllo, e
-il corpo del ciclo non viene mai eseguito.
+Queste due funzioni semplicemente contengono delle istruzioni che vengono
+usate pi@`u volte, e ci@`o rende il programma pi@`u corto e pi@`u leggibile.
+In particolare, l'aver spostato il controllo se una stringa @`e la stringa
+nulla nella funzione @code{ottieni_primo_campo()} fa risparmiare parecchie
+righe di istruzioni.
 
-La funzione @code{stampa_primo_campo()} semplicemente incapsula quelle parti di
-codice che vengono usate ripetutamente, rendendo il programma pi@`u conciso e
-ordinato.
-In particolare, inserendo in questa funzione il test per la stringa nulla
-consente di risparmiare parecchie righe di programma.
+Da ultimo, la funzione @code{scrivi_info_utente()} si procura le
+informazioni su utente, gruppo e gruppi di appartenenza per l'utente
+indicato nel comando.  Il codice @`e abbastanza semplice e si limita
+a uscire dal programma se l'utente in questione non esiste:
 
+@example
+@c file eg/prog/id.awk
+function scrivi_info_utente(user,   
+                            pwent, fields, groupnames, grent, groups, i)
+@{
+    pwent = getpwnam(user)
+    if (pwent == "") @{
+        printf("id: '%s': utente inesistente\n", user) > "/dev/stderr"
+        exit 1
+    @}
+
+    split(pwent, fields, ":")
+    uid = fields[3] + 0
+    gid = fields[4] + 0
+@c endfile
+@end example
+
+Procurarsi l'insieme dei gruppi @`e un po' complicato.
+La routine di libreria @code{getgruser()} restituisce una lista
+di @emph{nomi} di gruppo.  Tali nomi vanno passati in rassegna
+e convertiti di nuovo in numeri di gruppo, in modo che il resto
+del programma funzioni come ci si aspetta che faccia:
+
+@example
+@ignore
+@c file eg/prog/id.awk
+
+@c endfile
+@end ignore
+@c file eg/prog/id.awk
+    groupnames = getgruser(user)
+    split(groupnames, groups, " ")
+    for (i = 1; i in groups; i++) @{
+        grent = getgrnam(groups[i])
+        split(grent, fields, ":")
+        groupset[i] = fields[3] + 0
+    @}
+@}
+@c endfile
+@end example
 
 @node Programma split
 @subsection Suddividere in pezzi un file grosso
@@ -26954,7 +27206,7 @@ e l'ultimo argomento @`e usato come prefisso per i @value{FNS} in output:
 @c endfile
 @end ignore
 @c file eg/prog/split.awk
-# sintassi: split [-contatore] [file] [nome_in_output]
+# Uso: split [-contatore] [file] [nome_in_output]
 
 BEGIN @{
     outfile = "x"    # default
@@ -27029,7 +27281,7 @@ La funzione @code{sintassi()} stampa solo un messaggio di errore ed esce:
 @c file eg/prog/split.awk
 function sintassi()
 @{
-    print("sintassi: split [-num] [file] [nome_in_output]") > "/dev/stderr"
+    print("Uso: split [-num] [file] [nome_in_output]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
@@ -27113,7 +27365,7 @@ BEGIN @{
         ARGC--
     @}
     if (ARGC < 2) @{
-        print "sintassi: tee [-a] file ..." > "/dev/stderr"
+        print "Uso: tee [-a] file ..." > "/dev/stderr"
         exit 1
     @}
     ARGV[1] = "-"
@@ -27180,8 +27432,6 @@ END @{
 @node Programma uniq
 @subsection Stampare righe di testo non duplicate
 
-@c FIXME: One day, update to current POSIX version of uniq
-
 @cindex stampare @subentry righe di testo non duplicate
 @cindex testo @subentry stampare @subentry righe non duplicate di
 @cindex @command{uniq} (programma di utilit@`a)
@@ -27192,7 +27442,7 @@ stampa solo righe uniche; da cui il
 nome.  @command{uniq} ha diverse opzioni.  La sintassi @`e la seguente:
 
 @display
-@command{uniq} [@option{-udc} [@code{-@var{n}}]] [@code{+@var{n}}] [@var{file_input} [@var{file_output}]]
+@command{uniq} [@option{-udc} [@code{-f @var{n}}] [@code{-s @var{n}}]] [@var{file_input} [@var{file_output}]]
 @end display
 
 Le opzioni per @command{uniq} sono:
@@ -27208,14 +27458,14 @@ Stampa solo righe non ripetute (uniche).
 Contatore righe. Quest'opzione annulla le opzioni @option{-d} e @option{-u}.
 Sia le righe ripetute che quelle non ripetute vengono contate.
 
-@item -@var{n}
+@item -f @var{n}
 Salta @var{n} campi prima di confrontare le righe.  La definizione di campo
 @`e simile al default di @command{awk}: caratteri non bianchi, separati da
 sequenze di spazi e/o TAB.
 
-@item +@var{n}
+@item -s @var{n}
 Salta @var{n} caratteri prima di confrontare le righe.  Eventuali campi
-specificati con @samp{-@var{n}} sono saltati prima.
+specificati con @option{-f} sono saltati prima.
 
 @item @var{file_input}
 I dati sono letti dal file in input specificato sulla riga di comando, invece
@@ -27236,23 +27486,7 @@ e la funzione di libreria @code{join()}
 (@pxref{Funzione join}).
 
 Il programma inizia con una funzione @code{sintassi()} e poi con una breve
-spiegazione delle opzioni e del loro significato, sotto forma di commenti.
-La regola @code{BEGIN} elabora gli argomenti della riga di comando e le
-opzioni.  Viene usato un artificio per poter impiegare @code{getopt()} con
-opzioni della forma @samp{-25},
-trattando quest'opzione come la lettera di opzione @samp{2} con
-l'argomento @samp{5}. Se si specificano due o pi@`u cifre (@code{Optarg}
-sembra essere numerico), @code{Optarg} @`e concatenato con la cifra che
-costituisce l'opzione e poi al risultato @`e addizionato zero, per trasformarlo
-in un numero.  Se c'@`e solo una cifra nell'opzione, @code{Optarg} non @`e
-necessario.  In tal caso, @code{Optind} dev'essere decrementata, in modo che
-@code{getopt()} la elabori quando viene nuovamente richiamato.  Questo codice
-@`e sicuramente un po' intricato.
-
-Se non sono specificate opzioni, per default si stampano sia le righe
-ripetute che quelle non ripetute.  Il file di output, se specificato, @`e
-assegnato a @code{file_output}.  In precedenza, @code{file_output} @`e
-inizializzato allo standard output, @file{/dev/stdout}:
+spiegazione delle opzioni e del loro significato, sotto forma di commenti:
 
 @cindex @code{uniq.awk} (programma)
 @cindex programma @subentry @code{uniq.awk}
@@ -27269,26 +27503,67 @@ inizializzato allo standard output, @file{/dev/stdout}:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Updated August 2020 to current POSIX
 @c endfile
 @end ignore
 @c file eg/prog/uniq.awk
 
 function sintassi()
 @{
-    print("sintassi: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
+    print("Uso: uniq [-udc [-f campi]] [-s caratteri] [ in [ out ]]") > "/dev/stderr"
     exit 1
 @}
 
 # -c    contatore di righe. prevale su -d e -u
 # -d    solo righe ripetute
 # -u    solo righe non ripetute
-# -n    salta n campi
-# +n    salta n caratteri, salta prima eventuali campi
+# -f -n salta n campi
+# -s -n salta n caratteri, salta prima eventuali campi
+@c endfile
+@end example
 
+Lo standard POSIX per il comando @command{uniq} consente che le opzioni
+inizino con @samp{+} come pure con @samp{-}.  Una regola iniziale
+@code{BEGIN} scorre gli argomenti della riga di comando e sostituisce
+ogni @samp{+} iniziale con @samp{-} in modo che la funzione @code{getopt()}
+possa scandire le opzioni:
+
+@example
+@c file eg/prog/uniq.awk
+# Dal 2020, '+' pu@`o essere usato come carattere iniziale per
+# specificare un'opzione, in aggiunta a '-'.
+# L'utilizzo, precedentemente consentito, di -N per saltare dei campi
+# e di +N per saltare dei caratteri, non @`e pi@`u ammesso, e non @`e
+# supportato da questa versione.
+
+BEGIN @{
+    # Converte + a - in modo che getopt possa gestire le opzioni
+    for (i = 1; i < ARGC; i++) @{
+        first = substr(ARGV[i], 1, 1)
+        if (ARGV[i] == "--" || (first != "-" && first != "+"))
+            break
+        else if (first == "+")
+            # Rimpiazza "+" con "-"
+            ARGV[i] = "-" substr(ARGV[i], 2)
+    @}
+@}
+@c endfile
+@end example
+
+La successiva regola @code{BEGIN} gestisce gli argomenti e le opzioni
+specificate sulla riga di comando.
+Se non @`e specificata alcuna opzione, vengono usate quelle di default,
+che stampano sia le righe ripetute che quelle non ripetute.
+Il file di output, se specificato, @`e assegnato alla variabile
+@code{g}.  In precedenza, @code{file_output} viene inizializzata
+allo standard output, @file{/dev/stdout}:
+
+@example
+@c file eg/prog/uniq.awk
 BEGIN @{
     contatore = 1
     file_output = "/dev/stdout"
-    opts = "udc0:1:2:3:4:5:6:7:8:9:"
+    opts = "udcf:s:"
     while ((c = getopt(ARGC, ARGV, opts)) != -1) @{
         if (c == "u")
             solo_non_ripetute++
@@ -27296,25 +27571,13 @@ BEGIN @{
             solo_ripetute++
         else if (c == "c")
             conta_record++
-        else if (index("0123456789", c) != 0) @{
-            # getopt() richiede argomenti per le opzioni
-            # questo consente di gestire cose come -5
-            if (Optarg ~ /^[[:digit:]]+$/)
-                contatore_file = (c Optarg) + 0
-            else @{
-                contatore_file = c + 0
-                Optind--
-            @}
-        @} else
+        else if (c == "f")
+            contatore_file = Optarg + 0
+        else if (c == "s")
+            contatore_caratteri = Optarg + 0
+        else
             sintassi()
     @}
-
-@group
-    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) @{
-        conta_caratteri = substr(ARGV[Optind], 2) + 0
-        Optind++
-    @}
-@end group
 
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
@@ -27454,19 +27717,20 @@ con la lettera iniziale maiuscola.  Se lo si fosse fatto, il programma
 sarebbe stato un po' pi@`u semplice da comprendere.
 
 @ifset FOR_PRINT
-La logica per scegliere quali righe stampare rappresenta una @dfn{macchina a
-stati}, che @`e ``un dispositivo che pu@`o trovarsi in una tra un dato numero di
-condizioni stabili, a seconda della sua condizione precedente e del valore
-corrente dei suoi input.''@footnote{Questa @`e la definizione trovata
-cercando @code{define: state machine} in Google.}
+@cindex Kernighan, Brian @subentry citazioni di
+La logica per scegliere quali righe stampare rappresenta una
+@dfn{macchina a stati},
+che @`e ``un dispositivo che pu@`o trovarsi in una tra un dato numero
+di condizioni stabili, a seconda della sua condizione precedente e del valore
+corrente dei suoi input.''@footnote{Questa @`e la definizione data in
+@uref{https://www.lexico.com/en/definition/state_machine}.}
 Brian Kernighan suggerisce che
-``un approccio alternativo alle macchine a stati @`e quello di mettere l'input
-in un vettore, e poi usare gli indici.  @`E quasi sempre pi@`u facile da
-programmare e, per molti input in cui si pu@`o usare questo metodo,
-altrettanto veloce.''  Si consideri come riscrivere la logica di questo
-programma per seguite questo suggerimento.
+``un approccio alternativo alle macchine a stati @`e di leggere tutto l'input
+e metterlo in un vettore, e poi usare l'indicizzazione.  @`E quasi sempre pi@`u
+facile da programmare e, per la maggior parte degli input in cui si pu@`o
+usare, altrettanto veloce in esecuzione.''  Riscrivere la logica del
+programma seguendo questa indicazione.
 @end ifset
-
 
 
 @node Programma wc
@@ -27835,11 +28099,11 @@ Ecco il programma:
 @c endfile
 @end ignore
 @c file eg/prog/alarm.awk
-# sintassi: alarm a_che_ora [ "messaggio" [ contatore [ ritardo ] ] ]
+# Uso: alarm a_che_ora [ "messaggio" [ contatore [ ritardo ] ] ]
 
 BEGIN @{
     # Controllo iniziale congruit@`a argomenti
-    sintassi1 = "sintassi: alarm a_che_ora ['messaggio' [contatore [ritardo]]]"
+    sintassi1 = "Uso: alarm a_che_ora ['messaggio' [contatore [ritardo]]]"
     sintassi2 = sprintf("\t(%s) formato ora: ::= hh:mm", ARGV[1])
 
     if (ARGC < 2) @{
@@ -28074,7 +28338,7 @@ function traducilo(da, a)
 BEGIN @{
 @group
     if (ARGC < 3) @{
-        print "sintassi: translate da a" > "/dev/stderr"
+        print "Uso: translate da a" > "/dev/stderr"
         exit
     @}
 @end group
@@ -28830,7 +29094,7 @@ usa lo standard input:
 
 function sintassi()
 @{
-    print "sintassi: awksed espressione rimpiazzo [file...]" > "/dev/stderr"
+    print "Uso: awksed espressione rimpiazzo [file...]" > "/dev/stderr"
     exit 1
 @}
 
@@ -29722,17 +29986,18 @@ Risolvere questo problema.
 senza appoggiarsi sulle funzioni @code{ord()} e @code{chr()}.)
 
 @item
+@cindex Kernighan, Brian @subentry citazioni di
 Nel programma @file{uniq.awk} (@pxref{Programma uniq}, la
 logica per scegliere quali righe stampare rappresenta una
 @dfn{macchina a stati},
 ossia ``un dispositivo che pu@`o essere in uno di un insieme di stati
 stabili, a seconda dello stato in cui si trovava in precedenza, e del
 valore corrente dei suoi
-input.''@footnote{Questo @`e la definizione trovata usando
-@code{define: state machine} come chiave di ricerca in Google.}
+input.''@footnote{Questo @`e la definizione trovata in
+@uref{https://www.lexico.com/en/definition/state_machine}.}
 Brian Kernighan suggerisce che
 ``un approccio alternativo alle macchine a stati @`e di leggere tutto l'input
-e metterlo in un vettore, e quindi usare gli indici.  @`E quasi sempre pi@`u
+e metterlo in un vettore, e po usare l'indicizzazione.  @`E quasi sempre pi@`u
 semplice da programmare, e per la maggior parte degli input in cui si pu@`o
 usare, altrettanto veloce in esecuzione.''  Riscrivere la logica del
 programma seguendo questa indicazione.

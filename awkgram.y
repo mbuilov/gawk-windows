@@ -2167,7 +2167,7 @@ simple_variable
 	  {
 		char *arr = $1->lextok;
 
-		$1->memory = variable($1->source_line, arr, Node_var_new);
+		$1->memory = variable($1->source_line, arr, Node_var_array);
 		$1->opcode = Op_push_array;
 		$$ = list_prepend($2, $1);
 	  }

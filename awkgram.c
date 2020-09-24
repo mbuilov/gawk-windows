@@ -4388,7 +4388,7 @@ regular_print:
           {
 		char *arr = yyvsp[-1]->lextok;
 
-		yyvsp[-1]->memory = variable(yyvsp[-1]->source_line, arr, Node_var_new);
+		yyvsp[-1]->memory = variable(yyvsp[-1]->source_line, arr, Node_var_array);
 		yyvsp[-1]->opcode = Op_push_array;
 		yyval = list_prepend(yyvsp[0], yyvsp[-1]);
 	  }

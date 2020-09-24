@@ -75,7 +75,7 @@ isasciidigit (char c)
 #ifndef FALLTHROUGH
 # if defined __STDC_VERSION__ && 201710L < __STDC_VERSION__
 #  define FALLTHROUGH [[__fallthrough__]]
-# elif (defined(__GNUC__) && __GNUC__ >= 7) || (defined(__clang__) && !defined(_MSC_VER))
+# elif (defined(__GNUC__) && __GNUC__ >= 7) || (defined(__clang_major__) && __clang_major__ >= 10 && !defined(_MSC_VER))
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
 # else
 #  define FALLTHROUGH ((void) 0)
@@ -512,10 +512,12 @@ struct dfa
   idx_t depth;			/* Depth required of an evaluation stack
                                    used for depth-first traversal of the
                                    parse tree.  */
-  idx_t nleaves;		/* Number of leaves on the parse tree.  */
+  idx_t nleaves;		/* Number of non-EMPTY leaves
+                                   in the parse tree.  */
   idx_t nregexps;		/* Count of parallel regexps being built
                                    with dfaparse.  */
   bool fast;			/* The DFA is fast.  */
+  bool epsilon;			/* Does a token match only the empty string?  */
   token utf8_anychar_classes[9]; /* To lower ANYCHAR in UTF-8 locales.  */
   mbstate_t mbs;		/* Multibyte conversion state.  */
 
@@ -1664,18 +1666,31 @@ addtok_mb (struct dfa *dfa, token t, char mbprop)
       dfa->parse.depth--;
       break;
 
+    case EMPTY:
+      dfa->epsilon = true;
+      goto increment_depth;
+
     case BACKREF:
       dfa->fast = false;
+      goto increment_nleaves;
+
+    case BEGLINE:
+    case ENDLINE:
+    case BEGWORD:
+    case ENDWORD:
+    case LIMWORD:
+    case NOTLIMWORD:
+      dfa->epsilon = true;
       FALLTHROUGH;
     default:
+    increment_nleaves:
       dfa->nleaves++;
-      FALLTHROUGH;
-    case EMPTY:
+    increment_depth:
       dfa->parse.depth++;
+      if (dfa->depth < dfa->parse.depth)
+        dfa->depth = dfa->parse.depth;
       break;
     }
-  if (dfa->parse.depth > dfa->depth)
-    dfa->depth = dfa->parse.depth;
 }
 
 static void addtok_wc (struct dfa *dfa, uni_int_t wc);
@@ -2205,6 +2220,8 @@ merge (position_set const *s1, position_set const *s2, position_set *m)
   merge_constrained (s1, s2, (unsigned)-1, m);
 }
 
+/* Merge into DST all the elements of SRC, possibly destroying
+   the contents of the temporary M.  */
 static void
 merge2 (position_set *dst, position_set const *src, position_set *m)
 {
@@ -2349,24 +2366,26 @@ state_index (struct dfa *d, position_set const *s, unsigned context)
   return i;
 }
 
-/* Find the epsilon closure of a set of positions.  If any position of the set
+/* Find the epsilon closure of D's set of positions.  If any position of the set
    contains a symbol that matches the empty string in some context, replace
    that position with the elements of its follow labeled with an appropriate
    constraint.  Repeat exhaustively until no funny positions are left.
-   S->elems must be large enough to hold the result.  */
+   S->elems must be large enough to hold the result.  BACKWARD is D's
+   backward set; use and update it too.  */
 static void
-epsclosure (struct dfa const *d)
+epsclosure (struct dfa const *d, position_set *backward)
 {
   position_set tmp;
   alloc_position_set (&tmp, d->nleaves);
   for (idx_t i = 0; i < d->tindex; i++)
-    if (d->follows[i].nelem > 0 && d->tokens[i] >= NOTCHAR
-        && d->tokens[i] != BACKREF && d->tokens[i] != ANYCHAR
-        && d->tokens[i] != MBCSET && d->tokens[i] < CSET)
+    if (0 < d->follows[i].nelem)
       {
         unsigned int constraint;
         switch (d->tokens[i])
           {
+          default:
+            continue;
+
           case BEGLINE:
             constraint = BEGLINE_CONSTRAINT;
             break;
@@ -2385,16 +2404,19 @@ epsclosure (struct dfa const *d)
           case NOTLIMWORD:
             constraint = NOTLIMWORD_CONSTRAINT;
             break;
-          default:
+          case EMPTY:
             constraint = NO_CONSTRAINT;
             break;
           }
 
         delete_pos (i, &d->follows[i]);
 
-        for (idx_t j = 0; j < d->tindex; j++)
-          if (i != j && d->follows[j].nelem > 0)
-            replace (&d->follows[j], i, &d->follows[i], constraint, &tmp);
+        for (idx_t j = 0; j < backward[i].nelem; j++)
+          replace (&d->follows[backward[i].elems[j].index], i, &d->follows[i],
+                   constraint, &tmp);
+        for (idx_t j = 0; j < d->follows[i].nelem; j++)
+          replace (&backward[d->follows[i].elems[j].index], i, &backward[i],
+                   NO_CONSTRAINT, &tmp);
       }
   free (tmp.elems);
 }
@@ -2464,8 +2486,6 @@ merge_nfa_state (struct dfa *d, idx_t tindex, char *flags,
   position_set *follows = d->follows;
   idx_t nelem = 0;
 
-  d->constraints[tindex] = 0;
-
   for (idx_t i = 0; i < follows[tindex].nelem; i++)
     {
       idx_t sindex = follows[tindex].elems[i].index;
@@ -2530,34 +2550,25 @@ compare (const void *a, const void *b)
 static void
 reorder_tokens (struct dfa *d)
 {
-  idx_t nleaves;
-  ptrdiff_t *map;
-  token *tokens;
-  position_set *follows;
-  unsigned int *constraints;
-  char *multibyte_prop;
-
-  nleaves = 0;
-
-  map = (ptrdiff_t*) xnmalloc ((udx_t) d->tindex, sizeof *map);
-
+  idx_t nleaves = 0;
+  ptrdiff_t *map = (ptrdiff_t*) xnmalloc ((udx_t) d->tindex, sizeof *map);
   map[0] = nleaves++;
-
   for (idx_t i = 1; i < d->tindex; i++)
     map[i] = -1;
 
-  tokens = (token*) xnmalloc ((udx_t) d->nleaves, sizeof *tokens);
-  follows = (position_set*) xnmalloc ((udx_t) d->nleaves, sizeof *follows);
-  constraints = (unsigned int*) xnmalloc ((udx_t) d->nleaves, sizeof *constraints);
-
-  if (d->localeinfo.multibyte)
-    multibyte_prop = (char*) xnmalloc ((udx_t) d->nleaves, sizeof *multibyte_prop);
-  else
-    multibyte_prop = NULL;
+  token *tokens = (token*) xnmalloc ((udx_t) d->nleaves, sizeof *tokens);
+  position_set *follows = (position_set*) xnmalloc ((udx_t) d->nleaves,
+                                                    sizeof *follows);
+  unsigned int *constraints = (unsigned int*) xnmalloc ((udx_t) d->nleaves,
+                                                        sizeof *constraints);
+  char *multibyte_prop =
+    (d->localeinfo.multibyte
+      ? (char*) xnmalloc ((udx_t) d->nleaves, sizeof *multibyte_prop)
+      : (char*) NULL);
 
   for (idx_t i = 0; i < d->tindex; i++)
     {
-      if (map[i] == -1)
+      if (map[i] < 0)
         {
           free (d->follows[i].elems);
           d->follows[i].elems = NULL;
@@ -2629,7 +2640,8 @@ dfaoptimize (struct dfa *d)
   position_set *merged = &merged0;
   alloc_position_set (merged, d->nleaves);
 
-  d->constraints = (unsigned int*) xnmalloc ((udx_t) d->tindex, sizeof *d->constraints);
+  d->constraints = (unsigned int*) xcalloc ((udx_t) d->tindex,
+                                            sizeof *d->constraints);
 
   for (idx_t i = 0; i < d->tindex; i++)
     if (flags[i] & OPT_QUEUED)
@@ -2721,10 +2733,11 @@ dfaanalyze (struct dfa *d, bool searchflag)
   position_set merged;          /* Result of merging sets.  */
 
   addtok (d, CAT);
+  idx_t tindex = d->tindex;
 
 #ifdef DEBUG
   fprintf (stderr, "dfaanalyze:\n");
-  for (idx_t i = 0; i < d->tindex; i++)
+  for (idx_t i = 0; i < tindex; i++)
     {
       fprintf (stderr, " %td:", i);
       prtok (d->tokens[i]);
@@ -2734,9 +2747,12 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
   d->searchflag = searchflag;
   alloc_position_set (&merged, d->nleaves);
-  d->follows = (position_set*) xcalloc ((udx_t) d->tindex, sizeof *d->follows);
+  d->follows = (position_set*) xcalloc ((udx_t) tindex, sizeof *d->follows);
+  position_set *backward
+    = d->epsilon ? (position_set*) xcalloc ((udx_t) tindex, sizeof *backward)
+                 : (position_set*) NULL;
 
-  for (idx_t i = 0; i < d->tindex; i++)
+  for (idx_t i = 0; i < tindex; i++)
     {
       switch (d->tokens[i])
         {
@@ -2751,17 +2767,24 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
         case STAR:
         case PLUS:
+          /* Every element in the lastpos of the argument is in the backward
+             set of every element in the firstpos.  */
+          if (d->epsilon)
+            {
+              tmp.elems = lastpos - stk[-1].nlastpos;
+              tmp.nelem = stk[-1].nlastpos;
+              for (position *p = firstpos - stk[-1].nfirstpos;
+                   p < firstpos; p++)
+                merge2 (&backward[p->index], &tmp, &merged);
+            }
+
           /* Every element in the firstpos of the argument is in the follow
              of every element in the lastpos.  */
           {
             tmp.elems = firstpos - stk[-1].nfirstpos;
             tmp.nelem = stk[-1].nfirstpos;
-            position *p = lastpos - stk[-1].nlastpos;
-            for (idx_t j = 0; j < stk[-1].nlastpos; j++)
-              {
-                merge (&tmp, &d->follows[p[j].index], &merged);
-                copy (&merged, &d->follows[p[j].index]);
-              }
+            for (position *p = lastpos - stk[-1].nlastpos; p < lastpos; p++)
+              merge2 (&d->follows[p->index], &tmp, &merged);
           }
           FALLTHROUGH;
         case QMARK:
@@ -2771,17 +2794,27 @@ dfaanalyze (struct dfa *d, bool searchflag)
           break;
 
         case CAT:
+          /* Every element in the lastpos of the first argument is in
+             the backward set of every element in the firstpos of the
+             second argument.  */
+          if (backward)
+            {
+              tmp.nelem = stk[-2].nlastpos;
+              tmp.elems = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
+              for (position *p = firstpos - stk[-1].nfirstpos;
+                   p < firstpos; p++)
+                merge2 (&backward[p->index], &tmp, &merged);
+            }
+
           /* Every element in the firstpos of the second argument is in the
              follow of every element in the lastpos of the first argument.  */
           {
             tmp.nelem = stk[-1].nfirstpos;
             tmp.elems = firstpos - stk[-1].nfirstpos;
-            position *p = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
-            for (idx_t j = 0; j < stk[-2].nlastpos; j++)
-              {
-                merge (&tmp, &d->follows[p[j].index], &merged);
-                copy (&merged, &d->follows[p[j].index]);
-              }
+            for (position *plim = lastpos - stk[-1].nlastpos,
+                   *p = plim - stk[-2].nlastpos;
+                 p < plim; p++)
+              merge2 (&d->follows[p->index], &tmp, &merged);
           }
 
           /* The firstpos of a CAT node is the firstpos of the first argument,
@@ -2863,14 +2896,21 @@ dfaanalyze (struct dfa *d, bool searchflag)
 #endif
     }
 
-  /* For each follow set that is the follow set of a real position, replace
-     it with its epsilon closure.  */
-  epsclosure (d);
+  if (backward)
+    {
+      /* For each follow set that is the follow set of a real position,
+         replace it with its epsilon closure.  */
+      epsclosure (d, backward);
+
+      for (idx_t i = 0; i < tindex; i++)
+        free (backward[i].elems);
+      free (backward);
+    }
 
   dfaoptimize (d);
 
 #ifdef DEBUG
-  for (idx_t i = 0; i < d->tindex; i++)
+  for (idx_t i = 0; i < tindex; i++)
     if (d->tokens[i] == BEG || d->tokens[i] < NOTCHAR
         || d->tokens[i] == BACKREF || d->tokens[i] == ANYCHAR
         || d->tokens[i] == MBCSET || d->tokens[i] >= CSET)
@@ -2894,12 +2934,10 @@ dfaanalyze (struct dfa *d, bool searchflag)
 
   append (pos, &tmp);
 
-  d->separates = (unsigned*) xnmalloc ((udx_t) d->tindex, sizeof *d->separates);
+  d->separates = (unsigned*) xcalloc ((udx_t) tindex, sizeof *d->separates);
 
-  for (idx_t i = 0; i < d->tindex; i++)
+  for (idx_t i = 0; i < tindex; i++)
     {
-      d->separates[i] = 0;
-
       if (prev_newline_dependent (d->constraints[i]))
         d->separates[i] |= CTX_NEWLINE;
       if (prev_letter_dependent (d->constraints[i]))
@@ -3203,10 +3241,7 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
                 mergeit &= d->multibyte_prop[group.elems[j].index];
             }
           if (mergeit)
-            {
-              merge (&d->states[0].elems, &group, &tmp);
-              copy (&tmp, &group);
-            }
+            merge2 (&group, &d->states[0].elems, &tmp);
         }
 
       /* Find out if the new state will want any context information,
