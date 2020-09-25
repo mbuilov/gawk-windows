@@ -5426,7 +5426,7 @@ do_print_f(CMDARG *arg, enum argtype cmd)
 	pop_binding(&fatal_tag_stack, &fatal_tag, &fatal_tag_valid);
 
 	if (r != NULL) {
-		(void) fwrite(r->stptr, sizeof(char), r->stlen, out_fp);
+		(void) !fwrite(r->stptr, sizeof(char), r->stlen, out_fp);
 		unref(r);
 	}
 done:
@@ -5735,7 +5735,7 @@ save_options(const char *file)
 			fprintf(fp, "option %s = %u\n", opt->name, *(opt->uint_val));
 	}
 	fclose(fp);
-	(void) chmod(file, 0600);
+	(void) !chmod(file, 0600);
 }
 
 /* close_all --- close all open files */
