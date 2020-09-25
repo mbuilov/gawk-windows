@@ -234,7 +234,15 @@ template <int w>
    ordinary declaration, and cannot appear inside struct { ... }.  */
 
 #if defined _GL_HAVE__STATIC_ASSERT
-# define _GL_VERIFY(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
+# if defined __clang_major__ && 4 <= __clang_major__
+#  define _GL_VERIFY(R, DIAGNOSTIC, ...) \
+  _Pragma ("clang diagnostic push") \
+  _Pragma ("clang diagnostic ignored \"-Wc11-extensions\"") \
+  _Static_assert (R, DIAGNOSTIC) \
+  _Pragma ("clang diagnostic pop")
+# else
+#  define _GL_VERIFY(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
+# endif
 #elif ! defined _MSC_VER
 # define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
     extern int (*_GL_GENSYM (_gl_verify_function) (void))	       \
