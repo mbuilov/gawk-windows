@@ -85,7 +85,9 @@
 #  define __NTH(fct)	__attribute__ ((__nothrow__ __LEAF)) fct
 #  define __NTHNL(fct)  __attribute__ ((__nothrow__)) fct
 # else
-#  if defined __cplusplus && (__GNUC_PREREQ (2,8) || __clang_major >= 4)
+#  if defined __cplusplus \
+      && (__GNUC_PREREQ (2,8) \
+          || (defined __clang_major__ && __clang_major__ >= 4))
 #   define __THROW	throw ()
 #   define __THROWNL	throw ()
 #   define __NTH(fct)	__LEAF_ATTR fct throw ()
@@ -198,7 +200,8 @@
    Example:
    int __REDIRECT(setpgrp, (__pid_t pid, __pid_t pgrp), setpgid); */
 
-#if (defined __GNUC__ && __GNUC__ >= 2) || (__clang_major__ >= 4)
+#if (defined __GNUC__ && __GNUC__ >= 2) \
+    || (defined __clang_major__ && __clang_major__ >= 4)
 
 # define __REDIRECT(name, proto, alias) name proto __asm__ (__ASMNAME (#alias))
 # ifdef __cplusplus
@@ -406,7 +409,8 @@
 /* __restrict is known in EGCS 1.2 and above, and in clang.
    It works also in C++ mode (outside of arrays), but only when spelled
    as '__restrict', not 'restrict'.  */
-#if !(__GNUC_PREREQ (2,92) || __clang_major__ >= 3)
+#if !(__GNUC_PREREQ (2,92) || \
+      (defined __clang_major__ && __clang_major__ >= 3))
 # if defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L
 #  define __restrict	restrict
 # else
@@ -418,7 +422,8 @@
      array_name[restrict]
    GCC 3.1 and clang support this.
    This syntax is not usable in C++ mode.  */
-#if (__GNUC_PREREQ (3,1) || __clang_major__ >= 3) && !defined __cplusplus
+#if (__GNUC_PREREQ (3,1) || \
+     (defined __clang_major__ && __clang_major__ >= 3)) && !defined __cplusplus
 # define __restrict_arr	__restrict
 #else
 # ifdef __GNUC__
@@ -450,7 +455,8 @@
 #if (!defined _Noreturn \
      && (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) < 201112 \
      &&  !(__GNUC_PREREQ (4,7) \
-           || (3 < __clang_major__ + (5 <= __clang_minor__))))
+           || (defined __clang_major__ \
+               && 3 < __clang_major__ + (5 <= __clang_minor__))))
 # if __GNUC_PREREQ (2,8)
 #  define _Noreturn __attribute__ ((__noreturn__))
 # else
@@ -469,7 +475,8 @@
 
 #if (!defined _Static_assert && !defined __cplusplus \
      && (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) < 201112 \
-     && (!(__GNUC_PREREQ (4, 6) || __clang_major__ >= 4) \
+     && (!(__GNUC_PREREQ (4, 6) || \
+           defined __clang_major__ && __clang_major__ >= 4) \
          || defined __STRICT_ANSI__))
 # define _Static_assert(expr, diagnostic) \
     extern int (*__Static_assert_function (void)) \
