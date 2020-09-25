@@ -3149,7 +3149,7 @@ find_source(const char *src, gawk_xstat_t *stb, int *errcode, bool is_extlib)
 				if (n > 0 && n != (size_t)-1) {
 					char *dir;
 					emalloc(dir, char *, n + 1, "find_source");
-					(void) wcstombs(dir, pathbuf, n + 1);
+					(void) !wcstombs(dir, pathbuf, n + 1);
 					assert(!pi->max_pathlen);
 					pi->max_pathlen = n;
 					assert(pi->awkpath[1] == NULL);
