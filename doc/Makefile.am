@@ -110,7 +110,7 @@ awkcard.nc: $(CARDFILES)
 awkcard.pdf: awkcard.ps
 	ps2pdf awkcard.ps awkcard.pdf
 
-spell: spellmanual spellworkflow spellmanpage
+spell: spellmanual spellworkflow spellmanpage spellinet
 
 spellmanual:
 	@echo ==== gawktexi.in ====;
@@ -126,3 +126,8 @@ spellmanpage:
 	@echo ==== gawk.1 ====
 	export LC_ALL=C ; spell "$(srcdir)"/gawk.1 | \
 	sort -u | comm -23 - "$(srcdir)"/wordlist3
+
+spellinet:
+	@echo ==== gawkinet.texi ====
+	export LC_ALL=C ; spell "$(srcdir)"/gawkinet.texi | \
+	sort -u | comm -23 - "$(srcdir)"/wordlist4
