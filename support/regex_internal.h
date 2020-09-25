@@ -353,7 +353,8 @@ typedef struct
     Idx idx;			/* for BACK_REF */
     re_context_type ctx_type;	/* for ANCHOR */
   } opr;
-#if ((defined __GNUC__ && __GNUC__ >= 2) || defined __clang__) && !defined __STRICT_ANSI__
+#if ((defined __GNUC__ && __GNUC__ >= 2) || defined __clang__) \
+    && !defined __STRICT_ANSI__ && !defined __cplusplus
   re_token_type_t type : 8;
 #else
   re_token_type_t type;
