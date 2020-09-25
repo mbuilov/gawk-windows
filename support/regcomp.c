@@ -556,9 +556,14 @@ weak_alias (__regerror, regerror)
 
 
 #ifdef RE_ENABLE_I18N
-# if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# if !defined __cplusplus \
+     && defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wpedantic"
+# endif
+# if !defined __cplusplus && defined __clang_major__ && __clang_major__ >= 4
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wgnu-designator"
 # endif
 /* This static array is used for the map to single-byte characters when
    UTF-8 is used.  Otherwise we would allocate memory just to initialize
@@ -586,8 +591,12 @@ static const bitset_t utf8_sb_map =
        : BITSET_WORD_BITS - SBC_MAX % BITSET_WORD_BITS))
 # endif
 };
-# if defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
+# if !defined __cplusplus \
+     && defined __GNUC__ && __GNUC__ > 4 - (__GNUC_MINOR__ >= 6)
 #  pragma GCC diagnostic pop
+# endif
+# if !defined __cplusplus && defined __clang_major__ && __clang_major__ >= 4
+#  pragma clang diagnostic pop
 # endif
 #endif
 
