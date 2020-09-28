@@ -3929,9 +3929,10 @@ retryable(IOBUF *iop)
 /* errno_io_retry --- Does the I/O error indicate that the operation should be retried later? */
 
 static inline bool
-errno_io_retry(void)
+errno_io_retry(int *errcode)           /* pointer to error variable */
 {
-	switch (errno) {
+	*errcode = errno;
+	switch (*errcode) {
 #ifdef EAGAIN
 	case EAGAIN:
 #endif
@@ -3947,9 +3948,18 @@ errno_io_retry(void)
 	case ETIMEDOUT:
 #endif
 		return true;
-	default:
-		return false;
+#ifdef WINDOWS_NATIVE
+	case 0:
+		*errcode = WSAGetLastError();
+		switch (*errcode) {
+		case WSAEWOULDBLOCK:
+		case WSAEINTR:
+		case WSAETIMEDOUT:
+			return true;
+		}
+#endif
 	}
+	return false;
 }
 
 /*
@@ -4004,8 +4014,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
 		} else if (iop->count == -1) {
-			*errcode = errno;
-			if (errno_io_retry() && retryable(iop))
+			if (errno_io_retry(errcode) && retryable(iop))
 				return -2;
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
@@ -4077,8 +4086,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		iop->count = (*iop->publ.read_func)
 			(iop->publ.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
-			*errcode = errno;
-			if (errno_io_retry() && retryable(iop))
+			if (errno_io_retry(errcode) && retryable(iop))
 				return -2;
 			iop->flag |= IOP_AT_EOF;
 			break;
