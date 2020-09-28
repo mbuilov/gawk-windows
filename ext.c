@@ -115,7 +115,7 @@ make_builtin(const char *name_space, awk_ext_func_t *funcinfo)
 	NODE *symbol, *f;
 	INSTRUCTION *b;
 	const char *name = funcinfo->name;
-	const char *install_name;
+	char *install_name;
 
 	if (name == NULL || *name == '\0')
 		fatal(_("make_builtin: missing function name"));
