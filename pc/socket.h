@@ -60,7 +60,9 @@ int socket_to_fd (SOCKET);
 SOCKET fd_to_socket (int);
 SOCKET valid_socket (int);
 
-const char *gai_strerror_buf (int ecode, char buf[], unsigned int buf_size);
+/* Get message for Windows-specific error code, such as WSA error codes.  */
+const char *format_msg (int ecode, char buf[], unsigned int buf_size);
+#define gai_strerror_buf(ecode, buf, buf_size) format_msg(ecode, buf, buf_size)
 
 #include "mscrtx/socket_fd.h"
 #include "mscrtx/is_socket.h"

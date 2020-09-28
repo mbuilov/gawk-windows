@@ -965,7 +965,7 @@ dlopen (const char *file, int mode)
   return dllhandle;
 }
 
-static const char *
+const char *
 format_msg (int ecode, char buf[], unsigned int buf_size)
 {
   WCHAR *wbuf = NULL;
@@ -1231,12 +1231,6 @@ w32_shutdown (int fd, int how)
   SOCKET s = FD_TO_SOCKET (fd);
 
   return shutdown (s, how);
-}
-
-const char *
-gai_strerror_buf (int ecode, char buf[], unsigned int buf_size)
-{
-  return format_msg (ecode, buf, buf_size);
 }
 
 #endif	/* HAVE_SOCKETS */
