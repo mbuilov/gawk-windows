@@ -992,7 +992,7 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 		val->flags |= USER_INPUT;
 		assoc_set(ARGV_node, sub, val);
 
-		if (do_sandbox) {
+		if (shadow_node) {
 			sub = make_string(argv[i], strlen(argv[i]));
 			val = make_number(0.0);
 			assoc_set(shadow_node, sub, val);
@@ -1002,7 +1002,7 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	ARGC_node = install_symbol(estrdup("ARGC", 4), Node_var);
 	ARGC_node->var_value = make_number((AWKNUM) j);
 
-	if (do_sandbox)
+	if (shadow_node)
 		init_argv_array(ARGV_node, shadow_node);
 }
 
@@ -1608,7 +1608,7 @@ init_fds(void)
 #endif
 			newfd = devopen("/dev/null", opposite_mode[fd]);
 			/* turn off some compiler warnings "set but not used" */
-			newfd += 0;
+			(void) !newfd;
 #ifdef MAKE_A_HEROIC_EFFORT
 			if (do_lint && newfd < 0)
 				lintwarn(_("could not pre-open /dev/null for fd %d"), fd);
@@ -1776,6 +1776,7 @@ parse_args(int argc, char **argv)
 
 		switch (c) {
 		case 'F':
+			assert(optarg);
 			add_preassign(PRE_ASSIGN_FS, optarg);
 			break;
 
@@ -1804,6 +1805,7 @@ parse_args(int argc, char **argv)
 			break;
 
 		case 'v':
+			assert(optarg);
 			add_preassign(PRE_ASSIGN, optarg);
 			break;
 
@@ -1831,6 +1833,7 @@ parse_args(int argc, char **argv)
 			break;
 
 		case 'e':
+			assert(optarg);
 			if (optarg[0] == '\0')
 				awkwarn(_("empty argument to `-e/--source' ignored"));
 			else
