@@ -2489,6 +2489,19 @@ str_terminate_f(NODE *n, char *savep)
 #endif	/* !WINDOWS_NATIVE */
 #endif	/* !SIGPIPE */
 
+/* SYS_STRERROR - get message describing system error (e.g. WSA_-error) */
+#ifdef WINDOWS_NATIVE
+#define SYS_STRERROR(msg, ecode) \
+	char system_error_buffer_[1024]; \
+	msg = !(ecode) ? "" : \
+		(ecode) >= WSABASEERR ? format_msg(ecode, \
+			system_error_buffer_, sizeof(system_error_buffer_)) : \
+		strerror(ecode)
+#else
+#define SYS_STRERROR(eerr, code) \
+	msg = !(ecode) ? "" : strerror(ecode)
+#endif
+
 /* char_digit_value --- return [0..9] if char looks like a decimal digit,
    otherwise return -1.  */
 /* note: c - must be unsigned char converted to int */
