@@ -1422,7 +1422,10 @@ exit /b
 :: %2 - "127.0.0.1" or "[::1]"
 :: %3 - 13
 :: %4 - <empty> or 6
-call :execq "%QGAWK% ""BEGIN { print """""""" ^|^& """"/inet%4/%1/0/%~2/%3""""; """"/inet%4/%1/0/%~2/%3"""" ^|^& getline; print $0}"" > _inetday" || exit /b
+call :execq "%QGAWK% ""BEGIN { print """""""" ^|^& """"/inet%4/%1/0/%~2/%3""""; """"/inet%4/%1/0/%~2/%3"""" ^|^& getline; print $0; if ^(PROCINFO[""""errno""""] ^> 0^) print """"errno="""" PROCINFO[""""errno""""]"" > _inetday" || exit /b
+:: test may faile under heavy system load - retry
+call :execq """%FIND%"" ""errno=10053"" < _inetday" && (echo retrying...) && goto :inetday
+call :execq """%FIND%"" ""errno=10054"" < _inetday" && (echo retrying...) && goto :inetday
 call :execq """%FIND%"" /v """" < _inetday" && call :exec del /q _inetday || exit /b
 exit /b
 
