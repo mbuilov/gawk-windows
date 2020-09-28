@@ -183,6 +183,20 @@ static int do_version = false;		/* print version info */
 static const char *locale = "";		/* default value to setlocale */
 static const char *locale_dir = LOCALEDIR;	/* default locale dir */
 
+#ifdef WINDOWS_NATIVE
+static char *lc_ctype = NULL;
+static char *lc_collate = NULL;
+static char *lc_monetary = NULL;
+static char *lc_numeric = NULL;
+static char *lc_time = NULL;
+#else
+#define lc_ctype	locale
+#define lc_collate	locale
+#define lc_monetary	locale
+#define lc_numeric	locale
+#define lc_time		locale
+#endif
+
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
 unsigned gawk_mb_cur_max;	/* MB_CUR_MAX value, see comment in main() */
@@ -302,6 +316,13 @@ get_specified_locale(const struct wide_arg *wl, wchar_t opt_name_array[])
 
 #endif /* WINDOWS_NATIVE */
 
+#ifdef __MINGW32__
+/* Turn off program arguments globbing - it will be done properly in
+  arg_parse_command_line().  */
+extern int _CRT_glob; /* 0 turns off globbing; 1 turns it on */
+int _CRT_glob = 0;
+#endif
+
 #if defined(WINDOWS_NATIVE) && (defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR))
 # if defined(__GNUC__) || defined(__clang__)
 /* gcc/clang complains about missing protope of wmain().  Provide one.  */
@@ -320,14 +341,15 @@ int main(int argc, char *main_argv[])
 	unsigned have_srcfile = 0;
 	const SRCFILE *s;
 	const char *cp;
-#ifdef LOCALEDEBUG
+#if defined LOCALEDEBUG && ! defined WINDOWS_NATIVE
 	const char *initial_locale;
 #endif
 	char **argv;
 
 #ifndef WINDOWS_NATIVE
 	argv = main_argv;
-#else
+#else /* WINDOWS_NATIVE */
+
 	struct wide_arg *const wargs = arg_parse_command_line(&argc);
 	if (wargs == NULL) {
 		fwprintf(stderr, L"Failed to parse command-line arguments list\n");
@@ -338,7 +360,7 @@ int main(int argc, char *main_argv[])
 	/* Not used, since MinGW version do not handles escaping of
 	   double quote via two double-quotes, like: "1""2".  */
 	(void) main_argv;
-#endif
+#endif /* WINDOWS_NATIVE */
 
 #if defined(_MSC_VER) && (defined(MEMDEBUG) || defined(MEMDEBUGLEAKS))
 	/* randtest.awk test takes too long time if tracking memory allocations,
@@ -387,7 +409,7 @@ int main(int argc, char *main_argv[])
 		/* Command-line option takes precedence over environment vars.  */
 		const wchar_t *const spec_locale = get_specified_locale(wargs->next, opt_name_array);
 		if (!spec_locale)
-			pc_set_locale("");
+			pc_set_locale(locale);
 		else if (wset_locale_helper(LC_ALL, spec_locale)) {
 			fwprintf(stderr, L"%ls: bad locale name specified by the option '%ls': %ls\n",
 				mywpath, opt_name_array, spec_locale);
@@ -399,14 +421,18 @@ int main(int argc, char *main_argv[])
 	/* Convert program arguments to multibyte strings.  */
 	argv = convert_wargv(argc, wargs);
 
-	/* Currently 'locale' variable has the value "",
-	   which on POSIX systems, when passed to setlocale(), means to
-	   initialize locale from the corresponding environment variables.
-	   But under Windows, passing "" to setlocale(), will initialize
-	   locale from the registry, ignoring environment variables.
-	   Now system locale have been set from the environment, don't change
-	   it by the next calls to setlocale(..., locale).  */
-	locale = setlocale(LC_ALL, NULL);
+	/* The logic of set_locale_stuff() - called below - to setup locale
+	  categories from the 'locale' variable value (by default "" - to
+	  use system defaults: on POSIX - environment variables, on Windows
+	  - registry settings).  But the categories have already been set up
+	  from the environment variables or command-line argument by the
+	  pc_set_locale()/wset_locale_helper() - prevent set_locale_stuff()
+	  from changing categories.  */
+	lc_ctype    = strdup(setlocale(LC_CTYPE, NULL));
+	lc_collate  = strdup(setlocale(LC_COLLATE, NULL));
+	lc_monetary = strdup(setlocale(LC_MONETARY, NULL));
+	lc_numeric  = strdup(setlocale(LC_NUMERIC, NULL));
+	lc_time     = strdup(setlocale(LC_TIME, NULL));
 #endif /* WINDOWS_NATIVE */
 
 	myname = gawk_name(argv[0]);
@@ -435,7 +461,7 @@ int main(int argc, char *main_argv[])
 	}
 #endif
 
-#ifdef LOCALEDEBUG
+#if defined LOCALEDEBUG && ! defined WINDOWS_NATIVE
 	initial_locale = locale;
 #endif
 	set_locale_stuff();
@@ -485,7 +511,7 @@ int main(int argc, char *main_argv[])
 
 	parse_args(argc, argv);
 
-#ifdef LOCALEDEBUG
+#if defined LOCALEDEBUG && ! defined WINDOWS_NATIVE
 	if (locale != initial_locale)
 		set_locale_stuff();
 #endif
@@ -688,7 +714,7 @@ int main(int argc, char *main_argv[])
 	 * data using the local decimal point.
 	 */
 	if (use_lc_numeric)
-		setlocale(LC_NUMERIC, locale);
+		setlocale(LC_NUMERIC, lc_numeric);
 #endif
 
 	init_io();
@@ -721,6 +747,15 @@ int main(int argc, char *main_argv[])
 	/* keep valgrind happier */
 	if (extra_stack)
 		efree(extra_stack);
+
+#ifdef WINDOWS_NATIVE
+	/* keep DrMemory happier */
+	free(lc_ctype);
+	free(lc_collate);
+	free(lc_monetary);
+	free(lc_numeric);
+	free(lc_time);
+#endif
 
 	final_exit(exit_val);
 #ifndef DONT_COMPILE_UNREACHABLE_CODE
@@ -1421,7 +1456,7 @@ arg_assign(char *arg, bool initing)
 		(void) force_number(it);
 #ifdef LC_NUMERIC
 		if (do_posix)
-			setlocale(LC_NUMERIC, locale);
+			setlocale(LC_NUMERIC, lc_numeric);
 #endif /* LC_NUMERIC */
 	}
 
@@ -1925,7 +1960,7 @@ parse_args(int argc, char **argv)
 #endif
 #if defined(LOCALEDEBUG) || defined(WINDOWS_NATIVE)
 			if (c == 'Z') {
-				/* for WINDOWS_NATIVE: this option is already processed */
+				/* for WINDOWS_NATIVE: this option was already processed */
 #ifndef WINDOWS_NATIVE
 				locale = optarg;
 #endif
@@ -1982,10 +2017,10 @@ static void
 set_locale_stuff(void)
 {
 #if defined(LC_CTYPE)
-	setlocale(LC_CTYPE, locale);
+	setlocale(LC_CTYPE, lc_ctype);
 #endif
 #if defined(LC_COLLATE)
-	setlocale(LC_COLLATE, locale);
+	setlocale(LC_COLLATE, lc_collate);
 #endif
 #if defined(LC_MESSAGES)
 	setlocale(LC_MESSAGES, locale);
@@ -2004,12 +2039,12 @@ set_locale_stuff(void)
 	 * This is a mess. We need to get the locale's numeric info for
 	 * the thousands separator for the %'d flag.
 	 */
-	setlocale(LC_NUMERIC, locale);
+	setlocale(LC_NUMERIC, lc_numeric);
 	init_locale(& loc);
 	setlocale(LC_NUMERIC, "C");
 #endif
 #if defined(LC_TIME)
-	setlocale(LC_TIME, locale);
+	setlocale(LC_TIME, lc_time);
 #endif
 
 	/* These must be done after calling setlocale */
