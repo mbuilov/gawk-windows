@@ -852,7 +852,7 @@ set "CMN_DEFINES=%CMN_DEFINES% -D_NO_OLDNAMES -DNO_OLDNAMES"
 
 if defined DO_ANALYZE (
   :: analyze sources
-  set "CMN_DEFINES=%CMN_DEFINES% --analyze"
+  set DO_ANALYZE=clang
 )
 
 :: use Mingw's implementation of printf-functions, which support "%ll"/"%zu" format specifiers
@@ -1026,7 +1026,7 @@ set "CMN_DEFINES=%CMN_DEFINES% -D_CRT_DECLARE_NONSTDC_NAMES=0"
 
 if defined DO_ANALYZE (
   :: analyze sources
-  set "CMN_DEFINES=%CMN_DEFINES% --analyze"
+  set DO_ANALYZE=clang
 )
 
 :: disable MSVC deprecation warnings
@@ -1181,7 +1181,6 @@ if defined DO_BUILD_HELPERS (
   call :helpers       || goto :build_err
 )
 
-echo OK!
 exit /b 0
 
 :build_err
@@ -1495,6 +1494,13 @@ call set "CC=%%%~1%%"
 :: %~4 doubles ^ in the options, un-double it
 set "OPTIONS=%~4"
 if defined OPTIONS set "OPTIONS=""%OPTIONS:^^=^%"""
+if not "%DO_ANALYZE%"=="clang" goto :cc_next
+if ""=="%~5" (
+  call :execq "%CC:^^=^%""%~2"" --analyze --analyzer-output html ""%~3"" %OPTIONS%" || exit /b
+) else (
+  call :execq "%CC:^^=^%""%~2"" --analyze --analyzer-output html ""%~3"" %OPTIONS%" || exit /b
+)
+:cc_next
 if ""=="%~5" (
   call :execq "%CC:^^=^%""%~2\%ENTRYNAME:.c=.obj%"" ""%~3"" %OPTIONS%"
 ) else (
