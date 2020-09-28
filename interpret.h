@@ -1345,9 +1345,12 @@ match_re:
 			if (! inrec(curfile, & errcode)) {
 				if (errcode > 0) {
 					update_ERRNO_int(errcode);
-					if (do_traditional || ! pc->has_endfile)
+					if (do_traditional || ! pc->has_endfile) {
+						const char *err;
+						SYS_STRERROR(err, errcode);
 						fatal(_("error reading input file `%s': %s"),
-						curfile->publ.name, strerror(errcode));
+							curfile->publ.name, err);
+					}
 				}
 
 				JUMPTO(ni);
