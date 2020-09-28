@@ -247,6 +247,13 @@ static int usage(const wchar_t prog[])
 	return 2;
 }
 
+#ifdef __MINGW32__
+/* Turn off program arguments globbing - it will be done properly in
+  arg_parse_command_line().  */
+extern int _CRT_glob; /* 0 turns off globbing; 1 turns it on */
+int _CRT_glob = 0;
+#endif
+
 #if defined(_MSC_VER) || defined(__MINGW64_VERSION_MAJOR)
 # if defined(__GNUC__) || defined(__clang__)
 /* gcc/clang complains about missing protope of wmain().  Provide one.  */
