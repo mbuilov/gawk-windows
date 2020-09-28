@@ -27,6 +27,7 @@
 
 #ifdef WINDOWS_NATIVE
 #include <math.h>
+#include "pc/socket.h" /* for WSABASEERR */
 #else
 extern double pow(double x, double y);
 extern double modf(double x, double *yp);
@@ -1030,13 +1031,11 @@ void
 update_ERRNO_int(int errcode)
 {
 	const char *cp;
+	SYS_STRERROR(cp, errcode);
 
 	update_PROCINFO_num("errno", errcode);
-	if (errcode) {
-		cp = strerror(errcode);
+	if (*cp)
 		cp = gettext(cp);
-	} else
-		cp = "";
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(cp, strlen(cp));
 }
