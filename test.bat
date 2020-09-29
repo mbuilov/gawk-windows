@@ -599,7 +599,7 @@ call :execq "(localenl.bat %QGAWK%)"                          || exit /b
 setlocal
 set "EGAWK=%GAWK:"=\""%"
 call :execq "del /q winpid.done 2> NUL"                       || goto :exit_local
-call :execq "wmic process call create ""%EGAWK% -f .\winpid.awk"",""%CD%"" 2>&1 | ""%FIND%"" ""ProcessId"" > _winpid" || goto :exit_local
+call :execq "<nul wmic process call create ""%EGAWK% -f .\winpid.awk"",""%CD%"" 2>&1 | ""%FIND%"" ""ProcessId"" > _winpid" || goto :exit_local
 call :waitfor winpid.done                                     || goto :exit_local
 call :cmpdel winpid                                           || goto :exit_local
 call :exec del /q winpid.ok winpid.done                       || goto :exit_local
