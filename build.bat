@@ -244,8 +244,8 @@ if defined MEMDEBUG      set "GAWK_DEFINES=%GAWK_DEFINES% /DMEMDEBUG"
 if defined REGEXDEBUG    set "GAWK_DEFINES=%GAWK_DEFINES% /DDEBUG"
 if defined MEMDEBUGLEAKS set "GAWK_DEFINES=%GAWK_DEFINES% /DMEMDEBUGLEAKS"
 
-:: build for WindowsXP and later
-set "CMN_DEFINES=/D_WIN32_WINNT=0x501"
+:: build for Windows7 and later
+set "CMN_DEFINES=/D_WIN32_WINNT=0x601"
 
 :: include sal_defs.h, if available
 if defined SAL_DEFS_H set "CMN_DEFINES=%CMN_DEFINES% /FI""%SAL_DEFS_H%"""
@@ -335,9 +335,8 @@ set "GAWK_DEFINES=%GAWK_DEFINES% /D_Restrict_=__restrict /DHAVE___INLINE /DHAVE_
 
 set "SUBSYSTEM=/SUBSYSTEM:CONSOLE"
 
-:: WindowsXP support
-if "%BUILDFORCPU%"=="32" set "SUBSYSTEM=%SUBSYSTEM%,5.01%"
-if "%BUILDFORCPU%"=="64" set "SUBSYSTEM=%SUBSYSTEM%,5.02%"
+:: Windows7 support
+"SUBSYSTEM=%SUBSYSTEM%,6.01%"
 
 if defined DEBUG_BUILD (
   :: debugging options
@@ -414,6 +413,9 @@ set "GAWK_VER_DEFINES=%GAWK_VER_DEFINES:/D=-D%"
 
 set "CMN_DEFINES=%CMN_DEFINES:/FI=-include %"
 set "CMN_DEFINES=%CMN_DEFINES:/D=-D% -DNEED_C99_FEATURES -fstrict-aliasing"
+
+:: MinGW.org supports building for WindowsXP
+if defined GCC_IS_MINGW_ORG set "CMN_DEFINES=%CMN_DEFINES:0x601=0x501%"
 
 :: do not use old names - non-STDC names sush as isascii, environ, etc.
 set "CMN_DEFINES=%CMN_DEFINES% -D_NO_OLDNAMES -DNO_OLDNAMES"
@@ -752,9 +754,13 @@ if defined DEBUG_BUILD (
 
 if defined COMPILE_AS_CXX (set "LINKER=%GXX%") else set "LINKER=%GCC%"
 set "LINKER=%LINKER% -mconsole"
-:: WindowsXP support
-if "%BUILDFORCPU%"=="32" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=1"
-if "%BUILDFORCPU%"=="64" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=2"
+:: WindowsXP/Windows7 support
+if defined GCC_IS_MINGW_ORG (
+  if "%BUILDFORCPU%"=="32" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=1"
+  if "%BUILDFORCPU%"=="64" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=2"
+) else (
+  set "LINKER=%LINKER% -Wl,--major-subsystem-version=6 -Wl,--minor-subsystem-version=1"
+)
 set "GAWKLINK=%LINKER% -static"
 set "SHLIBLINK=%LINKER% -static -shared"
 set "TOOLLINK=%LINKER% -static"
@@ -928,9 +934,8 @@ set LINKER=
 
 if defined COMPILE_AS_CXX (set "LINKER=%CLANGXX%") else set "LINKER=%CLANG%"
 set "LINKER=%LINKER% -mconsole -municode"
-:: WindowsXP support
-if "%BUILDFORCPU%"=="32" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=1"
-if "%BUILDFORCPU%"=="64" set "LINKER=%LINKER% -Wl,--major-subsystem-version=5 -Wl,--minor-subsystem-version=2"
+:: Windows7 support
+set "LINKER=%LINKER% -Wl,--major-subsystem-version=6 -Wl,--minor-subsystem-version=1"
 set "GAWKLINK=%LINKER% -static"
 set "SHLIBLINK=%LINKER% -static -shared"
 set "TOOLLINK=%LINKER% -static"
@@ -1106,11 +1111,10 @@ set LINKER=
 
 set "SUBSYSTEM=/SUBSYSTEM:CONSOLE"
 
-:: WindowsXP support
-if "%BUILDFORCPU%"=="32" set "SUBSYSTEM=%SUBSYSTEM%,5.01%"
-if "%BUILDFORCPU%"=="64" set "SUBSYSTEM=%SUBSYSTEM%,5.02%"
+:: Windows7 support
+set "SUBSYSTEM=%SUBSYSTEM%,6.01%"
 
-:: cannot pass /SUBSYSTEM:CONSOLE,5.01 via -Wl,<option> - use linker response file
+:: cannot pass /SUBSYSTEM:CONSOLE,6.01 via -Wl,<option> - use linker response file
 if not exist "%BLD_OBJ%" call :execq "md ""%BLD_OBJ%""" || (echo Failed to create directory: "%BLD_OBJ%") && exit /b 1
 call :execq "(echo %SUBSYSTEM%) > ""%BLD_OBJ%\subsys.resp""" || (echo Failed to create linker response file: "%BLD_OBJ%\subsys.resp") && exit /b 1
 
