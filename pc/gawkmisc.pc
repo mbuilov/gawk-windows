@@ -705,6 +705,9 @@ int os_sleep(unsigned mills)
 
 #ifdef WINDOWS_NATIVE
 
+/* main.c */
+extern void setlocale_sys_default(void);
+
 /* On Posix systems, 'setlocale' looks at LC_* variables in the
    environment, and Gawk users might expect that on Windows as well.  */
 void
@@ -712,10 +715,13 @@ pc_set_locale(const char *def)
 {
 	struct set_locale_err err;
 	if (set_locale_from_env(def, &err)) {
+		const char *locale = setlocale(LC_CTYPE, NULL);
+		if ('C' == *locale && !locale[1])
+			setlocale_sys_default();
 		if (err.lc)
-			fwprintf(stderr, L"%ls: bad locale: %ls=%ls\n", mywpath, err.cat, err.lc);
+			fwprintfmb(stderr, L"\"%ls\": bad locale: %ls=%ls\n", mywpath, err.cat, err.lc);
 		else
-			fwprintf(stderr, L"%ls: failed to set default locale\n", mywpath);
+			fwprintfmb(stderr, L"\"%ls\": failed to set default locale\n", mywpath);
 		(void) fflush(stderr);
 		gawk_exit(EXIT_FATAL);
 	}
@@ -1405,13 +1411,25 @@ convert_wargv(int argc, struct wide_arg *wargs)
 	struct arg_convert_err err;
 	char **argv = arg_convert_wide_args((unsigned) argc, wargs, &err);
 	if (!argv) {
+		wchar_t wbuf[128], *w = wbuf;
+		/* note: use localerpl-redefined setlocale(), which may return UTF-8 locale name */
+		const char *lc = setlocale(LC_CTYPE, NULL);
+		/* assume that locale name consists of only ASCII characters */
+		for (;; lc++) {
+			if (L'\0' == (*w = (wchar_t) (unsigned char) *lc))
+				break;
+			if (++w == &wbuf[sizeof(wbuf)/sizeof(wbuf[0])]) {
+				w[-1] = L'\0';
+				break;
+			}
+		}
 		if (err.arg) {
-			fwprintf(stderr, L"%ls: failed to convert from UNICODE to %ls command-line argument number %u: %ls\n",
-				mywpath, _wsetlocale(LC_CTYPE, NULL), err.number, err.arg);
+			fwprintfmb(stderr, L"\"%ls\": failed to convert from UNICODE to %ls command-line argument number %u: %ls\n",
+				mywpath, wbuf, err.number, err.arg);
 		}
 		else {
-			fwprintf(stderr, L"%ls: failed to convert command-line arguments from UNICODE to %ls: %ls\n",
-				mywpath, _wsetlocale(LC_CTYPE, NULL), _wcserror(errno));
+			fwprintfmb(stderr, L"\"%ls\": failed to convert command-line arguments from UNICODE to %ls: %ls\n",
+				mywpath, wbuf, _wcserror(errno));
 		}
 		(void) fflush(stderr);
 		gawk_exit(EXIT_FATAL);
