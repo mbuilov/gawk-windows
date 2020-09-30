@@ -256,6 +256,10 @@ static const struct option optab[] = {
 
 #ifdef WINDOWS_NATIVE
 
+/* Override current "C" locale - set system-default one - for better
+  wide-character -> multibyte conversion of a fatal error message. */
+void setlocale_sys_default(void);
+
 /* Get value of command-line option:
    -Zlocale-name or -Z locale-name or --loc[ale]=locale-name or --loc[ale] locale-name,
    Returns option value or NULL if the option is not specified.
@@ -306,7 +310,8 @@ get_specified_locale(const struct wide_arg *wl, wchar_t opt_name_array[])
 
 	/* -Z locale-name or --loc[ale] locale-name.  */
 	if (!wl->next) {
-		fwprintf(stderr, L"%ls: option '%ls' requires an argument\n", mywpath, opt_name_array);
+		setlocale_sys_default();
+		fwprintfmb(stderr, L"\"%ls\": option '%ls' requires an argument\n", mywpath, opt_name_array);
 		(void) fflush(stderr);
 		gawk_exit(EXIT_FATAL);
 	}
@@ -411,7 +416,8 @@ int main(int argc, char *main_argv[])
 		if (!spec_locale)
 			pc_set_locale(locale);
 		else if (wset_locale_helper(LC_ALL, spec_locale)) {
-			fwprintf(stderr, L"%ls: bad locale name specified by the option '%ls': %ls\n",
+			setlocale_sys_default();
+			fwprintfmb(stderr, L"\"%ls\": bad locale name specified by the option '%ls': %ls\n",
 				mywpath, opt_name_array, spec_locale);
 			(void) fflush(stderr);
 			gawk_exit(EXIT_FATAL);
@@ -2086,3 +2092,12 @@ set_current_namespace(const char *new_namespace)
 
 	current_namespace = new_namespace;
 }
+
+/* should be defined after after all calls to setlocale() */
+#ifdef WINDOWS_NATIVE
+void setlocale_sys_default(void)
+{
+	#undef setlocale
+	setlocale(LC_ALL, "");
+}
+#endif
