@@ -522,9 +522,6 @@ EXTRA_DIST = \
 	icasers.awk \
 	icasers.in \
 	icasers.ok \
-	inpref.awk \
-	inpref.in \
-	inpref.ok \
 	id.awk \
 	id.ok \
 	igncdym.awk \
@@ -542,53 +539,56 @@ EXTRA_DIST = \
 	ignrcase.awk \
 	ignrcase.in \
 	ignrcase.ok \
-	incdupe.ok \
 	incdupe2.ok \
 	incdupe3.ok \
 	incdupe4.ok \
 	incdupe5.ok \
 	incdupe6.ok \
 	incdupe7.ok \
+	incdupe.ok \
 	inchello.awk \
 	inclib.awk \
+	include2.ok \
 	include.awk \
 	include.ok \
-	include2.ok \
 	indirectbuiltin.awk \
 	indirectbuiltin.ok \
+	indirectcall2.awk \
+	indirectcall2.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
-	indirectcall2.awk \
-	indirectcall2.ok \
 	inftest.awk \
 	inftest.ok \
-	inplace.in \
-	inplace.1.in \
-	inplace.2.in \
-	inplace1.ok \
 	inplace1.1.ok \
 	inplace1.2.ok \
-	inplace2.ok \
-	inplace2.1.ok \
+	inplace.1.in \
+	inplace1.ok \
 	inplace2.1.bak.ok \
-	inplace2.2.ok \
+	inplace2.1.ok \
 	inplace2.2.bak.ok \
+	inplace2.2.ok \
 	inplace2bcomp.1.ok \
 	inplace2bcomp.1.orig.ok \
 	inplace2bcomp.2.ok \
 	inplace2bcomp.2.orig.ok \
 	inplace2bcomp.ok \
-	inplace3.ok \
-	inplace3.1.ok \
+	inplace.2.in \
+	inplace2.ok \
 	inplace3.1.bak.ok \
-	inplace3.2.ok \
+	inplace3.1.ok \
 	inplace3.2.bak.ok \
+	inplace3.2.ok \
 	inplace3bcomp.1.ok \
 	inplace3bcomp.1.orig.ok \
 	inplace3bcomp.2.ok \
 	inplace3bcomp.2.orig.ok \
 	inplace3bcomp.ok \
+	inplace3.ok \
+	inplace.in \
+	inpref.awk \
+	inpref.in \
+	inpref.ok \
 	inputred.awk \
 	inputred.ok \
 	intarray.awk \
@@ -601,6 +601,8 @@ EXTRA_DIST = \
 	intprec.ok \
 	iobug1.awk \
 	iobug1.ok \
+	iolint.awk \
+	iolint.ok \
 	isarrayunset.awk \
 	isarrayunset.ok \
 	jarebug.awk \
@@ -1420,7 +1422,7 @@ GAWK_EXT_TESTS = \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
-	indirectbuiltin indirectcall indirectcall2 intarray isarrayunset \
+	indirectbuiltin indirectcall indirectcall2 intarray iolint isarrayunset \
 	lint lintexp lintindex lintint lintlength lintplus lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
@@ -2457,6 +2459,13 @@ typedregex4:
 	@echo $@
 	@$(AWK) -v x=@/foo/ -f "$(srcdir)"/$@.awk y=@/bar/ /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+iolint:
+	@echo $@
+	@echo hello > 'echo hello'
+	@$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(RM) -f cat 'echo hello' f1 f2 md5sum
 
 # Targets generated for other tests:
 include Maketests

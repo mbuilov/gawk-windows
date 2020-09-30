@@ -1,3 +1,13 @@
+2020-09-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (enum redirect_flags): Add RED_NONE.
+	(redirect_flags_t): New typedef.
+	* io.c (redflags2str): Handle RED_NONE.
+	(check_duplicated_redirections): New function.
+	(redirect_string): Use new typedef. Call new function if do_lint
+	instead of using inline code.
+	(close_redir): Add error message for failure on close of two-way pipe.
+
 2020-09-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y [GRAMMAR]: Install arrays as Node_var_array. Improves

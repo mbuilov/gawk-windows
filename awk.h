@@ -1060,6 +1060,7 @@ typedef struct iobuf {
 typedef void (*Func_ptr)(void);
 
 enum redirect_flags {
+	RED_NONE	= 0,
 	RED_FILE	= 1,
 	RED_PIPE	= 2,
 	RED_READ	= 4,
