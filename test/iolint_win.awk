@@ -9,21 +9,9 @@ BEGIN {
 	print close("f1")
 	fflush()
 
-	# `%.*s' used for input pipe and two-way pipe
-	"echo hello" |& getline xx2
-	"echo hello" | getline xx
-
-	print xx, xx2
-
-	print close("echo hello")
-	print close("echo hello")
-	fflush()
-
 	# `%.*s' used for input file and input pipe
 	# `%.*s' used for input file and two-way pipe
 	# `%.*s' used for input pipe and two-way pipe
-	print "hello" > "echo hello"
-	print close("echo hello")
 	getline data3 < "echo hello"
 	"echo hello" |& getline data2
 	"echo hello" | getline data

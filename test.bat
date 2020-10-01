@@ -819,6 +819,7 @@ call :runtest_in      indirectcall                            || exit /b
 call :runtest         indirectcall2                           || exit /b
 call :runtest         intarray --non-decimal-data             || exit /b
 
+call :execq "(echo.hello) > ""echo hello"""                   || exit /b
 call :execq "%QGAWK% -f iolint_win.awk > _iolint_win.out 2> _iolint_win.err" && ^
 call :execq "copy /b _iolint_win.err + _iolint_win.out _iolint_win >NUL"     || exit /b
 call :cmpdel iolint_win && call :exec del /q _iolint_win.out _iolint_win.err f1 f2 catcat "echo hello" || exit /b
