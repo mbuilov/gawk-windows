@@ -823,7 +823,10 @@ check_duplicated_redirections(const char *name, size_t len,
 		    && (   (old_has_mode || new_has_mode)
 			&& (old_has_other_mode || new_has_other_mode)))
 		{
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_FORMAT_WARNING
 			lintwarn(_(mixtures[i].message), TO_PRINTF_WIDTH(len), name);
+PRAGMA_WARNING_POP
 			return;
 		}
 	}
