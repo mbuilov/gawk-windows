@@ -641,7 +641,7 @@ endlocal
 
 exit /b 0
 
-:::::: GAWK_EXT_TESTS (205 of 211 upstream tests - 6 tests are unsupported) :::::
+:::::: GAWK_EXT_TESTS (206 of 212 upstream tests - 6 tests are unsupported) :::::
 :ext_tests
 
 call :runtest_fail    aadelete1                               || exit /b
@@ -818,6 +818,11 @@ call :runtest         indirectbuiltin                         || exit /b
 call :runtest_in      indirectcall                            || exit /b
 call :runtest         indirectcall2                           || exit /b
 call :runtest         intarray --non-decimal-data             || exit /b
+
+call :execq "%QGAWK% -f iolint_win.awk > _iolint_win.out 2> _iolint_win.err" && ^
+call :execq "copy /b _iolint_win.err + _iolint_win.out _iolint_win >NUL"     || exit /b
+call :cmpdel iolint_win && call :exec del /q _iolint_win.out _iolint_win.err f1 f2 catcat "echo hello" || exit /b
+
 call :runtest         isarrayunset                            || exit /b
 call :runtest         lint                                    || exit /b
 call :runtest         lintexp    --lint                       || exit /b
