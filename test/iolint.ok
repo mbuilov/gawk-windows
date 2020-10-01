@@ -23,15 +23,15 @@ b1946ac92492d2347c6235b4d2611184  -
 gawk: ./iolint.awk:49: warning: `echo hello' used for input pipe and output file
 0
 0
-gawk: ./iolint.awk:58: warning: `cat' used for output file and output pipe
-gawk: ./iolint.awk:59: warning: `cat' used for output pipe and two-way pipe
-gawk: ./iolint.awk:59: warning: `cat' used for output file and two-way pipe
+gawk: ./iolint.awk:59: warning: `exec cat' used for output file and output pipe
+gawk: ./iolint.awk:60: warning: `exec cat' used for output pipe and two-way pipe
+gawk: ./iolint.awk:60: warning: `exec cat' used for output file and two-way pipe
 hello
-gawk: ./iolint.awk:60: warning: failure status (141) on two-way pipe close of `cat': Success
-141
+gawk: ./iolint.awk:61: warning: failure status (269) on two-way pipe close of `exec cat': Success
+269
 0
 0
-gawk: ./iolint.awk:67: warning: `echo hello' used for input pipe and output pipe
+gawk: ./iolint.awk:68: warning: `echo hello' used for input pipe and output pipe
 hello
 0
 0

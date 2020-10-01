@@ -1233,9 +1233,10 @@ typedregex4:
 iolint:
 	@echo $@
 	@echo hello > 'echo hello'
+	@touch 'exec cat' ; chmod 755 'exec cat'
 	@$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-	@-$(RM) -f cat 'echo hello' f1 f2 md5sum
+	@-$(RM) -f cat 'echo hello' 'exec cat' f1 f2 md5sum
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:

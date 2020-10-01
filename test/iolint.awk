@@ -54,12 +54,13 @@ BEGIN {
 	# `%.*s' used for output file and output pipe
 	# `%.*s' used for output file and two-way pipe
 	# `%.*s' used for output pipe and two-way pipe
-	print "hello" > "cat"
-	print "hello" | "cat"
-	print "hello" |& "cat"
-	print close("cat")
-	print close("cat")
-	print close("cat")
+	exec_cat = "exec cat"
+	print "/bin/cat \"$@\"" > exec_cat
+	print "hello" | exec_cat
+	print "hello" |& exec_cat
+	print close(exec_cat)
+	print close(exec_cat)
+	print close(exec_cat)
 	fflush()
 
 	# `%.*s' used for input pipe and output pipe
