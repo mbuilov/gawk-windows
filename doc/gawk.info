@@ -18418,103 +18418,281 @@ File: gawk.info,  Node: Split Program,  Next: Tee Program,  Prev: Id Program,  U
 11.2.4 Splitting a Large File into Pieces
 -----------------------------------------
 
-The 'split' program splits large text files into smaller pieces.  Usage
-is as follows:(1)
+The 'split' utility splits large text files into smaller pieces.  The
+usage follows the POSIX standard for 'split' and is as follows:
 
-     'split' ['-COUNT'] [FILE] [PREFIX]
+     'split' ['-l' COUNT] ['-a' SUFFIX-LEN] [FILE [OUTNAME]]
+     'split' '-b' N['k'|'m']] ['-a' SUFFIX-LEN] [FILE [OUTNAME]]
 
    By default, the output files are named 'xaa', 'xab', and so on.  Each
 file has 1,000 lines in it, with the likely exception of the last file.
-To change the number of lines in each file, supply a number on the
-command line preceded with a minus sign (e.g., '-500' for files with 500
-lines in them instead of 1,000).  To change the names of the output
-files to something like 'myfileaa', 'myfileab', and so on, supply an
-additional argument that specifies the file name prefix.
 
-   Here is a version of 'split' in 'awk'.  It uses the 'ord()' and
-'chr()' functions presented in *note Ordinal Functions::.
+   The 'split' program has evolved over time, and the current POSIX
+version is more complicated than the original Unix version.  The options
+and what they do are as follows:
 
-   The program first sets its defaults, and then tests to make sure
-there are not too many arguments.  It then looks at each argument in
-turn.  The first argument could be a minus sign followed by a number.
-If it is, this happens to look like a negative number, so it is made
-positive, and that is the count of lines.  The data file name is skipped
-over and the final argument is used as the prefix for the output file
-names:
+'-a' SUFFIX-LEN
+     Use SUFFIX-LEN characters for the suffix.  For example, if
+     SUFFIX-LEN is four, the output files would range from 'xaaaa' to
+     'xzzzz'.
+
+'-b' N['k'|'m']]
+     Instead of each file containing a specified number of lines, each
+     file should have (at most) N bytes.  Supplying a trailing 'k'
+     multiplies N by 1,024, yielding kilobytes.  Supplying a trailing
+     'm' mutiplies N by 1,048,576 (1,024 * 1,024) yielding megabytes.
+     (This option is mutually exclusive with '-l').
+
+'-l' COUNT
+     Each file should have at most COUNT lines, instead of the default
+     1,000.  (This option is mutually exclusive with '-b').
+
+   If supplied, FILE is the input file to read.  Otherwise standard
+input is processed.  If supplied, OUTNAME is the leading prefix to use
+for file names, instead of 'x'.
+
+   In order to use the '-b' option, 'gawk' should be invoked with its
+'-b' option (*note Options::), or with the environment variable 'LC_ALL'
+set to 'C', so that each input byte is treated as a separate
+character.(1)
+
+   Here is an implementation of 'split' in 'awk'.  It uses the
+'getopt()' function presented in *note Getopt Function::.
+
+   The program begins with a standard descriptive comment and then a
+'usage()' function describing the options:
 
      # split.awk --- do split in awk
      #
-     # Requires ord() and chr() library functions
-     # usage: split [-count] [file] [outname]
-
-     BEGIN {
-         outfile = "x"    # default
-         count = 1000
-         if (ARGC > 4)
-             usage()
-
-         i = 1
-         if (i in ARGV && ARGV[i] ~ /^-[[:digit:]]+$/) {
-             count = -ARGV[i]
-             ARGV[i] = ""
-             i++
-         }
-         # test argv in case reading from stdin instead of file
-         if (i in ARGV)
-             i++    # skip datafile name
-         if (i in ARGV) {
-             outfile = ARGV[i]
-             ARGV[i] = ""
-         }
-         s1 = s2 = "a"
-         out = (outfile s1 s2)
-     }
-
-   The next rule does most of the work.  'tcount' (temporary count)
-tracks how many lines have been printed to the output file so far.  If
-it is greater than 'count', it is time to close the current file and
-start a new one.  's1' and 's2' track the current suffixes for the file
-name.  If they are both 'z', the file is just too big.  Otherwise, 's1'
-moves to the next letter in the alphabet and 's2' starts over again at
-'a':
-
-     {
-         if (++tcount > count) {
-             close(out)
-             if (s2 == "z") {
-                 if (s1 == "z") {
-                     printf("split: %s is too large to split\n",
-                            FILENAME) > "/dev/stderr"
-                     exit 1
-                 }
-                 s1 = chr(ord(s1) + 1)
-                 s2 = "a"
-             }
-             else
-                 s2 = chr(ord(s2) + 1)
-             out = (outfile s1 s2)
-             tcount = 1
-         }
-         print > out
-     }
-
-The 'usage()' function simply prints an error message and exits:
-
+     # Requires getopt() library function.
      function usage()
      {
-         print("usage: split [-num] [file] [outname]") > "/dev/stderr"
+         print("usage: split [-l count]  [-a suffix-len] [file [outname]]") > "/dev/stderr"
+         print("       split [-b N[k|m]] [-a suffix-len] [file [outname]]") > "/dev/stderr"
          exit 1
      }
 
-   This program is a bit sloppy; it relies on 'awk' to automatically
-close the last file instead of doing it in an 'END' rule.  It also
-assumes that letters are contiguous in the character set, which isn't
-true for EBCDIC systems.
+   Next, in a 'BEGIN' rule we set the default values and parse the
+arguments.  After that we initialize the data structures used to cycle
+the suffix from 'aa...' to 'zz...'.  Finally we set the name of the
+first output file:
+
+     BEGIN {
+         # Set defaults:
+         Suffix_length = 2
+         Line_count = 1000
+         Byte_count = 0
+         Outfile = "x"
+
+         parse_arguments()
+
+         init_suffix_data()
+
+         Output = (Outfile compute_suffix())
+     }
+
+   Parsing the arguments is straightforward.  The program follows our
+convention (*note Library Names::) of having important global variables
+start with an uppercase letter:
+
+     function parse_arguments(   i, c, l, modifier)
+     {
+         while ((c = getopt(ARGC, ARGV, "a:b:l:")) != -1) {
+             if (c == "a")
+                 Suffix_length = Optarg + 0
+             else if (c == "b") {
+                 Byte_count = Optarg + 0
+                 Line_count = 0
+
+                 l = length(Optarg)
+                 modifier = substr(Optarg, l, 1)
+                 if (modifier == "k")
+                     Byte_count *= 1024
+                 else if (modifier == "m")
+                     Byte_count *= 1024 * 1024
+             } else if (c == "l") {
+                 Line_count = Optarg + 0
+                 Byte_count = 0
+             } else
+                 usage()
+         }
+
+         # Clear out options
+         for (i = 1; i < Optind; i++)
+             ARGV[i] = ""
+
+         # Check for filename
+         if (ARGV[Optind]) {
+             Optind++
+
+             # Check for different prefix
+             if (ARGV[Optind]) {
+                 Outfile = ARGV[Optind]
+                 ARGV[Optind] = ""
+
+                 if (++Optind < ARGC)
+                     usage()
+             }
+         }
+     }
+
+   Managing the file name suffix is interesting.  Given a suffix of
+length three, say, the values go from 'aaa', 'aab', 'aac' and so on, all
+the way to 'zzx', 'zzy', and finally 'zzz'.  There are two important
+aspects to this:
+
+   * We have to be able to easily generate these suffixes, and in
+     particular easily handle "rolling over"; for example, going from
+     'abz' to 'aca'.
+
+   * We have to tell when we've finished with the last file, so that if
+     we still have more input data we can print an error message and
+     exit.  The trick is to handle this _after_ using the last suffix,
+     and not when the final suffix is created.
+
+   The computation is handled by 'compute_suffix()'.  This function is
+called every time a new file is opened.
+
+   The flow here is messy, because we want to generate 'zzzz' (say), and
+use it, and only produce an error after all the file name suffixes have
+been used up.  The logical steps are as follows:
+
+  1. Generate the suffix, saving the value in 'result' to return.  To do
+     this, the supplementary array 'Suffix_ind' contains one element for
+     each letter in the suffix.  Each element ranges from 1 to 26,
+     acting as the index into a string containing all the lowercase
+     letters of the English alphabet.  It is initialized by
+     'init_suffix_data()'.  'result' is built up one letter at a time,
+     using each 'substr()'.
+
+  2. Prepare the data structures for the next time 'compute_suffix()' is
+     called.  To do this, we loop over 'Suffix_ind', _backwards_.  If
+     the current element is less than 26, it's incremented and the loop
+     breaks ('abq' goes to 'abr').  Otherwise, the element is reset to
+     one and we move down the list ('abz' to 'aca').  Thus, the
+     'Suffix_ind' array is always "one step ahead" of the actual file
+     name suffix to be returned.
+
+  3. Check if we've gone past the limit of possible filenames.  If
+     'Reached_last' is true, print a message and exit.  Otherwise, check
+     if 'Suffix_ind' describes a suffix where all the letters are 'z'.
+     If that's the case we're about to return the final suffix.  If so,
+     we set 'Reached_last' to true so that the _next_ call to
+     'compute_suffix()' will cause a failure.
+
+   Physically, the steps in the function occur in the order 3, 1, 2:
+
+     function compute_suffix(    i, result, letters)
+     {
+         # Logical step 3
+         if (Reached_last) {
+             printf("split: too many files!\n") > "/dev/stderr"
+             exit 1
+         } else if (on_last_file())
+             Reached_last = 1    # fail when wrapping after 'zzz'
+
+         # Logical step 1
+         result = ""
+         letters = "abcdefghijklmnopqrstuvwxyz"
+         for (i = 1; i <= Suffix_length; i++)
+             result = result substr(letters, Suffix_ind[i], 1)
+
+         # Logical step 2
+         for (i = Suffix_length; i >= 1; i--) {
+             if (++Suffix_ind[i] > 26) {
+                 Suffix_ind[i] = 1
+             } else
+                 break
+         }
+
+         return result
+     }
+
+   The 'Suffix_ind' array and 'Reached_last' are initialized by
+'init_suffix_data()':
+
+     function init_suffix_data(  i)
+     {
+         for (i = 1; i <= Suffix_length; i++)
+             Suffix_ind[i] = 1
+
+         Reached_last = 0
+     }
+
+   The function 'on_last_file()' returns true if 'Suffix_ind' describes
+a suffix where all the letters are 'z' by checking that all the elements
+in the array are equal to 26:
+
+     function on_last_file(  i, on_last)
+     {
+         on_last = 1
+         for (i = 1; i <= Suffix_length; i++) {
+             on_last = on_last && (Suffix_ind[i] == 26)
+         }
+
+         return on_last
+     }
+
+   The actual work of splitting the input file is done by the next two
+rules.  Since splitting by line count and splitting by byte count are
+mutually exclusive, we simply use two separate rules, one for when
+'Line_count' is greater than zero, and another for when 'Byte_count' is
+greater than zero.
+
+   The variable 'tcount' counts how many lines have been processed so
+far.  When it exceeds 'Line_count', it's time to close the previous file
+and switch to a new one:
+
+     Line_count > 0 {
+         if (++tcount > Line_count) {
+             close(Output)
+             Output = (Outfile compute_suffix())
+             tcount = 1
+         }
+         print > Output
+     }
+
+   The rule for handling bytes is more complicated.  Since lines most
+likely vary in length, the 'Byte_count' boundary may be hit in the
+middle of an input record.  In that case, 'split' has to write enough of
+the first bytes of the input record to finish up 'Byte_count' bytes,
+close the file, open a new file, and write the rest of the record to the
+new file.  The logic here does all that:
+
+     Byte_count > 0 {
+         # `+ 1' is for the final newline
+         if (tcount + length($0) + 1 > Byte_count) { # would overflow
+             # compute leading bytes
+             leading_bytes = Byte_count - tcount
+
+             # write leading bytes
+             printf("%s", substr($0, 1, leading_bytes)) > Output
+
+             # close old file, open new file
+             close(Output)
+             Output = (Outfile compute_suffix())
+
+             # set up first bytes for new file
+             $0 = substr($0, leading_bytes + 1)  # trailing bytes
+             tcount = 0
+         }
+
+         # write full record or trailing bytes
+         tcount += length($0) + 1
+         print > Output
+     }
+
+   Finally, the 'END' rule cleans up by closing the last output file:
+
+     END {
+         close(Output)
+     }
 
    ---------- Footnotes ----------
 
-   (1) This is the traditional usage.  The POSIX usage is different, but
-not relevant for what the program aims to demonstrate.
+   (1) Using '-b' twice requires separating 'gawk''s options from those
+of the program.  For example: 'gawk -f getopt.awk -f split.awk -b -- -b
+42m large-file.txt split-'.
 
 
 File: gawk.info,  Node: Tee Program,  Next: Uniq Program,  Prev: Split Program,  Up: Clones
@@ -37254,7 +37432,7 @@ Index
 * split string into array:               String Functions.    (line 303)
 * split utility:                         Split Program.       (line   6)
 * split() function, array elements, deleting: Delete.         (line  61)
-* split.awk program:                     Split Program.       (line  30)
+* split.awk program:                     Split Program.       (line  50)
 * sprintf:                               OFMT.                (line  15)
 * sprintf <1>:                           String Functions.    (line 395)
 * sprintf() function, print/printf statements and: Round Function.
@@ -37958,270 +38136,270 @@ Node: Cut Program728246
 Node: Egrep Program738175
 Node: Id Program747186
 Node: Split Program757133
-Ref: Split Program-Footnote-1760591
-Node: Tee Program760720
-Node: Uniq Program763510
-Node: Wc Program771074
-Ref: Wc Program-Footnote-1775329
-Node: Miscellaneous Programs775423
-Node: Dupword Program776636
-Node: Alarm Program778666
-Node: Translate Program783521
-Ref: Translate Program-Footnote-1788086
-Node: Labels Program788356
-Ref: Labels Program-Footnote-1791707
-Node: Word Sorting791791
-Node: History Sorting795863
-Node: Extract Program798088
-Node: Simple Sed806142
-Node: Igawk Program809216
-Ref: Igawk Program-Footnote-1823547
-Ref: Igawk Program-Footnote-2823749
-Ref: Igawk Program-Footnote-3823871
-Node: Anagram Program823986
-Node: Signature Program827048
-Node: Programs Summary828295
-Node: Programs Exercises829509
-Ref: Programs Exercises-Footnote-1833639
-Node: Advanced Features833725
-Node: Nondecimal Data835715
-Node: Array Sorting837306
-Node: Controlling Array Traversal838006
-Ref: Controlling Array Traversal-Footnote-1846374
-Node: Array Sorting Functions846492
-Ref: Array Sorting Functions-Footnote-1851583
-Node: Two-way I/O851779
-Ref: Two-way I/O-Footnote-1859500
-Ref: Two-way I/O-Footnote-2859687
-Node: TCP/IP Networking859769
-Node: Profiling862887
-Node: Advanced Features Summary872201
-Node: Internationalization874045
-Node: I18N and L10N875525
-Node: Explaining gettext876212
-Ref: Explaining gettext-Footnote-1882104
-Ref: Explaining gettext-Footnote-2882289
-Node: Programmer i18n882454
-Ref: Programmer i18n-Footnote-1887403
-Node: Translator i18n887452
-Node: String Extraction888246
-Ref: String Extraction-Footnote-1889378
-Node: Printf Ordering889464
-Ref: Printf Ordering-Footnote-1892250
-Node: I18N Portability892314
-Ref: I18N Portability-Footnote-1894770
-Node: I18N Example894833
-Ref: I18N Example-Footnote-1898108
-Ref: I18N Example-Footnote-2898181
-Node: Gawk I18N898290
-Node: I18N Summary898939
-Node: Debugger900280
-Node: Debugging901280
-Node: Debugging Concepts901721
-Node: Debugging Terms903530
-Node: Awk Debugging906105
-Ref: Awk Debugging-Footnote-1907050
-Node: Sample Debugging Session907182
-Node: Debugger Invocation907716
-Node: Finding The Bug909102
-Node: List of Debugger Commands915576
-Node: Breakpoint Control916909
-Node: Debugger Execution Control920603
-Node: Viewing And Changing Data923965
-Node: Execution Stack927506
-Node: Debugger Info929143
-Node: Miscellaneous Debugger Commands933214
-Node: Readline Support938276
-Node: Limitations939172
-Node: Debugging Summary941726
-Node: Namespaces943005
-Node: Global Namespace944116
-Node: Qualified Names945514
-Node: Default Namespace946513
-Node: Changing The Namespace947254
-Node: Naming Rules948868
-Node: Internal Name Management950716
-Node: Namespace Example951758
-Node: Namespace And Features954320
-Node: Namespace Summary955755
-Node: Arbitrary Precision Arithmetic957232
-Node: Computer Arithmetic958719
-Ref: table-numeric-ranges962485
-Ref: table-floating-point-ranges962978
-Ref: Computer Arithmetic-Footnote-1963636
-Node: Math Definitions963693
-Ref: table-ieee-formats967009
-Ref: Math Definitions-Footnote-1967612
-Node: MPFR features967717
-Node: FP Math Caution969435
-Ref: FP Math Caution-Footnote-1970507
-Node: Inexactness of computations970876
-Node: Inexact representation971836
-Node: Comparing FP Values973196
-Node: Errors accumulate974437
-Node: Getting Accuracy975870
-Node: Try To Round978580
-Node: Setting precision979479
-Ref: table-predefined-precision-strings980176
-Node: Setting the rounding mode982006
-Ref: table-gawk-rounding-modes982380
-Ref: Setting the rounding mode-Footnote-1986311
-Node: Arbitrary Precision Integers986490
-Ref: Arbitrary Precision Integers-Footnote-1989665
-Node: Checking for MPFR989814
-Node: POSIX Floating Point Problems991288
-Ref: POSIX Floating Point Problems-Footnote-1995573
-Node: Floating point summary995611
-Node: Dynamic Extensions997801
-Node: Extension Intro999354
-Node: Plugin License1000620
-Node: Extension Mechanism Outline1001417
-Ref: figure-load-extension1001856
-Ref: figure-register-new-function1003421
-Ref: figure-call-new-function1004513
-Node: Extension API Description1006575
-Node: Extension API Functions Introduction1008288
-Ref: table-api-std-headers1010124
-Node: General Data Types1014373
-Ref: General Data Types-Footnote-11023003
-Node: Memory Allocation Functions1023302
-Ref: Memory Allocation Functions-Footnote-11027803
-Node: Constructor Functions1027902
-Node: API Ownership of MPFR and GMP Values1031368
-Node: Registration Functions1032681
-Node: Extension Functions1033381
-Node: Exit Callback Functions1038703
-Node: Extension Version String1039953
-Node: Input Parsers1040616
-Node: Output Wrappers1053337
-Node: Two-way processors1057849
-Node: Printing Messages1060114
-Ref: Printing Messages-Footnote-11061285
-Node: Updating ERRNO1061438
-Node: Requesting Values1062177
-Ref: table-value-types-returned1062914
-Node: Accessing Parameters1063850
-Node: Symbol Table Access1065087
-Node: Symbol table by name1065599
-Ref: Symbol table by name-Footnote-11068623
-Node: Symbol table by cookie1068751
-Ref: Symbol table by cookie-Footnote-11072936
-Node: Cached values1073000
-Ref: Cached values-Footnote-11076536
-Node: Array Manipulation1076689
-Ref: Array Manipulation-Footnote-11077780
-Node: Array Data Types1077817
-Ref: Array Data Types-Footnote-11080475
-Node: Array Functions1080567
-Node: Flattening Arrays1085065
-Node: Creating Arrays1092041
-Node: Redirection API1096808
-Node: Extension API Variables1099641
-Node: Extension Versioning1100352
-Ref: gawk-api-version1100781
-Node: Extension GMP/MPFR Versioning1102512
-Node: Extension API Informational Variables1104140
-Node: Extension API Boilerplate1105213
-Node: Changes from API V11109187
-Node: Finding Extensions1110759
-Node: Extension Example1111318
-Node: Internal File Description1112116
-Node: Internal File Ops1116196
-Ref: Internal File Ops-Footnote-11127546
-Node: Using Internal File Ops1127686
-Ref: Using Internal File Ops-Footnote-11130069
-Node: Extension Samples1130343
-Node: Extension Sample File Functions1131872
-Node: Extension Sample Fnmatch1139521
-Node: Extension Sample Fork1141008
-Node: Extension Sample Inplace1142226
-Node: Extension Sample Ord1145851
-Node: Extension Sample Readdir1146687
-Ref: table-readdir-file-types1147576
-Node: Extension Sample Revout1148643
-Node: Extension Sample Rev2way1149232
-Node: Extension Sample Read write array1149972
-Node: Extension Sample Readfile1151914
-Node: Extension Sample Time1153009
-Node: Extension Sample API Tests1154761
-Node: gawkextlib1155253
-Node: Extension summary1158171
-Node: Extension Exercises1161873
-Node: Language History1163115
-Node: V7/SVR3.11164771
-Node: SVR41166923
-Node: POSIX1168357
-Node: BTL1169738
-Node: POSIX/GNU1170467
-Node: Feature History1176245
-Node: Common Extensions1192564
-Node: Ranges and Locales1193847
-Ref: Ranges and Locales-Footnote-11198463
-Ref: Ranges and Locales-Footnote-21198490
-Ref: Ranges and Locales-Footnote-31198725
-Node: Contributors1198948
-Node: History summary1204945
-Node: Installation1206325
-Node: Gawk Distribution1207269
-Node: Getting1207753
-Node: Extracting1208716
-Node: Distribution contents1210354
-Node: Unix Installation1216834
-Node: Quick Installation1217516
-Node: Shell Startup Files1219930
-Node: Additional Configuration Options1221019
-Node: Configuration Philosophy1223334
-Node: Non-Unix Installation1225703
-Node: PC Installation1226163
-Node: PC Binary Installation1227001
-Node: PC Compiling1227436
-Node: PC Using1228553
-Node: Cygwin1232106
-Node: MSYS1233330
-Node: VMS Installation1233932
-Node: VMS Compilation1234723
-Ref: VMS Compilation-Footnote-11235952
-Node: VMS Dynamic Extensions1236010
-Node: VMS Installation Details1237695
-Node: VMS Running1239948
-Node: VMS GNV1244227
-Node: VMS Old Gawk1244962
-Node: Bugs1245433
-Node: Bug address1246096
-Node: Usenet1249078
-Node: Maintainers1250082
-Node: Other Versions1251267
-Node: Installation summary1258355
-Node: Notes1259564
-Node: Compatibility Mode1260358
-Node: Additions1261140
-Node: Accessing The Source1262065
-Node: Adding Code1263502
-Node: New Ports1269721
-Node: Derived Files1274096
-Ref: Derived Files-Footnote-11279756
-Ref: Derived Files-Footnote-21279791
-Ref: Derived Files-Footnote-31280389
-Node: Future Extensions1280503
-Node: Implementation Limitations1281161
-Node: Extension Design1282371
-Node: Old Extension Problems1283515
-Ref: Old Extension Problems-Footnote-11285033
-Node: Extension New Mechanism Goals1285090
-Ref: Extension New Mechanism Goals-Footnote-11288454
-Node: Extension Other Design Decisions1288643
-Node: Extension Future Growth1290756
-Node: Notes summary1291362
-Node: Basic Concepts1292520
-Node: Basic High Level1293201
-Ref: figure-general-flow1293483
-Ref: figure-process-flow1294168
-Ref: Basic High Level-Footnote-11297469
-Node: Basic Data Typing1297654
-Node: Glossary1300982
-Node: Copying1332867
-Node: GNU Free Documentation License1370410
-Node: Index1395530
+Ref: Split Program-Footnote-1766905
+Node: Tee Program767078
+Node: Uniq Program769868
+Node: Wc Program777432
+Ref: Wc Program-Footnote-1781687
+Node: Miscellaneous Programs781781
+Node: Dupword Program782994
+Node: Alarm Program785024
+Node: Translate Program789879
+Ref: Translate Program-Footnote-1794444
+Node: Labels Program794714
+Ref: Labels Program-Footnote-1798065
+Node: Word Sorting798149
+Node: History Sorting802221
+Node: Extract Program804446
+Node: Simple Sed812500
+Node: Igawk Program815574
+Ref: Igawk Program-Footnote-1829905
+Ref: Igawk Program-Footnote-2830107
+Ref: Igawk Program-Footnote-3830229
+Node: Anagram Program830344
+Node: Signature Program833406
+Node: Programs Summary834653
+Node: Programs Exercises835867
+Ref: Programs Exercises-Footnote-1839997
+Node: Advanced Features840083
+Node: Nondecimal Data842073
+Node: Array Sorting843664
+Node: Controlling Array Traversal844364
+Ref: Controlling Array Traversal-Footnote-1852732
+Node: Array Sorting Functions852850
+Ref: Array Sorting Functions-Footnote-1857941
+Node: Two-way I/O858137
+Ref: Two-way I/O-Footnote-1865858
+Ref: Two-way I/O-Footnote-2866045
+Node: TCP/IP Networking866127
+Node: Profiling869245
+Node: Advanced Features Summary878559
+Node: Internationalization880403
+Node: I18N and L10N881883
+Node: Explaining gettext882570
+Ref: Explaining gettext-Footnote-1888462
+Ref: Explaining gettext-Footnote-2888647
+Node: Programmer i18n888812
+Ref: Programmer i18n-Footnote-1893761
+Node: Translator i18n893810
+Node: String Extraction894604
+Ref: String Extraction-Footnote-1895736
+Node: Printf Ordering895822
+Ref: Printf Ordering-Footnote-1898608
+Node: I18N Portability898672
+Ref: I18N Portability-Footnote-1901128
+Node: I18N Example901191
+Ref: I18N Example-Footnote-1904466
+Ref: I18N Example-Footnote-2904539
+Node: Gawk I18N904648
+Node: I18N Summary905297
+Node: Debugger906638
+Node: Debugging907638
+Node: Debugging Concepts908079
+Node: Debugging Terms909888
+Node: Awk Debugging912463
+Ref: Awk Debugging-Footnote-1913408
+Node: Sample Debugging Session913540
+Node: Debugger Invocation914074
+Node: Finding The Bug915460
+Node: List of Debugger Commands921934
+Node: Breakpoint Control923267
+Node: Debugger Execution Control926961
+Node: Viewing And Changing Data930323
+Node: Execution Stack933864
+Node: Debugger Info935501
+Node: Miscellaneous Debugger Commands939572
+Node: Readline Support944634
+Node: Limitations945530
+Node: Debugging Summary948084
+Node: Namespaces949363
+Node: Global Namespace950474
+Node: Qualified Names951872
+Node: Default Namespace952871
+Node: Changing The Namespace953612
+Node: Naming Rules955226
+Node: Internal Name Management957074
+Node: Namespace Example958116
+Node: Namespace And Features960678
+Node: Namespace Summary962113
+Node: Arbitrary Precision Arithmetic963590
+Node: Computer Arithmetic965077
+Ref: table-numeric-ranges968843
+Ref: table-floating-point-ranges969336
+Ref: Computer Arithmetic-Footnote-1969994
+Node: Math Definitions970051
+Ref: table-ieee-formats973367
+Ref: Math Definitions-Footnote-1973970
+Node: MPFR features974075
+Node: FP Math Caution975793
+Ref: FP Math Caution-Footnote-1976865
+Node: Inexactness of computations977234
+Node: Inexact representation978194
+Node: Comparing FP Values979554
+Node: Errors accumulate980795
+Node: Getting Accuracy982228
+Node: Try To Round984938
+Node: Setting precision985837
+Ref: table-predefined-precision-strings986534
+Node: Setting the rounding mode988364
+Ref: table-gawk-rounding-modes988738
+Ref: Setting the rounding mode-Footnote-1992669
+Node: Arbitrary Precision Integers992848
+Ref: Arbitrary Precision Integers-Footnote-1996023
+Node: Checking for MPFR996172
+Node: POSIX Floating Point Problems997646
+Ref: POSIX Floating Point Problems-Footnote-11001931
+Node: Floating point summary1001969
+Node: Dynamic Extensions1004159
+Node: Extension Intro1005712
+Node: Plugin License1006978
+Node: Extension Mechanism Outline1007775
+Ref: figure-load-extension1008214
+Ref: figure-register-new-function1009779
+Ref: figure-call-new-function1010871
+Node: Extension API Description1012933
+Node: Extension API Functions Introduction1014646
+Ref: table-api-std-headers1016482
+Node: General Data Types1020731
+Ref: General Data Types-Footnote-11029361
+Node: Memory Allocation Functions1029660
+Ref: Memory Allocation Functions-Footnote-11034161
+Node: Constructor Functions1034260
+Node: API Ownership of MPFR and GMP Values1037726
+Node: Registration Functions1039039
+Node: Extension Functions1039739
+Node: Exit Callback Functions1045061
+Node: Extension Version String1046311
+Node: Input Parsers1046974
+Node: Output Wrappers1059695
+Node: Two-way processors1064207
+Node: Printing Messages1066472
+Ref: Printing Messages-Footnote-11067643
+Node: Updating ERRNO1067796
+Node: Requesting Values1068535
+Ref: table-value-types-returned1069272
+Node: Accessing Parameters1070208
+Node: Symbol Table Access1071445
+Node: Symbol table by name1071957
+Ref: Symbol table by name-Footnote-11074981
+Node: Symbol table by cookie1075109
+Ref: Symbol table by cookie-Footnote-11079294
+Node: Cached values1079358
+Ref: Cached values-Footnote-11082894
+Node: Array Manipulation1083047
+Ref: Array Manipulation-Footnote-11084138
+Node: Array Data Types1084175
+Ref: Array Data Types-Footnote-11086833
+Node: Array Functions1086925
+Node: Flattening Arrays1091423
+Node: Creating Arrays1098399
+Node: Redirection API1103166
+Node: Extension API Variables1105999
+Node: Extension Versioning1106710
+Ref: gawk-api-version1107139
+Node: Extension GMP/MPFR Versioning1108870
+Node: Extension API Informational Variables1110498
+Node: Extension API Boilerplate1111571
+Node: Changes from API V11115545
+Node: Finding Extensions1117117
+Node: Extension Example1117676
+Node: Internal File Description1118474
+Node: Internal File Ops1122554
+Ref: Internal File Ops-Footnote-11133904
+Node: Using Internal File Ops1134044
+Ref: Using Internal File Ops-Footnote-11136427
+Node: Extension Samples1136701
+Node: Extension Sample File Functions1138230
+Node: Extension Sample Fnmatch1145879
+Node: Extension Sample Fork1147366
+Node: Extension Sample Inplace1148584
+Node: Extension Sample Ord1152209
+Node: Extension Sample Readdir1153045
+Ref: table-readdir-file-types1153934
+Node: Extension Sample Revout1155001
+Node: Extension Sample Rev2way1155590
+Node: Extension Sample Read write array1156330
+Node: Extension Sample Readfile1158272
+Node: Extension Sample Time1159367
+Node: Extension Sample API Tests1161119
+Node: gawkextlib1161611
+Node: Extension summary1164529
+Node: Extension Exercises1168231
+Node: Language History1169473
+Node: V7/SVR3.11171129
+Node: SVR41173281
+Node: POSIX1174715
+Node: BTL1176096
+Node: POSIX/GNU1176825
+Node: Feature History1182603
+Node: Common Extensions1198922
+Node: Ranges and Locales1200205
+Ref: Ranges and Locales-Footnote-11204821
+Ref: Ranges and Locales-Footnote-21204848
+Ref: Ranges and Locales-Footnote-31205083
+Node: Contributors1205306
+Node: History summary1211303
+Node: Installation1212683
+Node: Gawk Distribution1213627
+Node: Getting1214111
+Node: Extracting1215074
+Node: Distribution contents1216712
+Node: Unix Installation1223192
+Node: Quick Installation1223874
+Node: Shell Startup Files1226288
+Node: Additional Configuration Options1227377
+Node: Configuration Philosophy1229692
+Node: Non-Unix Installation1232061
+Node: PC Installation1232521
+Node: PC Binary Installation1233359
+Node: PC Compiling1233794
+Node: PC Using1234911
+Node: Cygwin1238464
+Node: MSYS1239688
+Node: VMS Installation1240290
+Node: VMS Compilation1241081
+Ref: VMS Compilation-Footnote-11242310
+Node: VMS Dynamic Extensions1242368
+Node: VMS Installation Details1244053
+Node: VMS Running1246306
+Node: VMS GNV1250585
+Node: VMS Old Gawk1251320
+Node: Bugs1251791
+Node: Bug address1252454
+Node: Usenet1255436
+Node: Maintainers1256440
+Node: Other Versions1257625
+Node: Installation summary1264713
+Node: Notes1265922
+Node: Compatibility Mode1266716
+Node: Additions1267498
+Node: Accessing The Source1268423
+Node: Adding Code1269860
+Node: New Ports1276079
+Node: Derived Files1280454
+Ref: Derived Files-Footnote-11286114
+Ref: Derived Files-Footnote-21286149
+Ref: Derived Files-Footnote-31286747
+Node: Future Extensions1286861
+Node: Implementation Limitations1287519
+Node: Extension Design1288729
+Node: Old Extension Problems1289873
+Ref: Old Extension Problems-Footnote-11291391
+Node: Extension New Mechanism Goals1291448
+Ref: Extension New Mechanism Goals-Footnote-11294812
+Node: Extension Other Design Decisions1295001
+Node: Extension Future Growth1297114
+Node: Notes summary1297720
+Node: Basic Concepts1298878
+Node: Basic High Level1299559
+Ref: figure-general-flow1299841
+Ref: figure-process-flow1300526
+Ref: Basic High Level-Footnote-11303827
+Node: Basic Data Typing1304012
+Node: Glossary1307340
+Node: Copying1339225
+Node: GNU Free Documentation License1376768
+Node: Index1401888
 
 End Tag Table
 

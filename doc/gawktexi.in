@@ -25023,45 +25023,64 @@ so that the rest of the code will work as expected:
 @node Split Program
 @subsection Splitting a Large File into Pieces
 
-@c FIXME: One day, update to current POSIX version of split
-
 @cindex files @subentry splitting
 @cindex @code{split} utility
-The @command{split} program splits large text files into smaller pieces.
-Usage is as follows:@footnote{This is the traditional usage. The
-POSIX usage is different, but not relevant for what the program
-aims to demonstrate.}
+The @command{split} utility splits large text files into smaller pieces.
+The usage follows the POSIX standard for @command{split} and is as follows:
 
 @display
-@command{split} [@code{-@var{count}}] [@var{file}] [@var{prefix}]
+@command{split} [@option{-l} @var{count}] [@option{-a} @var{suffix-len}] [@var{file} [@var{outname}]]
+@command{split} @option{-b} @var{N}[@code{k}|@code{m}]] [@option{-a} @var{suffix-len}] [@var{file} [@var{outname}]]
 @end display
 
-By default,
-the output files are named @file{xaa}, @file{xab}, and so on. Each file has
-1,000 lines in it, with the likely exception of the last file. To change the
-number of lines in each file, supply a number on the command line
-preceded with a minus sign (e.g., @samp{-500} for files with 500 lines in them
-instead of 1,000).  To change the names of the output files to something like
-@file{myfileaa}, @file{myfileab}, and so on, supply an additional
-argument that specifies the @value{FN} prefix.
+By default, the output files are named @file{xaa}, @file{xab}, and so
+on. Each file has 1,000 lines in it, with the likely exception of the
+last file.
 
-Here is a version of @command{split} in @command{awk}. It uses the
-@code{ord()} and @code{chr()} functions presented in
-@ref{Ordinal Functions}.
+The @command{split} program has evolved over time, and the current POSIX
+version is more complicated than the original Unix version.  The options
+and what they do are as follows:
 
-The program first sets its defaults, and then tests to make sure there are
-not too many arguments.  It then looks at each argument in turn.  The
-first argument could be a minus sign followed by a number. If it is, this happens
-to look like a negative number, so it is made positive, and that is the
-count of lines.  The @value{DF} name is skipped over and the final argument
-is used as the prefix for the output @value{FN}s:
+@table @asis
+@item @option{-a} @var{suffix-len}
+Use @var{suffix-len} characters for the suffix. For example, if @var{suffix-len}
+is four, the output files would range from @file{xaaaa} to @file{xzzzz}.
+
+@item @option{-b} @var{N}[@code{k}|@code{m}]]
+Instead of each file containing a specified number of lines, each file
+should have (at most) @var{N} bytes.  Supplying a trailing @samp{k}
+multiplies @var{N} by 1,024, yielding kilobytes.  Supplying a trailing
+@samp{m} mutiplies @var{N} by 1,048,576 (@math{1,024 @value{TIMES} 1,024})
+yielding megabytes.  (This option is mutually exclusive with @option{-l}).
+
+@item @option{-l} @var{count}
+Each file should have at most @var{count} lines, instead of the default
+1,000.  (This option is mutually exclusive with @option{-b}).
+@end table
+
+If supplied, @var{file} is the input file to read. Otherwise standard
+input is processed.  If supplied, @var{outname} is the leading prefix
+to use for @value{FN}s, instead of @samp{x}.
+
+In order to use the @option{-b} option, @command{gawk} should be invoked
+with its @option{-b} option (@pxref{Options}), or with the environment
+variable @env{LC_ALL} set to @samp{C}, so that each input byte is treated
+as a separate character.@footnote{Using @option{-b} twice requires
+separating @command{gawk}'s options from those of the program.  For example:
+@samp{gawk -f getopt.awk -f split.awk -b -- -b 42m large-file.txt split-}.}
+
+Here is an implementation of @command{split} in @command{awk}. It uses the
+@code{getopt()} function presented in @ref{Getopt Function}.
+
+The program begins with a standard descriptive comment and then
+a @code{usage()} function describing the options:
 
 @cindex @code{split.awk} program
 @example
 @c file eg/prog/split.awk
 # split.awk --- do split in awk
 #
-# Requires ord() and chr() library functions
+# Requires getopt() library function.
 @c endfile
 @ignore
 @c file eg/prog/split.awk
@@ -25069,100 +25088,277 @@ is used as the prefix for the output @value{FN}s:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised slightly, May 2014
+# Rewritten September 2020
 
 @c endfile
 @end ignore
 @c file eg/prog/split.awk
-# usage: split [-count] [file] [outname]
-
-BEGIN @{
-    outfile = "x"    # default
-    count = 1000
-    if (ARGC > 4)
-        usage()
-
-    i = 1
-    if (i in ARGV && ARGV[i] ~ /^-[[:digit:]]+$/) @{
-        count = -ARGV[i]
-        ARGV[i] = ""
-        i++
-    @}
-    # test argv in case reading from stdin instead of file
-    if (i in ARGV)
-        i++    # skip datafile name
-@group
-    if (i in ARGV) @{
-        outfile = ARGV[i]
-        ARGV[i] = ""
-    @}
-@end group
-@group
-    s1 = s2 = "a"
-    out = (outfile s1 s2)
-@}
-@end group
-@c endfile
-@end example
-
-The next rule does most of the work. @code{tcount} (temporary count) tracks
-how many lines have been printed to the output file so far. If it is greater
-than @code{count}, it is time to close the current file and start a new one.
-@code{s1} and @code{s2} track the current suffixes for the @value{FN}. If
-they are both @samp{z}, the file is just too big.  Otherwise, @code{s1}
-moves to the next letter in the alphabet and @code{s2} starts over again at
-@samp{a}:
-
-@c else on separate line here for page breaking
-@example
-@c file eg/prog/split.awk
-@{
-    if (++tcount > count) @{
-        close(out)
-        if (s2 == "z") @{
-            if (s1 == "z") @{
-                printf("split: %s is too large to split\n",
-                       FILENAME) > "/dev/stderr"
-                exit 1
-            @}
-            s1 = chr(ord(s1) + 1)
-            s2 = "a"
-        @}
-@group
-        else
-            s2 = chr(ord(s2) + 1)
-@end group
-        out = (outfile s1 s2)
-        tcount = 1
-    @}
-    print > out
-@}
-@c endfile
-@end example
-
-@noindent
-The @code{usage()} function simply prints an error message and exits:
-
-@example
-@c file eg/prog/split.awk
 function usage()
 @{
-    print("usage: split [-num] [file] [outname]") > "/dev/stderr"
+    print("usage: split [-l count]  [-a suffix-len] [file [outname]]") > "/dev/stderr"
+    print("       split [-b N[k|m]] [-a suffix-len] [file [outname]]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
 
-This program is a bit sloppy; it relies on @command{awk} to automatically close the last file
-instead of doing it in an @code{END} rule.
-It also assumes that letters are contiguous in the character set,
-which isn't true for EBCDIC systems.
+Next, in a @code{BEGIN} rule we set the default values and parse the arguments.
+After that we initialize the data structures used to cycle the suffix
+from @samp{aa@dots{}} to @samp{zz@dots{}}. Finally we set the name of
+the first output file:
 
-@ifset FOR_PRINT
-You might want to consider how to eliminate the use of
-@code{ord()} and @code{chr()}; this can be done in such a
-way as to solve the EBCDIC issue as well.
-@end ifset
+@example
+@c file eg/prog/split.awk
+BEGIN @{
+    # Set defaults:
+    Suffix_length = 2
+    Line_count = 1000
+    Byte_count = 0
+    Outfile = "x"
 
+    parse_arguments()
+
+    init_suffix_data()
+
+    Output = (Outfile compute_suffix())
+@}
+@c endfile
+@end example
+
+Parsing the arguments is straightforward.  The program follows our
+convention (@pxref{Library Names}) of having important global variables
+start with an uppercase letter:
+
+@example
+@c file eg/prog/split.awk
+function parse_arguments(   i, c, l, modifier)
+@{
+    while ((c = getopt(ARGC, ARGV, "a:b:l:")) != -1) @{
+        if (c == "a")
+            Suffix_length = Optarg + 0
+        else if (c == "b") @{
+            Byte_count = Optarg + 0
+            Line_count = 0
+
+            l = length(Optarg)
+            modifier = substr(Optarg, l, 1)
+            if (modifier == "k")
+                Byte_count *= 1024
+            else if (modifier == "m")
+                Byte_count *= 1024 * 1024
+        @} else if (c == "l") @{
+            Line_count = Optarg + 0
+            Byte_count = 0
+        @} else
+            usage()
+    @}
+
+    # Clear out options
+    for (i = 1; i < Optind; i++)
+        ARGV[i] = ""
+
+    # Check for filename
+    if (ARGV[Optind]) @{
+        Optind++
+
+        # Check for different prefix
+        if (ARGV[Optind]) @{
+            Outfile = ARGV[Optind]
+            ARGV[Optind] = ""
+
+            if (++Optind < ARGC)
+                usage()
+        @}
+    @}
+@}
+@c endfile
+@end example
+
+Managing the @value{FN} suffix is interesting.
+Given a suffix of length three, say, the values go from
+@samp{aaa}, @samp{aab}, @samp{aac} and so on, all the way to
+@samp{zzx}, @samp{zzy}, and finally @samp{zzz}.
+There are two important aspects to this:
+
+@itemize @bullet
+@item
+We have to be
+able to easily generate these suffixes, and in particular
+easily handle ``rolling over''; for example, going from
+@samp{abz} to @samp{aca}.
+
+@item
+We have to tell when we've finished with the last file,
+so that if we still have more input data we can print an
+error message and exit. The trick is to handle this @emph{after}
+using the last suffix, and not when the final suffix is created.
+@end itemize
+
+The computation is handled by @code{compute_suffix()}.
+This function is called every time a new file is opened.
+
+The flow here is messy, because we want to generate @samp{zzzz} (say),
+and use it, and only produce an error after all the @value{FN}
+suffixes have been used up. The logical steps are as follows:
+
+@enumerate 1
+@item
+Generate the suffix, saving the value in @code{result} to return.
+To do this, the supplementary array @code{Suffix_ind} contains one
+element for each letter in the suffix.  Each element ranges from 1 to
+26, acting as the index into a string containing all the lowercase
+letters of the English alphabet.
+It is initialized by @code{init_suffix_data()}.
+@code{result} is built up one letter at a time, using each @code{substr()}.
+
+@item
+Prepare the data structures for the next time @code{compute_suffix()}
+is called. To do this, we loop over @code{Suffix_ind}, @emph{backwards}.
+If the current element is less than 26, it's incremented and the loop
+breaks (@samp{abq} goes to @samp{abr}). Otherwise, the element is
+reset to one and we move down the list (@samp{abz} to @samp{aca}).
+Thus, the @code{Suffix_ind} array is always ``one step ahead'' of the actual
+@value{FN} suffix to be returned.
+
+@item
+Check if we've gone past the limit of possible filenames.
+If @code{Reached_last} is true, print a message and exit. Otherwise,
+check if @code{Suffix_ind} describes a suffix where all the letters are
+@samp{z}. If that's the case we're about to return the final suffix. If
+so, we set @code{Reached_last} to true so that the @emph{next} call to
+@code{compute_suffix()} will cause a failure.
+@end enumerate
+
+Physically, the steps in the function occur in the order 3, 1, 2:
+
+@example
+@c file eg/prog/split.awk
+function compute_suffix(    i, result, letters)
+@{
+    # Logical step 3
+    if (Reached_last) @{
+        printf("split: too many files!\n") > "/dev/stderr"
+        exit 1
+    @} else if (on_last_file())
+        Reached_last = 1    # fail when wrapping after 'zzz'
+
+    # Logical step 1
+    result = ""
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    for (i = 1; i <= Suffix_length; i++)
+        result = result substr(letters, Suffix_ind[i], 1)
+
+    # Logical step 2
+    for (i = Suffix_length; i >= 1; i--) @{
+        if (++Suffix_ind[i] > 26) @{
+            Suffix_ind[i] = 1
+        @} else
+            break
+    @}
+
+    return result
+@}
+@c endfile
+@end example
+
+The @code{Suffix_ind} array and @code{Reached_last} are initialized
+by @code{init_suffix_data()}:
+
+@example
+@c file eg/prog/split.awk
+function init_suffix_data(  i)
+@{
+    for (i = 1; i <= Suffix_length; i++)
+        Suffix_ind[i] = 1
+
+    Reached_last = 0
+@}
+@c endfile
+@end example
+
+The function @code{on_last_file()} returns true if @code{Suffix_ind} describes
+a suffix where all the letters are @samp{z} by checking that all the elements
+in the array are equal to 26:
+
+@example
+@c file eg/prog/split.awk
+function on_last_file(  i, on_last)
+@{
+    on_last = 1
+    for (i = 1; i <= Suffix_length; i++) @{
+        on_last = on_last && (Suffix_ind[i] == 26)
+    @}
+
+    return on_last
+@}
+@c endfile
+@end example
+
+The actual work of splitting the input file is done by the next two rules.
+Since splitting by line count and splitting by byte count are mutually
+exclusive, we simply use two separate rules, one for when @code{Line_count}
+is greater than zero, and another for when @code{Byte_count} is greater than zero.
+
+The variable @code{tcount} counts how many lines have been processed so far.
+When it exceeds @code{Line_count}, it's time to close the previous file and
+switch to a new one:
+
+@example
+@c file eg/prog/split.awk
+Line_count > 0 @{
+    if (++tcount > Line_count) @{
+        close(Output)
+        Output = (Outfile compute_suffix())
+        tcount = 1
+    @}
+    print > Output
+@}
+@c endfile
+@end example
+
+The rule for handling bytes is more complicated.  Since lines most likely
+vary in length, the @code{Byte_count} boundary may be hit in the middle of
+an input record.  In that case, @command{split} has to write enough of the
+first bytes of the input record to finish up @code{Byte_count} bytes, close
+the file, open a new file, and write the rest of the record to the new file.
+The logic here does all that:
+
+@example
+@c file eg/prog/split.awk
+Byte_count > 0 @{
+    # `+ 1' is for the final newline
+    if (tcount + length($0) + 1 > Byte_count) @{ # would overflow
+        # compute leading bytes
+        leading_bytes = Byte_count - tcount
+
+        # write leading bytes
+        printf("%s", substr($0, 1, leading_bytes)) > Output
+
+        # close old file, open new file
+        close(Output)
+        Output = (Outfile compute_suffix())
+
+        # set up first bytes for new file
+        $0 = substr($0, leading_bytes + 1)  # trailing bytes
+        tcount = 0
+    @}
+
+    # write full record or trailing bytes
+    tcount += length($0) + 1
+    print > Output
+@}
+@c endfile
+@end example
+
+Finally, the @code{END} rule cleans up by closing the last output file:
+
+@example
+@c file eg/prog/split.awk
+END @{
+    close(Output)
+@}
+@c endfile
+@end example
 
 @node Tee Program
 @subsection Duplicating Output into Multiple Files
