@@ -1570,17 +1570,17 @@ if not %COUNT1%==%COUNT2% (endlocal & exit /b 1)
 endlocal & exit /b 0
 
 :checkbuildopt
-if "%~1"==""           exit /b
-if "%~1"=="cl"         exit /b
-if "%~1"=="gcc"        exit /b
-if "%~1"=="clang"      exit /b
-if "%~1"=="clang-msvc" exit /b
-if "%~1"=="c++"        exit /b
-if "%~1"=="pedantic"   exit /b
-if "%~1"=="debug"      exit /b
-if "%~1"=="analyze"    exit /b
-if "%~1"=="32"         exit /b
-if "%~1"=="64"         exit /b
+if "%~1"==""           exit /b 0
+if "%~1"=="cl"         exit /b 0
+if "%~1"=="gcc"        exit /b 0
+if "%~1"=="clang"      exit /b 0
+if "%~1"=="clang-msvc" exit /b 0
+if "%~1"=="c++"        exit /b 0
+if "%~1"=="pedantic"   exit /b 0
+if "%~1"=="debug"      exit /b 0
+if "%~1"=="analyze"    exit /b 0
+if "%~1"=="32"         exit /b 0
+if "%~1"=="64"         exit /b 0
 :badbuildopts
 echo ERROR: bad build options
 echo.
@@ -1703,14 +1703,20 @@ for /f "tokens=1,2,3 delims=." %%a in (%PACKAGE_VERSION%) do (
 if not defined GAWK_VER_MAJOR exit /b 1
 if not defined GAWK_VER_MINOR exit /b 1
 if not defined GAWK_VER_PATCH exit /b 1
-set GAWK_YEAR=
-set GAWK_MONTH=
-set GAWK_WEEK=
-set GAWK_DOW=
-set GAWK_DAY=
-set GAWK_HOUR=
-set GAWK_MINUTE=
+if defined GAWK_YEAR if defined GAWK_MONTH if defined GAWK_WEEK if defined GAWK_DOW if defined GAWK_DAY if defined GAWK_HOUR if defined GAWK_MINUTE goto :skip_wmic
 :: current date & time, in UTC
+%SYSTEMROOT%\System32\Wbem\wmic.exe path Win32_UTCTime get /value 2> NUL | %FIND% /v "" > NUL || (
+  echo failed to execute: %SYSTEMROOT%\System32\Wbem\wmic.exe path Win32_UTCTime get /value
+  echo please set next environment variables ^(current date and time, in UTC^):
+  echo GAWK_YEAR    ^(Year        2020^)
+  echo GAWK_MONTH   ^(Month       [1..12]^)
+  echo GAWK_WEEK    ^(WeekInMonth [1..4]^)
+  echo GAWK_DOW     ^(DayOfWeek   [1..7]^)
+  echo GAWK_DAY     ^(Day         [1..31]^)
+  echo GAWK_HOUR    ^(Hour        [0..23]^)
+  echo GAWK_MINUTE  ^(Minute      [0..59]^)
+  exit /b 1
+)
 for /f "tokens=1,2 delims==" %%a in ('%%SYSTEMROOT%%\System32\Wbem\wmic.exe path Win32_UTCTime get /value') do (
   if "Year"=="%%a"        call set "GAWK_YEAR=%%b"
   if "Month"=="%%a"       call set "GAWK_MONTH=%%b"
@@ -1727,6 +1733,7 @@ if not defined GAWK_DOW    exit /b 1
 if not defined GAWK_DAY    exit /b 1
 if not defined GAWK_HOUR   exit /b 1
 if not defined GAWK_MINUTE exit /b 1
+:skip_wmic
 :: date format: DD.MM.YYYY/hh:mm
 set GAWK_DAY=0%GAWK_DAY%
 set GAWK_BUILD_DATE=%GAWK_DAY:~-2%
