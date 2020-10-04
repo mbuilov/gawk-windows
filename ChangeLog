@@ -178,7 +178,7 @@
 2020-07-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* str_array.c (str_lookup): If a pure number, copy to a string. Fixes
-	at printfchar test for MPFR.
+	the printfchar test for MPFR.
 
 	Fix typeregex2 and typedregex3 tests for MPFR:
 
@@ -193,7 +193,7 @@
 	* awk.h: Turn all the flag defines into enums. GDB can then show
 	the bit maps directly.
 
-	Unrelated: Fix another MFPF bug, reported by Hyunho Cho
+	Unrelated: Fix another MPFR bug, reported by Hyunho Cho
 	<mug896@naver.com>.
 
 	* mpfr.c (force_mpnum): Restore the character at the end of
@@ -207,8 +207,8 @@
 
 	Bug fixes in MPFR, reported by Hyunho Cho<mug896@naver.com>.
 
-	* node.c (r_dupnode): Set strndmode and also set stlen of new string.  (How
-	did that one get by us for so long?)
+	* node.c (r_dupnode): Set strndmode and also set stlen of new
+	string. (How did that one get by us for so long?)
 	* mpfr.c (force_mpnum): Check for a + or - sign with nothing following it.
 
 	Unrelated. Make do_itrace a real variable so that it's easier to
@@ -309,7 +309,7 @@
 
 2020-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
-	Thanks to Andrew Schorr for suggestion of better way to
+	Thanks to Andrew Schorr for suggesting a better way to
 	handle exec_count being a long long.
 
 	* awk.h (INSTRUCTION): Make new ldl member be the long long.
