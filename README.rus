@@ -1,0 +1,219 @@
+Данный проект - форк широко известного GNU Awk (https://www.gnu.org/software/gawk/).
+
+Цель форка - реализация полнофункционального нативного интерпретатора gawk под Windows, не уступающего по возможностям версии gawk под Linux.
+
+
+
+Основные моменты.
+
+1. Поддержка кодировки UTF-8.
+
+При запуске gawk, достаточно указать кодировку UTF-8, например, через ключ "--locale=ru_RU.UTF-8".
+Если ключ "--locale" не указан, то берутся во внимание значения переменных окружения LC_ALL, LC_CTYPE, LC_COLLATE, LC_MONETARY, LC_NUMERIC, LC_TIME и LANG также, как это делается в среде UNIX.
+
+Ключ "--locale" распознаёт различные формы имен локалей, как стандарные в UNIX-среде, например "ru_RU.UTF-8", так и принятые в Windows, например "Russian_Russia.65001".
+Возможны различные комбинации имени одной и той же локали: "ru-RU.UTF8", "Russian_Russia.utf-8", "Russian_Russia.cp65001" и т.д.
+
+2. Поддержка всех символов юникода в регулярных выражениях (при использовании кодировки UTF-8).
+
+Внутренние функции gawk по обработке регулярных выражений оперируют 32-х битными unicode-символами.
+
+3. В аргументах командной строки поддерживается экранирование двойной кавычки двумя двойными кавычками, что позволяет встраивать вызов gawk в цепочку команд интерпретатора cmd.exe:
+
+echo a | gawk "{ gsub(/a/, ""&b""); print }"
+ab
+
+4. Портированы все 13 стандартные расширения gawk (динамически-загружаемые плагины):
+
+- filefuncs.dll реализует функции: chdir, stat, fts
+- fnmatch.dll   реализует функции: fnmatch
+- inplace.dll   реализует функции: begin, end
+- intdiv.dll    реализует функции: intdiv
+- ordchr.dll    реализует функции: ord, chr
+- readdir.dll   реализует функции: readdir
+- readfile.dll  реализует функции: readfile
+- revoutput.dll реализует функции: revoutput
+- revtwoway.dll реализует функции: revtwoway
+- rwarray.dll   реализует функции: writea, reada
+- rwarray0.dll  реализует функции: writea, reada
+- testext.dll   служит для тестирования API расширений gawk
+- time.dll      реализует функции: gettimeofday, sleep
+
+5. Портированы практически все тесты (более 500), за исключением нескольких, очень платформо-зависимых:
+
+poundbang, devfd devfd1 devfd2, pty1 pty2, timeout, fork fork2, ignrcas3
+
+6. Полная поддержка WindowsXP (только 32 бита, только при сборке с помощью MinGW.org).
+
+7. Статически слинкованные исполныемые файлы и динамические расширения - без внешних зависимостей, для инсталляции достаточно простого копирования.
+
+
+
+Внутренние изменения кодовой базы:
+
+1. Уход от использования платформо-зависимого типа long (для 64-битной UNIX - размер long 8 байт, а для 64-битной Windows - размер long 4 байта). Вместо long введен тип awk_long_t, чей размер не зависит от типа ОС.
+2. Максимально возможное использование беззнаковых типов для представления неотрицательных значений.
+3. Возможность сборки C++-компилятором.
+4. Чистка кода - устранено или подавлено большинство предупреждений C/C++ компиляторов в педантичном режиме сборки.
+5. Поддержка 3 сборочных окружений: MinGW.org (gcc-32), mingw-64 (gcc-32/64, clang-32/64), MSVC (cl-32/64, clang-32/64).
+6. Существенно переработан интерфейс для динамических расширений - все функции стандартной библиотеки C берёт на себя исполняемый файл, он же хранит глобальное состояние программы (например, настройки локали).
+
+
+
+Сборки из исходных текстов.
+
+1) Для сборки используется batch-файл build.bat, запуск которого должен осуществляться в окне cmd.exe.
+
+2) Достаточно установить одно из 3-х следующих сборочных окружений.
+
+ 1. MinGW.org (http://www.mingw.org/, инсталлятор - https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/)
+
+    После установки mingw-get, ставим gcc и mpfr:
+
+    C:\MinGW\bin\mingw-get.exe install gcc
+    C:\MinGW\bin\mingw-get.exe install mpfr
+
+    Перед сборкой, в окне cmd.exe, нужно задать следующие переменные окружения:
+
+    set "PATH=C:\MinGW\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+ 2. mingw-64 (http://mingw-w64.org/doku.php, msys2 installer - https://sourceforge.net/projects/msys2/files/Base/x86_64/)
+
+    После установки msys2, запускаем окно msys2, в котром выполняем:
+
+    $ pacman -Syu
+
+    После перезапуска терминала, выполняем снова:
+
+    $ pacman -Su
+
+    Устанавливаем хотя бы один из 4-х наборов компиляторов:
+
+    $ pacman -S mingw-w64-x86_64-gcc
+    $ pacman -S mingw-w64-i686-gcc
+    $ pacman -S mingw-w64-x86_64-clang  mingw-w64-x86_64-lld
+    $ pacman -S mingw-w64-i686-clang    mingw-w64-i686-lld
+
+    Перед сборкой, в окне cmd.exe, нужно задать следующие переменные окружения:
+
+    - для сборки 32-х битной версии gawk:
+
+    set "PATH=C:\msys64\mingw32\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+    - для сборки 64-х битной версии gawk:
+
+    set "PATH=C:\msys64\mingw64\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+ 3. MSVC (https://visualstudio.microsoft.com/).
+
+    Установите Visual Studio.
+
+    Для использования clang в окружении Visual Studio, запустите
+
+    C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe
+
+    Выберите
+    Modify -> Individual components -> Search components -> clang -> C++ Clang Compiler for Windows
+
+    Нажмите кнопку "Modify" или, если clang уже установлен, то "Close".
+
+    Настройка окружения для сборки осуществляется через запуск в окне cmd.exe следующих команд:
+
+    для сборки 32-х битной версии gawk:
+
+    set LIB=
+    set INCLUDE=
+    set LIBPATH=
+    set PATH=
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+    "%VCINSTALLDIR%Auxiliary\Build\vcvarsall.bat" x86
+
+    или, для сборки 64-х битной версии gawk:
+
+    set LIB=
+    set INCLUDE=
+    set LIBPATH=
+    set PATH=
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+    "%VCINSTALLDIR%Auxiliary\Build\vcvarsall.bat" amd64
+
+    Для использования clang, дополнительно установите переменные окружения:
+
+    set LLVMAR="%VCINSTALLDIR%Tools\Llvm\bin\llvm-ar.exe"
+    set CLANGMSVC="%VCINSTALLDIR%Tools\Llvm\bin\clang.exe"
+    set CLANGMSVCXX="%VCINSTALLDIR%Tools\Llvm\bin\clang++.exe"
+
+    или, для использования 64-х битных версий компиляторов:
+
+    set LLVMAR="%VCINSTALLDIR%Tools\Llvm\x64\bin\llvm-ar.exe"
+    set CLANGMSVC="%VCINSTALLDIR%Tools\Llvm\x64\bin\clang.exe"
+    set CLANGMSVCXX="%VCINSTALLDIR%Tools\Llvm\x64\bin\clang++.exe"
+
+3) Нужно скачать и установить пути к 3-м сторонним проектам:
+
+ https://github.com/mbuilov/mscrtx.git
+ https://github.com/mbuilov/libutf16.git
+ https://github.com/mbuilov/unicode_ctype.git
+
+ Если распаковать .zip-файлы проектов в C:\projects
+
+ то, перед сборкой, нужно задать следуюшие переменные окружения:
+
+ set "MSCRTX=C:\projects\mscrtx-master"
+ set "LIBUTF16=C:\projects\libutf16-master"
+ set "UNICODE_CTYPE=C:\projects\unicode_ctype-master"
+
+4) Теперь, в директории с исходными текстами gawk, необходимо запустить build.bat.
+
+ build.bat требует узанания параметров сборки - в зависимости от используемого сборочного окружения, компилятора, типа сборки, разрядности, и т.д.
+ Если build.bat вызывается без параметров, то будет выведена краткая справка по допустимым параметрам.
+
+ Примеры запуска build.bat:
+
+ - для MinGW.org
+
+   build all gcc
+
+   для сборки отладочной версии (отладка - с помощью C:\MinGW\bin\gdb.exe, устанавливаемого командой "C:\MinGW\bin\mingw-get.exe install gdb"):
+
+   build all gcc c++ pedantic debug 32
+
+ - для mingw-64
+
+   build all clang 64
+
+ - для MSVC
+
+   build all cl c++ pedantic debug 32
+
+   build all clang-msvc c++ pedantic 64
+
+ Результатом сборки является статически слинкованный интерпретатор GNU Awk, для инсталляции которого достаточно просто скопировать gawk.exe на рабочую машину.
+ Динамические расширения также инсталлируются протым копированием - в директорию рядом с gawk.exe.
+
+
+
+Запуск тестов.
+
+ Для тестирования gawk достаточно стандартных программ Windows, ничего дополнительно устанавливать не нужно.
+ Единственно, для выполнения опциональных тестов работы gawk с сетью, нужно включить стандартные компоненты Windows - "Simple TCP/IP Services".
+
+ Сами тесты поставляются вместе с исходными кодами gawk - в директории test.
+ Для запуска тестов используется test.bat.
+
+ test.bat подразумевает наличие тестируемого экземпляра gawk в директории dist, однако, это местоположение можно переопределить через задание переменной окружения BLD_DIST:
+
+ set "BLD_DIST=C:\projects\gawk-windows\dist"
+
+ По-умолчанию, запуск test.bat приведёт выполнению всех тестов.
+ Однако, также можно указать, какой набор тестов нужно выполнить.
+ Список наборов тестов можно узнать, запустив:
+
+ test.bat help
+
+
+
+Автор данного форка - Michael M. Builov (mbuilov@gmail.com).
