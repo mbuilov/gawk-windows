@@ -4309,7 +4309,7 @@ Disable the @code{system()} function,
 input redirections with @code{getline},
 output redirections with @code{print} and @code{printf},
 and dynamic extensions.
-Also, disallow adding filenames to @code{ARGV} that were
+Also, disallow adding @value{FN}s to @code{ARGV} that were
 not there when @command{gawk} started running.
 This is particularly useful when you want to run @command{awk} scripts
 from questionable sources and need to make sure the scripts
@@ -26211,7 +26211,7 @@ Thus, the @code{Suffix_ind} array is always ``one step ahead'' of the actual
 @value{FN} suffix to be returned.
 
 @item
-Check if we've gone past the limit of possible filenames.
+Check if we've gone past the limit of possible @value{FN}s.
 If @code{Reached_last} is true, print a message and exit. Otherwise,
 check if @code{Suffix_ind} describes a suffix where all the letters are
 @samp{z}. If that's the case we're about to return the final suffix. If
@@ -38683,7 +38683,7 @@ an @samp{inplace::enable=1} argument prior to files that should be subject
 to inplace editing.
 
 The @code{inplace::filename} variable serves to keep track of the
-current filename so as to not invoke @code{inplace::end()} before
+current @value{FN} so as to not invoke @code{inplace::end()} before
 processing the first file.
 
 If any error occurs, the extension issues a fatal error to terminate
@@ -46261,6 +46261,7 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
+FIXME:
 Add a section explaining recursion from ground zero. Probably
 easiest to do it with factorial as the example. Explain that
 recursion needs a stopping condition. Thanks to

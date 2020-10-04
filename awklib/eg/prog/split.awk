@@ -56,7 +56,7 @@ function parse_arguments(   i, c, l, modifier)
     if (ARGV[Optind]) {
         Optind++
 
-	# Check for different prefix
+        # Check for different prefix
         if (ARGV[Optind]) {
             Outfile = ARGV[Optind]
             ARGV[Optind] = ""
