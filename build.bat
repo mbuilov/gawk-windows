@@ -51,6 +51,9 @@ if not defined BUILDBATRECURSIVE (
 :: run commands from the directory of this batch file
 pushd "%~dp0"
 
+if not defined BLD_DIST (set BLD_DIST=dist) else set "BLD_DIST=%BLD_DIST:"=%"
+if not defined BLD_OBJ  (set BLD_OBJ=obj)   else set "BLD_OBJ=%BLD_OBJ:"=%"
+
 if ""=="%~1" (
 :usage
   echo Usage:
@@ -75,9 +78,6 @@ if defined UNICODE_CTYPE set "UNICODE_CTYPE=%UNICODE_CTYPE:"=%"
 if defined LIBUTF16      set "LIBUTF16=%LIBUTF16:"=%"
 if defined MSCRTX        set "MSCRTX=%MSCRTX:"=%"
 if defined SAL_DEFS_H    set "SAL_DEFS_H=%SAL_DEFS_H:"=%"
-
-if not defined BLD_DIST (set BLD_DIST=dist) else set "BLD_DIST=%BLD_DIST:"=%"
-if not defined BLD_OBJ  (set BLD_OBJ=obj)   else set "BLD_OBJ=%BLD_OBJ:"=%"
 
 set A1=
 set A2=
