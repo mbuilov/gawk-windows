@@ -1,105 +1,229 @@
-  Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
-  2016, 2017, 2018, 2019, 2020 Free Software Foundation, Inc.
-  
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
+This project is a fork of the well-known GNU Awk (https://www.gnu.org/software/gawk/).
 
-README:
+The goal of the fork is to implement a fully functional native gawk interpreter for Windows, which is not inferior in capabilities to the Linux version of gawk.
 
-This is GNU Awk 5.1.0. It is upwardly compatible with Brian Kernighan's
-version of Unix awk.  It is almost completely compliant with the
-2018 POSIX 1003.1 standard for awk. (See the note below about POSIX.)
 
-This is a major release. See NEWS and ChangeLog for details.
 
-Work to be done is described briefly in the TODO file, which is available
-only in the 'master' branch in the Git repo.
+Highlights.
 
-Changes in this version are summarized in the NEWS file.
+1. Support for UTF-8 encoding.
 
-Read the file POSIX.STD for a discussion of issues where the standard
-says one thing but gawk does something different.
+When starting gawk, it is enough to specify the UTF-8 encoding, for example, using the "--locale=ru_RU.UTF-8" switch.
+If the "--locale" switch is not specified, then the values of the environment variables LC_ALL, LC_CTYPE, LC_COLLATE, LC_MONETARY, LC_NUMERIC, LC_TIME and LANG are taken into account, just as it is done in the UNIX environment.
 
-To format the documentation with TeX, use at least version 2019-09-20.22
-of texinfo.tex. There is a usable copy of texinfo.tex in the doc directory.
-You must also use at least version 6.7 of texindex and of makeinfo
-from the texinfo-6.7 distribution.
+The "--locale" switch recognizes various forms of locale names, both standard in the UNIX environment, for example "ru_RU.UTF-8", and accepted in Windows, for example "Russian_Russia.65001".
+Various combinations of the name of the same locale are possible, for example: "ru-RU.UTF8", "Russian_Russia.utf-8", "Russian_Russia.cp65001", etc.
 
-INSTALLATION:
+2. Support for all unicode characters in regular expressions (when using UTF-8 encoding).
 
-Check whether there is a system-specific README file for your system under
-the `README_d' directory.  If there's something there that you should
-have read and didn't, and you bug me about it, I'm going to yell at you.
+Internal gawk functions operate on 32-bit unicode characters (encoded in UTF-32).
 
-See the file INSTALL for installation instructions.
+3. Support for escaping double quotes using two consecutive double quotes in command line arguments, which allows to embed the gawk call in the cmd.exe interpreter chain of commands:
 
-If you don't have Bison, use the awkgram.c file here.  It was
-generated with Bison, and has no proprietary code in it.  (Note that
-modifying awkgram.y without Bison will be difficult, at best.  You might
-want to get a copy of Bison from the FSF too.)
+(echo.a) | gawk "{ gsub(/a/, ""&b""); print }"
+ab
 
-The build mechanics depend upon Bison. Also, gawk doesn't work correctly
-with some versions of yacc, so just use Bison.
+4. Ported all 13 standard gawk extensions (dynamically loaded plugins):
 
-If you have an MS-DOS, MS-Windows, or OS/2 system, use the stuff in the `pc'
-directory.  Similarly, there is a separate directory for VMS.
+- filefuncs.dll implements the functions: chdir, stat, fts
+- fnmatch.dll   implements the functions: fnmatch
+- inplace.dll   implements the functions: begin, end
+- intdiv.dll    implements the functions: intdiv
+- ordchr.dll    implements the functions: ord, chr
+- readdir.dll   implements the functions: readdir
+- readfile.dll  implements the functions: readfile
+- revoutput.dll implements the functions: revoutput
+- revtwoway.dll implements the functions: revtwoway
+- rwarray.dll   implements the functions: writea, reada
+- rwarray0.dll  implements the functions: writea, reada
+- time.dll      implements the functions: gettimeofday, sleep
+- testext.dll   is used for testing gawk API for extensions
 
-Appendix B of ``GAWK: Effective Awk Programming'' discusses configuration
-in detail. The configuration process is based on GNU Autoconf and
-Automake.
+5. Almost all tests (more than 500) are ported, with the exception of a few, very platform-dependent:
 
-After successful compilation, do `make check' to run the test suite.
-There should be no output from the `cmp' invocations except in the
-cases where there are small differences in floating point values, and
-possibly in the case of strftime.  There may be differences based on
-installed (or not installed) locales and the quality of multibyte
-character support on your system.
+poundbang, devfd devfd1 devfd2, pty1 pty2, timeout, fork fork2, ignrcas3
 
-Several of the tests ignore errors on purpose; those are not a problem.
-If there are other differences, please investigate and report the problem.
+6. Full support for WindowsXP (only 32-bit version of gawk, built with MinGW.org).
 
-PRINTING THE MANUAL
+7. Statically linked executable files and dynamic extensions - no external dependencies, simple copying is enough for installation.
 
-The `doc' directory contains a recent version of texinfo.tex, which will
-be necessary for printing the manual.  Use `make dvi' to get a DVI file
-from the manual. In the `doc' directory, use `make postscript' to get
-PostScript versions of the manual, the man page, and the reference card.
-Use `make pdf' to get PDF versions of the manuals, the man page and
-the reference card.
 
-BUG REPORTS AND FIXES (Un*x systems):
 
-Please coordinate changes through Arnold Robbins. In particular, see
-the section in the manual on reporting bugs. Note that comp.lang.awk
-is about the worst place to post a gawk bug report. So too is use of
-a web forum such as Stack Overflow. Please, use the mechanisms outlined
-in the manual.
+Internal changes to the codebase:
 
-Email should be sent to bug-gawk@gnu.org.  This is a separate mailing
-list at GNU Central.  The advantage to using this address is that bug
-reports are archived at GNU Central.
+1. Avoiding the use of the platform-dependent integer type "long" (for 64-bit UNIX - "long" is 8 bytes, but for 64-bit Windows - "long" is 4 bytes). Instead of long, the awk_long_t type was introduced, whose size does not depend on the OS type.
+2. The maximum possible use of unsigned types to represent non-negative values.
+3. Ability to build with a C++ compiler.
+4. Code cleanup - most warnings of C/C++ compilers in pedantic build mode have been eliminated or suppressed.
+5. Support for 3 build environments: MinGW.org (gcc-32), mingw-64 (gcc-32/64, clang-32/64), MSVC (cl-32/64, clang-32/64).
+6. Support for building with the activation of the static code analysis mode by the compiler (build.bat supports the "analyze" option).
+7. The interface for dynamic extensions has been significantly redesigned - all the functions of the standard C library are taken over by the executable file, it also stores the global state of the program (for example, locale settings).
 
-Arnold Robbins
 
-BUG REPORTS AND FIXES, non-Unix systems:
 
-MS-DOS with DJGPP:
-	Juan Manuel Guerrero
-	juan.guerrero@gmx.de
+Building gawk from the sources.
 
-MS-Windows with MinGW:
-	Eli Zaretskii
-	eliz@gnu.org
+1) For the build, the batch file build.bat is used, which should be launched in the cmd.exe window.
 
-OS/2:
-	Andreas Buening
-	andreas.buening@nexgo.de
+2) It is enough to install one of the following 3 build environments.
 
-VMS:
-	John Malmberg
-	wb8tyw@qsl.net
+ 1. MinGW.org (http://www.mingw.org/, installer - https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/)
 
-z/OS (OS/390) Contact:
-	Daniel Richard G.
-	skunk@iSKUNK.ORG
+    After installing mingw-get, install gcc and mpfr:
+
+    C:\MinGW\bin\mingw-get.exe install gcc
+    C:\MinGW\bin\mingw-get.exe install mpfr
+
+    Before building, in the cmd.exe window, you need to set the following environment variables:
+
+    set "PATH=C:\MinGW\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+ 2. mingw-64 (http://mingw-w64.org/doku.php, msys2 installer - https://sourceforge.net/projects/msys2/files/Base/x86_64/)
+
+    After installing msys2, launch the msys2 window, in which we execute:
+
+    $ pacman -Syu
+
+    After restarting the terminal, run again:
+
+    $ pacman -Su
+
+    Install at least one of the 4 sets of compilers:
+
+    $ pacman -S mingw-w64-x86_64-gcc
+    $ pacman -S mingw-w64-i686-gcc
+    $ pacman -S mingw-w64-x86_64-clang  mingw-w64-x86_64-lld
+    $ pacman -S mingw-w64-i686-clang    mingw-w64-i686-lld
+
+    Before building, in the cmd.exe window, you need to set the following environment variables:
+
+    - to build a 32-bit version of gawk:
+
+    set "PATH=C:\msys64\mingw32\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+    - to build a 64-bit version of gawk:
+
+    set "PATH=C:\msys64\mingw64\bin"
+    set "PATH=%PATH%;%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+ 3. MSVC (https://visualstudio.microsoft.com/).
+
+    Install Visual Studio or Build Tools for Visual Studio.
+
+    To use the clang compiler in the Visual Studio environment, make sure it is installed, run:
+
+    "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+
+    Please select
+    Modify -> Individual components -> Search components -> clang -> C++ Clang Compiler for Windows
+
+    Click the "Modify" button or, if clang is already installed, then "Close".
+
+    Setting up the environment for the build is carried out by running the following commands in the cmd.exe window:
+
+    for /f "tokens=1 delims==" %f in ('set ^| %SystemRoot%\System32\find.exe /i "Microsoft Visual Studio"') do set %f=
+    set "PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
+    to build a 32-bit version of gawk:
+
+    - when using Build Tools for Visual Studio
+
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+
+    - when using Visual Studio Community
+
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+
+    or, to build a 64-bit version of gawk:
+
+    - when using Build Tools for Visual Studio
+
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
+
+    - when using Visual Studio Community
+
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+
+    To be able to use clang, additionally set environment variables:
+
+    set LLVMAR="%VCINSTALLDIR%Tools\Llvm\bin\llvm-ar.exe"
+    set CLANGMSVC="%VCINSTALLDIR%Tools\Llvm\bin\clang.exe"
+    set CLANGMSVCXX="%VCINSTALLDIR%Tools\Llvm\bin\clang++.exe"
+
+    or, to use 64-bit versions of compilers:
+
+    set LLVMAR="%VCINSTALLDIR%Tools\Llvm\x64\bin\llvm-ar.exe"
+    set CLANGMSVC="%VCINSTALLDIR%Tools\Llvm\x64\bin\clang.exe"
+    set CLANGMSVCXX="%VCINSTALLDIR%Tools\Llvm\x64\bin\clang++.exe"
+
+3) You need to download and set the paths to three 3-party projects:
+
+ https://github.com/mbuilov/mscrtx.git
+ https://github.com/mbuilov/libutf16.git
+ https://github.com/mbuilov/unicode_ctype.git
+
+ If you unzip the .zip files of projects in C:\projects
+
+ then, before building, you need to set the following environment variables:
+
+ set "MSCRTX=C:\projects\mscrtx-master"
+ set "LIBUTF16=C:\projects\libutf16-master"
+ set "UNICODE_CTYPE=C:\projects\unicode_ctype-master"
+
+4) Now, in the gawk source directory, you need to run build.bat.
+
+ build.bat requires the specification of build parameters - depending on the used build environment, compiler, build type, bitness, etc.
+ If build.bat is called without parameters, then a brief help on the allowed parameters will be displayed.
+
+ Examples of running build.bat:
+
+ - for MinGW.org
+
+   build all gcc
+
+   to build a debug version (debugging - using C:\MinGW\bin\gdb.exe, installed by the command "C:\MinGW\bin\mingw-get.exe install gdb"):
+
+   build all gcc c++ pedantic debug 32
+
+ - for mingw-64
+
+   build all clang 64
+
+ - for MSVC
+
+   build all cl c++ pedantic debug 32
+
+   build all clang-msvc c++ pedantic 64
+
+ Etc.
+
+ The result of the build (in the "dist" directory) is a statically linked GNU Awk interpreter, for installation of which you just need to copy gawk.exe to your work computer.
+ Dynamic extensions are also installed by copying them into the directory next to gawk.exe.
+
+
+
+Running tests.
+
+ To test gawk, standard Windows programs are sufficient, nothing additional is required.
+ The only thing to do to perform optional gawk networking tests, you need to enable standard Windows components - "Simple TCP/IP Services".
+
+ The tests themselves are supplied with the gawk source code - in the "test" directory.
+ Test.bat is used to run tests.
+
+ test.bat assumes there is a tested gawk instance in the "dist" directory, however, this location can be overridden by setting the BLD_DIST environment variable, e.g.:
+
+ set "BLD_DIST=C:\projects\gawk-windows\dist"
+
+ By default, running test.bat without parameters, will execute all tests.
+ However, you can also specify which test suite to run.
+ A list of test suites can be found by running:
+
+ test.bat help
+
+
+
+The author of this fork is Michael M. Builov (mbuilov@gmail.com).
+
+The changes made are published under the same license as the original GNU Awk source codes - GNU GPLv3.
