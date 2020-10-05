@@ -2488,9 +2488,9 @@ diffout:
 		echo ============== $$i ============= ; \
 		base=`echo $$i | sed 's/^_//'` ; \
 		if [ -r $${base}.ok ]; then \
-		diff -c $${base}.ok $$i ; \
+		diff -u $${base}.ok $$i ; \
 		else \
-		diff -c "$(srcdir)"/$${base}.ok  $$i ; \
+		diff -u "$(srcdir)"/$${base}.ok  $$i ; \
 		fi ; \
 		fi ; \
 	done | more
