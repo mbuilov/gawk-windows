@@ -1,4 +1,4 @@
-# wc.awk --- count lines, words, characters
+# wc.awk --- count lines, words, characters, bytes
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993

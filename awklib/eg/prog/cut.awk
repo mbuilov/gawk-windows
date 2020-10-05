@@ -15,7 +15,7 @@
 function usage()
 {
     print("usage: cut [-f list] [-d c] [-s] [files...]") > "/dev/stderr"
-    print("usage: cut [-c list] [files...]") > "/dev/stderr"
+    print("       cut [-c list] [files...]") > "/dev/stderr"
     exit 1
 }
 BEGIN {

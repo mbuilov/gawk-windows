@@ -24082,7 +24082,7 @@ supplied:
 function usage()
 @{
     print("usage: cut [-f list] [-d c] [-s] [files...]") > "/dev/stderr"
-    print("usage: cut [-c list] [files...]") > "/dev/stderr"
+    print("       cut [-c list] [files...]") > "/dev/stderr"
     exit 1
 @}
 @end group
@@ -25051,7 +25051,7 @@ is four, the output files would range from @file{xaaaa} to @file{xzzzz}.
 Instead of each file containing a specified number of lines, each file
 should have (at most) @var{N} bytes.  Supplying a trailing @samp{k}
 multiplies @var{N} by 1,024, yielding kilobytes.  Supplying a trailing
-@samp{m} mutiplies @var{N} by 1,048,576 (@math{1,024 @value{TIMES} 1,024})
+@samp{m} multiplies @var{N} by 1,048,576 (@math{1,024 @value{TIMES} 1,024})
 yielding megabytes.  (This option is mutually exclusive with @option{-l}).
 
 @item @option{-l} @var{count}
@@ -25772,7 +25772,7 @@ as fast.''  Consider how to rewrite the logic to follow this suggestion.
 @node Wc Program
 @subsection Counting Things
 
-@cindex counting words, lines, characters, and bytese
+@cindex counting words, lines, characters, and bytes
 @cindex input files @subentry counting elements in
 @cindex words @subentry counting
 @cindex characters @subentry counting
@@ -25891,7 +25891,7 @@ command line:
 @cindex @code{wc.awk} program
 @example
 @c file eg/prog/wc.awk
-# wc.awk --- count lines, words, characters
+# wc.awk --- count lines, words, characters, bytes
 @c endfile
 @ignore
 @c file eg/prog/wc.awk
