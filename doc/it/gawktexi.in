@@ -4653,7 +4653,7 @@ Disabilita la funzione @code{system()},
 la ridirezione dell'input con @code{getline},
 la ridirezione dell'output con @code{print} e @code{printf},
 e le estensioni dinamiche.
-Inoltre, non consente di aggiungere nomi di file ad @code{ARGV} che
+Inoltre, non consente di aggiungere @value{FNS} ad @code{ARGV} che
 non siano gi@`a presenti all'inizio dell'esecuzione di @command{gawk}.
 @`E particolarmente utile quando si vogliono eseguire @dfn{script} @command{awk}
 da sorgenti dubbie e si vuol essere ricuri che gli @dfn{script} non abbiano
@@ -4691,9 +4691,10 @@ Ogni argomento sulla riga di comando che segue @code{--} viene messo
 nel vettore @code{ARGV}, anche se inizia con il segno meno (@code{-}).
 @end table
 
-Ogni altra opzione, se @`e stato specificato il testo di un programma
+In modalit@`a di compatibilit@`a,
+ogni altra opzione, se @`e stato specificato il testo di un programma,
 @`e contrassegnata come non valida con un messaggio di avvertimento,
-altrimenti @`e ignorata.
+ma @`e in ogni caso ignorata.
 
 @cindex @option{-F} (opzione) @subentry @option{-Ft} imposta @code{FS} a TAB
 @cindex opzione @subentry @option{-F} @subentry opzione @option{-Ft} imposta @code{FS} a TAB
@@ -17150,7 +17151,7 @@ su ognuno dei modi per togliere elementi dal vettore @code{ARGV}.
 Per passare direttamente delle opzioni a un programma scritto in
 @command{awk}, si devono terminare le opzioni di @command{awk} con
 @option{--} e poi inserire le opzioni destinate al programma @command{awk},
-come mostrato qui di seguito:
+come mostrato di seguito:
 
 @example
 awk -f mio_programma.awk -- -v -q file1 file2 @dots{}
@@ -26186,7 +26187,7 @@ argomenti non validi:
 function sintassi()
 @{
     print("Uso: cut [-f lista] [-d c] [-s] [file...]") > "/dev/stderr"
-    print("Uso: cut [-c lista] [file...]") > "/dev/stderr"
+    print("     cut [-c lista] [file...]") > "/dev/stderr"
     exit 1
 @}
 @end group
@@ -27151,42 +27152,69 @@ del programma funzioni come ci si aspetta che faccia:
 @node Programma split
 @subsection Suddividere in pezzi un file grosso
 
-@c FIXME: One day, update to current POSIX version of split
-
 @cindex file @subentry suddividere
 @cindex @code{split} (programma di utilit@`a)
 @cindex programma di utilit@`a @subentry @code{split}
-Il programma @command{split} divide grossi file di testo in pezzi pi@`u piccoli.
-La sua sintassi @`e la seguente:@footnote{Questo @`e la sintassi tradizionale.
-La versione POSIX del comando ha una sintassi differente, ma per lo scopo di
-questo programma @command{awk} la cosa non ha importanza.}
+Il programma di utilit@`a @command{split} divide grossi file di testo
+in pezzi pi@`u piccoli.
+La sintassi, che @`e quella prevista dallo standard POSIX per
+@command{split}, @`e la seguente:
 
 @display
-@command{split} [@code{-@var{contatore}}] [@var{file}] [@var{prefisso}]
+@command{split} [@option{-l} @var{contatore}] [@option{-a} @var{lunghezza-suffisso}] [@var{file} [@var{nome-output-file}]]
+@command{split} @option{-b} @var{N}[@code{k}|@code{m}]] [@option{-a} @var{lunghezza-suffisso}] [@var{file} [@var{nome-output-file}]]
 @end display
 
 Per default,
-i file di output avranno nome @file{xaa}, @file{xab}, e cos@`{@dotless{i}} via. Ogni file
-contiene 1.000 righe, con la probabile
-eccezione dell'ultimo file. Per
-cambiare il numero di righe in ogni file, va indicato un numero sulla riga
-di comando, preceduto da un segno meno (p.es., @samp{-500} per file con 500
-righe ognuno invece che 1.000).  Per modificare i nomi dei file di output in
-qualcosa del tipo
-@file{miofileaa}, @file{miofileab}, e cos@`{@dotless{i}} via, va indicato un argomento
-ulteriore che specifica il prefisso del @value{FN}.
+i file di output avranno nome @file{xaa}, @file{xab}, e cos@`{@dotless{i}} via.
+Ogni file contiene 1.000 righe, con la probabile eccezione dell'ultimo file.
 
-Ecco una versione di @command{split} in @command{awk}. Usa le funzioni
-@code{ord()} e @code{chr()} descritte nella
-@ref{Funzioni ordinali}.
+Il programma @command{split} si @`e evoluto col passare del tempo, e la
+corrente versione POSIX @`e pi@`u complessa della version Unix originale.
+Le opzioni, e quello che specificano, sono dettagliate di seguito:
 
-Il programma dapprima imposta i suoi valori di default, e poi controlla che
-non siano stati specificati troppi argomenti.  Quindi esamina gli argomenti
-uno alla volta.  Il primo
-argomento potrebbe essere un segno meno seguito da un numero.  Poich@'e il
-numero in questione pu@`o apparire negativo, lo si fa diventare positivo, e
-viene usato per contare le righe.  Il nome del @value{DF} @`e per ora ignorato
-e l'ultimo argomento @`e usato come prefisso per i @value{FNS} in output:
+@table @asis
+@item @option{-a} @var{lunghezza-suffisso}
+Chiede di usare @var{lunghezza-suffisso} caratteri di suffisso.
+Per esempio, se @var{lunghezza-suffisso}
+vale quattro, i nomi dei file in output andranno da @file{xaaaa} a @file{xzzzz}.
+
+@item @option{-b} @var{N}[@code{k}|@code{m}]]
+Invece di chiedere che un file contenga un dato numero di righe,
+ogni file dovrebbe essere lungo (al massimo) @var{N} byte.
+Se si specifica la lettera @samp{k}, il numero @var{N} viene
+moltiplicato per 1.024, ossia diviene il numero di kilobyte.
+Se si specifica la lettera @samp{m}, il numero @var{N} viene
+moltiplicato per 1.048.576 (@math{1.024 @value{PER} 1.024})
+ossia diviene il numero di megabyte.
+(Quest'opzione @`e mutuamente esclusiva con l'opzione @option{-l}).
+
+@item @option{-l} @var{contatore}
+Ogni file dovrebbe avere al massimo @var{contatore} righe, al posto del
+valore di default, che @`e 1.000.
+(Quest'opzione @`e mutuamente esclusiva con l'opzione @option{-b}).
+@end table
+
+Se specificato, @var{file} @`e il nome del file in input da leggere.
+Altrimenti viene letto lo standard input.
+Se specificato, @var{nome-output-file} @`e il prefisso da anteporre
+ai nomi dei file in output, invece di usare @samp{x}.
+
+Per utilizzare l'opzione @option{-b} di @command{split},
+@command{gawk} dovrebbe essere chiamato specificando anche
+per @command{gawk} l'opzione @option{-b} (@pxref{Opzioni}),
+oppure con la variabile di ambiente @env{LC_ALL} impostata a @samp{C},
+in modo che ogni byte in input sia considerato come un carattere a s@'e
+stante.@footnote{Per usare l'opzione @option{-b} due volte occorre
+separare le opzioni di @command{gawk} da quelle del programma.
+Per esempio:
+@samp{gawk -f getopt.awk -f split.awk -b -- -b 42m file-molto-grosso.txt split-}.}
+
+Ecco un'implementazione di @command{split} in @command{awk}.  Viene utilizzata
+la funzione @code{getopt()} presentata in @ref{Funzione getopt}.
+
+Il programma inizia con un commento descrittivo e poi con la
+funzione @code{sintassi()} che ne descrive le opzioni:
 
 @cindex @code{split.awk} (programma)
 @cindex programma @subentry @code{split.awk}
@@ -27194,7 +27222,7 @@ e l'ultimo argomento @`e usato come prefisso per i @value{FNS} in output:
 @c file eg/prog/split.awk
 # split.awk --- comando split scritto in awk
 #
-# Richiede le funzioni di libreria ord() e chr()
+# Richiede la funzione di libreria getopt()
 @c endfile
 @ignore
 @c file eg/prog/split.awk
@@ -27202,103 +27230,294 @@ e l'ultimo argomento @`e usato come prefisso per i @value{FNS} in output:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised slightly, May 2014
+# Rewritten September 2020
 
 @c endfile
 @end ignore
-@c file eg/prog/split.awk
-# Uso: split [-contatore] [file] [nome_in_output]
-
-BEGIN @{
-    outfile = "x"    # default
-    contatore = 1000
-    if (ARGC > 4)
-        sintassi()
-
-    i = 1
-    if (i in ARGV && ARGV[i] ~ /^-[[:digit:]]+$/) @{
-        contatore = -ARGV[i]
-        ARGV[i] = ""
-        i++
-    @}
-    # testa argv nel caso che si legga da stdin invece che da file
-    if (i in ARGV)
-        i++    # salta nome file-dati
-@group
-    if (i in ARGV) @{
-        outfile = ARGV[i]
-        ARGV[i] = ""
-    @}
-@end group
-@group
-    s1 = s2 = "a"
-    out = (outfile s1 s2)
-@}
-@end group
-@c endfile
-@end example
-
-La regola seguente fa il grosso del lavoro. @code{contatore_t}
-(contatore temporaneo) tiene conto di
-quante righe sono state stampate sul file di output finora.  Se questo
-numero supera il valore di @code{contatore}, @`e ora di chiudere il file
-corrente e di iniziare a scriverne uno nuovo.
-Le variabili @code{s1} e @code{s2} sono usate per creare i suffissi
-da apporre a @value{FN}.  Se entrambi  arrivano al valore @samp{z}, il file
-@`e troppo grosso.  Altrimenti, @code{s1} passa alla successiva lettera
-dell'alfabeto e @code{s2} ricomincia da @samp{a}:
-
-@c else on separate line here for page breaking
-@example
-@c file eg/prog/split.awk
-@{
-    if (++contatore_t > contatore) @{
-        close(out)
-        if (s2 == "z") @{
-            if (s1 == "z") @{
-                printf("split: %s @`e troppo grosso da suddividere\n",
-                       nome_file) > "/dev/stderr"
-                exit 1
-            @}
-            s1 = chr(ord(s1) + 1)
-            s2 = "a"
-        @}
-@group
-        else
-            s2 = chr(ord(s2) + 1)
-@end group
-        out = (outfile s1 s2)
-        contatore_t = 1
-    @}
-    print > out
-@}
-@c endfile
-@end example
-
-@noindent
-La funzione @code{sintassi()} stampa solo un messaggio di errore ed esce:
-
-@example
-@c file eg/prog/split.awk
 function sintassi()
 @{
-    print("Uso: split [-num] [file] [nome_in_output]") > "/dev/stderr"
+    print("Uso: split [-l contatore]  [-a lunghezza-suffisso] [file [nome-output-file]]") > "/dev/stderr"
+    print("     split [-b N[k|m]] [-a lunghezza-suffisso] [file [nome-output-file]]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
 
-Questo programma @`e un po' approssimativo; conta sul fatto che @command{awk} chiuda
-automaticamente l'ultimo file invece di farlo in una regola @code{END}.
-Un altro presupposto del programma @`e che le lettere dell'alfabeto siano
-in posizioni consecutive nella codifica in uso, il che non @`e vero per i
-sistemi che usano la codifica EBCDIC.
+Poi, in una regola @code{BEGIN}, si impostano i valore di default e si
+analizzano gli argomenti.
+In seguito si inizializzano le strutture di dati da usare per generare
+il suffisso, da @samp{aa@dots{}} a @samp{zz@dots{}}.  Infine si imposta
+il nome del primo file di output:
 
-@ifset FOR_PRINT
-Si potrebbe pensare a come eliminare l'uso di
-@code{ord()} e @code{chr()}; la cosa si pu@`o fare in modo tale da risolvere
-anche il problema posto dalla codifica EBCDIC.
-@end ifset
+@example
+@c file eg/prog/split.awk
+BEGIN @{
+    # Impostazione valori di default:
+    Lunghezza_suffisso = 2
+    Contatore_righe = 1000
+    Contatore_byte = 0
+    Output_file = "x"
 
+    analizza_argomenti()
+
+    inizializza_suffisso()
+
+    Output = (Output_file calcola_suffisso())
+@}
+@c endfile
+@end example
+
+L'analisi degli argomenti @`e semplice.  Il programma segue la nostra
+convenzione (@pxref{Nomi di variabili di libreria}) di far iniziare
+con una lettera maiuscola i nomi di importanti variabili globali:
+
+@example
+@c file eg/prog/split.awk
+function analizza_argomenti(   i, c, l, modificatore)
+@{
+    while ((c = getopt(ARGC, ARGV, "a:b:l:")) != -1) @{
+        if (c == "a")
+            Lunghezza_suffisso = Optarg + 0
+        else if (c == "b") @{
+            Contatore_byte = Optarg + 0
+            Contatore_righe = 0
+
+            l = length(Optarg)
+            modificatore = substr(Optarg, l, 1)
+            if (modificatore == "k")
+                Contatore_byte *= 1024
+            else if (modificatore == "m")
+                Contatore_byte *= 1024 * 1024
+        @} else if (c == "l") @{
+            Contatore_righe = Optarg + 0
+            Contatore_byte = 0
+        @} else
+            sintassi()
+    @}
+
+    # Togli le opzioni dalla riga di comando
+    for (i = 1; i < Optind; i++)
+        ARGV[i] = ""
+
+    # Controlla se @`e stato specificato un prefisso
+    if (ARGV[Optind]) @{
+        Optind++
+
+        # Controlla se il prefisso @`e differente
+        if (ARGV[Optind]) @{
+            Output_file = ARGV[Optind]
+            ARGV[Optind] = ""
+
+            if (++Optind < ARGC)
+                sintassi()
+        @}
+    @}
+@}
+@c endfile
+@end example
+
+Gestire il valore del suffisso da apporre a @code{nome-output-file}
+@`e un problema interessante.  Per un suffisso di una data lunghezza,
+diciamo tre, i valori partono da @samp{aaa}, @samp{aab}, @samp{aac},
+etc., fino ad arrivare a @samp{zzx}, @samp{zzy}, e infine @samp{zzz}.
+Ci sono due aspetti importanti da considerare qui:
+
+@itemize @bullet
+@item
+Si deve essere in grado di generare facilmente tali suffissi e in
+particolare di gestire facilmente lo ``scorrimento''; per esempio,
+passare da @samp{abz} ad @samp{aca}.
+
+@item
+Si deve poter determinare se abbiamo utilizzato tutti i prefissi,
+in modo che, nel caso ci siano ulteriori dati (da suddividere) si
+possa stampare un messaggio di errore e terminare il programma.
+Il trucco @`e di gestire una tale situazione @emph{dopo} aver usato
+l'ultimo suffisso disponibile, e non quando viene generato l'ultimo
+suffisso stesso.
+@end itemize
+
+Il calcolo @`e gestito da @code{calcola_suffisso()}.
+Tale funzione @`e chiamata ogni volta che si deve aprire un nuovo file.
+
+Il flusso della funzione @`e piuttosto tortuoso, perch@'e si vuole generare
+diciamo fino a @samp{zzzz} e utilizzarlo, ed emettere un messaggio di errore
+solo dopo che tutti i suffissi di @code{nome-output-file} sono stati
+utilizzati.  I passi logici da seguire sono questi:
+
+@enumerate 1
+@item
+Generare il suffisso, salvandolo in @code{risultato} per poi
+restituirlo.
+Per far ci@`o, si usa il vettore ausiliario @code{Indice_suff}
+che contiene un elemento per ogni lettera nel suffisso.
+Ogni elemento @`e un numero
+compreso fra 1 e 26, che fa da indice in una stringa che contiene
+tutte le lettere minuscole dell'alfabeto inglese.
+Il vettore @`e inizializzato dalla funzione @code{inizializza_suffisso()}.
+Il @code{risultato} @`e costruito una lettera alla volta, usando
+la funzione @code{substr()}.
+
+@item
+Preparare le strutture di dati per la prossima volta in cui
+@code{calcola_suffisso()} sar@`a chiamato.  Per fare ci@`o, 
+si esegue un ciclo sui valori di @code{Indice_suff}, procedendo
+@emph{all'indietro}.
+Se l'elemento corrente @`e minore di 26, @`e incrementato, e il ciclo
+si interrompe (@samp{abq} diventa @samp{abr}).  Altrimenti, all'elemento
+viene di nuovo assegnato il valore 1, e si passa all'elemento precedente
+nella lista (per passare da @samp{abz} ad @samp{aca}).
+Quindi, il vettore @code{Indice_suff} @`e sempre ``un passo avanti'' rispetto
+al suffisso di @code{nome-output-file} da restituire.
+
+@item
+Controllare se abbiamo superato l'ultimo dei possibili valori per
+il suffisso di @code{nome-output-file}.
+Se la variabile @code{Raggiunta_la_fine} @`e impostata a "vero", si stampa
+un messaggio e si termina il programma.
+Altrimenti, si controlla se @code{Indice_suff} descrive un suffisso in cui
+tutte le lettere sono delle @samp{z}.
+Se @`e questo il caso, stiamo per restituire l'ultimo suffisso possibile,
+si deve impostare a "vero" la variabile @code{Raggiunta_la_fine}, in modo che
+la @emph{prossima} chiamata a @code{calcola_suffisso()} faccia terminare
+il programma con un errore.
+@end enumerate
+
+Fisicamente, questi passi nella funzione sono nell'ordine 3, 1, 2:
+
+@example
+@c file eg/prog/split.awk
+function calcola_suffisso(    i, risultato, alfabeto)
+@{
+    # Passo logico 3
+    if (Raggiunta_la_fine) @{
+        printf("split: troppi file!\n") > "/dev/stderr"
+        exit 1
+    @} else if (all_ultimo_file())
+        Raggiunta_la_fine = 1    # Errore quando si vuol superare 'zzz'
+
+    # Passo logico 1
+    risultato = ""
+    alfabeto = "abcdefghijklmnopqrstuvwxyz"
+    for (i = 1; i <= Lunghezza_suffisso; i++)
+        risultato = risultato substr(alfabeto, Indice_suff[i], 1)
+
+    # Passo logico 2
+    for (i = Lunghezza_suffisso; i >= 1; i--) @{
+        if (++Indice_suff[i] > 26) @{
+            Indice_suff[i] = 1
+        @} else
+            break
+    @}
+
+    return risultato
+@}
+@c endfile
+@end example
+
+Il vettore @code{Indice_suff} e la variabile @code{Raggiunta_la_fine}
+sono inizializzate da @code{inizializza_suffisso()}:
+
+@example
+@c file eg/prog/split.awk
+function inizializza_suffisso(  i)
+@{
+    for (i = 1; i <= Lunghezza_suffisso; i++)
+        Indice_suff[i] = 1
+
+    Raggiunta_la_fine = 0
+@}
+@c endfile
+@end example
+
+La funzione @code{all_ultimo_file()} restituisce "vero" se @code{Indice_suff}
+descrive un suffisso in cui tutti i caratteri sono @samp{z}, e lo fa
+controllando che tutti gli elementi del vettore valgano 26:
+
+@example
+@c file eg/prog/split.awk
+function all_ultimo_file(  i, se_ultimo)
+@{
+    se_ultimo = 1
+    for (i = 1; i <= Lunghezza_suffisso; i++) @{
+        se_ultimo = se_ultimo && (Indice_suff[i] == 26)
+    @}
+
+    return se_ultimo
+@}
+@c endfile
+@end example
+
+Il lavoro vero e proprio di dividere il file in input @`e fatto dalle due
+regole seguenti.
+Poich@'e dividere contando le righe e dividere contando i byte sono due
+opzioni mutuamente esclusive, lo si fa semplicemente usando due regole,
+una per quando @code{Contatore_righe} @`e maggiore di zero, e l'altra
+per quando @code{Contatore_byte} @`e maggiore di zero.
+
+La variabile @code{contorighe} conta quante righe sono state elaborate
+finora.  Quando il suo valore supera @code{Contatore_righe}, occorre
+chiudere il file precedente e passare ad uno nuovo:
+
+@example
+@c file eg/prog/split.awk
+Contatore_righe > 0 @{
+    if (++contorighe > Contatore_righe) @{
+        close(Output)
+        Output = (Outfile calcola_suffisso())
+        contorighe = 1
+    @}
+    print > Output
+@}
+@c endfile
+@end example
+
+La regola per elaborare i byte @`e pi@`u complessa.  Poich@'e @`e molto
+probabile che le righe siano di lunghezza variabile, il limite indicato
+da @code{Contatore_byte} pu@`o essere raggiunto all'interno di uno dei
+record in input.  In tal caso @command{split} deve scrivere la parte
+iniziale del record in input, fino a @code{Contatore_byte}
+byte, chiudere il file, aprirne uno nuovo e scrivere il resto del record
+sul file nuovo.
+Il codice che segue fa esattamente tutto ci@`o:
+
+@example
+@c file eg/prog/split.awk
+Contatore_byte > 0 @{
+    # `+ 1' @`e per il carattere di fine riga che va aggiunto
+    if (contorighe + length($0) + 1 > Contatore_byte) @{ # Supera il limite
+        # Calcola byte a inizio record
+        byte_iniziali = Contatore_byte - contorighe
+
+        # Scrivi i byte iniziali
+        printf("%s", substr($0, 1, byte_iniziali)) > Output
+
+        # Chiudi il vecchio file, aprine uno nuovo
+        close(Output)
+        Output = (Outfile calcola_suffisso())
+
+        # Prepara i primi byte per il nuovo file
+        $0 = substr($0, byte_iniziali + 1)  # Byte finali del record
+        contorighe = 0
+    @}
+
+    # Scrivi record intero o la parte finale restante
+    contorighe += length($0) + 1
+    print > Output
+@}
+@c endfile
+@end example
+
+Infine, la regola @code{END} fa la manutenzione finale, chiudendo l'ultimo
+file in output:
+
+@example
+@c file eg/prog/split.awk
+END @{
+    close(Output)
+@}
+@c endfile
+@end example
 
 @node Programma tee
 @subsection Inviare l'output su pi@`u di un file
@@ -27736,21 +27955,82 @@ programma seguendo questa indicazione.
 @node Programma wc
 @subsection Contare cose
 
-@c FIXME: One day, update to current POSIX version of wc
-
-@cindex contare
-@cindex input @subentry contare elementi nel
+@cindex contare parole, righe, caratteri e byte
+@cindex input @subentry contare elementi in
 @cindex parole @subentry contare le
 @cindex caratteri @subentry contare i
 @cindex righe @subentry contare le
+@cindex byte @subentry contare i
 @cindex @command{wc} (programma di utilit@`a)
 @cindex programma di utilit@`a @subentry @command{wc}
 Il programma di utilit@`a @command{wc} (@dfn{word count}, contatore di parole)
-conta righe, parole, e caratteri in uno o pi@`u file in input. La sua sintassi
-@`e la seguente:
+conta righe, parole, caratteri e byte in uno o pi@`u file in input.
+
+@menu
+* Byte vs. Caratteri::          Moderni insiemi di caratteri.
+* Usare le estensioni::         Una breve introduzione alle estensioni.
+* Programmma @command{wc}::     Codice per @file{wc.awk}.
+@end menu
+
+@node Byte vs. Caratteri
+@subsubsection Moderni insiemi di caratteri
+
+Agli inizi dell'era dei computer, un solo byte era usato per contenere
+un carattere.  Gli insiemi di caratteri pi@`u comuni erano ASCII ed EBCDIC,
+ognuno dei quali permetteva di rappresentare tutte le lettere della lingua
+inglese, maiuscole e minuscole, i 10 numeri indo-arabi, da 0 a 9, e un
+certo numero di altri caratteri di controllo e di interpunzione.
+
+Oggi, l'insieme di caratteri pi@`u utilizzato @`e Unicode (di cui l'originale
+ASCII @`e un piccolo sottoinsieme).  Unicode permette di rappresentare
+decine di migliaia di caratteri differenti (chiamati @dfn{code points},
+punti di codice), che sono usati nella maggior parte dei linguaggi umani
+esistenti (vivi e morti) e in un certo numero di linguaggi non umani (come il
+Klingon e il linguaggio degli elfi di J.R.R.@: Tolkien).
+
+Per risparmiare spazio nei file, i @dfn{code points} Unicode sono
+@dfn{codificati}, e la rappresentazione di ogni carattere pu@`o richiedere
+da uno a quattro byte nel file.  UTF-8 @`e verosimilmente la pi@`u diffusa
+fra queste codifiche multi-byte (@dfn{multibyte encodings}).
+
+Lo standard POSIX richiede che @command{awk} gestisca dei caratteri,
+non dei byte.  Per questo motivo, in @command{gawk}, le funzioni
+@code{length()}, @code{substr()}, @code{split()}, @code{match()} e
+le altre funzioni di manipolazione di stringhe
+(@pxref{Funzioni per stringhe}) funzionano tutte elaborando dei caratteri,
+come definiti dall'insieme di caratteri locale [a una determinata lingua]
+e non elaborando dei byte.  (Incidentalmente, non tutte le implementazioni
+di @command{awk} si comportano cos@`{@dotless{i}}).
+
+Non esiste una maniera standard, internamente definita, per distinguere
+i byte dai caratteri in un programma @command{awk}.  Per una implementazione
+con @command{awk} del comando @command{wc}, che necessita di utilizzare
+una tale distinzione, sar@`a quindi necessario usare un'estensione esterna.
+
+@node Usare le estensioni
+@subsubsection Una breve introduzione alle estensioni
+
+Le estensioni che si possono caricare in @command{gawk} sono presentate
+in maniera completa in @ref{Estensioni dinamiche}.
+Le estensioni consentono di aggiungere funzioni a @command{gawk}, e queste
+possono anche essere dei codici scritti nei linguaggi C o C++.
+
+Per quanto riguarda
+@file{wc.awk}, @`e sufficiente sapere che l'estensione viene caricata
+con la direttiva @code{@@load}, e la funzione ulteriore che dovr@`a essere
+usata si chiama @code{mbs_length()}.  Questa funzione restiuisce il numero
+di byte in una stringa, e non il numero di caratteri.
+
+L'estensione @code{"mbs"} fa parte del progetto @code{gawkextlib}.
+@xref{gawkextlib} for ulteriori informazioni.
+
+@node Programmma @command{wc}
+@subsubsection Codice per @file{wc.awk}
+
+La sintassi per @command{wc} @`e la seguente:
 
 @display
-@command{wc} [@option{-lwc}] [@var{file} @dots{}]
+@command{wc} [@option{-lwcm}] [@var{file} @dots{}]
 @end display
 
 Se nessun file @`e specificato sulla riga di comando, @command{wc} legge il suo
@@ -27768,13 +28048,20 @@ spazi e/o TAB.  Fortunatamente, questo @`e il modo normale in cui @command{awk}
 separa i campi nei suoi record in input.
 
 @item -c
-Conta solo i caratteri.
+Conta solo i byte.
+Un tempo, la lettera @samp{c} di questa opzione stava per ``caratteri.''
+Ma, come spiegato pi@`u sopra, byte e carattere non sono pi@`u sinonimi
+tra loro.
+
+@item -m
+Conta solo caratteri.
 @end table
 
-Implementare @command{wc} in @command{awk} @`e particolarmente elegante,
-perch@'e @command{awk} fa molto lavoro al posto nostro; divide le righe in
-parole (cio@`e, campi) e le conta, conta le righe (cio@`e, i record),
-e pu@`o facilmente dire quanto @`e lunga una riga.
+L'implementazione di @command{wc} in @command{awk} @`e particolarmente
+elegante, perch@'e @command{awk} fa molto lavoro al posto nostro;
+divide le righe in parole (cio@`e, campi) e le conta, conta le righe
+(cio@`e, i record), e pu@`o facilmente dire quanto @`e lunga una riga,
+misurata in caratteri.
 
 Questo programma usa la funzione di libreria @code{getopt()}
 (@pxref{Funzione getopt})
@@ -27782,12 +28069,13 @@ e le funzioni di passaggio da un file all'altro
 (@pxref{Funzione filetrans}).
 
 Questa versione ha una differenza significativa rispetto alle versioni
-tradizionali di @command{wc}: stampa sempre i contatori rispettando l'ordine
-righe, parole e caratteri.  Le versioni tradizionali rilevano l'ordine in cui
-sono specificate le opzioni @option{-l}, @option{-w} e @option{-c} sulla riga
-di comando, e stampano i contatori in quell'ordine.
+meno recenti di @command{wc}: stampa sempre i contatori rispettando l'ordine
+righe, parole, caratteri e byte.  Le versioni meno recenti rilevano l'ordine
+in cui sono specificate le opzioni @option{-l}, @option{-w} e @option{-c}
+sulla riga di comando, e stampano i contatori in quell'ordine.
+Lo standard POSIX, peraltro, non impone di fare cos@`{@dotless{i}}.
 
-La regola @code{BEGIN} si occupa degli argomenti.  La variabile
+La regola @code{BEGIN} elabora gli argomenti.  La variabile
 @code{stampa_totale} @`e vera se pi@`u di un file @`e presente sulla
 riga di comando:
 
@@ -27795,13 +28083,14 @@ riga di comando:
 @cindex programma @subentry @code{wc.awk}
 @example
 @c file eg/prog/wc.awk
-# wc.awk --- conta righe, parole, caratteri
+# wc.awk --- conta righe, parole, caratteri, byte
 @c endfile
 @ignore
 @c file eg/prog/wc.awk
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Revised September 2020
 @c endfile
 @end ignore
 @c file eg/prog/wc.awk
@@ -27809,31 +28098,38 @@ riga di comando:
 # Opzioni:
 #    -l    conta solo righe
 #    -w    conta solo parole
-#    -c    conta solo caratteri
+#    -c    conta solo byte
+#    -m    conta solo caratteri
 #
-# Il default @`e di contare righe, parole, caratteri
+# Il default @`e di contare righe, parole, byte
 #
 # Richiede le funzioni di libreria getopt()
 # e il programma di libreria che gestisce
 # il passaggio da un file dati al successivo
+# Richiede l'estensione mbs di gawkextlib
+
+@@load "mbs"
 
 BEGIN @{
     # consente a getopt() di stampare un messaggio se si specificano
     # opzioni non valide. Noi le ignoriamo
-    while ((c = getopt(ARGC, ARGV, "lwc")) != -1) @{
+    while ((c = getopt(ARGC, ARGV, "lwcm")) != -1) @{
         if (c == "l")
             conta_righe = 1
         else if (c == "w")
             conta_parole = 1
         else if (c == "c")
+            conta_byte = 1
+        else if (c == "m")
             conta_caratteri = 1
     @}
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
 
-    # se nessuna opzione @`e specificata, conta tutto
-    if (! conta_righe && ! conta_parole && ! conta_caratteri)
-        conta_righe = conta_parole = conta_caratteri = 1
+    # se nessuna opzione @`e specificata,
+    # conta righe, parole, byte
+    if (! conta_righe && ! conta_parole && ! conta_caratteri && ! conta_byte)
+        conta_righe = conta_parole = conta_byte = 1
 
     stampa_totale = (ARGC - i > 1)
 @}
@@ -27841,14 +28137,14 @@ BEGIN @{
 @end example
 
 La funzione @code{a_inizio_file()} @`e semplice; si limita ad azzerare i contatori
-di righe, parole e caratteri, e salva il valore corrente di @value{FN} in
+di righe, parole, caratteri e byte, e salva il valore corrente di @value{FN} in
 @code{nome_file}:
 
 @example
 @c file eg/prog/wc.awk
 function a_inizio_file(file)
 @{
-    righe = parole = caratteri = 0
+    righe = parole = caratteri = byte = 0
     nome_file = FILENAME
 @}
 @c endfile
@@ -27866,6 +28162,7 @@ function a_fine_file(file)
     totale_righe += righe
     totale_parole += parole
     totale_caratteri += caratteri
+    totale_byte += byte
     if (conta_righe)
         printf "\t%d", righe
 @group
@@ -27874,27 +28171,29 @@ function a_fine_file(file)
 @end group
     if (conta_caratteri)
         printf "\t%d", caratteri
+    if (conta_byte)
+        printf "\t%d", byte
     printf "\t%s\n", nome_file
 @}
 @c endfile
 @end example
 
-C'@`e una regola che viene eseguita per ogni riga. Aggiunge la lunghezza del record
-pi@`u uno, a @code{caratteri}.@footnote{Poich@'e @command{gawk} gestisce le
-localizzazioni in cui un carattere pu@`o occupare pi@`u di un byte, questo codice
-conta i caratteri, non i byte.}
-Aggiungere uno alla lunghezza del record
-@`e necessario, perch@'e il carattere di ritorno a capo, che separa i record
-(il valore di @code{RS}) non @`e parte del record stesso, e quindi non @`e
-incluso nella sua lunghezza.  Poi, @code{righe} @`e incrementata per ogni riga
-letta, e @code{parole} @`e incrementato con il valore @code{NF}, che @`e il
-numero di ``parole'' su questa riga:
+C'@`e una regola che viene eseguita per ogni riga. Aggiunge la lunghezza
+del record pi@`u uno, a @code{caratteri}.  Aggiungere uno alla lunghezza
+del record @`e necessario, perch@'e il carattere a-capo, che separa i record
+tra loro (il valore della variabile @code{RS}) non fa parte del record
+stesso, e quindi non @`e incluso nella sua lunghezza.  Analogamente, si
+aggiunge la lunghezza del record in byte, pi@`u uno, a @code{byte}.
+Poi, @code{righe} @`e incrementata per ogni riga letta, e @code{parole}
+@`e incrementata con il valore di @code{NF}, che @`e il numero di ``parole''
+su questa riga:
 
 @example
 @c file eg/prog/wc.awk
 # per ogni riga...
 @{
-    caratteri += length($0) + 1    # aggiunge un ritorno a capo
+    caratteri += length($0) + 1    # aggiunge il ritorno a capo
+    byte += mbs_length($0) + 1
     righe++
     parole += NF
 @}
@@ -27913,6 +28212,8 @@ END @{
             printf "\t%d", totale_parole
         if (conta_caratteri)
             printf "\t%d", totale_caratteri
+        if (conta_byte)
+            printf "\t%d", totale_byte
         print "\ttotale"
     @}
 @}
@@ -40690,13 +40991,14 @@ Infine, il file temporaneo @`e rinominato in modo da essere lo stesso del
 @value{FN} originario.
 
 Si noti che l'uso di questa funzionalit@`a pu@`o essere controllato
-specificando @samp{inplace=0} sulla riga di comando, prima del nome del file
-che non dovrebbe essere elaborato come appena descritto.  Si pu@`o richiedere
-ancora l'aggiornamento diretto di un file, specificando l'argomento
-@samp{inplace=1} davanti al nome del file da elaborare in maniera diretta.
+specificando @samp{inplace::enable=0} sulla riga di comando, prima del nome
+del file che non dovrebbe essere elaborato come appena descritto.
+Si pu@`o richiedere ancora l'aggiornamento diretto di un file, specificando
+l'argomento @samp{inplace::enable=1} davanti al nome del file da elaborare
+in maniera diretta.
 
-La variabile @code{_inplace_filename} serve per tener traccia del nome del
-file corrente, in modo da non eseguire la funzione @code{inplace_end()} prima
+La variabile @code{inplace::filename} serve per tener traccia del nome del
+file corrente, in modo da non eseguire la funzione @code{inplace::end()} prima
 di aver elaborato il primo file.
 
 Se si verifica un errore, l'estensione emette un messaggio di errore fatale
@@ -49005,7 +49307,3 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
-Add a section explaining recursion from ground zero. Probably
-easiest to do it with factorial as the example. Explain that
-recursion needs a stopping condition. Thanks to
-Bill Duncan <bduncan@beachnet.org> for the suggestion.
