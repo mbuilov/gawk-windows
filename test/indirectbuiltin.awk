@@ -82,8 +82,8 @@ BEGIN {
 
 	srand()
 	fun = "srand"
-	b1 = srand()
-	i1 = @fun()
+	b1 = srand(3)
+	i1 = @fun(3)
 	print_result("math", fun, b1, i1)
 
 	fun = "xor"
