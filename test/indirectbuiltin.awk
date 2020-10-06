@@ -80,10 +80,10 @@ BEGIN {
 	i1 = @fun(2)
 	print_result("math", fun, b1, i1)
 
-	srand()
+	srand(3)
 	fun = "srand"
 	b1 = srand(3)
-	i1 = @fun(3)
+	i1 = @fun()
 	print_result("math", fun, b1, i1)
 
 	fun = "xor"
