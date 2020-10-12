@@ -4,7 +4,7 @@ The goal of the fork is to implement a fully functional native gawk interpreter 
 
 
 
-Highlights.
+Highlights of this fork.
 
 1. Support for UTF-8 encoding.
 
@@ -21,6 +21,13 @@ Internal gawk functions operate on 32-bit unicode characters (encoded in UTF-32)
 3. Support for escaping double quotes using two consecutive double quotes in command line arguments, which allows to embed the gawk call in the cmd.exe interpreter chain of commands:
 
 (echo.a) | gawk "{ gsub(/a/, ""&b""); print }"
+ab
+
+Note:
+gawk also supports the traditional way of escaping double quotes with a backslash, like \".
+But since cmd.exe does not interpret backslashes in a special way, it is easier to use two double quotes to escape a double quote:
+
+(echo.a) | gawk "{ gsub(/a/, \"^&b\"); print }"
 ab
 
 4. Ported all 13 standard gawk extensions (dynamically loaded plugins):
